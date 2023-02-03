@@ -1,0 +1,39 @@
+<div class="container">
+
+  <!-- TITLE -->
+  <h1 mat-dialog-title class="mat-title" >Connectez-vous avec votre Identifiant</h1>
+
+  <!-- ERROR MESSAGE -->
+  <mat-error *ngIf="errorCode" class="error-message">{{ errorCode | inputError }}</mat-error>
+
+  <form [formGroup]="form" fxLayout="column" fxLayoutAlign="space-around stretch" fxLayoutGap="10px"  (ngSubmit)="signIn()">
+
+    <!-- IDENTIFIANT-->
+    <mat-form-field class="form-field" >
+      <mat-label>Identifiant</mat-label>
+      <input matInput formControlName="identifiant">
+      <mat-error *ngIf="form.controls['identifiant'].errors?.['required']">
+        Donnez votre Identifiant ici
+      </mat-error>
+    </mat-form-field>
+
+
+    <!-- PASSWORD -->
+    <mat-form-field class="form-field">
+      <mat-label>Mot de passe</mat-label>
+      <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="password">
+      <mat-error *ngIf="form.controls['password'].errors?.['required']">
+        Donnez votre mot de passe ici
+      </mat-error>
+
+      <button type="button" class="pwd" mat-icon-button matSuffix (click)="showPassword = !showPassword" [attr.aria-label]="'Cacher le mot de passe'" [attr.aria-pressed]="!showPassword">
+        <mat-icon>{{showPassword ? 'visibility' : 'visibility_off'}}</mat-icon>
+      </button>
+    </mat-form-field>
+  <!-- ACTION BUTTON -->
+  <button mat-stroked-button color="primary" type="submit" [disabled]="!form.valid" class="btn">
+    Se connecter
+  </button>
+  <mat-progress-bar *ngIf="progress" mode="indeterminate" color="accent"></mat-progress-bar>
+  </form>
+</div>
