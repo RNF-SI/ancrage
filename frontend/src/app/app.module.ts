@@ -21,7 +21,6 @@ import { ModuleService } from './services/module.service';
 // Components
 import { AncrageComponent } from './components/ancrage/ancrage.component';
 import { IndexComponent } from './components/index/index.component';
-import { NavHomeComponent } from './components/nav-home/nav-home.component';
 import { LogoutComponent } from './components/logout/logout.component';
 
 @NgModule({
@@ -29,7 +28,6 @@ import { LogoutComponent } from './components/logout/logout.component';
     AppComponent,
     AncrageComponent,
     IndexComponent,
-    NavHomeComponent,
     LogoutComponent
   ],
   imports: [
