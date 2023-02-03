@@ -1,0 +1,72 @@
+<div class="main">
+  <mat-toolbar class="toolbar-size">
+    <div class="header">
+
+      <div class="logo"><img src="../assets/images//logo_rnf.png" loading="lazy" alt="" class="image-13">
+        <p class="titre"><span class="text-span">Boîte à outils du</span> Diagnostic d’Ancrage Territorial</p>
+      </div>
+      <div class="cartouche">
+        <p class="text cartouche"><em>Évaluer le rôle et la place des </em><span class="text-span-4"><em>Espaces
+          Naturels Protégés </em></span><em>à partir des perceptions d’acteurs locaux.</em></p>
+      </div>
+      <div class="tags_line">
+        <div class="tag-block">
+          <a data-w-id="603d9633-6b98-8a26-c13f-e87c6214337d" href="#" class="tags">CONTACTEZ-NOUS</a>
+          <div class="tag-underline"></div>
+        </div>
+        <div class="tag-block">
+          <a data-w-id="603d9633-6b98-8a26-c13f-e87c62143381" href="#" class="tags">MENTIONS LÉGALES</a>
+          <div class="tag-underline"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="login-size d-flex flex-row-reverse ml-10">
+      <button
+        *ngIf="!signedIn"
+        class="mat-elevation-z1 bg-white btn-primary"
+        mat-icon-button
+        matTooltip="Ouvrir la page de login"
+        [routerLink]="'login'"
+      >
+        <mat-icon >login</mat-icon>
+      </button>
+      <div >
+        <button
+        *ngIf="signedIn"
+        class="mat-elevation-z1 bg-white btn-primary"
+        mat-icon-button
+        [matMenuTriggerFor]="menuSettings"
+        >
+          <mat-icon >account_circle</mat-icon>
+        </button>
+        <mat-menu #menuSettings="matMenu">
+          <button mat-menu-item [routerLink]="'logout'" >Logout</button>
+        </mat-menu>
+      </div>
+    </div>
+  </mat-toolbar>
+  <router-outlet></router-outlet>
+  <div class="footer">
+      <div class="sponso_block">
+      <div class="sponso rnf"><img src="../assets/images//sponso_1.png" loading="lazy" alt="" class="logo-sponso rnf"></div>
+      <div class="sponso text">
+          <p class="text">avec le partenariat technique de :</p>
+      </div>
+      <div class="sponso"><img src="../assets/images//sponso_2.png" loading="lazy" alt="" class="logo-sponso"></div>
+      <div class="sponso text">
+          <p class="text">avec le soutien de :</p>
+      </div>
+      <div class="sponso"><img src="../assets/images//sponso_3.png" loading="lazy" alt="" class="logo-sponso"></div>
+      <div class="sponso"><img src="../assets/images//sponso_4.png" loading="lazy" alt="" class="logo-sponso"></div>
+      <div class="sponso"><img src="../assets/images//sponso_5.png" loading="lazy" alt="" class="logo-sponso"></div>
+      <div class="sponso"><img src="../assets/images//sponso_6.png" loading="lazy" alt="" class="logo-sponso"></div>
+      <div class="sponso"><img src="../assets/images//sponso_7.png" loading="lazy" alt="" class="logo-sponso"></div>
+      <div class="sponso"><img src="../assets/images//sponso_8.png" loading="lazy" alt="" class="logo-sponso"></div>
+      <div class="sponso"><img src="../assets/images//sponso_9.png" loading="lazy" alt="" class="logo-sponso"></div>
+      <div class="sponso"><img src="../assets/images//sponso_10.png" loading="lazy" alt="" class="logo-sponso"></div>
+      <div class="sponso"><img src="../assets/images//sponso_11.png" loading="lazy" alt="" class="logo-sponso"></div>
+      </div>
+  </div>
+  </div>
+
