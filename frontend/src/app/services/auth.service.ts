@@ -187,8 +187,7 @@ export class AuthService {
       id_organisme: user.id_organisme,
       prenom_role: user.prenom_role,
       nom_role: user.nom_role,
-      nom_complet: user.nom_complet,
-      roleOPNLInfo: user.roleOPNLInfo
+      nom_complet: user.nom_complet
     }));
   }
 
@@ -203,8 +202,7 @@ export class AuthService {
         raw.id_organisme,
         raw.prenom_role,
         raw.nom_role,
-        raw.nom_role + ' ' + raw.prenom_role,
-        raw.roleOPNLInfo
+        raw.nom_role + ' ' + raw.prenom_role
       );
     } else {
       user = null
