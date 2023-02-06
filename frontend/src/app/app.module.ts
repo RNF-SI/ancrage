@@ -23,6 +23,8 @@ import { AncrageComponent } from './components/ancrage/ancrage.component';
 import { IndexComponent } from './components/index/index.component';
 import { LogoutComponent } from './components/logout/logout.component';
 import { IntroConnectComponent } from './components/intro-connect/intro-connect.component';
+import { ContactComponent } from './components/contact/contact.component';
+import { MentionsComponent } from './components/mentions/mentions.component';
 
 @NgModule({
   declarations: [
@@ -30,7 +32,9 @@ import { IntroConnectComponent } from './components/intro-connect/intro-connect.
     AncrageComponent,
     IndexComponent,
     LogoutComponent,
-    IntroConnectComponent
+    IntroConnectComponent,
+    ContactComponent,
+    MentionsComponent
   ],
   imports: [
     BrowserModule,

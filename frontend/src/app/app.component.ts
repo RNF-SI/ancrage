@@ -7,8 +7,11 @@ import { filter } from 'rxjs';
 const dynamicScripts = [
   'assets/js/webflow.js',
   'assets/js/modal.js',
-  'assets/js/videoClick.js',
+  // 'assets/js/videoClick.js',
   'assets/js/jquery-3.5.1.min.js',
+  'assets/infographies/info-1/js/webflow.js',
+  'assets/infographies/info-2/js/webflow.js',
+  'assets/infographies/info-3/js/webflow.js',
   ];
 
 @Component({
@@ -37,10 +40,12 @@ export class AppComponent implements OnInit{
 
 
   recallJsFuntions() {
+    this.loading = true
     this.routerSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(event => {
         this.loadScript();
+        this.loading = false
       });
   }
 

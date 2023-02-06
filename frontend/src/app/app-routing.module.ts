@@ -7,6 +7,8 @@ import { LogoutLinkService } from './services/logout-link.service';
 import { LogoutComponent } from './components/logout/logout.component';
 import { AuthGuardService } from './services/auth-guard.service';
 import { IntroConnectComponent } from './components/intro-connect/intro-connect.component';
+import { MentionsComponent } from './components/mentions/mentions.component';
+import { ContactComponent } from './components/contact/contact.component';
 
 
 const routes: Routes = [
@@ -30,6 +32,14 @@ const routes: Routes = [
     path: 'intro-connect',
     component: IntroConnectComponent,
     canActivate: [AuthGuardService]
+  },
+  {
+    path: 'contact',
+    component: ContactComponent,
+  },
+  {
+    path: 'mentions',
+    component: MentionsComponent,
   },
   {
     path: '',
