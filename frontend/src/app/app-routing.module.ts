@@ -6,6 +6,7 @@ import { AncrageComponent } from './components/ancrage/ancrage.component';
 import { LogoutLinkService } from './services/logout-link.service';
 import { LogoutComponent } from './components/logout/logout.component';
 import { AuthGuardService } from './services/auth-guard.service';
+import { IntroConnectComponent } from './components/intro-connect/intro-connect.component';
 
 
 const routes: Routes = [
@@ -23,6 +24,11 @@ const routes: Routes = [
   {
     path: 'ancrage',
     component: AncrageComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
+    path: 'intro-connect',
+    component: IntroConnectComponent,
     canActivate: [AuthGuardService]
   },
   {
