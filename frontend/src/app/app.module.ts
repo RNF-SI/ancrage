@@ -22,13 +22,15 @@ import { ModuleService } from './services/module.service';
 import { AncrageComponent } from './components/ancrage/ancrage.component';
 import { IndexComponent } from './components/index/index.component';
 import { LogoutComponent } from './components/logout/logout.component';
+import { IntroConnectComponent } from './components/intro-connect/intro-connect.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     AncrageComponent,
     IndexComponent,
-    LogoutComponent
+    LogoutComponent,
+    IntroConnectComponent
   ],
   imports: [
     BrowserModule,
