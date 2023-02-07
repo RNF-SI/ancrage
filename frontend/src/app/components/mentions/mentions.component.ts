@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import {Location} from '@angular/common';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -9,7 +10,7 @@ import {Location} from '@angular/common';
 })
 export class MentionsComponent {
 
-  constructor(private _location: Location) 
+  constructor(private _location: Location, private _router: Router) 
   {}
 
   backClicked(){

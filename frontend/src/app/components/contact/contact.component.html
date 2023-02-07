@@ -35,15 +35,19 @@
     </div>
     </div>
     <div class="w-form">
-    <form action="https://formsubmit.co/katia.daudigeos@rnfrance.org" method="POST" id="email-form"
-        name="email" data-name="Email Form" class="form contact"><label for="name" class="contact-label">Votre
+    <form ngNoForm [action]="url" method="POST" id="email-form"
+        name="email" data-name="Email Form" class="form contact">
+        <label for="name" class="contact-label">Votre
         nom* :</label><input type="text" class="contact-input w-input" maxlength="256" name="name"
-        data-name="Name" placeholder="Prénom NOM" id="name" required=""><label for="email"
+        data-name="Name" placeholder="Prénom NOM" id="name" required="">
+        <label for="email"
         class="contact-label">Votre e-mail* :</label><input type="email" class="contact-input w-input"
         maxlength="256" name="email" data-name="Email" placeholder="adresse e-mail" id="email"
-        required=""><label for="sujet-3" class="contact-label">Sujet de votre message* :</label><input
+        required="">
+        <label for="sujet-3" class="contact-label">Sujet de votre message* :</label><input
         type="text" class="contact-input w-input" maxlength="256" name="sujet" data-name="sujet"
-        placeholder="Sujet de votre message" id="sujet" required=""><label for="message"
+        placeholder="Sujet de votre message" id="sujet" required="">
+        <label for="message"
         class="contact-label">Votre message* :</label><textarea placeholder="Votre message" maxlength="5000"
         id="Message" name="Message" data-name="Message" required=""
         class="contact-input message w-input"></textarea><input type="submit" value="ENVOYER"

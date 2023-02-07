@@ -5,13 +5,14 @@ import { filter } from 'rxjs';
 
 
 const dynamicScripts = [
-  'assets/js/webflow.js',
-  'assets/js/modal.js',
-  // 'assets/js/videoClick.js',
+  'assets/js/typekit-owy4cfp.js',
   'assets/js/jquery-3.5.1.min.js',
   'assets/infographies/info-1/js/webflow.js',
   'assets/infographies/info-2/js/webflow.js',
   'assets/infographies/info-3/js/webflow.js',
+  'assets/js/webflow.js',
+  'assets/js/videoClick.js',
+  'assets/js/modal.js',
   ];
 
 @Component({

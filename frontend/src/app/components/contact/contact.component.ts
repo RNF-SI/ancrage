@@ -10,6 +10,8 @@ export class ContactComponent {
 
   constructor(private _location: Location) 
   {}
+  url ="https://formsubmit.co/katia.daudigeos@rnfrance.org";
+
 
   backClicked(){
     this._location.back();
