@@ -1,0 +1,6 @@
+# virtualenv
+.venv
+venv/
+ENV/
+
+frontend/src/conf/app.config.ts

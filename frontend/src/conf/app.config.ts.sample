@@ -1,0 +1,14 @@
+import { InjectionToken } from '@angular/core';
+
+export const APP_CONFIG_TOKEN = new InjectionToken<any>('AppConfig');
+
+// TODO: Clean and remove useless code after merge
+
+export const AppConfig = {
+ "ID_APPLICATION_ANCRAGE": 4,
+// Url géonature prod ou application d'inscription
+ "API_ENDPOINT": "url_de_geonature",
+
+ "appName": "Ancrage",
+
+};
