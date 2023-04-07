@@ -21,7 +21,7 @@ const dynamicScripts = [
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit{
-  title = 'auth-ancrage';
+  title = 'RNF - Diagnostic d\'Ancrage Territorial';
 
   loading = true;
   routerSubscription: any;
