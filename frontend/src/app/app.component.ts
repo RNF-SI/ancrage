@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
-import { AuthService } from '@services/auth.service';
 import { filter } from 'rxjs';
 
 
@@ -29,23 +28,26 @@ export class AppComponent implements OnInit{
 
   constructor(
     private router: Router,
-    public _authService: AuthService,
+   
     ) {
 
     }
 
   ngOnInit(): void {
     this.recallJsFuntions();
-    this.loading = false
+    this.loading = false;
+    
   }
 
 
   recallJsFuntions() {
-    this.loading = true
+    this.loading = true;
+    
     this.routerSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(event => {
         this.loadScript();
+        
         this.loading = false
       });
   }
@@ -58,6 +60,7 @@ export class AppComponent implements OnInit{
     console.log("preparing to load…")
     for (let i = 0; i < dynamicScripts.length; i++) {
       const node = document.createElement("script");
+      console.log(node);
       node.src = dynamicScripts[i];
       node.type = "text/javascript";
       node.async = false;
@@ -73,8 +76,6 @@ export class AppComponent implements OnInit{
   }
 
   // Signed In status
-  public get signedIn(): boolean {
-    return this._authService.authenticated || false;
-  }
+
 
 }

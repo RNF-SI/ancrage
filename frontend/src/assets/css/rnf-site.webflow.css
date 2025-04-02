@@ -1212,7 +1212,6 @@
 }
 
 .paragraph {
-  overflow: scroll;
   margin-top: 0vw;
   padding-right: 1vw;
   font-family: century-gothic, sans-serif;
@@ -2311,7 +2310,7 @@
 }
 
 .contact-katia-line {
-  width: 12vw;
+  width: 36vw;
   height: 0.2vw;
   background-color: #9bd579;
 }
@@ -2515,7 +2514,7 @@
 }
 
 .paragraphe-etape {
-  overflow: scroll;
+  overflow-y: scroll;
   height: 24.5vw;
   margin-top: 2vw;
 }

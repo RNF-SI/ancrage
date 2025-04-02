@@ -10,13 +10,10 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import { MatMenuModule } from '@angular/material/menu';
 import { HttpClientModule } from '@angular/common/http';
-import { GN2CommonModule } from '@geonature_common/GN2Common.module';
-import {MatButtonModule} from '@angular/material/button';
-
-
-
-// Services
-import { ModuleService } from './services/module.service';
+import { MatButtonModule} from '@angular/material/button';
+import { HomeRnfModule } from './home-rnf/home-rnf.module';
+import { RouterModule } from '@angular/router';
+import { ToastrModule } from 'ngx-toastr';
 
 // Components
 import { AncrageComponent } from './components/ancrage/ancrage.component';
@@ -25,6 +22,9 @@ import { LogoutComponent } from './components/logout/logout.component';
 import { IntroConnectComponent } from './components/intro-connect/intro-connect.component';
 import { ContactComponent } from './components/contact/contact.component';
 import { MentionsComponent } from './components/mentions/mentions.component';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+
+
 
 @NgModule({
   declarations: [
@@ -34,7 +34,7 @@ import { MentionsComponent } from './components/mentions/mentions.component';
     LogoutComponent,
     IntroConnectComponent,
     ContactComponent,
-    MentionsComponent
+    MentionsComponent,
   ],
   imports: [
     BrowserModule,
@@ -44,11 +44,16 @@ import { MentionsComponent } from './components/mentions/mentions.component';
     MatIconModule,
     MatMenuModule,
     HttpClientModule,
-    GN2CommonModule,
-    MatButtonModule
+    MatButtonModule,
+    HomeRnfModule,
+    RouterModule,
+    NgbModule,
+    ToastrModule.forRoot({
+      timeOut: 15000
+    }),
   ],
   providers: [
-    ModuleService,
+    
   ],
   bootstrap: [AppComponent]
 })
