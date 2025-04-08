@@ -1,0 +1,27 @@
+<div class="container text-center">
+    <div class="row" id="diagnostics_liste">
+        <h2>Mes diagnostics</h2>
+        <div class="col-2"></div>
+        <div  class="col-8">
+            <table *ngFor="let item of diagnostics">
+                <tr>
+                    <td>
+                        {{item.nom}} du {{item.date_debut}}
+                    </td>
+                    <td>
+                        <button id="modBtn" (click)="modifyDiagnostic(item)" class="btn btn-success">Modifier</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6">
+            <button id="creaBtn"class="col-6 btn btn-success">Créer un nouveau diagnostic</button>
+        </div>
+        <div class="col-3"></div>
+    </div>
+    
+</div>

@@ -23,6 +23,7 @@ import { IntroConnectComponent } from './components/intro-connect/intro-connect.
 import { ContactComponent } from './components/contact/contact.component';
 import { MentionsComponent } from './components/mentions/mentions.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { DiagosticsListeComponent } from './diagnostics-liste/diagnostics-liste.component'; 
 
 
 
@@ -35,6 +36,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
+    DiagosticsListeComponent
   ],
   imports: [
     BrowserModule,
