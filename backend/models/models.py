@@ -1,4 +1,3 @@
-
 # Import du db défini dans app.py
 from app import db
 from datetime import datetime
@@ -8,10 +7,9 @@ from sqlalchemy.dialects.postgresql import VARCHAR
 
 
 class Region(db.Model):
-    __tablename__ = 'region'
-    __table_args__ = {'schema': 'limites_admin'}
+    __tablename__ = 't_regions'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id_region = db.Column(db.String, primary_key=True)
     geom = db.Column(Geometry('MULTIPOLYGON', srid=4326))
     id_reg = db.Column(VARCHAR(24))
     nom_reg_m = db.Column(VARCHAR(35))
@@ -22,10 +20,9 @@ class Region(db.Model):
 
 
 class Departement(db.Model):
-    __tablename__ = 'departement'
-    __table_args__ = {'schema': 'limites_admin'}
+    __tablename__ = 't_departement'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id_departement = db.Column(db.String, primary_key=True)
     geom = db.Column(Geometry('MULTIPOLYGON', srid=4326))
     id_dep = db.Column(VARCHAR(24))
     nom_dep_m = db.Column(VARCHAR(30))
@@ -37,10 +34,9 @@ class Departement(db.Model):
 
 
 class Commune(db.Model):
-    __tablename__ = 'commune'
-    __table_args__ = {'schema': 'limites_admin'}
+    __tablename__ = 't_communes'
 
-    id = db.Column(db.String, primary_key=True)
+    id_commune = db.Column(db.String, primary_key=True)
     geom = db.Column(Geometry('MULTIPOLYGON', srid=4326))
     nom_com = db.Column(VARCHAR(50))
     nom_com_m = db.Column(VARCHAR(50))
@@ -53,24 +49,24 @@ class Commune(db.Model):
     insee_reg = db.Column(VARCHAR(2))
     code_epci = db.Column(VARCHAR(20))
 
+
 class Site(db.Model):
     __tablename__ = 't_sites'
-    id = db.Column('id_site', db.Integer, primary_key=True)
+    id_site = db.Column( db.Integer, primary_key=True)
     nom = db.Column(db.String, nullable=False)
     position_x = db.Column(db.String, nullable=False)
     position_y = db.Column(db.String, nullable=False)
-    diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
+    diagnostics = db.relationship('Diagnostic', backref='site')
     type_id = db.Column(db.Integer)
     habitat_id = db.Column(db.Integer)
     created_at = db.Column(db.DateTime)
     modified_at = db.Column(db.DateTime)
     created_by = db.Column(db.Integer)
     modified_by = db.Column(db.Integer)
-    entretiens = db.relationship('Entretien', backref='site')
 
 class Diagnostic(db.Model):
     __tablename__ = 't_diagnostics'
-    id = db.Column('id_diagnostic', db.Integer, primary_key=True)
+    id_diagnostic = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String, nullable=False)
     date_debut = db.Column(db.DateTime, nullable=False)
     date_fin = db.Column(db.DateTime)
@@ -82,17 +78,17 @@ class Diagnostic(db.Model):
     acteurs = db.relationship('Acteur', backref='diagnostic')
     documents = db.relationship('Document', backref='diagnostic')
     entretiens = db.relationship('Entretien', backref='diagnostic')
+    
 
 class Document(db.Model):
     __tablename__ = 't_documents'
-    id = db.Column('id_document', db.Integer, primary_key=True)
+    id_document = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String, nullable=False)
     diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
 
 class Entretien(db.Model):
     __tablename__ = 't_entretiens'
-    id = db.Column('id_entretien', db.Integer, primary_key=True)
-    site_id = db.Column(db.Integer, db.ForeignKey('t_sites.id_site'))
+    id_entretien = db.Column(db.Integer, primary_key=True)
     date_entretien = db.Column(db.DateTime, nullable=False)
     contexte = db.Column(db.Integer, nullable=False)
     statut_id = db.Column(db.Integer)
@@ -105,13 +101,13 @@ class Entretien(db.Model):
 
 class Acteur(db.Model):
     __tablename__ = 't_acteurs'
-    id = db.Column('id_acteur', db.Integer, primary_key=True)
+    id_acteur = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String, nullable=False)
     prenom = db.Column(db.String, nullable=False)
     fonction = db.Column(db.Integer)
     telephone = db.Column(db.String)
     mail = db.Column(db.String)
-    commune_id = db.Column(db.Integer, db.ForeignKey('t_communes.id_commune'))
+    commune_id = db.Column(db.String, db.ForeignKey('t_communes.id_commune'))
     profil_cognitif_id = db.Column(db.Integer)
     is_acteur_economique = db.Column(db.Boolean, nullable=False)
     structure = db.Column(db.String)
@@ -124,26 +120,31 @@ class Acteur(db.Model):
 
 class Reponse(db.Model):
     __tablename__ = 't_reponses'
-    id = db.Column('id_reponse', db.Integer, primary_key=True)
+    id_reponse = db.Column(db.Integer, primary_key=True)
     mot_cle_id = db.Column(db.Integer)
     valeur_reponse_id = db.Column(db.Integer)
     entretien_id = db.Column(db.Integer, db.ForeignKey('t_entretiens.id_entretien'))
-    mots_cles = db.relationship('ReponseMotCle', backref='reponse')
+    mots_cles = db.relationship('ReponseMotCle', back_populates='reponse')
+
 
 class ReponseMotCle(db.Model):
     __tablename__ = 'cor_reponses_mots_cles'
-    id = db.Column('id_reponse_mot_cle', db.Integer, primary_key=True)
+    id_reponse_mot_cle = db.Column(db.Integer, primary_key=True)
     mot_cle_id = db.Column(db.Integer, db.ForeignKey('t_mots_cles.id_mot_cle'))
     reponse_id = db.Column(db.Integer, db.ForeignKey('t_reponses.id_reponse'))
+    mot_cle = db.relationship('MotCle', back_populates='reponses')
+    reponse = db.relationship('Reponse', back_populates='mots_cles')
+
 
 class MotCle(db.Model):
     __tablename__ = 't_mots_cles'
-    id = db.Column('id_mot_cle', db.Integer, primary_key=True)
-    nom = db.Column(db.Integer)
+    id_mot_cle = db.Column(db.Integer, primary_key=True)
+    nom = db.Column(db.String)  # probablement String au lieu d'Integer
+    reponses = db.relationship('ReponseMotCle', back_populates='mot_cle')
 
 class Nomenclature(db.Model):
     __tablename__ = 't_nomenclatures'
-    id = db.Column('id_nomenclature', db.Integer, primary_key=True)
+    id_nomenclature = db.Column('id_nomenclature', db.Integer, primary_key=True)
     label = db.Column(db.String)
     type_site_id = db.Column(db.Integer)
     value = db.Column(db.Integer)

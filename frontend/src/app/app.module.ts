@@ -23,7 +23,9 @@ import { IntroConnectComponent } from './components/intro-connect/intro-connect.
 import { ContactComponent } from './components/contact/contact.component';
 import { MentionsComponent } from './components/mentions/mentions.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { DiagosticsListeComponent } from './diagnostics-liste/diagnostics-liste.component'; 
+import { DiagosticsListeComponent } from './components/diagnostics-liste/diagnostics-liste.component';
+import { ChoixSiteComponent } from './components/choix-site/choix-site.component';
+import { MapComponent } from './components/map/map.component'; 
 
 
 
@@ -36,7 +38,9 @@ import { DiagosticsListeComponent } from './diagnostics-liste/diagnostics-liste.
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
-    DiagosticsListeComponent
+    DiagosticsListeComponent,
+    ChoixSiteComponent,
+    MapComponent
   ],
   imports: [
     BrowserModule,

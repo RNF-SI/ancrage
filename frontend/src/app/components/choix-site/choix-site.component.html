@@ -1,0 +1,51 @@
+<div class="container text-center">
+    <div class="row" id="choix_site">
+        <h2>Choisir le site</h2>
+        <div class="col-2"></div>
+        <div  class="col-8">
+            <h3>Site choisi</h3>
+            <p>
+                Vous n'avez pas encore choisi de site.
+            </p>
+            <app-map></app-map>
+            <table  *ngFor="let item of sites">
+                <tr>
+                    <thead>
+                        <tr>
+                            <th>
+                                Nom site
+                            </th>
+                            <th>
+                                Régions
+                            </th>
+                            <th>
+                                Type
+                            </th>
+                            <th>
+        
+                            </th>
+                        </tr>
+                    </thead>
+                <tbody>
+                    <tr>
+                        <td>
+
+                        </td>
+                        <td>
+
+                        </td>
+                        <td>
+
+                        </td>
+                        <td>
+                            Choisir <input type="checkbox">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-2"></div>
+    </div>
+    
+    
+</div>

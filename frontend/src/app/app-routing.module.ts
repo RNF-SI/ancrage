@@ -13,7 +13,8 @@ import { LoginComponent } from './home-rnf/components/login/login.component';
 import { AuthGuardService } from './home-rnf/services/auth-guard.service';
 import { LogoutLinkService } from './home-rnf/services/logout-link.service';
 import { LazyDialogLoader } from './home-rnf/services/lazy-dialog-loader.service';
-import { DiagosticsListeComponent } from './diagnostics-liste/diagnostics-liste.component';
+import { DiagosticsListeComponent } from './components/diagnostics-liste/diagnostics-liste.component';
+import { ChoixSiteComponent } from './components/choix-site/choix-site.component';
 
 const routes: Routes = [ { 
   path: '', 
@@ -50,6 +51,11 @@ const routes: Routes = [ {
     {
       path: 'diagnostics-liste',
       component: DiagosticsListeComponent,
+      canActivate: [AuthGuardService]
+    },
+    {
+      path: 'choix-site',
+      component: ChoixSiteComponent,
       canActivate: [AuthGuardService]
     }
   ]},

@@ -7,3 +7,7 @@ frontend/src/conf/app.config.ts
 infographies/info-1/images/Trac�-292-p-500.png
 infographies/info-1/images/*
 infographies/info-1/*
+backend/migrations/*
+backend/_pycache_/*
+backend/models/_pycache_/*
+backend/schemas/_pycache_/*
