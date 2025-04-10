@@ -12,5 +12,5 @@ db = SQLAlchemy(app) # Lie notre app à SQLAlchemy
 ma = Marshmallow(app)
 migrate = Migrate(app, db)
 
-import routes
-app.register_blueprint(routes.bp)
+import routes.sites as sites
+app.register_blueprint(sites.bp_sites)
