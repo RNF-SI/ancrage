@@ -1,4 +1,4 @@
-from app import db, app
+from backend.run import db, app
 from models.models import Region, Departement, Commune, Site, Diagnostic, Document, Entretien, Acteur, Reponse, ReponseMotCle, MotCle, Nomenclature
 from geoalchemy2.shape import from_shape
 from shapely.geometry import MultiPolygon, Polygon

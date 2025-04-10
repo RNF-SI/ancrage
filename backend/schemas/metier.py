@@ -1,6 +1,5 @@
 from schemas.geo import CommuneSchema
 from models.models import Acteur, Diagnostic, Document, Entretien, MotCle, Nomenclature, Reponse, ReponseMotCle, Site
-from app import ma
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from marshmallow import fields
 
@@ -20,7 +19,7 @@ class DiagnosticSchema(SQLAlchemyAutoSchema):
         load_instance = True
 
     site = fields.Nested(lambda: SiteSchema, exclude=("diagnostics",))
-    acteurs = fields.Nested(lambda: ActeurLiteSchema, many=True)
+    acteurs = fields.Nested(lambda: ActeurSchema, many=True)
     documents = fields.Nested(lambda: DocumentSchema, many=True, exclude=("diagnostic",))
     entretiens = fields.Nested(lambda: EntretienLiteSchema, many=True)
 
@@ -74,8 +73,8 @@ class ActeurLiteSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Acteur
         load_instance = True
-        exclude = ("diagnostic", "entretien", "commune")
-
+        exclude = ("diagnostic", "entretien")
+    commune = fields.Nested(lambda: CommuneSchema, exclude=())
 
 class ReponseSchema(SQLAlchemyAutoSchema):
     class Meta:

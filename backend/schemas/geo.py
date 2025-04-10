@@ -1,30 +1,35 @@
 from models.models import Region,Departement,Commune
 from marshmallow import fields
-from app import ma
-from app import db
+from models.models import db
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 
-class RegionSchema(ma.SQLAlchemyAutoSchema):
+class RegionSchema(SQLAlchemyAutoSchema):
     geom = fields.Method("get_geom")
     class Meta:
         model = Region
         include_relationships = True
         load_instance = True
+    def get_geom(self, obj):
+        # Retourne un GeoJSON à partir de la géométrie PostGIS
+        return db.session.scalar(obj.geom.ST_AsGeoJSON()) if obj.geom else None
  
 
-class DepartementSchema(ma.SQLAlchemyAutoSchema):
+class DepartementSchema(SQLAlchemyAutoSchema):
     geom = fields.Method("get_geom")
     class Meta:
         model = Departement
         include_relationships = True
         load_instance = True
+    def get_geom(self, obj):
+        # Retourne un GeoJSON à partir de la géométrie PostGIS
+        return db.session.scalar(obj.geom.ST_AsGeoJSON()) if obj.geom else None
 
-class CommuneSchema(ma.SQLAlchemyAutoSchema):
+class CommuneSchema(SQLAlchemyAutoSchema):
     geom = fields.Method("get_geom")
 
     class Meta:
         model = Commune
         load_instance = True
-
-def get_geom(self, obj):
-    # Retourne un GeoJSON à partir de la géométrie PostGIS
-    return db.session.scalar(obj.geom.ST_AsGeoJSON()) if obj.geom else None
+    def get_geom(self, obj):
+        # Retourne un GeoJSON à partir de la géométrie PostGIS
+        return db.session.scalar(obj.geom.ST_AsGeoJSON()) if obj.geom else None

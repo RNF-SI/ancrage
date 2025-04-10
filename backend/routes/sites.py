@@ -1,15 +1,11 @@
-from app import db
+from models.models import db
 from flask import request, Blueprint, jsonify
 from models.models import *
 from schemas.geo import *
 from schemas.metier import *
-from datetime import datetime
+from routes import bp,date_time
 
-bp_sites = Blueprint('sites', __name__)
-now = datetime.now()
-date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-
-@bp_sites.route('/site/<id_site>', methods=['GET','PUT','DELETE'])
+@bp.route('/site/<id_site>', methods=['GET','PUT','DELETE'])
 def siteMethods(id_site):
     site = Site.query.filter_by(id_site=id_site).first()
     
@@ -34,7 +30,7 @@ def siteMethods(id_site):
         db.session.commit()
         return {"success": "Suppression terminée"}
     
-@bp_sites.route('/site',methods=['POST'])
+@bp.route('/site',methods=['POST'])
 def postSite():
     if request.method == 'POST': 
         
@@ -48,7 +44,7 @@ def postSite():
         db.session.commit()
         return getSite(site)
 
-@bp_sites.route('/sites',methods=['GET'])
+@bp.route('/sites',methods=['GET'])
 def getAllSites():
     if request.method == 'GET': 
         

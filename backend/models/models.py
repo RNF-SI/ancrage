@@ -1,9 +1,11 @@
 # Import du db défini dans app.py
-from app import db
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from geoalchemy2 import Geometry
 from sqlalchemy.dialects.postgresql import VARCHAR
+
+db = SQLAlchemy() # Lie notre app à SQLAlchemy
+
 
 
 class Region(db.Model):
@@ -117,6 +119,7 @@ class Acteur(db.Model):
     modified_at = db.Column(db.DateTime)
     created_by = db.Column(db.Integer)
     modified_by = db.Column(db.Integer)
+    commune = db.relationship("Commune", backref="acteurs")
 
 class Reponse(db.Model):
     __tablename__ = 't_reponses'
