@@ -8,6 +8,8 @@ infographies/info-1/images/Trac�-292-p-500.png
 infographies/info-1/images/*
 infographies/info-1/*
 backend/migrations/*
-backend/_pycache_/*
-backend/models/_pycache_/*
-backend/schemas/_pycache_/*
+backend/__pycache__/*
+backend/models/__pycache__/*
+backend/schemas/__pycache__/*
+backend/routes/__pycache__/*
+backend/app/__pycache__/*

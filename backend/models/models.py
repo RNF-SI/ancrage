@@ -1,5 +1,4 @@
 # Import du db défini dans app.py
-from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from geoalchemy2 import Geometry
 from sqlalchemy.dialects.postgresql import VARCHAR
@@ -58,13 +57,21 @@ class Site(db.Model):
     nom = db.Column(db.String, nullable=False)
     position_x = db.Column(db.String, nullable=False)
     position_y = db.Column(db.String, nullable=False)
-    diagnostics = db.relationship('Diagnostic', backref='site')
+    diagnostics = db.relationship('DiagnosticsSites', back_populates='site')
     type_id = db.Column(db.Integer)
     habitat_id = db.Column(db.Integer)
     created_at = db.Column(db.DateTime)
     modified_at = db.Column(db.DateTime)
     created_by = db.Column(db.Integer)
     modified_by = db.Column(db.Integer)
+
+class DiagnosticsSites(db.Model):
+    __tablename__ = 'cor_diagnostics_sites'
+    id_diagnostic_site = db.Column(db.Integer, primary_key=True)
+    site_id = db.Column(db.Integer, db.ForeignKey('t_sites.id_site'))
+    diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
+    site = db.relationship('Site', back_populates='diagnostics')
+    diagnostic = db.relationship('Diagnostic', back_populates='sites')
 
 class Diagnostic(db.Model):
     __tablename__ = 't_diagnostics'
@@ -73,13 +80,14 @@ class Diagnostic(db.Model):
     date_debut = db.Column(db.DateTime, nullable=False)
     date_fin = db.Column(db.DateTime)
     rapport = db.Column(db.Text)
-    site_id = db.Column(db.Integer, db.ForeignKey('t_sites.id_site'))
     created_at = db.Column(db.DateTime)
     modified_at = db.Column(db.DateTime)
     created_by = db.Column(db.Integer)
     acteurs = db.relationship('Acteur', backref='diagnostic')
     documents = db.relationship('Document', backref='diagnostic')
-    entretiens = db.relationship('Entretien', backref='diagnostic')
+    sites = db.relationship('DiagnosticsSites', back_populates='diagnostic')
+    statut_entretien_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
+    statut_entretien = db.relationship('Nomenclature', foreign_keys=[statut_entretien_id])
     
 
 class Document(db.Model):
@@ -87,19 +95,6 @@ class Document(db.Model):
     id_document = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String, nullable=False)
     diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
-
-class Entretien(db.Model):
-    __tablename__ = 't_entretiens'
-    id_entretien = db.Column(db.Integer, primary_key=True)
-    date_entretien = db.Column(db.DateTime, nullable=False)
-    contexte = db.Column(db.Integer, nullable=False)
-    statut_id = db.Column(db.Integer)
-    diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
-    created_at = db.Column(db.DateTime)
-    modified_at = db.Column(db.DateTime)
-    created_by = db.Column(db.Integer)
-    acteurs = db.relationship('Acteur', backref='entretien')
-    reponses = db.relationship('Reponse', backref='entretien')
 
 class Acteur(db.Model):
     __tablename__ = 't_acteurs'
@@ -114,19 +109,18 @@ class Acteur(db.Model):
     is_acteur_economique = db.Column(db.Boolean, nullable=False)
     structure = db.Column(db.String)
     diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
-    entretien_id = db.Column(db.Integer, db.ForeignKey('t_entretiens.id_entretien'))
     created_at = db.Column(db.DateTime)
     modified_at = db.Column(db.DateTime)
     created_by = db.Column(db.Integer)
     modified_by = db.Column(db.Integer)
     commune = db.relationship("Commune", backref="acteurs")
+    categories = db.relationship('CategoriesActeurs', back_populates='acteur')
 
 class Reponse(db.Model):
     __tablename__ = 't_reponses'
     id_reponse = db.Column(db.Integer, primary_key=True)
     mot_cle_id = db.Column(db.Integer)
     valeur_reponse_id = db.Column(db.Integer)
-    entretien_id = db.Column(db.Integer, db.ForeignKey('t_entretiens.id_entretien'))
     mots_cles = db.relationship('ReponseMotCle', back_populates='reponse')
 
 
@@ -155,3 +149,13 @@ class Nomenclature(db.Model):
     profil_cognitif_id = db.Column(db.Integer)
     statut_entretien_id = db.Column(db.Integer)
     habitat_id = db.Column(db.Integer)
+    categorie_acteur_id = db.Column(db.Integer)
+    acteurs = db.relationship('CategoriesActeurs', back_populates='categorie')
+
+class CategoriesActeurs(db.Model):
+    __tablename__ = 'cor_categories_acteurs'
+    id_categories_acteurs = db.Column(db.Integer, primary_key=True)
+    acteur_id = db.Column(db.Integer, db.ForeignKey('t_acteurs.id_acteur'))
+    categorie_acteur_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
+    categorie = db.relationship('Nomenclature', back_populates='acteurs')
+    acteur = db.relationship('Acteur', back_populates='categories')

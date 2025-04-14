@@ -57,7 +57,6 @@ def changeValuesDiagnostic(diagnostic,data):
     diagnostic.nom = data['nom']
     diagnostic.date_debut = data['date_debut']
     diagnostic.date_fin= data['date_fin']
-    diagnostic.rapport= data['rapport']
 
     return diagnostic
 
