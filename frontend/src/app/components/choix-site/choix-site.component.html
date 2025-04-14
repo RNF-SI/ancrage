@@ -8,25 +8,25 @@
                 Vous n'avez pas encore choisi de site.
             </p>
             <app-map></app-map>
-            <table  *ngFor="let item of sites">
-                <tr>
-                    <thead>
-                        <tr>
-                            <th>
-                                Nom site
-                            </th>
-                            <th>
-                                Régions
-                            </th>
-                            <th>
-                                Type
-                            </th>
-                            <th>
-        
-                            </th>
-                        </tr>
-                    </thead>
-                <tbody>
+            <table  >
+                
+                <thead>
+                    <tr>
+                        <th>
+                            Nom site
+                        </th>
+                        <th>
+                            Régions
+                        </th>
+                        <th>
+                            Type
+                        </th>
+                        <th>
+    
+                        </th>
+                    </tr>
+                </thead>
+                <tbody *ngFor="let item of sites">
                     <tr>
                         <td>
 

@@ -6,5 +6,6 @@ import { Component } from '@angular/core';
   styleUrls: ['./choix-site.component.css']
 })
 export class ChoixSiteComponent {
+sites: any;
 
 }
