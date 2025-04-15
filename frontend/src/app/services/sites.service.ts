@@ -23,6 +23,16 @@ export class SiteService {
 		);
 	}
 
+	getAllByUser(user_id:number): Observable<Site[]> {
+		return this.http.get<ISite[]>(this.GET_ALL_URL+'/'+user_id).pipe(
+			map(siteJsonArray => {
+				return siteJsonArray.map<Site>(
+					siteJson => Site.fromJson(siteJson)
+				)
+			})
+		);
+	}
+
 	get(id: number): Observable<Site> {
 		return this.http.get<ISite>(this.BASE_URL + id + '/').pipe(
 			map(siteJson => Site.fromJson(siteJson))

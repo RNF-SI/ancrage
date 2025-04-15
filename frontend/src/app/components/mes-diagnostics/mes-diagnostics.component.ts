@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, NgModule, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -8,6 +8,9 @@ import { Site } from '@app/models/site.model';
 import { SiteService } from '@app/services/sites.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { SitesDiagnosticsViewComponent } from '../sites-diagnostics-view/sites-diagnostics-view.component';
+import { User } from '@app/models/user.model';
+import { AuthGuardService } from '@app/home-rnf/services/auth-guard.service';
+import { AuthService } from '@app/home-rnf/services/auth-service.service';
 
 @Component({
   selector: 'app-mes-diagnostics',
@@ -20,22 +23,29 @@ import { SitesDiagnosticsViewComponent } from '../sites-diagnostics-view/sites-d
       FontAwesomeModule,
       MatCardModule,
       MatTooltipModule,
-      SitesDiagnosticsViewComponent
+      SitesDiagnosticsViewComponent,
+    
   ]
+  
 })
+
   export class MesDiagnosticsComponent implements OnInit{
     sites:Site[]=[];
     
     private siteService = inject(SiteService);
+    private authService= inject(AuthService);
+    private user_role_id:number=1;
     title="";
     
     ngOnInit(): void {
       this.title="Mes diagnostics";
-      this.getAllItems();
+      this.user_role_id = this.authService.getCurrentUser().id_role;
+      this.getAllItemsByUser(this.user_role_id);
     }
   
-    getAllItems():void{
-      this.siteService.getAll().subscribe(sites => {
+    getAllItemsByUser(user_id:number):void{
+      
+      this.siteService.getAllByUser(user_id).subscribe(sites => {
         console.log(sites);
         return this.sites = sites;
       });
