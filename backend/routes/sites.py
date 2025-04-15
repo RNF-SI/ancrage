@@ -53,6 +53,15 @@ def getAllSites():
         usersObj = schema.dump(sites)
         return jsonify(usersObj)
     
+@bp.route('/sites/<created_by>',methods=['GET'])
+def getAllSitesByUSer(created_by):
+    if request.method == 'GET': 
+        
+        sites = Site.query.filter_by(created_by=created_by).all()
+        schema = SiteSchema(many=True)
+        usersObj = schema.dump(sites)
+        return jsonify(usersObj)
+    
 def changeValuesSite(site,data):
     
     site.nom = data['nom']
