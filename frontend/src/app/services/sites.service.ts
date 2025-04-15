@@ -9,7 +9,7 @@ import { ISite } from '@app/interfaces/site.interface';
 })
 export class SiteService {
 
-	private GET_ALL_URL = 'http://localhost:5000/sites/';
+	private GET_ALL_URL = 'http://localhost:5000/sites';
 	private BASE_URL = 'http://localhost:5000/site/';
 	private http = inject(HttpClient);
 

@@ -60,7 +60,6 @@ export class AppComponent implements OnInit{
     console.log("preparing to load…")
     for (let i = 0; i < dynamicScripts.length; i++) {
       const node = document.createElement("script");
-      console.log(node);
       node.src = dynamicScripts[i];
       node.type = "text/javascript";
       node.async = false;

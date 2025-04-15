@@ -14,6 +14,9 @@ import { MatButtonModule} from '@angular/material/button';
 import { HomeRnfModule } from './home-rnf/home-rnf.module';
 import { RouterModule } from '@angular/router';
 import { ToastrModule } from 'ngx-toastr';
+import { fab } from '@fortawesome/free-brands-svg-icons';
+import { far } from '@fortawesome/free-regular-svg-icons';
+import { fas } from '@fortawesome/free-solid-svg-icons';
 
 // Components
 import { AncrageComponent } from './components/ancrage/ancrage.component';
@@ -26,6 +29,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { DiagosticsListeComponent } from './components/diagnostics-liste/diagnostics-liste.component';
 import { ChoixSiteComponent } from './components/choix-site/choix-site.component';
 import { MapComponent } from './components/map/map.component'; 
+import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 
 
 
@@ -38,7 +42,6 @@ import { MapComponent } from './components/map/map.component';
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
-    DiagosticsListeComponent,
     ChoixSiteComponent,
     MapComponent
   ],
@@ -54,13 +57,23 @@ import { MapComponent } from './components/map/map.component';
     HomeRnfModule,
     RouterModule,
     NgbModule,
+    DiagosticsListeComponent,
     ToastrModule.forRoot({
       timeOut: 15000
     }),
+  
   ],
   providers: [
     
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule { 
+   constructor(library: FaIconLibrary) {
+      library.addIconPacks(
+        fab,
+        fas,
+        far
+      );
+    }
+}
