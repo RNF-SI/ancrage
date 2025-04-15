@@ -9,9 +9,12 @@ class SiteSchema(SQLAlchemyAutoSchema):
         include_relationships = True
         load_instance = True
 
-    diagnostics = fields.Nested(lambda: SitesDiagnosticsSchema, many=True, exclude=("site",))
+    type = fields.Nested(lambda: NomenclatureSchema)
+    diagnostics = fields.Method("get_diagnostics_flat")
 
-
+    def get_diagnostics_flat(self, obj):
+        return [DiagnosticLiteSchema().dump(ds.diagnostic) for ds in obj.diagnostics if ds.diagnostic]
+    
 class SitesDiagnosticsSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = DiagnosticsSites
@@ -19,7 +22,7 @@ class SitesDiagnosticsSchema(SQLAlchemyAutoSchema):
         load_instance = True
 
     site = fields.Nested(lambda: SiteSchema, exclude=("diagnostics",))
-    diagnostic = fields.Nested(lambda: DiagnosticLiteSchema, exclude=("sites",))
+    diagnostic = fields.Nested(lambda: DiagnosticSchema, exclude=("sites",))
 
 
 class DiagnosticSchema(SQLAlchemyAutoSchema):
@@ -30,7 +33,10 @@ class DiagnosticSchema(SQLAlchemyAutoSchema):
 
     acteurs = fields.Nested(lambda: ActeurSchema, many=True, exclude=('diagnostic',))
     documents = fields.Nested(lambda: DocumentSchema, many=True, exclude=("diagnostic",))
-    sites = fields.Nested(lambda: SitesDiagnosticsSchema, many=True, exclude=("diagnostic",))
+    sites = fields.Method("get_sites_flat")
+
+    def get_sites_flat(self, obj):
+        return [SiteSchema().dump(ds.site) for ds in obj.sites]
 
 class DiagnosticLiteSchema(SQLAlchemyAutoSchema):
     class Meta:

@@ -5,8 +5,6 @@ from sqlalchemy.dialects.postgresql import VARCHAR
 
 db = SQLAlchemy() # Lie notre app à SQLAlchemy
 
-
-
 class Region(db.Model):
     __tablename__ = 't_regions'
 
@@ -58,8 +56,9 @@ class Site(db.Model):
     position_x = db.Column(db.String, nullable=False)
     position_y = db.Column(db.String, nullable=False)
     diagnostics = db.relationship('DiagnosticsSites', back_populates='site')
-    type_id = db.Column(db.Integer)
-    habitat_id = db.Column(db.Integer)
+    type_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
+    type = db.relationship('Nomenclature', foreign_keys=[type_id], backref='sites_as_type')
+    is_read_only = db.Column(db.Boolean,default='0')
     created_at = db.Column(db.DateTime)
     modified_at = db.Column(db.DateTime)
     created_by = db.Column(db.Integer)
@@ -79,7 +78,6 @@ class Diagnostic(db.Model):
     nom = db.Column(db.String, nullable=False)
     date_debut = db.Column(db.DateTime, nullable=False)
     date_fin = db.Column(db.DateTime)
-    rapport = db.Column(db.Text)
     created_at = db.Column(db.DateTime)
     modified_at = db.Column(db.DateTime)
     created_by = db.Column(db.Integer)
@@ -143,13 +141,8 @@ class Nomenclature(db.Model):
     __tablename__ = 't_nomenclatures'
     id_nomenclature = db.Column('id_nomenclature', db.Integer, primary_key=True)
     label = db.Column(db.String)
-    type_site_id = db.Column(db.Integer)
     value = db.Column(db.Integer)
     mnemonique = db.Column(db.String)
-    profil_cognitif_id = db.Column(db.Integer)
-    statut_entretien_id = db.Column(db.Integer)
-    habitat_id = db.Column(db.Integer)
-    categorie_acteur_id = db.Column(db.Integer)
     acteurs = db.relationship('CategoriesActeurs', back_populates='categorie')
 
 class CategoriesActeurs(db.Model):
