@@ -15,6 +15,7 @@ import { LogoutLinkService } from './home-rnf/services/logout-link.service';
 import { LazyDialogLoader } from './home-rnf/services/lazy-dialog-loader.service';
 import { DiagosticsListeComponent } from './components/diagnostics-liste/diagnostics-liste.component';
 import { ChoixSiteComponent } from './components/choix-site/choix-site.component';
+import { MesDiagnosticsComponent } from './components/mes-diagnostics/mes-diagnostics.component';
 
 const routes: Routes = [ { 
   path: '', 
@@ -51,6 +52,11 @@ const routes: Routes = [ {
     {
       path: 'diagnostics-liste',
       component: DiagosticsListeComponent,
+      canActivate: [AuthGuardService]
+    },
+    {
+      path: 'mes-diagnostics',
+      component: MesDiagnosticsComponent,
       canActivate: [AuthGuardService]
     },
     {

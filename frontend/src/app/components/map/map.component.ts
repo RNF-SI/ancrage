@@ -4,6 +4,7 @@ import * as L from 'leaflet';
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
+  standalone: true,
   styleUrls: ['./map.component.css'] // ou scss
 })
 export class MapComponent implements AfterViewInit {

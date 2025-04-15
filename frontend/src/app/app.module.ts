@@ -30,7 +30,8 @@ import { DiagosticsListeComponent } from './components/diagnostics-liste/diagnos
 import { ChoixSiteComponent } from './components/choix-site/choix-site.component';
 import { MapComponent } from './components/map/map.component'; 
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
-
+import { SitesDiagnosticsViewComponent } from './components/sites-diagnostics-view/sites-diagnostics-view.component';
+import { MesDiagnosticsComponent } from './components/mes-diagnostics/mes-diagnostics.component';
 
 
 @NgModule({
@@ -42,8 +43,7 @@ import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
-    ChoixSiteComponent,
-    MapComponent
+    
   ],
   imports: [
     BrowserModule,
@@ -58,6 +58,10 @@ import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
     RouterModule,
     NgbModule,
     DiagosticsListeComponent,
+    SitesDiagnosticsViewComponent,
+    MapComponent,
+    ChoixSiteComponent,
+    MesDiagnosticsComponent,
     ToastrModule.forRoot({
       timeOut: 15000
     }),

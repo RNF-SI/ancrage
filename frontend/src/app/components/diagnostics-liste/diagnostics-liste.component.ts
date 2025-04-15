@@ -8,6 +8,7 @@ import { Site } from '@app/models/site.model';
 import { SiteService } from '@app/services/sites.service';
 import { Subscription, switchMap, of } from 'rxjs';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { SitesDiagnosticsViewComponent } from "../sites-diagnostics-view/sites-diagnostics-view.component";
 
 @Component({
   selector: 'app-diagostics-liste',
@@ -17,24 +18,27 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
   imports: [
     CommonModule,
     MatButtonModule,
-	FontAwesomeModule,
-	MatCardModule,
-	MatTooltipModule
-  ]
+    FontAwesomeModule,
+    MatCardModule,
+    MatTooltipModule,
+    SitesDiagnosticsViewComponent
+]
 })
 export class DiagosticsListeComponent implements OnInit{
-  	diagnostics: Diagnostic[] = []; 
 	sites:Site[]=[];
-	titleBtnCreaDiag = "Nouveau diagnostic";
-	infobulleCreaDiagFromSite="Ce bouton vous dirige directement vers le choix des acteurs. Le site indiqué sur cette ligne sera présélectionné.";
-	infobulleCreaDiagFromScratch = "Utilisez ce bouton si le diagnostic comprend plusieurs sites ou si le site ciblé n'est pas dans la liste ci-dessous.";
+	
 	private siteService = inject(SiteService);
+	title="";
 	
   	ngOnInit(): void {
-		this.titleBtnCreaDiag="Nouveau diagnostic";
+		this.title="Diagnostics";
+		this.getAllItems();
+	}
+
+	getAllItems():void{
 		this.siteService.getAll().subscribe(sites => {
 			console.log(sites);
-			this.sites = sites;
+			return this.sites = sites;
 		});
 	}
 

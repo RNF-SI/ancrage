@@ -9,8 +9,8 @@ export class Diagnostic implements IDiagnostic {
 	date_debut?= new Date();
 	date_debut_str?: string ="";
 	date_fin: Date | undefined;
-	rapport: string = "";
 	sites: Site[] = [];
+	is_read_only=false;
 	created_at_str?: string = "";
 	created_at?= new Date();
 	modified_at: Date | undefined;
@@ -25,7 +25,7 @@ export class Diagnostic implements IDiagnostic {
 		diag.date_debut = data.date_debut ? new Date(data.date_debut) : undefined;
 		diag.date_debut_str = data.date_debut ? moment(new Date(data.date_debut)).format("DD/MM/YYYY") : undefined;
 		diag.date_fin = data.date_fin ? new Date(data.date_fin) : undefined;
-		diag.rapport = data.rapport;
+		diag.is_read_only = data.is_read_only;
 		diag.sites = (data.sites || []).map(s => Site.fromJson(s));
 		diag.created_at = data.created_at ? new Date(data.created_at) : undefined;
 		diag.modified_at = data.modified_at ? new Date(data.modified_at) : undefined;
@@ -43,7 +43,7 @@ export class Diagnostic implements IDiagnostic {
 			date_debut: this.date_debut ? this.date_debut : undefined,
 			date_debut_str: this.date_debut ? moment(new Date(this.date_debut)).format("DD/MM/YYYY") : undefined,
 			date_fin: this.date_fin ? this.date_fin.toISOString() : undefined,
-			rapport: this.rapport,
+			is_read_only: this.is_read_only,
 			sites: this.sites.map(s => s.toJson()),
 			created_at: this.created_at ? this.created_at.toISOString() : undefined,
 			modified_at: this.modified_at ? this.modified_at.toISOString() : undefined,
