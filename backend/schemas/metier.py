@@ -17,13 +17,14 @@ class RegionSchema(SQLAlchemyAutoSchema):
 class DepartementSchema(SQLAlchemyAutoSchema):
     geom = fields.Method("get_geom")
     region = fields.Nested(lambda: RegionSchema, exclude=("departements",))
-    sites = fields.Nested(lambda:SitesDepartementsSchema, many=True)
+    sites = fields.Nested(lambda: SitesDepartementsSchema, many=True, exclude=("departement",))
+
     class Meta:
         model = Departement
         include_relationships = True
         load_instance = True
+
     def get_geom(self, obj):
-        # Retourne un GeoJSON à partir de la géométrie PostGIS
         return db.session.scalar(obj.geom.ST_AsGeoJSON()) if obj.geom else None
 
 class CommuneSchema(SQLAlchemyAutoSchema):
@@ -43,9 +44,10 @@ class SiteSchema(SQLAlchemyAutoSchema):
         include_relationships = True
         load_instance = True
 
-    type = fields.Nested(lambda: NomenclatureSchema)
+    type = fields.Nested(lambda: NomenclatureSchema, exclude=("sites",))
     diagnostics = fields.Method("get_diagnostics_flat")
     departements = fields.Nested(lambda: SitesDepartementsSchema, many=True, exclude=("site",))
+    habitats = fields.Nested(lambda: SitesHabitatsSchema, many=True, exclude=("site",))  # Ajouté si nécessaire
 
     def get_diagnostics_flat(self, obj):
         return [DiagnosticLiteSchema().dump(ds.diagnostic) for ds in obj.diagnostics if ds.diagnostic]
@@ -65,7 +67,7 @@ class SitesDepartementsSchema(SQLAlchemyAutoSchema):
         include_relationships = True
         load_instance = True
 
-    site = fields.Nested(lambda: SiteSchema, exclude=("departements",))
+    site = fields.Nested(lambda: SiteSchema, exclude=("departements", "diagnostics", "habitats"))
     departement = fields.Nested(lambda: DepartementSchema, exclude=("sites",))
 
 class SitesHabitatsSchema(SQLAlchemyAutoSchema):
@@ -74,7 +76,7 @@ class SitesHabitatsSchema(SQLAlchemyAutoSchema):
         include_relationships = True
         load_instance = True
 
-    site = fields.Nested(lambda: SiteSchema, exclude=("departements",))
+    site = fields.Nested(lambda: SiteSchema, exclude=("habitats", "departements", "diagnostics"))
     habitat = fields.Nested(lambda: NomenclatureSchema, exclude=("sites",))
 
 
@@ -165,5 +167,6 @@ class NomenclatureSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Nomenclature
         load_instance = True
-    acteurs = fields.Nested(lambda: ActeurSchema, many=True)
+
+    acteurs = fields.Nested(lambda: ActeurSchema, many=True, exclude=("categories", "diagnostic"))
     sites = fields.Nested(lambda: SitesHabitatsSchema, many=True, exclude=("habitat",))

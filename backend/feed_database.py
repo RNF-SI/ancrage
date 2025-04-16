@@ -132,15 +132,22 @@ with app.app_context():
     # Lien Sites-Départements (relation cor_site_departement)
     # ---------------------
     for site in sites:
+        # Lien avec un département obligatoire
+        departement = random.choice(departements)
+        site.insee_reg = departement.insee_reg  # Attribution directe de la région via le département
+
         sd = SiteDepartement(
             site_id=site.id_site,
-            departement_id=random.choice(departements).id_departement
+            departement_id=departement.id_departement
         )
         db.session.add(sd)
+
+        # Lien avec au moins un habitat (entre 1 et 3)
         nb_habitats = random.randint(1, 3)
         for h in random.sample(habitat_nomenclatures, nb_habitats):
             sh = SiteHabitat(site_id=site.id_site, habitat_id=h.id_nomenclature)
             db.session.add(sh)
+
     db.session.commit()
 
     # ---------------------
