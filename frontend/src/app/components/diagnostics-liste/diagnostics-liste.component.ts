@@ -28,22 +28,18 @@ export class DiagosticsListeComponent implements OnInit{
 	sites:Site[]=[];
 	
 	private siteService = inject(SiteService);
+	private sitesSub!: Subscription;
 	title="";
 	
   	ngOnInit(): void {
 		this.title="Diagnostics";
-		this.getAllItems();
-	}
-
-	getAllItems():void{
-		this.siteService.getAll().subscribe(sites => {
-			console.log(sites);
+		this.sitesSub = this.siteService.getAll().subscribe(sites => {
 			return this.sites = sites;
-		});
+		});;
 	}
 
 	ngOnDestroy(): void {
-		
+		this.sitesSub?.unsubscribe();
 	}
   
   modifyDiagnostic(diagnostic: Diagnostic) {

@@ -11,6 +11,7 @@ import { SitesDiagnosticsViewComponent } from '../sites-diagnostics-view/sites-d
 import { User } from '@app/models/user.model';
 import { AuthGuardService } from '@app/home-rnf/services/auth-guard.service';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-mes-diagnostics',
@@ -35,20 +36,20 @@ import { AuthService } from '@app/home-rnf/services/auth-service.service';
     private siteService = inject(SiteService);
     private authService= inject(AuthService);
     private user_role_id:number=1;
+    private sitesSub!:Subscription;
     title="";
     
     ngOnInit(): void {
       this.title="Mes diagnostics";
       this.user_role_id = this.authService.getCurrentUser().id_role;
-      this.getAllItemsByUser(this.user_role_id);
+      this.sitesSub =  this.siteService.getAllByUser(this.user_role_id).subscribe(sites => {
+        return this.sites = sites;
+      });
     }
   
     getAllItemsByUser(user_id:number):void{
       
-      this.siteService.getAllByUser(user_id).subscribe(sites => {
-        console.log(sites);
-        return this.sites = sites;
-      });
+      
     }
   
     ngOnDestroy(): void {

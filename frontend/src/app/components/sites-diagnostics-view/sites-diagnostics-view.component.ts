@@ -5,13 +5,14 @@ import { MatCardModule } from "@angular/material/card";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { Site } from "@app/models/site.model";
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-sites-diagnostics-view',
   templateUrl: './sites-diagnostics-view.component.html',
   styleUrls: ['./sites-diagnostics-view.component.css'],
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatTooltipModule, FontAwesomeModule],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatTooltipModule, FontAwesomeModule,RouterModule],
 })
 export class SitesDiagnosticsViewComponent {
   @Input() sites: Site[] = [];

@@ -2,7 +2,7 @@
     <div class="row">
         <div class="col-3"></div>
         <div class="col-6  text-center">
-            <button mat-raised-button id="creaBtn"class="col-6" color="accent">{{titleBtnCreaDiag}}</button>
+            <button mat-raised-button id="creaBtn"class="col-6" color="accent" [routerLink]="['/choix-site']">{{titleBtnCreaDiag}}</button>
         </div>
         <div class="col-3">
             <button mat-icon-button [matTooltip]="infobulleCreaDiagFromScratch" aria-label="Info création" color="primary">
