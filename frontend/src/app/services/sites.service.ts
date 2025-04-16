@@ -3,14 +3,14 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Site } from '@app/models/site.model';
 import { ISite } from '@app/interfaces/site.interface';
-
+import { environment } from 'src/environments/environment';
 @Injectable({
 	providedIn: 'root'
 })
 export class SiteService {
 
-	private GET_ALL_URL = 'http://localhost:5000/sites';
-	private BASE_URL = 'http://localhost:5000/site/';
+	private GET_ALL_URL = environment.flask_server+'sites';
+	private BASE_URL = environment.flask_server+'site/';
 	private http = inject(HttpClient);
 
 	getAll(): Observable<Site[]> {
