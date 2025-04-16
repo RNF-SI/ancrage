@@ -1,5 +1,5 @@
 from app import create_app
-from models.models import db,Acteur, CategoriesActeurs, Commune, Departement, Diagnostic, DiagnosticsSites, MotCle, Nomenclature, Region, Reponse, ReponseMotCle, Site, SiteDepartement
+from models.models import SiteHabitat, db,Acteur, CategoriesActeurs, Commune, Departement, Diagnostic, DiagnosticsSites, MotCle, Nomenclature, Region, Reponse, ReponseMotCle, Site, SiteDepartement
 from datetime import datetime, timedelta
 import random
 import string
@@ -21,7 +21,7 @@ with app.app_context():
     nomenclatures = []
     for i in range(10):
         n = Nomenclature(
-            label=f"Nomenclature {i}",
+            libelle=f"Nomenclature {i}",
             value=i,
             mnemonique=random_string(5)
         )
@@ -112,13 +112,13 @@ with app.app_context():
     # Sites
     # ---------------------
     sites = []
+    habitat_nomenclatures = random.sample(nomenclatures, k=min(5, len(nomenclatures)))
     for i in range(10):
         s = Site(
             nom=f"Site {i}",
             position_x=str(random.uniform(1, 100)),
             position_y=str(random.uniform(1, 100)),
             type_id=random.choice(nomenclatures).id_nomenclature,
-            habitat_id=random.choice(nomenclatures).id_nomenclature,
             created_at=datetime.now(),
             modified_at=datetime.now(),
             created_by=random.randint(1, 5),
@@ -137,6 +137,10 @@ with app.app_context():
             departement_id=random.choice(departements).id_departement
         )
         db.session.add(sd)
+        nb_habitats = random.randint(1, 3)
+        for h in random.sample(habitat_nomenclatures, nb_habitats):
+            sh = SiteHabitat(site_id=site.id_site, habitat_id=h.id_nomenclature)
+            db.session.add(sh)
     db.session.commit()
 
     # ---------------------
@@ -148,7 +152,7 @@ with app.app_context():
             nom=f"Diagnostic {i}",
             date_debut=random_date(),
             date_fin=random_date(0, 50),
-            rapport="Lorem ipsum",
+            is_read_only=False,
             created_at=datetime.now(),
             modified_at=datetime.now(),
             created_by=random.randint(1, 5),

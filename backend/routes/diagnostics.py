@@ -1,7 +1,6 @@
 from models.models import db
 from flask import request, jsonify
 from models.models import *
-from schemas.geo import *
 from schemas.metier import *
 from routes import bp,date_time
 

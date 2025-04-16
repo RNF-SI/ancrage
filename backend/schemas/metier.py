@@ -1,7 +1,41 @@
-from schemas.geo import CommuneSchema,DepartementSchema
-from models.models import Acteur, Diagnostic, Document, MotCle, Nomenclature, Reponse, ReponseMotCle, Site,DiagnosticsSites,CategoriesActeurs,SiteDepartement
+from models.models import Acteur, Diagnostic, Document, MotCle, Nomenclature, Reponse, ReponseMotCle, Site,DiagnosticsSites,CategoriesActeurs,SiteDepartement, SiteHabitat,Region,Departement,Commune,db
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from marshmallow import fields
+
+class RegionSchema(SQLAlchemyAutoSchema):
+    departements = fields.Nested(lambda: DepartementSchema, many=True, exclude=("region",))
+    geom = fields.Method("get_geom")
+    class Meta:
+        model = Region
+        include_relationships = True
+        load_instance = True
+    def get_geom(self, obj):
+        # Retourne un GeoJSON à partir de la géométrie PostGIS
+        return db.session.scalar(obj.geom.ST_AsGeoJSON()) if obj.geom else None
+ 
+
+class DepartementSchema(SQLAlchemyAutoSchema):
+    geom = fields.Method("get_geom")
+    region = fields.Nested(lambda: RegionSchema, exclude=("departements",))
+    sites = fields.Nested(lambda:SitesDepartementsSchema, many=True)
+    class Meta:
+        model = Departement
+        include_relationships = True
+        load_instance = True
+    def get_geom(self, obj):
+        # Retourne un GeoJSON à partir de la géométrie PostGIS
+        return db.session.scalar(obj.geom.ST_AsGeoJSON()) if obj.geom else None
+
+class CommuneSchema(SQLAlchemyAutoSchema):
+    geom = fields.Method("get_geom")
+
+    class Meta:
+        model = Commune
+        load_instance = True
+    def get_geom(self, obj):
+        # Retourne un GeoJSON à partir de la géométrie PostGIS
+        return db.session.scalar(obj.geom.ST_AsGeoJSON()) if obj.geom else None
+
 
 class SiteSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -11,7 +45,7 @@ class SiteSchema(SQLAlchemyAutoSchema):
 
     type = fields.Nested(lambda: NomenclatureSchema)
     diagnostics = fields.Method("get_diagnostics_flat")
-    departements = fields.Nested(lambda: DepartementSchema, many=True, exclude=("site",))
+    departements = fields.Nested(lambda: SitesDepartementsSchema, many=True, exclude=("site",))
 
     def get_diagnostics_flat(self, obj):
         return [DiagnosticLiteSchema().dump(ds.diagnostic) for ds in obj.diagnostics if ds.diagnostic]
@@ -31,8 +65,17 @@ class SitesDepartementsSchema(SQLAlchemyAutoSchema):
         include_relationships = True
         load_instance = True
 
-    site = fields.Nested(lambda: SiteSchema, exclude=("ddepartements",))
+    site = fields.Nested(lambda: SiteSchema, exclude=("departements",))
     departement = fields.Nested(lambda: DepartementSchema, exclude=("sites",))
+
+class SitesHabitatsSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = SiteHabitat
+        include_relationships = True
+        load_instance = True
+
+    site = fields.Nested(lambda: SiteSchema, exclude=("departements",))
+    habitat = fields.Nested(lambda: NomenclatureSchema, exclude=("sites",))
 
 
 class DiagnosticSchema(SQLAlchemyAutoSchema):
@@ -123,3 +166,4 @@ class NomenclatureSchema(SQLAlchemyAutoSchema):
         model = Nomenclature
         load_instance = True
     acteurs = fields.Nested(lambda: ActeurSchema, many=True)
+    sites = fields.Nested(lambda: SitesHabitatsSchema, many=True, exclude=("habitat",))

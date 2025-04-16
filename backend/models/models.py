@@ -73,10 +73,19 @@ class Site(db.Model):
     type_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     type = db.relationship('Nomenclature', foreign_keys=[type_id], backref='sites_as_type')
     departements = db.relationship('SiteDepartement', back_populates='site')
+    habitats = db.relationship('SiteHabitat', back_populates='site')
     created_at = db.Column(db.DateTime)
     modified_at = db.Column(db.DateTime)
     created_by = db.Column(db.Integer)
     modified_by = db.Column(db.Integer)
+
+class SiteHabitat(db.Model):
+    __tablename__ = 'cor_site_habitat'
+    id_site_habitat = db.Column(db.Integer, primary_key=True)
+    site_id = db.Column(db.Integer, db.ForeignKey('t_sites.id_site'))
+    habitat_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
+    site = db.relationship('Site', back_populates='habitats')
+    habitat = db.relationship('Nomenclature', back_populates='sites')
 
 class DiagnosticsSites(db.Model):
     __tablename__ = 'cor_diagnostics_sites'
@@ -154,9 +163,10 @@ class MotCle(db.Model):
 class Nomenclature(db.Model):
     __tablename__ = 't_nomenclatures'
     id_nomenclature = db.Column('id_nomenclature', db.Integer, primary_key=True)
-    label = db.Column(db.String)
+    libelle = db.Column(db.String)
     value = db.Column(db.Integer)
     mnemonique = db.Column(db.String)
+    sites = db.relationship('SiteHabitat', back_populates='habitat')
     acteurs = db.relationship('CategoriesActeurs', back_populates='categorie')
 
 class CategoriesActeurs(db.Model):
