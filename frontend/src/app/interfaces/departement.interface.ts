@@ -1,5 +1,5 @@
-import { Commune } from "@app/models/commune.model";
-import { Region } from "@app/models/region.model";
+import { IRegion } from "./region.interface";
+import { ICommune } from "./commune.interface";
 
 export interface IDepartement {
     id_departement:number;
@@ -7,6 +7,6 @@ export interface IDepartement {
     nom_dep:string;
     insee_dep:string;
     insee_reg:string;
-    communes:Commune[];
-    region:Region;
+    communes?:ICommune[];
+    region:IRegion;
 }

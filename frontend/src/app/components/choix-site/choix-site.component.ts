@@ -17,7 +17,7 @@ import { Subscription } from 'rxjs';
 })
 export class ChoixSiteComponent {
  
-  displayedColumns: string[] = ['nom', /* 'regions', */ 'type'];
+  displayedColumns: string[] = ['nom', 'departements','regions', 'type'];
 
   sites:Site[]=[];
     
