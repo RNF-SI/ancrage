@@ -17,7 +17,7 @@ import { Subscription } from 'rxjs';
 })
 export class ChoixSiteComponent {
  
-  displayedColumns: string[] = ['nom', 'region', 'type', ''];
+  displayedColumns: string[] = ['nom', /* 'regions', */ 'type'];
 
   sites:Site[]=[];
     
@@ -25,10 +25,11 @@ export class ChoixSiteComponent {
   private sitesSub!: Subscription;
   title="Choisir les sites";
   titleChosenSites="Sites choisis";
-  
+
   ngOnInit(): void {
     
     this.sitesSub = this.siteService.getAll().subscribe(sites => {
+      console.log(sites);
       return this.sites = sites;
     });;
   }

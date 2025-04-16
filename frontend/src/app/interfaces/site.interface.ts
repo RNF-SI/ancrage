@@ -1,5 +1,8 @@
 import { Diagnostic } from "@app/models/diagnostic.model";
 import { Nomenclature } from "@app/models/nomenclature.model";
+import { Region } from "@app/models/region.model";
+import { IDepartement } from "./departement.interface";
+import { IDiagnostic } from "./diagnostic.interface";
 
 export interface ISite {
    
@@ -8,7 +11,8 @@ export interface ISite {
     position_x:string;
     position_y:string;
     type:Nomenclature;
-    diagnostics:Diagnostic[];
+    diagnostics:IDiagnostic[];
+    departements:IDepartement[];
     habitats:Nomenclature[];
     created_at:Date | undefined;
     modified_at:Date | undefined;

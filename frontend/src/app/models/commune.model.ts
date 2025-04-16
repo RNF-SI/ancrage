@@ -12,21 +12,6 @@ export class Commune implements ICommune{
     region = new Region();
     departement = new Departement();
 
-    /** Copie profonde de l'objet */
-    copy(): Commune {
-        const copy = new Commune();
-
-        copy.id_commune = this.id_commune;
-        copy.id = this.id;
-        copy.nom_com = this.nom_com;
-        copy.insee_com = this.insee_com;
-        copy.insee_dep = this.insee_dep;
-        copy.insee_reg = this.insee_reg;
-        copy.region = this.region.copy();
-        copy.departement = this.departement.copy();
-
-        return copy;
-    }
 
     /** Création depuis un JSON brut (avec reconversion des objets internes et dates) */
     static fromJson(data: ICommune): Commune {
@@ -55,8 +40,8 @@ export class Commune implements ICommune{
             insee_com: this.insee_com,
             insee_dep: this.insee_dep,
             insee_reg: this.insee_reg,
-            region: this.region.copy(),
-            departement: this.departement.copy()
+            region: this.region.toJson(),
+            departement: this.departement.toJson()
         };
     
         return json;

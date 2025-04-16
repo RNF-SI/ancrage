@@ -1,6 +1,7 @@
 import { ISite } from "@app/interfaces/site.interface";
 import { Diagnostic } from "./diagnostic.model";
 import { Nomenclature } from "./nomenclature.model";
+import { Departement } from "./departement.model";
 
 export class Site implements ISite {
 	id_site: number = 1;
@@ -9,6 +10,7 @@ export class Site implements ISite {
 	position_y: string = "";
 	diagnostics: Diagnostic[] = [];
 	habitats: Nomenclature[] = [];
+	departements:Departement[] = [];
 	type: Nomenclature = new Nomenclature();
 	created_at: Date | undefined;
 	modified_at: Date | undefined;
@@ -25,7 +27,8 @@ export class Site implements ISite {
 		site.position_y = data.position_y;
 		site.diagnostics = (data.diagnostics || []).map(d => Diagnostic.fromJson(d));
 		site.habitats = (data.habitats || []).map(h => Nomenclature.fromJson(h));
-		/* site.type = Nomenclature.fromJson(data.type); */
+		site.type = Nomenclature.fromJson(data.type);
+		site.departements = (data.departements || []).map(h => Departement.fromJson(h));
 		site.created_at = data.created_at ? new Date(data.created_at) : undefined;
 		site.modified_at = data.modified_at ? new Date(data.modified_at) : undefined;
 		site.created_by = data.created_by;
@@ -40,6 +43,7 @@ export class Site implements ISite {
 			...this,
 			diagnostics: this.diagnostics.map(d => d.toJson()),
 			habitats: this.habitats.map(h => h.toJson()),
+			departements: this.departements.map(h => h.toJson()),
 			type: this.type.toJson(),
 			created_at: this.created_at ? new Date(this.created_at) : undefined,
 			modified_at: this.modified_at ? new Date(this.modified_at) : undefined,
