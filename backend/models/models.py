@@ -8,29 +8,43 @@ db = SQLAlchemy() # Lie notre app à SQLAlchemy
 class Region(db.Model):
     __tablename__ = 't_regions'
 
-    id_region = db.Column(db.String, primary_key=True)
+    id_region = db.Column(db.Integer, primary_key=True)
     geom = db.Column(Geometry('MULTIPOLYGON', srid=4326))
     id_reg = db.Column(VARCHAR(24))
     nom_reg_m = db.Column(VARCHAR(35))
     nom_reg = db.Column(VARCHAR(35))
-    insee_reg = db.Column(VARCHAR(2))
+    insee_reg = db.Column(VARCHAR(2),unique=True)
 
-    departements = db.relationship('Departement', backref='region', primaryjoin='Region.insee_reg == foreign(Departement.insee_reg)', lazy=True)
-
+    departements = db.relationship(
+        'Departement',
+        back_populates='region'
+    )
 
 class Departement(db.Model):
     __tablename__ = 't_departement'
 
-    id_departement = db.Column(db.String, primary_key=True)
+    id_departement = db.Column(db.Integer, primary_key=True)
     geom = db.Column(Geometry('MULTIPOLYGON', srid=4326))
     id_dep = db.Column(VARCHAR(24))
     nom_dep_m = db.Column(VARCHAR(30))
     nom_dep = db.Column(VARCHAR(30))
-    insee_dep = db.Column(VARCHAR(3))
-    insee_reg = db.Column(VARCHAR(2))
+    insee_dep = db.Column(VARCHAR(3),unique=True)
+    insee_reg = db.Column(VARCHAR(2),db.ForeignKey('t_regions.insee_reg'))
+    sites = db.relationship('SiteDepartement', back_populates='departement')
+    region = db.relationship('Region', back_populates='departements')
+    communes = db.relationship(
+        'Commune',
+        back_populates='departement',
+        lazy=True
+    )
 
-    communes = db.relationship('Commune', backref='departement', primaryjoin='Departement.insee_dep == foreign(Commune.insee_dep)', lazy=True)
-
+class SiteDepartement(db.Model):
+    __tablename__ = 'cor_site_departement'
+    id_site_departement = db.Column(db.Integer, primary_key=True)
+    site_id = db.Column(db.Integer, db.ForeignKey('t_sites.id_site'))
+    departement_id = db.Column(db.Integer, db.ForeignKey('t_departement.id_departement'))
+    site = db.relationship('Site', back_populates='departements')
+    departement = db.relationship('Departement', back_populates='sites')
 
 class Commune(db.Model):
     __tablename__ = 't_communes'
@@ -39,15 +53,15 @@ class Commune(db.Model):
     geom = db.Column(Geometry('MULTIPOLYGON', srid=4326))
     nom_com = db.Column(VARCHAR(50))
     nom_com_m = db.Column(VARCHAR(50))
-    insee_com = db.Column(VARCHAR(5))
+    insee_com = db.Column(VARCHAR(5),unique=True)
     statut = db.Column(VARCHAR(24))
     population = db.Column(db.Integer)
     insee_can = db.Column(VARCHAR(5))
     insee_arr = db.Column(VARCHAR(2))
-    insee_dep = db.Column(VARCHAR(3))
+    insee_dep = db.Column(VARCHAR(3),db.ForeignKey('t_departement.insee_dep'))
+    departement = db.relationship('Departement', back_populates='communes')
     insee_reg = db.Column(VARCHAR(2))
     code_epci = db.Column(VARCHAR(20))
-
 
 class Site(db.Model):
     __tablename__ = 't_sites'
@@ -58,6 +72,7 @@ class Site(db.Model):
     diagnostics = db.relationship('DiagnosticsSites', back_populates='site')
     type_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     type = db.relationship('Nomenclature', foreign_keys=[type_id], backref='sites_as_type')
+    departements = db.relationship('SiteDepartement', back_populates='site')
     created_at = db.Column(db.DateTime)
     modified_at = db.Column(db.DateTime)
     created_by = db.Column(db.Integer)
@@ -87,7 +102,6 @@ class Diagnostic(db.Model):
     statut_entretien_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     statut_entretien = db.relationship('Nomenclature', foreign_keys=[statut_entretien_id])
     
-
 class Document(db.Model):
     __tablename__ = 't_documents'
     id_document = db.Column(db.Integer, primary_key=True)

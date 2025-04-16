@@ -4,6 +4,7 @@ from models.models import db
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 
 class RegionSchema(SQLAlchemyAutoSchema):
+    departements = fields.Nested(lambda: DepartementSchema, many=True, exclude=("region",))
     geom = fields.Method("get_geom")
     class Meta:
         model = Region
@@ -16,6 +17,7 @@ class RegionSchema(SQLAlchemyAutoSchema):
 
 class DepartementSchema(SQLAlchemyAutoSchema):
     geom = fields.Method("get_geom")
+    region = fields.Nested(lambda: RegionSchema, exclude=("departements",))
     class Meta:
         model = Departement
         include_relationships = True

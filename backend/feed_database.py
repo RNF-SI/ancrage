@@ -1,5 +1,5 @@
 from app import create_app
-from models.models import db,Acteur, CategoriesActeurs, Commune, Departement, Diagnostic, DiagnosticsSites, MotCle, Nomenclature, Region, Reponse, ReponseMotCle, Site
+from models.models import db,Acteur, CategoriesActeurs, Commune, Departement, Diagnostic, DiagnosticsSites, MotCle, Nomenclature, Region, Reponse, ReponseMotCle, Site, SiteDepartement
 from datetime import datetime, timedelta
 import random
 import string
@@ -22,7 +22,6 @@ with app.app_context():
     for i in range(10):
         n = Nomenclature(
             label=f"Nomenclature {i}",
-            type_site_id=random.randint(1, 5),
             value=i,
             mnemonique=random_string(5)
         )
@@ -31,33 +30,60 @@ with app.app_context():
     db.session.commit()
 
     # ---------------------
-    # Régions
+    # Régions (réelles)
     # ---------------------
+    regions_data = [
+        {"nom": "Auvergne-Rhône-Alpes", "insee": "84"},
+        {"nom": "Bourgogne-Franche-Comté", "insee": "27"},
+        {"nom": "Bretagne", "insee": "53"},
+        {"nom": "Centre-Val de Loire", "insee": "24"},
+        {"nom": "Corse", "insee": "94"},
+        {"nom": "Grand Est", "insee": "44"},
+        {"nom": "Hauts-de-France", "insee": "32"},
+        {"nom": "Île-de-France", "insee": "11"},
+        {"nom": "Normandie", "insee": "28"},
+        {"nom": "Nouvelle-Aquitaine", "insee": "75"},
+        {"nom": "Occitanie", "insee": "76"},
+        {"nom": "Pays de la Loire", "insee": "52"},
+        {"nom": "Provence-Alpes-Côte d’Azur", "insee": "93"},
+        {"nom": "Guadeloupe", "insee": "01"},
+        {"nom": "Martinique", "insee": "02"},
+        {"nom": "Guyane", "insee": "03"},
+        {"nom": "La Réunion", "insee": "04"},
+        {"nom": "Mayotte", "insee": "06"}
+    ]
+
     regions = []
-    for i in range(10):
+    for i, reg in enumerate(regions_data):
         r = Region(
-            id_region=f"R{i}",
-            id_reg=f"REG{i}",
-            nom_reg=f"Nom Région {i}",
-            nom_reg_m=f"Nom Région M {i}",
-            insee_reg=f"{i:02}"
+            id_region=i + 1,
+            id_reg=f"REG{i+1}",
+            nom_reg=reg["nom"],
+            nom_reg_m=reg["nom"].upper(),
+            insee_reg=reg["insee"]
         )
         db.session.add(r)
         regions.append(r)
     db.session.commit()
 
     # ---------------------
-    # Départements
+    # Départements (réels simplifiés)
     # ---------------------
+    departements_data = [
+        ("01", "Ain", "84"), ("02", "Aisne", "32"), ("03", "Allier", "84"), ("04", "Alpes-de-Haute-Provence", "93"),
+        ("05", "Hautes-Alpes", "93"), ("06", "Alpes-Maritimes", "93"), ("07", "Ardèche", "84"), ("08", "Ardennes", "44"),
+        ("09", "Ariège", "76"), ("10", "Aube", "44")
+    ]
+
     departements = []
-    for i in range(10):
+    for i, (code_dep, nom_dep, code_reg) in enumerate(departements_data):
         d = Departement(
-            id_departement=f"D{i}",
-            id_dep=f"DEP{i}",
-            nom_dep=f"Département {i}",
-            nom_dep_m=f"Département M {i}",
-            insee_dep=f"{i:03}",
-            insee_reg=random.choice(regions).insee_reg
+            id_departement=i + 1,
+            id_dep=code_dep,
+            nom_dep=nom_dep,
+            nom_dep_m=nom_dep.upper(),
+            insee_dep=code_dep,
+            insee_reg=code_reg
         )
         db.session.add(d)
         departements.append(d)
@@ -100,6 +126,17 @@ with app.app_context():
         )
         db.session.add(s)
         sites.append(s)
+    db.session.commit()
+
+    # ---------------------
+    # Lien Sites-Départements (relation cor_site_departement)
+    # ---------------------
+    for site in sites:
+        sd = SiteDepartement(
+            site_id=site.id_site,
+            departement_id=random.choice(departements).id_departement
+        )
+        db.session.add(sd)
     db.session.commit()
 
     # ---------------------

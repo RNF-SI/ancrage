@@ -1,5 +1,5 @@
-from schemas.geo import CommuneSchema
-from models.models import Acteur, Diagnostic, Document, MotCle, Nomenclature, Reponse, ReponseMotCle, Site,DiagnosticsSites,CategoriesActeurs
+from schemas.geo import CommuneSchema,DepartementSchema
+from models.models import Acteur, Diagnostic, Document, MotCle, Nomenclature, Reponse, ReponseMotCle, Site,DiagnosticsSites,CategoriesActeurs,SiteDepartement
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from marshmallow import fields
 
@@ -11,6 +11,7 @@ class SiteSchema(SQLAlchemyAutoSchema):
 
     type = fields.Nested(lambda: NomenclatureSchema)
     diagnostics = fields.Method("get_diagnostics_flat")
+    departements = fields.Nested(lambda: DepartementSchema, many=True, exclude=("site",))
 
     def get_diagnostics_flat(self, obj):
         return [DiagnosticLiteSchema().dump(ds.diagnostic) for ds in obj.diagnostics if ds.diagnostic]
@@ -23,6 +24,15 @@ class SitesDiagnosticsSchema(SQLAlchemyAutoSchema):
 
     site = fields.Nested(lambda: SiteSchema, exclude=("diagnostics",))
     diagnostic = fields.Nested(lambda: DiagnosticSchema, exclude=("sites",))
+
+class SitesDepartementsSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = SiteDepartement
+        include_relationships = True
+        load_instance = True
+
+    site = fields.Nested(lambda: SiteSchema, exclude=("ddepartements",))
+    departement = fields.Nested(lambda: DepartementSchema, exclude=("sites",))
 
 
 class DiagnosticSchema(SQLAlchemyAutoSchema):
