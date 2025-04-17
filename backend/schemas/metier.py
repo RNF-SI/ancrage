@@ -47,7 +47,7 @@ class SiteSchema(SQLAlchemyAutoSchema):
     type = fields.Nested(lambda: NomenclatureSchema, exclude=("sites",))
     diagnostics = fields.Method("get_diagnostics_flat")
     departements = fields.Method("get_departements_flat")
-    habitats = fields.Nested(lambda: SitesHabitatsSchema, many=True, exclude=("site",))  # Ajouté si nécessaire
+    habitats = fields.Method("get_habitats_flat")
 
     def get_diagnostics_flat(self, obj):
         return [DiagnosticLiteSchema().dump(ds.diagnostic) for ds in obj.diagnostics if ds.diagnostic]
@@ -57,6 +57,12 @@ class SiteSchema(SQLAlchemyAutoSchema):
             for ds in obj.departements
             if ds.departement
         ]
+    def get_habitats_flat(self, obj):
+        return [
+            NomenclatureSchema().dump(habitat.habitat)
+            for habitat in obj.habitats
+            if habitat.habitat
+    ]
     
 class SitesDiagnosticsSchema(SQLAlchemyAutoSchema):
     class Meta:
