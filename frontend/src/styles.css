@@ -7,24 +7,15 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
-h2{
-    margin-top:1%;
-    margin-bottom:2%;
-    font-size:30px;
+
+.accent-select .mat-form-field-label {
+    color: #40ff69 !important;
+}
+.accent-select .mat-select-arrow {
+    color: #ff4081 !important;
+}
+.accent-select .mat-form-field-underline {
+    background-color: #ff4081 !important;
 }
 
-mat-card-title{
-    font-size: 18px;
-}
 
-mat-card_subtitle{
-    font-size:12px;
-}
-
-mat-card-title,mat-card-subtitle{
-    color:#fff;
-}
-
-mat-card.white-shadow {
-    box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.6) !important;
-}

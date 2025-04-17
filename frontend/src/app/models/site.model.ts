@@ -11,11 +11,13 @@ export class Site implements ISite {
 	diagnostics: Diagnostic[] = [];
 	habitats: Nomenclature[] = [];
 	departements:Departement[] = [];
+	id_inpn:number=1;
 	type: Nomenclature = new Nomenclature();
 	created_at: Date | undefined;
 	modified_at: Date | undefined;
 	created_by: number = 0;
 	modified_by: number = 0;
+	selected=false;
 
 	/** Création depuis un JSON brut (avec reconversion des objets internes et dates) */
 	static fromJson(data: ISite): Site {
@@ -25,6 +27,7 @@ export class Site implements ISite {
 		site.nom = data.nom;
 		site.position_x = data.position_x;
 		site.position_y = data.position_y;
+		site.id_inpn = data.id_inpn;
 		site.diagnostics = (data.diagnostics || []).map(d => Diagnostic.fromJson(d));
 		site.habitats = (data.habitats || []).map(h => Nomenclature.fromJson(h));
 		site.type = Nomenclature.fromJson(data.type);
@@ -45,6 +48,7 @@ export class Site implements ISite {
 			habitats: this.habitats.map(h => h.toJson()),
 			departements: this.departements.map(h => h.toJson()),
 			type: this.type.toJson(),
+			id_inpn:this.id_inpn,
 			created_at: this.created_at ? new Date(this.created_at) : undefined,
 			modified_at: this.modified_at ? new Date(this.modified_at) : undefined,
 			created_by: this.created_by,

@@ -4,9 +4,9 @@
         <div class="col-1"></div>
         <div  class="col-10">
             <h3>{{titleChosenSites}}</h3>
-            <p>
-                Vous n'avez pas encore choisi de site.
-            </p>
+            <div *ngFor="let cs of chosenSites">
+                <p>{{cs}}</p>
+            </div>
             <mat-form-field appearance="fill" class="accent-select">
                 <mat-label>Départements</mat-label>
                 <mat-select [(value)]="selectedDepartement" (selectionChange)="applyFilters()">
@@ -95,12 +95,12 @@
                 </ng-container>  
               
                 <!-- Checkbox Column -->
-               <!--  <ng-container matColumnDef="">
+                <ng-container matColumnDef="choix">
                   <th mat-header-cell *matHeaderCellDef></th>
                   <td mat-cell *matCellDef="let site">
-                    <mat-checkbox [(ngModel)]="site.selected"> Choisir </mat-checkbox>
+                    <mat-checkbox [(ngModel)]="site.selected" (click)="addOrRemoveSite(site)"> Choisir </mat-checkbox>
                   </td>
-                </ng-container> -->
+                </ng-container>
               
                 <!-- Header and Row Declarations -->
                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

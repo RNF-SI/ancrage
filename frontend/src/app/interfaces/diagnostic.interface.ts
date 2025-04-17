@@ -7,6 +7,7 @@ export interface IDiagnostic {
     date_debut ?: Date;
     date_fin: Date | undefined;
     is_read_only:boolean;
+    id_organisme:number;
     sites?: ISite[];
     created_at ?: Date;
     created_at_str?: string;

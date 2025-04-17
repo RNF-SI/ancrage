@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { Site } from '@app/models/site.model';
 import { SiteService } from '@app/services/sites.service';
 import { Subscription } from 'rxjs';
+import { Diagnostic } from '@app/models/diagnostic.model';
 
 @Component({
   selector: 'app-choix-site',
@@ -21,7 +22,7 @@ import { Subscription } from 'rxjs';
 
 export class ChoixSiteComponent {
  
-  displayedColumns: string[] = ['nom', 'departements','regions', 'type','habitats'];
+  displayedColumns: string[] = ['nom', 'departements','regions', 'type','habitats','choix'];
   sitesOriginal: Site[] = []; // sauvegarde de tous les sites
   sitesSelected: MatTableDataSource<Site>= new MatTableDataSource();
 
@@ -39,7 +40,9 @@ export class ChoixSiteComponent {
   private sitesSub!: Subscription;
   title="Choisir les sites";
   titleChosenSites="Sites choisis";
-
+  diagnostic:Diagnostic = new Diagnostic();
+  emptyChosenSites = "Vous n'avez pas encore choisi de sites.";
+  chosenSites:String[]=[this.emptyChosenSites];
   ngOnInit(): void {
     
     this.sitesSub = this.siteService.getAll().subscribe(sites => {
@@ -47,6 +50,7 @@ export class ChoixSiteComponent {
       this.siteService.sortByName(sites);
       this.sitesOriginal = sites;
       this.sites = sites;
+      console.log(this.sites);
       this.sitesSelected = new MatTableDataSource(this.sites);
       this.extractUniqueFilters();
       return this.sites = sites;
@@ -88,6 +92,44 @@ export class ChoixSiteComponent {
     this.selectedType = "";
     this.selectedHabitat = "";
     this.sites = this.sitesOriginal;
+  }
+
+  addOrRemoveSite(site:Site){
+    console.log(site.selected);
+    if (site.selected){
+      this.diagnostic.sites.push(site);
+      console.log(this.diagnostic);
+      if(this.chosenSites.includes(this.emptyChosenSites)){
+        this.chosenSites=[];
+        
+      }
+      this.chosenSites.push(site.nom);
+    }else{
+      let iteration=0;
+      for(let i=0;i<this.diagnostic.sites.length;i++){
+        if(this.diagnostic.sites[i].id_site === site.id_site){
+         iteration = i;
+         break;
+        }
+        
+      }
+      this.diagnostic.sites.splice(iteration,1);
+      console.log(this.diagnostic);
+      
+      for(let i=0;i<this.chosenSites.length;i++){
+        if(this.chosenSites[i] === site.nom){
+         iteration = i;
+         break;
+        }
+        
+      }
+      this.chosenSites.splice(iteration,1);
+      if(this.chosenSites.length == 0){
+        this.chosenSites.push(this.emptyChosenSites);
+      }
+    }
+    
+
   }
   
   ngOnDestroy(): void {

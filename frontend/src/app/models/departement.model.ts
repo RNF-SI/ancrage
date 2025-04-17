@@ -13,7 +13,7 @@ export class Departement implements IDepartement {
 
     copy(): Departement {
         const copy = new Departement();
-
+        copy.id_departement = this.id_departement;
         copy.id_dep= this.id_dep;
         copy.nom_dep = this.nom_dep;
         copy.insee_reg = this.insee_reg;
@@ -26,7 +26,7 @@ export class Departement implements IDepartement {
     /** Création depuis un JSON brut (avec reconversion des objets internes et dates) */
     static fromJson(data: IDepartement): Departement {
         const departement = new Departement();
-
+        departement.id_departement = data.id_departement;
         departement.id_dep = data.id_dep;
         departement.nom_dep = data.nom_dep;
         departement.insee_reg = data.insee_reg;
@@ -41,6 +41,7 @@ export class Departement implements IDepartement {
     toJson(): IDepartement {
         const json: IDepartement = {
             ...this,
+            id_departement: this.id_departement,
             id_dep: this.id_dep,
             nom_dep: this.nom_dep,
             insee_reg: this.insee_reg,

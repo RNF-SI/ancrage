@@ -11,6 +11,7 @@ export class Diagnostic implements IDiagnostic {
 	date_fin: Date | undefined;
 	sites: Site[] = [];
 	is_read_only=false;
+	id_organisme:number = 0
 	created_at_str?: string = "";
 	created_at?= new Date();
 	modified_at: Date | undefined;
@@ -25,6 +26,7 @@ export class Diagnostic implements IDiagnostic {
 		diag.date_debut = data.date_debut ? new Date(data.date_debut) : undefined;
 		diag.date_debut_str = data.date_debut ? moment(new Date(data.date_debut)).format("DD/MM/YYYY") : undefined;
 		diag.date_fin = data.date_fin ? new Date(data.date_fin) : undefined;
+		diag.id_organisme = data.id_organisme;
 		diag.is_read_only = data.is_read_only;
 		diag.sites = (data.sites || []).map(s => Site.fromJson(s));
 		diag.created_at = data.created_at ? new Date(data.created_at) : undefined;

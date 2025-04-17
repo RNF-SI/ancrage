@@ -14,9 +14,10 @@ export interface ISite {
     diagnostics:IDiagnostic[];
     departements:IDepartement[];
     habitats:Nomenclature[];
+    id_inpn:number;
     created_at:Date | undefined;
     modified_at:Date | undefined;
     created_by:number;
     modified_by:number;
-    
+    selected:boolean;
 }
