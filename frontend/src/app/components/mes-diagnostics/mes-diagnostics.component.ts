@@ -8,8 +8,6 @@ import { Site } from '@app/models/site.model';
 import { SiteService } from '@app/services/sites.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { SitesDiagnosticsViewComponent } from '../sites-diagnostics-view/sites-diagnostics-view.component';
-import { User } from '@app/models/user.model';
-import { AuthGuardService } from '@app/home-rnf/services/auth-guard.service';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { Subscription } from 'rxjs';
 
@@ -41,19 +39,15 @@ import { Subscription } from 'rxjs';
     
     ngOnInit(): void {
       this.title="Mes diagnostics";
+      
       this.user_role_id = this.authService.getCurrentUser().id_role;
       this.sitesSub =  this.siteService.getAllByUser(this.user_role_id).subscribe(sites => {
         return this.sites = sites;
       });
     }
   
-    getAllItemsByUser(user_id:number):void{
-      
-      
-    }
-  
     ngOnDestroy(): void {
-      
+      this.sitesSub?.unsubscribe();
     }
     
     modifyDiagnostic(diagnostic: Diagnostic) {
