@@ -55,4 +55,12 @@ export class SiteService {
 		return this.http.delete<void>(this.BASE_URL + id + '/');
 	}
 
+	sortByName(objArray:Site[]){
+		objArray.sort(function(a, b) {
+		  var textA = a.nom.toUpperCase();
+		  var textB = b.nom.toUpperCase();
+		  return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+		})
+	}
+
 }

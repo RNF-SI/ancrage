@@ -34,6 +34,7 @@ export class DiagosticsListeComponent implements OnInit{
   	ngOnInit(): void {
 		this.title="Diagnostics";
 		this.sitesSub = this.siteService.getAll().subscribe(sites => {
+      this.siteService.sortByName(sites);
 			return this.sites = sites;
 		});;
 	}
