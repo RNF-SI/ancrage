@@ -29,129 +29,32 @@ with app.app_context():
         nomenclatures.append(n)
     db.session.commit()
 
-    # ---------------------
-    # Régions (réelles)
-    # ---------------------
-    regions_data = [
-        {"nom": "Auvergne-Rhône-Alpes", "insee": "84"},
-        {"nom": "Bourgogne-Franche-Comté", "insee": "27"},
-        {"nom": "Bretagne", "insee": "53"},
-        {"nom": "Centre-Val de Loire", "insee": "24"},
-        {"nom": "Corse", "insee": "94"},
-        {"nom": "Grand Est", "insee": "44"},
-        {"nom": "Hauts-de-France", "insee": "32"},
-        {"nom": "Île-de-France", "insee": "11"},
-        {"nom": "Normandie", "insee": "28"},
-        {"nom": "Nouvelle-Aquitaine", "insee": "75"},
-        {"nom": "Occitanie", "insee": "76"},
-        {"nom": "Pays de la Loire", "insee": "52"},
-        {"nom": "Provence-Alpes-Côte d’Azur", "insee": "93"},
-        {"nom": "Guadeloupe", "insee": "01"},
-        {"nom": "Martinique", "insee": "02"},
-        {"nom": "Guyane", "insee": "03"},
-        {"nom": "La Réunion", "insee": "04"},
-        {"nom": "Mayotte", "insee": "06"}
-    ]
-
-    regions = []
-    for i, reg in enumerate(regions_data):
-        r = Region(
-            id_region=i + 1,
-            id_reg=f"REG{i+1}",
-            nom_reg=reg["nom"],
-            nom_reg_m=reg["nom"].upper(),
-            insee_reg=reg["insee"]
+      # Ajout de 3 habitats (mnemonique = 'habitats')
+    habitats = []
+    for nom in ['Forêt feuillue', 'Prairie humide', 'Landes atlantiques']:
+        h = Nomenclature(
+            libelle=nom,
+            value=random.randint(100, 200),
+            mnemonique='habitats'
         )
-        db.session.add(r)
-        regions.append(r)
-    db.session.commit()
+        db.session.add(h)
+        habitats.append(h)
 
-    # ---------------------
-    # Départements (réels simplifiés)
-    # ---------------------
-    departements_data = [
-        ("01", "Ain", "84"), ("02", "Aisne", "32"), ("03", "Allier", "84"), ("04", "Alpes-de-Haute-Provence", "93"),
-        ("05", "Hautes-Alpes", "93"), ("06", "Alpes-Maritimes", "93"), ("07", "Ardèche", "84"), ("08", "Ardennes", "44"),
-        ("09", "Ariège", "76"), ("10", "Aube", "44")
-    ]
-
-    departements = []
-    for i, (code_dep, nom_dep, code_reg) in enumerate(departements_data):
-        d = Departement(
-            id_departement=i + 1,
-            id_dep=code_dep,
-            nom_dep=nom_dep,
-            nom_dep_m=nom_dep.upper(),
-            insee_dep=code_dep,
-            insee_reg=code_reg
+    # Ajout de 3 types de site (mnemonique = 'statut')
+    types_sites = []
+    for i in range(1, 4):
+        t = Nomenclature(
+            libelle=f"Type {i}",
+            value=random.randint(1, 99),
+            mnemonique='statut'
         )
-        db.session.add(d)
-        departements.append(d)
-    db.session.commit()
-
-    # ---------------------
-    # Communes
-    # ---------------------
-    communes = []
-    for i in range(10):
-        c = Commune(
-            id_commune=f"C{i}",
-            nom_com=f"Commune {i}",
-            nom_com_m=f"Commune M {i}",
-            insee_com=f"{i:05}",
-            statut="active",
-            population=random.randint(100, 10000),
-            insee_dep=random.choice(departements).insee_dep,
-            insee_reg=random.choice(regions).insee_reg
-        )
-        db.session.add(c)
-        communes.append(c)
-    db.session.commit()
-
-    # ---------------------
-    # Sites
-    # ---------------------
-    sites = []
-    habitat_nomenclatures = random.sample(nomenclatures, k=min(5, len(nomenclatures)))
-    for i in range(10):
-        s = Site(
-            nom=f"Site {i}",
-            position_x=str(random.uniform(1, 100)),
-            position_y=str(random.uniform(1, 100)),
-            type_id=random.choice(nomenclatures).id_nomenclature,
-            created_at=datetime.now(),
-            modified_at=datetime.now(),
-            created_by=random.randint(1, 5),
-            modified_by=random.randint(1, 5)
-        )
-        db.session.add(s)
-        sites.append(s)
-    db.session.commit()
-
-    # ---------------------
-    # Lien Sites-Départements (relation cor_site_departement)
-    # ---------------------
-    for site in sites:
-        # Lien avec un département obligatoire
-        departement = random.choice(departements)
-        site.insee_reg = departement.insee_reg  # Attribution directe de la région via le département
-
-        sd = SiteDepartement(
-            site_id=site.id_site,
-            departement_id=departement.id_departement
-        )
-        db.session.add(sd)
-
-        # Lien avec au moins un habitat (entre 1 et 3)
-        nb_habitats = random.randint(1, 3)
-        for h in random.sample(habitat_nomenclatures, nb_habitats):
-            sh = SiteHabitat(site_id=site.id_site, habitat_id=h.id_nomenclature)
-            db.session.add(sh)
+        db.session.add(t)
+        types_sites.append(t)
 
     db.session.commit()
 
     # ---------------------
-    # Diagnostics
+    # Diagnostics (créés avant les sites)
     # ---------------------
     diagnostics = []
     for i in range(10):
@@ -168,15 +71,85 @@ with app.app_context():
         db.session.add(d)
         diagnostics.append(d)
     db.session.commit()
+    # ---------------------
+# Sites, régions, départements
+# ---------------------
+    site_data = [
+        ("Paris", 48.8566, 2.3522, "Paris", "75", "Île-de-France", "11"),
+        ("Lyon", 45.7640, 4.8357, "Rhône", "69", "Auvergne-Rhône-Alpes", "84"),
+        ("Marseille", 43.2965, 5.3698, "Bouches-du-Rhône", "13", "Provence-Alpes-Côte d’Azur", "93"),
+        ("Bordeaux", 44.8378, -0.5792, "Gironde", "33", "Nouvelle-Aquitaine", "75"),
+        ("Lille", 50.6292, 3.0573, "Nord", "59", "Hauts-de-France", "32"),
+        ("Strasbourg", 48.5734, 7.7521, "Bas-Rhin", "67", "Grand Est", "44"),
+        ("Nantes", 47.2184, -1.5536, "Loire-Atlantique", "44", "Pays de la Loire", "52"),
+        ("Grenoble", 45.1885, 5.7245, "Isère", "38", "Auvergne-Rhône-Alpes", "84"),
+        ("Toulouse", 43.6047, 1.4442, "Haute-Garonne", "31", "Occitanie", "76"),
+        ("Rouen", 49.4431, 1.0993, "Seine-Maritime", "76", "Normandie", "28"),
+    ]
+    regions_dict = {
+       
+    }
+    for data in site_data:
+        nom_reg = data[5]
+        code_reg = data[6]
+        if code_reg not in regions_dict:
+            region = Region(
+                id_region=len(regions_dict) + 1,
+                id_reg=f"REG{len(regions_dict)+1}",
+                nom_reg=nom_reg,
+                insee_reg=code_reg
+            )
+            db.session.add(region)
+            regions_dict[code_reg] = region
+    db.session.commit()
+    for i, (nom_site, lat, lon, nom_dep, code_dep, nom_reg, code_reg) in enumerate(site_data):
+       
+
+        departement = Departement(
+            id_departement=i + 1,
+            id_dep=code_dep,
+            nom_dep=nom_dep,
+
+            insee_dep=code_dep,
+            insee_reg=code_reg
+        )
+        db.session.add(departement)
+
+        site = Site(
+            nom=nom_site,
+            position_x=str(lon),
+            position_y=str(lat),
+            type_id=random.choice(types_sites).id_nomenclature,
+            created_at=datetime.now(),
+            modified_at=datetime.now(),
+            created_by=1,
+            modified_by=1
+        )
+        db.session.add(site)
+        db.session.flush()  # pour récupérer site.id_site
+
+        # Lien site <-> département
+        sd = SiteDepartement(site_id=site.id_site, departement_id=departement.id_departement)
+        db.session.add(sd)
+
+        # Lien site <-> diagnostic
+        diag = random.choice(diagnostics)
+        link = DiagnosticsSites(site_id=site.id_site, diagnostic_id=diag.id_diagnostic)
+        db.session.add(link)
+
+        # Lien site <-> habitat (1 à 2 habitats aléatoires par site)
+        for habitat in random.sample(habitats, k=random.randint(1, 2)):
+            site_habitat = SiteHabitat(site_id=site.id_site, habitat_id=habitat.id_nomenclature)
+            db.session.add(site_habitat)
+
+    db.session.commit()
+
 
     # ---------------------
     # Liens Sites-Diagnostics
     # ---------------------
     for i in range(10):
-        link = DiagnosticsSites(
-            site_id=random.choice(sites).id_site,
-            diagnostic_id=random.choice(diagnostics).id_diagnostic
-        )
+        
         db.session.add(link)
     db.session.commit()
 
@@ -191,7 +164,7 @@ with app.app_context():
             fonction=random.randint(1, 3),
             telephone="0600000000",
             mail=f"user{i}@example.com",
-            commune_id=random.choice(communes).id_commune,
+           
             profil_cognitif_id=random.choice(nomenclatures).id_nomenclature,
             is_acteur_economique=bool(random.getrandbits(1)),
             structure=f"Structure {i}",

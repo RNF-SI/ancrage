@@ -11,9 +11,9 @@ class Region(db.Model):
     id_region = db.Column(db.Integer, primary_key=True)
     geom = db.Column(Geometry('MULTIPOLYGON', srid=4326))
     id_reg = db.Column(VARCHAR(24))
-    nom_reg_m = db.Column(VARCHAR(35))
-    nom_reg = db.Column(VARCHAR(35))
-    insee_reg = db.Column(VARCHAR(2),unique=True)
+    nom_reg_m = db.Column(VARCHAR(255))
+    nom_reg = db.Column(VARCHAR(255))
+    insee_reg = db.Column(VARCHAR(255),unique=True)
 
     departements = db.relationship(
         'Departement',
@@ -28,8 +28,8 @@ class Departement(db.Model):
     id_dep = db.Column(VARCHAR(24))
     nom_dep_m = db.Column(VARCHAR(30))
     nom_dep = db.Column(VARCHAR(30))
-    insee_dep = db.Column(VARCHAR(3),unique=True)
-    insee_reg = db.Column(VARCHAR(2),db.ForeignKey('t_regions.insee_reg'))
+    insee_dep = db.Column(VARCHAR(255),unique=True)
+    insee_reg = db.Column(VARCHAR(255),db.ForeignKey('t_regions.insee_reg'))
     sites = db.relationship('SiteDepartement', back_populates='departement')
     region = db.relationship('Region', back_populates='departements')
     communes = db.relationship(
