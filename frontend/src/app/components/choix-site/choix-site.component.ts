@@ -11,6 +11,8 @@ import { Site } from '@app/models/site.model';
 import { SiteService } from '@app/services/sites.service';
 import { Subscription } from 'rxjs';
 import { Diagnostic } from '@app/models/diagnostic.model';
+import { AuthService } from '@app/home-rnf/services/auth-service.service';
+import { Router, RouterModule, Routes } from '@angular/router';
 
 @Component({
   selector: 'app-choix-site',
@@ -22,7 +24,7 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 
 export class ChoixSiteComponent {
  
-  displayedColumns: string[] = ['nom', 'departements','regions', 'type','habitats','choix'];
+  displayedColumns: string[] = ['nom', 'regions','departements', 'type','habitats','choix'];
   sitesOriginal: Site[] = []; // sauvegarde de tous les sites
   sitesSelected: MatTableDataSource<Site>= new MatTableDataSource();
 
@@ -35,7 +37,14 @@ export class ChoixSiteComponent {
   uniqueTypes: string[] = [];
   uniqueHabitats: string[] = [];
   sites:Site[]=[];
-  reinitialisation = 'Réinitialiser ce filtre';
+  reinitialisation = 'Réinitialiser';
+  regionLabel = "Régions";
+  departmentLabel = "Départements";
+  housingLabel = "Habitats";
+  statusLabel = "Statut";
+  nameLabel = "Nom";
+  btnToChooseLabel = "Choisir";
+  btnNewSiteLabel = "Nouveau site"
   private siteService = inject(SiteService);
   private sitesSub!: Subscription;
   title="Choisir les sites";
@@ -43,6 +52,9 @@ export class ChoixSiteComponent {
   diagnostic:Diagnostic = new Diagnostic();
   emptyChosenSites = "Vous n'avez pas encore choisi de sites.";
   chosenSites:String[]=[this.emptyChosenSites];
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
   ngOnInit(): void {
     
     this.sitesSub = this.siteService.getAll().subscribe(sites => {
@@ -55,7 +67,10 @@ export class ChoixSiteComponent {
       this.extractUniqueFilters();
       return this.sites = sites;
     });;
-   
+    let user_id = this.authService.getCurrentUser().id_role;
+    let id_organisme = this.authService.getCurrentUser().id_organisme;
+    this.diagnostic.created_by = user_id;
+    this.diagnostic.id_organisme = id_organisme;
   }
 
   extractUniqueFilters() {
@@ -130,6 +145,11 @@ export class ChoixSiteComponent {
     }
     
 
+  }
+
+  toBrandNewSite(){
+    localStorage.setItem("diagnostic", JSON.stringify(this.diagnostic));
+    this.router.navigate(['/site']);
   }
   
   ngOnDestroy(): void {

@@ -5,13 +5,8 @@
 mat-form-field{
     font-size:16px;
 }
-::ng-deep .accent-select .mat-form-field-label {
-    color: #40ff69 !important;
-}
-::ng-deep .accent-select .mat-select-arrow {
-    color: #ff4081 !important;
-}
-::ng-deep .accent-select .mat-form-field-underline {
-    background-color: #ff4081 !important;
+table{
+    margin-top:1%;
+    margin-bottom:1%;
 }
 

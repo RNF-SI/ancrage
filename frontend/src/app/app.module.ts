@@ -32,6 +32,7 @@ import { MapComponent } from './components/map/map.component';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { SitesDiagnosticsViewComponent } from './components/sites-diagnostics-view/sites-diagnostics-view.component';
 import { MesDiagnosticsComponent } from './components/mes-diagnostics/mes-diagnostics.component';
+import { SiteComponent } from './components/site/site.component';
 
 
 @NgModule({
@@ -43,6 +44,7 @@ import { MesDiagnosticsComponent } from './components/mes-diagnostics/mes-diagno
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
+    SiteComponent,
     
   ],
   imports: [
