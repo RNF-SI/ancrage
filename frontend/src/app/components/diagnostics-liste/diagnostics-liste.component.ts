@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component,inject,OnInit } from '@angular/core';
+import { Component,inject,OnDestroy,OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -24,7 +24,7 @@ import { SitesDiagnosticsViewComponent } from "../sites-diagnostics-view/sites-d
     SitesDiagnosticsViewComponent
 ]
 })
-export class DiagosticsListeComponent implements OnInit{
+export class DiagosticsListeComponent implements OnInit, OnDestroy{
 	sites:Site[]=[];
 	
 	private siteService = inject(SiteService);

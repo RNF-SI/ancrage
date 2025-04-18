@@ -1,5 +1,5 @@
 from models.models import db
-from flask import request, Blueprint, jsonify
+from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
 from routes import bp,date_time
@@ -29,7 +29,7 @@ def siteMethods(id_site):
         db.session.commit()
         return {"success": "Suppression terminée"}
     
-@bp.route('/site',methods=['POST'])
+@bp.route('/site/',methods=['POST'])
 def postSite():
     if request.method == 'POST': 
         

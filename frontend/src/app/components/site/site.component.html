@@ -13,13 +13,13 @@
                 <mat-form-field appearance="fill">
                     <mat-label>{{housingLabel}}</mat-label>
                     <mat-select multiple [(value)]="site.habitats">
-                        <mat-option *ngFor="let hab of uniqueHabitats" [value]="hab">{{ hab }}</mat-option>
+                        <mat-option *ngFor="let hab of uniqueHabitats" [value]="hab">{{ hab.libelle }}</mat-option>
                     </mat-select>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
                     <mat-label>{{statusLabel}}</mat-label>
                     <mat-select [(value)]="site.type">
-                        <mat-option *ngFor="let type of uniqueStatuts" [value]="type">{{ type }}</mat-option>
+                        <mat-option *ngFor="let type of uniqueStatuts" [value]="type">{{ type.libelle }}</mat-option>
                     </mat-select>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
@@ -36,7 +36,7 @@
                     <button mat-raised-button color="accent" >{{btnPreviousStepLabel}}</button>
                 </div>
                 <div class="col-6 text-end">
-                    <button mat-raised-button id="btnNewSite"  color="warn">{{btnRecordLabel}}</button>
+                    <button mat-raised-button id="btnNewSite"  (click)="recordSite()" color="warn">{{btnRecordLabel}}</button>
                 </div>
             </div>
             

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { MapComponent } from '../map/map.component';
 import { CommonModule } from '@angular/common';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
@@ -22,7 +22,7 @@ import { Router } from '@angular/router';
   imports:[MapComponent,CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule]
 })
 
-export class ChoixSiteComponent {
+export class ChoixSiteComponent implements OnInit, OnDestroy{
  
   displayedColumns: string[] = ['nom', 'regions','departements', 'type','habitats','choix'];
   sitesOriginal: Site[] = []; // sauvegarde de tous les sites

@@ -9,7 +9,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     migrate = Migrate(app, db)
-    cors = CORS(app)
+    CORS(app, resources={r"/*": {"origins": "*"}})
     db.init_app(app)
     app.register_blueprint(bp)
 

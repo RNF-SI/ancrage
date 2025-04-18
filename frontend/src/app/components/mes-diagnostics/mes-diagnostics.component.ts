@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, NgModule, OnInit } from '@angular/core';
+import { Component, inject, NgModule, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -28,7 +28,7 @@ import { Subscription } from 'rxjs';
   
 })
 
-  export class MesDiagnosticsComponent implements OnInit{
+  export class MesDiagnosticsComponent implements OnInit,OnDestroy{
     sites:Site[]=[];
     
     private siteService = inject(SiteService);
