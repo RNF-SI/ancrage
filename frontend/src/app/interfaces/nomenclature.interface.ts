@@ -1,13 +1,9 @@
 import { TypeNomenclature } from "@app/models/type-nomenclature.model";
 
-export interface NomenclatureInterface {
+export interface INomenclature {
     id_nomenclature: number;
     libelle: string;
-    typeSite: TypeNomenclature;
     value: number;
     mnemonique: string;
-    profilCognitif: TypeNomenclature;
-    statutEntretien: TypeNomenclature;
-    habitat: TypeNomenclature;
     
 }
