@@ -12,7 +12,7 @@ import { SiteService } from '@app/services/sites.service';
 import { Subscription } from 'rxjs';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
-import { Router, RouterModule, Routes } from '@angular/router';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-choix-site',
@@ -37,15 +37,16 @@ export class ChoixSiteComponent {
   uniqueTypes: string[] = [];
   uniqueHabitats: string[] = [];
   sites:Site[]=[];
+  globales={};
   reinitialisation = 'Réinitialiser';
-  regionLabel = "Régions";
-  departmentLabel = "Départements";
-  housingLabel = "Habitats";
-  statusLabel = "Statut";
-  nameLabel = "Nom";
   btnToChooseLabel = "Choisir";
   btnNewSiteLabel = "Nouveau site";
   btnToChooseActors = "Choix des acteurs";
+  regionLabel = "Régions";
+  departmentLabel ="Départements";
+  housingLabel= "Habitats";
+  statusLabel ="Statut";
+  nameLabel = "Nom";
   private siteService = inject(SiteService);
   private sitesSub!: Subscription;
   title="Choisir les sites";
@@ -67,7 +68,8 @@ export class ChoixSiteComponent {
       this.sitesSelected = new MatTableDataSource(this.sites);
       this.extractUniqueFilters();
       return this.sites = sites;
-    });;
+    });
+    
     let user_id = this.authService.getCurrentUser().id_role;
     let id_organisme = this.authService.getCurrentUser().id_organisme;
     if (localStorage.getItem("diagnostic")){

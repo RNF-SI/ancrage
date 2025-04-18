@@ -1,1 +1,48 @@
-<p>site works!</p>
+<div class="container">
+    <h2>{{titleSite}}</h2>
+    <div class="row">
+        <div class="col-2">
+
+        </div>
+        <div class="col-8">
+            <div class="text-center">
+                <mat-form-field appearance="fill">
+                    <mat-label>{{nameLabel}}</mat-label>
+                    <input matInput placeholder="Entrez un nom" [(ngModel)]="site.nom">
+                </mat-form-field>
+                <mat-form-field appearance="fill">
+                    <mat-label>{{housingLabel}}</mat-label>
+                    <mat-select multiple [(value)]="site.habitats">
+                        <mat-option *ngFor="let hab of uniqueHabitats" [value]="hab">{{ hab }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="fill">
+                    <mat-label>{{statusLabel}}</mat-label>
+                    <mat-select [(value)]="site.type">
+                        <mat-option *ngFor="let type of uniqueStatuts" [value]="type">{{ type }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="fill">
+                    <mat-label>{{latitudeLabel}}</mat-label>
+                    <input matInput placeholder="Entrez une latitude" [(ngModel)]="site.position_y">
+                </mat-form-field>
+                <mat-form-field appearance="fill">
+                    <mat-label>{{longitudeLabel}}</mat-label>
+                    <input matInput placeholder="Entrez une longitude" [(ngModel)]="site.position_x">
+                </mat-form-field>
+            </div>
+            <div class="row">
+                <div class="col-6">
+                    <button mat-raised-button color="accent" >{{btnPreviousStepLabel}}</button>
+                </div>
+                <div class="col-6 text-end">
+                    <button mat-raised-button id="btnNewSite"  color="warn">{{btnRecordLabel}}</button>
+                </div>
+            </div>
+            
+        </div>
+        <div class="col-2">
+
+        </div>
+    </div>
+</div>

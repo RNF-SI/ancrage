@@ -50,7 +50,13 @@ export class MapComponent implements AfterViewInit {
   }
   addMarkers(){
     const bounds = L.latLngBounds([]);
-    this.markerClusterGroup = L.markerClusterGroup();
+    if (this.markerClusterGroup) {
+      this.markerClusterGroup.clearLayers();
+    } else {
+      this.markerClusterGroup = L.markerClusterGroup();
+      
+    }
+    
     for(let i=0;i<this.sites.length;i++){
       const lat = parseFloat(this.sites[i].position_y);
       const lng = parseFloat(this.sites[i].position_x);

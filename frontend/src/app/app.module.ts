@@ -44,7 +44,7 @@ import { SiteComponent } from './components/site/site.component';
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
-    SiteComponent,
+    
     
   ],
   imports: [
@@ -64,6 +64,7 @@ import { SiteComponent } from './components/site/site.component';
     MapComponent,
     ChoixSiteComponent,
     MesDiagnosticsComponent,
+    SiteComponent,
     ToastrModule.forRoot({
       timeOut: 15000
     }),

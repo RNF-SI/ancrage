@@ -12,6 +12,7 @@ export class SiteService {
 	private GET_ALL_URL = environment.flask_server+'sites';
 	private BASE_URL = environment.flask_server+'site/';
 	private http = inject(HttpClient);
+	
 
 	getAll(): Observable<Site[]> {
 		return this.http.get<ISite[]>(this.GET_ALL_URL).pipe(
