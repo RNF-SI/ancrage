@@ -1,11 +1,9 @@
-import { Diagnostic } from "@app/models/diagnostic.model";
 import { Nomenclature } from "@app/models/nomenclature.model";
-import { Region } from "@app/models/region.model";
 import { IDepartement } from "./departement.interface";
 import { IDiagnostic } from "./diagnostic.interface";
 
 export interface ISite {
-   
+    
     id_site: number;
     nom: string;
     position_x:string;

@@ -48,7 +48,10 @@
             </mat-select>
             </mat-form-field>
             <button mat-raised-button (click)="resetFilters()">Réinitialiser</button>
-            <app-map></app-map>
+            <app-map
+                [sites]="sites"
+            >
+            </app-map>
 
             <table mat-table [dataSource]="sites" class="mat-elevation-z2" multiTemplateDataRows>
 

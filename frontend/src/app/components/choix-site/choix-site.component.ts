@@ -73,14 +73,14 @@ export class ChoixSiteComponent {
   }
   
   applyFilters() {
-    
-    this.sitesSelected.data = this.sites.filter(site => {
+  
+    this.sitesSelected.data = this.sitesOriginal.filter(site => {
       const matchDep = !this.selectedDepartement || site.departements.some(dep => dep.nom_dep === this.selectedDepartement);
       const matchReg = !this.selectedRegion || site.departements.some(dep => dep.region.nom_reg === this.selectedRegion);
       const matchType = !this.selectedType || site.type?.libelle === this.selectedType;
       const matchHab = !this.selectedHabitat || site.habitats.some(hab => hab.libelle === this.selectedHabitat);
   
-      return matchDep && matchReg && matchType && matchHab;
+      return matchDep && matchReg && matchType /* && matchHab */;
     });
     this.sites = this.sitesSelected.data;
     
