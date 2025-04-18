@@ -1,4 +1,4 @@
-<div class="container text-center">
+<div class="container">
     <div class="row" id="choix_site">
         <h2>{{title}}</h2>
         <div class="col-1"></div>
@@ -7,53 +7,55 @@
             <div *ngFor="let cs of chosenSites">
                 <p>{{cs}}</p>
             </div>
-            <mat-form-field appearance="fill">
-                <mat-label>{{regionLabel}}</mat-label>
-                <mat-select [(value)]="selectedRegion" (selectionChange)="applyFilters()">
-                   <!--  <mat-option (click)="clearFilter(selectedRegion)" class="text-danger">
-                        {{reinitialisation}}
-                    </mat-option> -->
-                    <mat-option *ngFor="let reg of uniqueRegions" [value]="reg">{{ reg }}</mat-option>
-                </mat-select>
-            </mat-form-field>
+            <div id="selectors" class="text-center">
+                <mat-form-field appearance="fill">
+                    <mat-label>{{regionLabel}}</mat-label>
+                    <mat-select [(value)]="selectedRegion" (selectionChange)="applyFilters()">
+                    <!--  <mat-option (click)="clearFilter(selectedRegion)" class="text-danger">
+                            {{reinitialisation}}
+                        </mat-option> -->
+                        <mat-option *ngFor="let reg of uniqueRegions" [value]="reg">{{ reg }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
 
-            <mat-form-field appearance="fill" class="accent-select">
-                <mat-label>{{departmentLabel}}</mat-label>
-                <mat-select [(value)]="selectedDepartement" (selectionChange)="applyFilters()">
-                   <!--  <mat-option (click)="clearFilter(selectedDepartement)" class="text-danger">
-                        {{reinitialisation}}
-                    </mat-option> -->
-                    <mat-option *ngFor="let dep of uniqueDepartements" [value]="dep">{{ dep }}</mat-option>
-                </mat-select>
-            </mat-form-field>
-              
-         
-            <mat-form-field appearance="fill">
-                <mat-label>{{statusLabel}}</mat-label>
-                <mat-select [(value)]="selectedType" (selectionChange)="applyFilters()">
-                    <!-- <mat-option (click)="clearFilter(selectedType)" class="text-danger">
-                        {{reinitialisation}}
-                    </mat-option> -->
-                    <mat-option *ngFor="let type of uniqueTypes" [value]="type">{{ type }}</mat-option>
-                    
-                </mat-select>
-            </mat-form-field>
+                <mat-form-field appearance="fill" class="accent-select">
+                    <mat-label>{{departmentLabel}}</mat-label>
+                    <mat-select [(value)]="selectedDepartement" (selectionChange)="applyFilters()">
+                    <!--  <mat-option (click)="clearFilter(selectedDepartement)" class="text-danger">
+                            {{reinitialisation}}
+                        </mat-option> -->
+                        <mat-option *ngFor="let dep of uniqueDepartements" [value]="dep">{{ dep }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                
             
-            <mat-form-field appearance="fill">
-                <mat-label>{{housingLabel}}</mat-label>
-                <mat-select [(value)]="selectedHabitat" (selectionChange)="applyFilters()">
-                <!--  <mat-option (click)="clearFilter(selectedHabitat)" class="text-danger">
-                        {{reinitialisation}}
-                    </mat-option> -->
-                    <mat-option *ngFor="let hab of uniqueHabitats" [value]="hab">{{ hab }}</mat-option>
-                </mat-select>
-            </mat-form-field>
-            <button mat-raised-button (click)="resetFilters()">Réinitialiser</button>
+                <mat-form-field appearance="fill">
+                    <mat-label>{{statusLabel}}</mat-label>
+                    <mat-select [(value)]="selectedType" (selectionChange)="applyFilters()">
+                        <!-- <mat-option (click)="clearFilter(selectedType)" class="text-danger">
+                            {{reinitialisation}}
+                        </mat-option> -->
+                        <mat-option *ngFor="let type of uniqueTypes" [value]="type">{{ type }}</mat-option>
+                        
+                    </mat-select>
+                </mat-form-field>
+                
+                <mat-form-field appearance="fill">
+                    <mat-label>{{housingLabel}}</mat-label>
+                    <mat-select [(value)]="selectedHabitat" (selectionChange)="applyFilters()">
+                    <!--  <mat-option (click)="clearFilter(selectedHabitat)" class="text-danger">
+                            {{reinitialisation}}
+                        </mat-option> -->
+                        <mat-option *ngFor="let hab of uniqueHabitats" [value]="hab">{{ hab }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <button id="btnToReinitialize" mat-raised-button (click)="resetFilters()">{{reinitialisation}}</button>
+            </div>
             <app-map
                 [sites]="sites"
             >
             </app-map>
-
+            
             <table mat-table [dataSource]="sites" class="mat-elevation-z2" multiTemplateDataRows>
 
                 <!-- Nom Site Column -->
@@ -110,7 +112,15 @@
                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                 <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
             </table>
-            <button mat-raised-button (click)="toBrandNewSite()">{{btnNewSiteLabel}}</button>
+            <div class="row">
+                <div class="col-6">
+                    <button mat-raised-button color="accent" (click)="toBrandNewSite()">{{btnNewSiteLabel}}</button>
+                </div>
+                <div class="col-6 text-end">
+                    <button mat-raised-button id="btnNewSite"  color="accent" (click)="toActors()">{{btnToChooseActors}}</button>
+                </div>
+            </div>
+            
         </div>
         <div class="col-1"></div>
     </div>

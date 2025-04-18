@@ -44,7 +44,8 @@ export class ChoixSiteComponent {
   statusLabel = "Statut";
   nameLabel = "Nom";
   btnToChooseLabel = "Choisir";
-  btnNewSiteLabel = "Nouveau site"
+  btnNewSiteLabel = "Nouveau site";
+  btnToChooseActors = "Choix des acteurs";
   private siteService = inject(SiteService);
   private sitesSub!: Subscription;
   title="Choisir les sites";
@@ -69,8 +70,14 @@ export class ChoixSiteComponent {
     });;
     let user_id = this.authService.getCurrentUser().id_role;
     let id_organisme = this.authService.getCurrentUser().id_organisme;
-    this.diagnostic.created_by = user_id;
-    this.diagnostic.id_organisme = id_organisme;
+    if (localStorage.getItem("diagnostic")){
+      console.log(localStorage.getItem("diagnostic"));
+      return this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
+    }else{
+      this.diagnostic.created_by = user_id;
+      this.diagnostic.id_organisme = id_organisme;
+    }
+   
   }
 
   extractUniqueFilters() {
@@ -95,7 +102,7 @@ export class ChoixSiteComponent {
       const matchType = !this.selectedType || site.type?.libelle === this.selectedType;
       const matchHab = !this.selectedHabitat || site.habitats.some(hab => hab.libelle === this.selectedHabitat);
   
-      return matchDep && matchReg && matchType /* && matchHab */;
+      return matchDep && matchReg && matchType && matchHab;
     });
     this.sites = this.sitesSelected.data;
     
@@ -150,6 +157,10 @@ export class ChoixSiteComponent {
   toBrandNewSite(){
     localStorage.setItem("diagnostic", JSON.stringify(this.diagnostic));
     this.router.navigate(['/site']);
+  }
+
+  toActors(){
+
   }
   
   ngOnDestroy(): void {

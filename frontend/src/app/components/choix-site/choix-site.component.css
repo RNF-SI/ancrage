@@ -10,3 +10,22 @@ table{
     margin-bottom:1%;
 }
 
+h2{
+    margin-top:1%;
+    margin-bottom:2%;
+    font-size:30px;
+    text-align: center;
+    font-weight: bold;
+}
+
+h3{
+    font-size: 24px;
+    font-weight: bold;
+}
+
+#btnToReinitialize{
+    min-height: 56px;
+    margin-bottom: 3%;
+    margin-left:1%;
+}
+
