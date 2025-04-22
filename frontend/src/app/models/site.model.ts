@@ -4,14 +4,14 @@ import { Nomenclature } from "./nomenclature.model";
 import { Departement } from "./departement.model";
 
 export class Site implements ISite {
-	id_site: number = 1;
+	id_site: number = -1;
 	nom: string = "";
 	position_x: string = "";
 	position_y: string = "";
 	diagnostics: Diagnostic[] = [];
 	habitats: Nomenclature[] = [];
 	departements:Departement[] = [];
-	id_inpn:number=1;
+	id_inpn:string="";
 	type: Nomenclature = new Nomenclature();
 	created_at: Date | undefined;
 	modified_at: Date | undefined;

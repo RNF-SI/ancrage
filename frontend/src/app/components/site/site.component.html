@@ -4,31 +4,38 @@
         <div class="col-2">
 
         </div>
-        <div class="col-8">
+        <form [formGroup] = "formGroup" (submit)="recordSite($event)" class="col-8">
             <div class="text-center">
                 <mat-form-field appearance="fill">
                     <mat-label>{{nameLabel}}</mat-label>
-                    <input matInput placeholder="Entrez un nom" [(ngModel)]="site.nom">
+                    <input matInput placeholder="Entrez un nom" formControlName="nom" required>
+                    <mat-error *ngIf="formGroup.get('nom')?.hasError('required')">Le nom est requis.</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
                     <mat-label>{{housingLabel}}</mat-label>
-                    <mat-select multiple [(value)]="site.habitats">
+                    <mat-select multiple required formControlName="habitats">
                         <mat-option *ngFor="let hab of uniqueHabitats" [value]="hab">{{ hab.libelle }}</mat-option>
                     </mat-select>
+                    <mat-error *ngIf="formGroup.get('habitats')?.hasError('required')">Au moins un habitat est requis.</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
                     <mat-label>{{statusLabel}}</mat-label>
-                    <mat-select [(value)]="site.type">
-                        <mat-option *ngFor="let type of uniqueStatuts" [value]="type">{{ type.libelle }}</mat-option>
+                    <mat-select required formControlName="type">
+                        <mat-option *ngFor="let type of uniqueStatuts" required [value]="type">{{ type.libelle }}</mat-option>
                     </mat-select>
+                    <mat-error *ngIf="formGroup.get('type')?.hasError('required')">Un statut est requis.</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
                     <mat-label>{{latitudeLabel}}</mat-label>
-                    <input matInput placeholder="Entrez une latitude" [(ngModel)]="site.position_y">
+                    <input matInput placeholder="Entrez une latitude" required formControlName="position_y" (change)="changeLocation()">
+                    <mat-error *ngIf="formGroup.get('position_y')?.hasError('required')">Une latitude est requise.</mat-error>
+                    <mat-error *ngIf="formGroup.get('position_y')?.hasError('pattern')">Le format est incorrect.</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
                     <mat-label>{{longitudeLabel}}</mat-label>
-                    <input matInput placeholder="Entrez une longitude" [(ngModel)]="site.position_x">
+                    <input matInput placeholder="Entrez une longitude" required formControlName="position_x">
+                    <mat-error *ngIf="formGroup.get('position_x')?.hasError('pattern')">Une longitude est requise.</mat-error>
+                    <mat-error *ngIf="formGroup.get('position_x')?.hasError('pattern')">Le format est incorrect.</mat-error>
                 </mat-form-field>
             </div>
             <div class="row">
@@ -36,11 +43,14 @@
                     <button mat-raised-button color="accent" >{{btnPreviousStepLabel}}</button>
                 </div>
                 <div class="col-6 text-end">
-                    <button mat-raised-button id="btnNewSite"  (click)="recordSite()" color="warn">{{btnRecordLabel}}</button>
+                    <button mat-raised-button id="btnNewSite"  type="submit"  color="warn">{{btnRecordLabel}}</button>
                 </div>
             </div>
+            <app-map
+                [sites]="sites"
+            ></app-map>
             
-        </div>
+        </form>
         <div class="col-2">
 
         </div>
