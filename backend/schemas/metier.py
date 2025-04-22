@@ -1,4 +1,4 @@
-from models.models import Acteur, Diagnostic, Document, MotCle, Nomenclature, Reponse, ReponseMotCle, Site,DiagnosticsSites,CategoriesActeurs,SiteDepartement, SiteHabitat,Region,Departement,Commune,db
+from models.models import Acteur, Diagnostic, Document, MotCle, Nomenclature, Reponse, ReponseMotCle, Site,DiagnosticsSites,CategoriesActeurs,SiteDepartement, Region,Departement,Commune,db
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from marshmallow import fields
 
@@ -59,9 +59,9 @@ class SiteSchema(SQLAlchemyAutoSchema):
         ]
     def get_habitats_flat(self, obj):
         return [
-            NomenclatureSchema().dump(habitat.habitat)
+            NomenclatureSchema(exclude=("sites",)).dump(habitat)
             for habitat in obj.habitats
-            if habitat.habitat
+            if habitat
     ]
     
 class SitesDiagnosticsSchema(SQLAlchemyAutoSchema):
@@ -82,7 +82,7 @@ class SitesDepartementsSchema(SQLAlchemyAutoSchema):
     site = fields.Nested(lambda: SiteSchema, exclude=("departements", "diagnostics", "habitats"))
     departement = fields.Nested(lambda: DepartementSchema, exclude=("sites",))
 
-class SitesHabitatsSchema(SQLAlchemyAutoSchema):
+""" class SitesHabitatsSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = SiteHabitat
         include_relationships = True
@@ -90,7 +90,7 @@ class SitesHabitatsSchema(SQLAlchemyAutoSchema):
 
     site = fields.Nested(lambda: SiteSchema, exclude=("habitats", "departements", "diagnostics"))
     habitat = fields.Nested(lambda: NomenclatureSchema, exclude=("sites",))
-
+ """
 
 class DiagnosticSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -180,5 +180,5 @@ class NomenclatureSchema(SQLAlchemyAutoSchema):
         model = Nomenclature
         load_instance = True
 
-    acteurs = fields.Nested(lambda: ActeurSchema, many=True, exclude=("categories", "diagnostic"))
-    sites = fields.Nested(lambda: SitesHabitatsSchema, many=True, exclude=("habitat",))
+    acteurs = fields.Nested(lambda: ActeurSchema, many=True, exclude=("categories", "diagnostic",))
+    sites = fields.Nested(lambda: SiteSchema, many=True, exclude=("habitats",))

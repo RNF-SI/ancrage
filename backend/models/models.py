@@ -5,6 +5,12 @@ from sqlalchemy.dialects.postgresql import VARCHAR
 
 db = SQLAlchemy() # Lie notre app à SQLAlchemy
 
+site_habitat = db.Table(
+    'cor_site_habitat',
+    db.Column('site_id', db.Integer, db.ForeignKey('t_sites.id_site')),
+    db.Column('habitat_id', db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
+)
+
 class Region(db.Model):
     __tablename__ = 't_regions'
 
@@ -70,23 +76,23 @@ class Site(db.Model):
     position_x = db.Column(db.String, nullable=False)
     position_y = db.Column(db.String, nullable=False)
     diagnostics = db.relationship('DiagnosticsSites', back_populates='site')
-    type_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     id_inpn = db.Column(db.String)
-    type = db.relationship('Nomenclature', foreign_keys=[type_id], backref='sites_as_type')
+    type_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
+    type = db.relationship('Nomenclature', foreign_keys=[type_id])
+    habitats = db.relationship('Nomenclature', secondary='cor_site_habitat', back_populates='sites')
     departements = db.relationship('SiteDepartement', back_populates='site')
-    habitats = db.relationship('SiteHabitat', back_populates='site')
     created_at = db.Column(db.DateTime)
     modified_at = db.Column(db.DateTime)
     created_by = db.Column(db.Integer)
     modified_by = db.Column(db.Integer)
 
-class SiteHabitat(db.Model):
+""" class SiteHabitat(db.Model):
     __tablename__ = 'cor_site_habitat'
     id_site_habitat = db.Column(db.Integer, primary_key=True)
     site_id = db.Column(db.Integer, db.ForeignKey('t_sites.id_site'))
     habitat_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     site = db.relationship('Site', back_populates='habitats')
-    habitat = db.relationship('Nomenclature', back_populates='sites')
+    habitat = db.relationship('Nomenclature', back_populates='sites') """
 
 class DiagnosticsSites(db.Model):
     __tablename__ = 'cor_diagnostics_sites'
@@ -168,7 +174,7 @@ class Nomenclature(db.Model):
     libelle = db.Column(db.String)
     value = db.Column(db.Integer)
     mnemonique = db.Column(db.String)
-    sites = db.relationship('SiteHabitat', back_populates='habitat')
+    sites = db.relationship('Site', secondary='cor_site_habitat', back_populates='habitats')
     acteurs = db.relationship('CategoriesActeurs', back_populates='categorie')
 
 class CategoriesActeurs(db.Model):
@@ -178,3 +184,4 @@ class CategoriesActeurs(db.Model):
     categorie_acteur_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     categorie = db.relationship('Nomenclature', back_populates='acteurs')
     acteur = db.relationship('Acteur', back_populates='categories')
+

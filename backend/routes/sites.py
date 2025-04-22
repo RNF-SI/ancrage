@@ -34,7 +34,7 @@ def postSite():
     if request.method == 'POST': 
         
         data = request.get_json()
-        print(data)
+    
         site=Site()
         site = changeValuesSite(site,data)
         site.created_at = date_time
@@ -66,6 +66,12 @@ def changeValuesSite(site,data):
     site.nom = data['nom']
     site.position_x = data['position_x']
     site.position_y = data['position_y']
+    site.type_id = data['type']['id_nomenclature']
+    if data['habitats'] :
+        for dept in data['habitats'] :
+            join =  Nomenclature.query.filter_by(id_nomenclature=dept['id_nomenclature']).first()  
+            site.habitats.append(join)
+    print(f"Site: {site.nom}, Type ID: {site.type_id}, Habitats: {[h.libelle for h in site.habitats]}")
     return site
 
 def getSite(site):
