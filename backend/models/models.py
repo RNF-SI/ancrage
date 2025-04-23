@@ -7,8 +7,8 @@ db = SQLAlchemy() # Lie notre app à SQLAlchemy
 
 site_habitat = db.Table(
     'cor_site_habitat',
-    db.Column('site_id', db.Integer, db.ForeignKey('t_sites.id_site')),
-    db.Column('habitat_id', db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
+    db.Column('site_id', db.Integer, db.ForeignKey('t_sites.id_site', ondelete="CASCADE")),
+    db.Column('habitat_id', db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature', ondelete="CASCADE"))
 )
 
 class Region(db.Model):

@@ -71,7 +71,7 @@ def changeValuesSite(site,data):
         for dept in data['habitats'] :
             join =  Nomenclature.query.filter_by(id_nomenclature=dept['id_nomenclature']).first()  
             site.habitats.append(join)
-    print(f"Site: {site.nom}, Type ID: {site.type_id}, Habitats: {[h.libelle for h in site.habitats]}")
+    """ print(f"Site: {site.nom}, Type ID: {site.type_id}, Habitats: {[h.libelle for h in site.habitats]}") """
     return site
 
 def getSite(site):
