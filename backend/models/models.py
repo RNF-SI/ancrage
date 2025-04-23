@@ -11,6 +11,12 @@ site_habitat = db.Table(
     db.Column('habitat_id', db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature', ondelete="CASCADE"))
 )
 
+site_departement = db.Table(
+    'cor_site_departement',
+    db.Column('site_id', db.Integer, db.ForeignKey('t_sites.id_site', ondelete="CASCADE")),
+    db.Column('departement_id', db.Integer, db.ForeignKey('t_departement.id_departement', ondelete="CASCADE"))
+)
+
 class Region(db.Model):
     __tablename__ = 't_regions'
 
@@ -36,21 +42,13 @@ class Departement(db.Model):
     nom_dep = db.Column(VARCHAR(30))
     insee_dep = db.Column(VARCHAR(255),unique=True)
     insee_reg = db.Column(VARCHAR(255),db.ForeignKey('t_regions.insee_reg'))
-    sites = db.relationship('SiteDepartement', back_populates='departement')
+    sites = db.relationship('Site', secondary='cor_site_departement', back_populates='departements')
     region = db.relationship('Region', back_populates='departements')
     communes = db.relationship(
         'Commune',
         back_populates='departement',
         lazy=True
     )
-
-class SiteDepartement(db.Model):
-    __tablename__ = 'cor_site_departement'
-    id_site_departement = db.Column(db.Integer, primary_key=True)
-    site_id = db.Column(db.Integer, db.ForeignKey('t_sites.id_site'))
-    departement_id = db.Column(db.Integer, db.ForeignKey('t_departement.id_departement'))
-    site = db.relationship('Site', back_populates='departements')
-    departement = db.relationship('Departement', back_populates='sites')
 
 class Commune(db.Model):
     __tablename__ = 't_communes'
@@ -80,7 +78,7 @@ class Site(db.Model):
     type_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     type = db.relationship('Nomenclature', foreign_keys=[type_id])
     habitats = db.relationship('Nomenclature', secondary='cor_site_habitat', back_populates='sites')
-    departements = db.relationship('SiteDepartement', back_populates='site')
+    departements = db.relationship('Departement', secondary='cor_site_departement', back_populates='sites')
     created_at = db.Column(db.DateTime)
     modified_at = db.Column(db.DateTime)
     created_by = db.Column(db.Integer)

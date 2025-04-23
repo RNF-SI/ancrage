@@ -1,4 +1,4 @@
-from models.models import Acteur, Diagnostic, Document, MotCle, Nomenclature, Reponse, ReponseMotCle, Site,DiagnosticsSites,CategoriesActeurs,SiteDepartement, Region,Departement,Commune,db
+from models.models import Acteur, Diagnostic, Document, MotCle, Nomenclature, Reponse, ReponseMotCle, Site,DiagnosticsSites,CategoriesActeurs, Region,Departement,Commune,db
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from marshmallow import fields
 
@@ -17,7 +17,7 @@ class RegionSchema(SQLAlchemyAutoSchema):
 class DepartementSchema(SQLAlchemyAutoSchema):
     geom = fields.Method("get_geom")
     region = fields.Nested(lambda: RegionSchema, exclude=("departements",))
-    sites = fields.Nested(lambda: SitesDepartementsSchema, many=True, exclude=("departement",))
+    sites = fields.Nested(lambda: SiteSchema, many=True, exclude=("departements",))
 
     class Meta:
         model = Departement
@@ -53,9 +53,9 @@ class SiteSchema(SQLAlchemyAutoSchema):
         return [DiagnosticLiteSchema().dump(ds.diagnostic) for ds in obj.diagnostics if ds.diagnostic]
     def get_departements_flat(self, obj):
         return [
-            DepartementSchema(exclude=("sites",)).dump(ds.departement)
+            DepartementSchema(exclude=("sites",)).dump(ds)
             for ds in obj.departements
-            if ds.departement
+            if ds
         ]
     def get_habitats_flat(self, obj):
         return [
@@ -72,25 +72,6 @@ class SitesDiagnosticsSchema(SQLAlchemyAutoSchema):
 
     site = fields.Nested(lambda: SiteSchema, exclude=("diagnostics",))
     diagnostic = fields.Nested(lambda: DiagnosticSchema, exclude=("sites",))
-
-class SitesDepartementsSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = SiteDepartement
-        include_relationships = True
-        load_instance = True
-
-    site = fields.Nested(lambda: SiteSchema, exclude=("departements", "diagnostics", "habitats"))
-    departement = fields.Nested(lambda: DepartementSchema, exclude=("sites",))
-
-""" class SitesHabitatsSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = SiteHabitat
-        include_relationships = True
-        load_instance = True
-
-    site = fields.Nested(lambda: SiteSchema, exclude=("habitats", "departements", "diagnostics"))
-    habitat = fields.Nested(lambda: NomenclatureSchema, exclude=("sites",))
- """
 
 class DiagnosticSchema(SQLAlchemyAutoSchema):
     class Meta:
