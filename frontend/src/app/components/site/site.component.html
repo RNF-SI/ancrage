@@ -6,9 +6,11 @@
         </div>
         <form [formGroup] = "formGroup" (submit)="recordSite($event)" class="col-8">
             <div class="text-center">
+
+                <input type="number" formControlName="id_site" required class="invisible" >
                 <mat-form-field appearance="fill">
                     <mat-label>{{nameLabel}}</mat-label>
-                    <input matInput placeholder="Entrez un nom" formControlName="nom" required>
+                    <input matInput placeholder="Entrez un nom" formControlName="nom" required >
                     <mat-error *ngIf="formGroup.get('nom')?.hasError('required')">Le nom est requis.</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
@@ -27,7 +29,7 @@
                 </mat-form-field>
                 <mat-form-field appearance="fill">
                     <mat-label>{{latitudeLabel}}</mat-label>
-                    <input matInput placeholder="Entrez une latitude" required formControlName="position_y" (change)="changeLocation()">
+                    <input matInput placeholder="Entrez une latitude" required formControlName="position_y">
                     <mat-error *ngIf="formGroup.get('position_y')?.hasError('required')">Une latitude est requise.</mat-error>
                     <mat-error *ngIf="formGroup.get('position_y')?.hasError('pattern')">Le format est incorrect.</mat-error>
                 </mat-form-field>
@@ -38,7 +40,7 @@
                     <mat-error *ngIf="formGroup.get('position_x')?.hasError('pattern')">Le format est incorrect.</mat-error>
                 </mat-form-field>
             </div>
-            <div class="row">
+            <div class="row" id="boutons">
                 <div class="col-6">
                     <button mat-raised-button color="accent" >{{btnPreviousStepLabel}}</button>
                 </div>
@@ -48,6 +50,8 @@
             </div>
             <app-map
                 [sites]="sites"
+                [formGroup]="formGroup"
+                [changePosition]="changePosition"
             ></app-map>
             
         </form>

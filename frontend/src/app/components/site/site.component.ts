@@ -3,7 +3,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { CommonModule } from '@angular/common';
 import { Site } from '@app/models/site.model';
-import { FormsModule, FormGroup,FormControl, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,6 +13,7 @@ import { SiteService } from '@app/services/sites.service';
 import { MapComponent } from "../map/map.component";
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { Diagnostic } from '@app/models/diagnostic.model';
 
 
 @Component({
@@ -46,6 +47,7 @@ export class SiteComponent implements OnInit,OnDestroy{
   mnemoStatuts = "statut";
   private fb = inject(FormBuilder);
   formGroup = this.fb.group({
+    id_site: [0, [Validators.required]],
     nom: ['', [Validators.required]],
     habitats: this.fb.control<Nomenclature[]>([], [Validators.required]),  
     type: this.fb.control<Nomenclature | null>(null, [Validators.required]),
@@ -58,10 +60,15 @@ export class SiteComponent implements OnInit,OnDestroy{
   id_site: number = 1;
   monsterService: any;
   monster: any;
+  changePosition = true;
+  diagnostic:Diagnostic = new Diagnostic();
   
   ngOnInit(): void {
+    if(localStorage.getItem("diagnostic")){
+      this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!)
+    }
     this.routeSubscription = this.route.params.subscribe((params: any) => {
-      const id_site = params['id_site'];  // 💡 id_site récupéré
+      const id_site = params['id_site'];  
   
       const habitats$ = this.nomenclatureService.getAllByType(this.mnemoHabitats);
       const statuts$ = this.nomenclatureService.getAllByType(this.mnemoStatuts);
@@ -75,26 +82,25 @@ export class SiteComponent implements OnInit,OnDestroy{
           this.uniqueStatuts = statuts;
           this.site = site;
           
-          // 🔥 Synchroniser les habitats
           this.site.habitats = (this.site.habitats || []).map(hab =>
             this.uniqueHabitats.find(uh => uh.id_nomenclature === hab.id_nomenclature) || hab
           );
   
-          // 🔥 Synchroniser le type
           this.site.type = this.uniqueStatuts.find(stat => stat.id_nomenclature === this.site.type?.id_nomenclature) || this.site.type;
   
-          // 🔥 Patch le formulaire
           this.formGroup.patchValue({
+            id_site: this.site.id_site,
             nom: this.site.nom,
             habitats: this.site.habitats,
             type: this.site.type,
             position_y: this.site.position_y,
             position_x: this.site.position_x
           });
-          this.changeLocation();
+          /* this.changeLocation(); */
+          this.titleSite = "Modifier un site";
         });
       } else {
-        // 🔥 Charger seulement habitats et statuts si pas d'id_site
+
         forkJoin([habitats$, statuts$]).subscribe(([habitats, statuts]) => {
           this.uniqueHabitats = habitats;
           this.uniqueStatuts = statuts;
@@ -107,25 +113,22 @@ export class SiteComponent implements OnInit,OnDestroy{
     return o1 && o2 ? o1.id_nomenclature === o2.id_nomenclature : o1 === o2;
   }
 
-  changeLocation(){
-    console.log(this.formGroup.get('position_y')?.valid);
-    if(this.formGroup.get('position_y')?.valid && this.formGroup.get('position_x')?.valid){
-      
-      this.sites=[];
-      this.site = Object.assign(new Site(),this.formGroup.value);
-      this.sites.push(this.site);
-    }
-  }
-
   recordSite(event: Event){
     
     event.preventDefault();
-    this.changeLocation();
     this.site = Object.assign(new Site(),this.formGroup.value);
     console.log(this.site)
-    this.siteSubscription = this.siteService.add(this.site).subscribe(site=>{
-      console.log(site);
-    });
+    if (this.site.id_site == 0){
+      this.siteSubscription = this.siteService.add(this.site).subscribe(site=>{
+        this.diagnostic.sites.push(site);
+        localStorage.setItem("diagnostic",JSON.stringify(this.diagnostic));
+      });
+    }else{
+      this.siteSubscription = this.siteService.update(this.site).subscribe(site=>{
+        console.log(site);
+      });
+    }
+   
   }
 
   ngOnDestroy(): void {
