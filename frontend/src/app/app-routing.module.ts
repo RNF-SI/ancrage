@@ -69,6 +69,11 @@ const routes: Routes = [ {
       path: 'site',
       component: SiteComponent,
       canActivate: [AuthGuardService]
+    },
+    {
+      path: 'site/:id_site',
+      component: SiteComponent,
+      canActivate: [AuthGuardService]
     }
   ]},
    

@@ -35,7 +35,7 @@ export class SiteService {
 	}
 
 	get(id: number): Observable<Site> {
-		return this.http.get<ISite>(this.BASE_URL + id + '/').pipe(
+		return this.http.get<ISite>(this.BASE_URL + id).pipe(
 			map(siteJson => Site.fromJson(siteJson))
 		);
 	}

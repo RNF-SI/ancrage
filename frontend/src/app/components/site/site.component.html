@@ -13,14 +13,14 @@
                 </mat-form-field>
                 <mat-form-field appearance="fill">
                     <mat-label>{{housingLabel}}</mat-label>
-                    <mat-select multiple required formControlName="habitats">
+                    <mat-select multiple required formControlName="habitats" [compareWith]="compareNomenclatures">
                         <mat-option *ngFor="let hab of uniqueHabitats" [value]="hab">{{ hab.libelle }}</mat-option>
                     </mat-select>
                     <mat-error *ngIf="formGroup.get('habitats')?.hasError('required')">Au moins un habitat est requis.</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
                     <mat-label>{{statusLabel}}</mat-label>
-                    <mat-select required formControlName="type">
+                    <mat-select required formControlName="type" [compareWith]="compareNomenclatures">
                         <mat-option *ngFor="let type of uniqueStatuts" required [value]="type">{{ type.libelle }}</mat-option>
                     </mat-select>
                     <mat-error *ngIf="formGroup.get('type')?.hasError('required')">Un statut est requis.</mat-error>
