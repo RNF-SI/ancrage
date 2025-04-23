@@ -28,6 +28,13 @@
                     <mat-error *ngIf="formGroup.get('type')?.hasError('required')">Un statut est requis.</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
+                    <mat-label>{{departementsLabel}}</mat-label>
+                    <mat-select required multiple formControlName="departements" [compareWith]="compareDepartements">
+                        <mat-option *ngFor="let departement of uniqueDepartements" required [value]="departement">{{ departement.nom_dep }}</mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="formGroup.get('type')?.hasError('required')">Au moins un département est requis.</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="fill">
                     <mat-label>{{latitudeLabel}}</mat-label>
                     <input matInput placeholder="Entrez une latitude" required formControlName="position_y">
                     <mat-error *ngIf="formGroup.get('position_y')?.hasError('required')">Une latitude est requise.</mat-error>

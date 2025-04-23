@@ -14,6 +14,9 @@ import { MapComponent } from "../map/map.component";
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Diagnostic } from '@app/models/diagnostic.model';
+import { Departement } from '@app/models/departement.model';
+import { DepartementService } from '@app/services/departement.service';
+
 
 
 @Component({
@@ -26,7 +29,7 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 export class SiteComponent implements OnInit,OnDestroy{
   sites:Site[]=[];
   titleSite="Créer un site";
-  regionLabel = "Régions";
+  departementLabel = "Régions";
   departmentLabel ="Départements";
   housingLabel= "Habitats";
   statusLabel ="Statut";
@@ -35,8 +38,10 @@ export class SiteComponent implements OnInit,OnDestroy{
   longitudeLabel = "Longitude";
   btnRecordLabel = "Enregistrer";
   btnPreviousStepLabel = "Revenir à l'étape précédente";
+  departementsLabel = "Départements";
   uniqueHabitats:Nomenclature[]=[];
   uniqueStatuts:Nomenclature[]=[];
+  uniqueDepartements:Departement[]=[];
   latitude="47.316669";
   longitude="5.01667";
   private nomenclatureService = inject(NomenclatureService);
@@ -51,6 +56,7 @@ export class SiteComponent implements OnInit,OnDestroy{
     nom: ['', [Validators.required]],
     habitats: this.fb.control<Nomenclature[]>([], [Validators.required]),  
     type: this.fb.control<Nomenclature | null>(null, [Validators.required]),
+    departements: this.fb.control<Departement[]>([], [Validators.required]),  
     position_y: [this.latitude, [Validators.required,Validators.pattern('^(\\+|-)?(?:90(?:\.0{1,6})?|(?:[0-9]|[1-8][0-9])(?:\.[0-9]{1,6})?)$')]],
 		position_x: [this.longitude, [Validators.required,Validators.pattern('^(\\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$')]]
   });
@@ -62,6 +68,7 @@ export class SiteComponent implements OnInit,OnDestroy{
   monster: any;
   changePosition = true;
   diagnostic:Diagnostic = new Diagnostic();
+  private departementService = inject(DepartementService);
   
   ngOnInit(): void {
     if(localStorage.getItem("diagnostic")){
@@ -72,26 +79,32 @@ export class SiteComponent implements OnInit,OnDestroy{
   
       const habitats$ = this.nomenclatureService.getAllByType(this.mnemoHabitats);
       const statuts$ = this.nomenclatureService.getAllByType(this.mnemoStatuts);
-  
+      const departements$ = this.departementService.getAll();
+
       if (id_site) {
         // 🔥 Charger les habitats, statuts ET site
         const site$ = this.siteService.get(id_site);
   
-        forkJoin([habitats$, statuts$, site$]).subscribe(([habitats, statuts, site]) => {
+        forkJoin([habitats$, statuts$, site$,departements$]).subscribe(([habitats, statuts, site,departements]) => {
           this.uniqueHabitats = habitats;
           this.uniqueStatuts = statuts;
+          this.uniqueDepartements = departements;
+          this.departementService.sortByName(this.uniqueDepartements);
           this.site = site;
-          
+          console.log(this.site);
           this.site.habitats = (this.site.habitats || []).map(hab =>
             this.uniqueHabitats.find(uh => uh.id_nomenclature === hab.id_nomenclature) || hab
           );
-  
+          this.site.departements = (this.site.departements|| []).map(dpt =>
+            this.uniqueDepartements.find(ud => ud.id_departement === dpt.id_departement) || dpt
+          );
           this.site.type = this.uniqueStatuts.find(stat => stat.id_nomenclature === this.site.type?.id_nomenclature) || this.site.type;
   
           this.formGroup.patchValue({
             id_site: this.site.id_site,
             nom: this.site.nom,
             habitats: this.site.habitats,
+            departements: this.site.departements,
             type: this.site.type,
             position_y: this.site.position_y,
             position_x: this.site.position_x
@@ -111,6 +124,10 @@ export class SiteComponent implements OnInit,OnDestroy{
  
   compareNomenclatures(o1: Nomenclature, o2: Nomenclature): boolean {
     return o1 && o2 ? o1.id_nomenclature === o2.id_nomenclature : o1 === o2;
+  }
+
+  compareDepartements(o1: Departement, o2: Departement): boolean {
+    return o1 && o2 ? o1.id_departement === o2.id_departement: o1 === o2;
   }
 
   recordSite(event: Event){
