@@ -16,9 +16,25 @@ export class AlerteSiteComponent {
   private router = inject(Router)
   constructor(
     public dialogRef: MatDialogRef<AlerteSiteComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { title: string; message: string; site:Site }
+    @Inject(MAT_DIALOG_DATA) public data: { 
+      title: string; 
+      message: string; 
+      site:Site, 
+      labels : {
+        departementLabel: "",
+        housingLabel: "",
+        statusLabel:"",
+        nameLabel: "",
+        latitudeLabel: "",
+        longitudeLabel: "",
+        btnRecordLabel: "",
+        btnPreviousStepLabel: ""
+      } 
+    }
   ) {}
+  
   private siteService = inject(SiteService);
+
 
   navigate(path:string){
     this.siteService.navigateAndReload(path)

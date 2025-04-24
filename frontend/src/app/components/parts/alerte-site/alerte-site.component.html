@@ -1,10 +1,10 @@
 <h2 mat-dialog-title>{{ data.title }}</h2>
 <mat-dialog-content>
-    <p>{{ data.message }}</p>
-    <p>{{ data.site.nom }}</p>
-    <p *ngFor="let hab of data.site.habitats">{{ hab.libelle }}</p>
-    <p>{{ data.site.type.libelle }}</p>
-    <p *ngFor="let dpt of data.site.departements">{{ dpt.nom_dep }}</p>
+    <div><span>{{ data.message }}</span></div>
+    <div><b>{{data.labels.nameLabel}}</b> : <span>{{ data.site.nom }}</span></div>
+    <div><b>{{data.labels.housingLabel}}</b> : <span *ngFor="let hab of data.site.habitats">{{ hab.libelle }} </span></div>
+    <div><b>{{data.labels.statusLabel}}</b> : <span>{{ data.site.type.libelle }}</span></div>
+    <div><b>{{data.labels.departementLabel}}</b> : <span *ngFor="let dpt of data.site.departements">{{ dpt.nom_dep }} </span></div>
 </mat-dialog-content>
 
 <mat-dialog-actions>

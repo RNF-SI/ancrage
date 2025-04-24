@@ -42,11 +42,18 @@ export class ChoixSiteComponent implements OnInit, OnDestroy{
   btnToChooseLabel = "Choisir";
   btnNewSiteLabel = "Nouveau site";
   btnToChooseActors = "Choix des acteurs";
-  regionLabel = "Régions";
-  departmentLabel ="Départements";
-  housingLabel= "Habitats";
-  statusLabel ="Statut";
-  nameLabel = "Nom";
+
+  labels = {
+    departementLabel: "",
+    housingLabel: "",
+    statusLabel:"",
+    nameLabel: "",
+    latitudeLabel: "",
+    longitudeLabel: "",
+    btnRecordLabel: "",
+    btnPreviousStepLabel: "",
+    regionLabel: ""
+  }
   private siteService = inject(SiteService);
   private sitesSub!: Subscription;
   title="Choisir les sites";
@@ -58,7 +65,7 @@ export class ChoixSiteComponent implements OnInit, OnDestroy{
   private router = inject(Router);
 
   ngOnInit(): void {
-    
+    this.labels = this.siteService.labels;
     this.sitesSub = this.siteService.getAll().subscribe(sites => {
       
       this.siteService.sortByName(sites);

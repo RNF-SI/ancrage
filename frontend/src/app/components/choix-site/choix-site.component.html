@@ -9,7 +9,7 @@
             </div>
             <div id="selectors" class="text-center">
                 <mat-form-field appearance="fill">
-                    <mat-label>{{regionLabel}}</mat-label>
+                    <mat-label>{{labels.regionLabel}}</mat-label>
                     <mat-select [(value)]="selectedRegion" (selectionChange)="applyFilters()">
                     <!--  <mat-option (click)="clearFilter(selectedRegion)" class="text-danger">
                             {{reinitialisation}}
@@ -19,7 +19,7 @@
                 </mat-form-field>
 
                 <mat-form-field appearance="fill" class="accent-select">
-                    <mat-label>{{departmentLabel}}</mat-label>
+                    <mat-label>{{labels.departementLabel}}</mat-label>
                     <mat-select [(value)]="selectedDepartement" (selectionChange)="applyFilters()">
                     <!--  <mat-option (click)="clearFilter(selectedDepartement)" class="text-danger">
                             {{reinitialisation}}
@@ -30,7 +30,7 @@
                 
             
                 <mat-form-field appearance="fill">
-                    <mat-label>{{statusLabel}}</mat-label>
+                    <mat-label>{{labels.statusLabel}}</mat-label>
                     <mat-select [(value)]="selectedType" (selectionChange)="applyFilters()">
                         <!-- <mat-option (click)="clearFilter(selectedType)" class="text-danger">
                             {{reinitialisation}}
@@ -41,7 +41,7 @@
                 </mat-form-field>
                 
                 <mat-form-field appearance="fill">
-                    <mat-label>{{housingLabel}}</mat-label>
+                    <mat-label>{{labels.housingLabel}}</mat-label>
                     <mat-select [(value)]="selectedHabitat" (selectionChange)="applyFilters()">
                     <!--  <mat-option (click)="clearFilter(selectedHabitat)" class="text-danger">
                             {{reinitialisation}}
@@ -60,11 +60,11 @@
 
                 <!-- Nom Site Column -->
                 <ng-container matColumnDef="nom">
-                  <th mat-header-cell *matHeaderCellDef>{{nameLabel}}</th>
+                  <th mat-header-cell *matHeaderCellDef>{{labels.nameLabel}}</th>
                   <td mat-cell *matCellDef="let site"> <a (click)="navigate('/site/'+site.id_site)">{{ site.nom }}</a> </td>
                 </ng-container>
                 <ng-container matColumnDef="regions">
-                    <th mat-header-cell *matHeaderCellDef>{{regionLabel}}</th>
+                    <th mat-header-cell *matHeaderCellDef>{{labels.regionLabel}}</th>
                     <td mat-cell *matCellDef="let site">
                         <ng-container *ngFor="let dep of site.departements">
                             <div>
@@ -75,7 +75,7 @@
                 </ng-container>  
                 
                 <ng-container matColumnDef="departements">
-                    <th mat-header-cell *matHeaderCellDef>{{departmentLabel}}</th>
+                    <th mat-header-cell *matHeaderCellDef>{{labels.departementLabel}}</th>
                     <td mat-cell *matCellDef="let site">
                         <ng-container *ngFor="let dep of site.departements">
                             <div>{{ dep.nom_dep }}</div>
@@ -85,12 +85,12 @@
                 
                 <!-- Type Column -->
                 <ng-container matColumnDef="type">
-                  <th mat-header-cell *matHeaderCellDef>{{statusLabel}}</th>
+                  <th mat-header-cell *matHeaderCellDef>{{labels.statusLabel}}</th>
                   <td mat-cell *matCellDef="let site"> {{ site.type?.libelle }} </td>
                 </ng-container>
 
                 <ng-container matColumnDef="habitats">
-                    <th mat-header-cell *matHeaderCellDef>{{housingLabel}}</th>
+                    <th mat-header-cell *matHeaderCellDef>{{labels.housingLabel}}</th>
                     <td mat-cell *matCellDef="let site">
                         <ng-container *ngFor="let hab of site.habitats">
                             <div>

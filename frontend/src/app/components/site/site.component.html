@@ -9,39 +9,39 @@
 
                 <input type="number" formControlName="id_site" required class="invisible" >
                 <mat-form-field appearance="fill">
-                    <mat-label>{{nameLabel}}</mat-label>
+                    <mat-label>{{labels.nameLabel}}</mat-label>
                     <input matInput placeholder="Entrez un nom" formControlName="nom" required >
                     <mat-error *ngIf="formGroup.get('nom')?.hasError('required')">Le nom est requis.</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
-                    <mat-label>{{housingLabel}}</mat-label>
+                    <mat-label>{{labels.housingLabel}}</mat-label>
                     <mat-select multiple required formControlName="habitats" [compareWith]="compareNomenclatures">
                         <mat-option *ngFor="let hab of uniqueHabitats" [value]="hab">{{ hab.libelle }}</mat-option>
                     </mat-select>
                     <mat-error *ngIf="formGroup.get('habitats')?.hasError('required')">Au moins un habitat est requis.</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
-                    <mat-label>{{statusLabel}}</mat-label>
+                    <mat-label>{{labels.statusLabel}}</mat-label>
                     <mat-select required formControlName="type" [compareWith]="compareNomenclatures">
                         <mat-option *ngFor="let type of uniqueStatuts" required [value]="type">{{ type.libelle }}</mat-option>
                     </mat-select>
                     <mat-error *ngIf="formGroup.get('type')?.hasError('required')">Un statut est requis.</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
-                    <mat-label>{{departementsLabel}}</mat-label>
+                    <mat-label>{{labels.departementLabel}}</mat-label>
                     <mat-select required multiple formControlName="departements" [compareWith]="compareDepartements">
                         <mat-option *ngFor="let departement of uniqueDepartements" required [value]="departement">{{ departement.nom_dep }}</mat-option>
                     </mat-select>
                     <mat-error *ngIf="formGroup.get('type')?.hasError('required')">Au moins un département est requis.</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
-                    <mat-label>{{latitudeLabel}}</mat-label>
+                    <mat-label>{{labels.latitudeLabel}}</mat-label>
                     <input matInput placeholder="Entrez une latitude" required formControlName="position_y">
                     <mat-error *ngIf="formGroup.get('position_y')?.hasError('required')">Une latitude est requise.</mat-error>
                     <mat-error *ngIf="formGroup.get('position_y')?.hasError('pattern')">Le format est incorrect.</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
-                    <mat-label>{{longitudeLabel}}</mat-label>
+                    <mat-label>{{labels.longitudeLabel}}</mat-label>
                     <input matInput placeholder="Entrez une longitude" required formControlName="position_x">
                     <mat-error *ngIf="formGroup.get('position_x')?.hasError('pattern')">Une longitude est requise.</mat-error>
                     <mat-error *ngIf="formGroup.get('position_x')?.hasError('pattern')">Le format est incorrect.</mat-error>
@@ -49,10 +49,10 @@
             </div>
             <div class="row" id="boutons">
                 <div class="col-6">
-                    <button mat-raised-button color="accent" type="button" (click)="navigate('/choix-site')">{{btnPreviousStepLabel}}</button>
+                    <button mat-raised-button color="accent" type="button" (click)="navigate('/choix-site')">{{labels.btnPreviousStepLabel}}</button>
                 </div>
                 <div class="col-6 text-end">
-                    <button mat-raised-button id="btnNewSite"  type="submit"  color="warn">{{btnRecordLabel}}</button>
+                    <button mat-raised-button id="btnNewSite"  type="submit"  color="warn">{{labels.btnRecordLabel}}</button>
                 </div>
             </div>
             <app-map

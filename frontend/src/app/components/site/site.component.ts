@@ -33,16 +33,18 @@ export class SiteComponent implements OnInit,OnDestroy{
   sites:Site[]=[];
   titleSite="Nouveau site";
   titleModif="Modification du site";
-  departementLabel = "Régions";
-  departmentLabel ="Départements";
-  housingLabel= "Habitats";
-  statusLabel ="Statut";
-  nameLabel = "Nom"; 
-  latitudeLabel = "Latitude";
-  longitudeLabel = "Longitude";
-  btnRecordLabel = "Enregistrer";
-  btnPreviousStepLabel = "Revenir à l'étape précédente";
-  departementsLabel = "Départements";
+
+  
+  labels = {
+    departementLabel: "",
+    housingLabel: "",
+    statusLabel:"",
+    nameLabel: "",
+    latitudeLabel: "",
+    longitudeLabel: "",
+    btnRecordLabel: "",
+    btnPreviousStepLabel: ""
+  }
   uniqueHabitats:Nomenclature[]=[];
   uniqueStatuts:Nomenclature[]=[];
   uniqueDepartements:Departement[]=[];
@@ -76,6 +78,7 @@ export class SiteComponent implements OnInit,OnDestroy{
   private dialog = inject(MatDialog);
 
   ngOnInit(): void {
+    this.labels = this.siteService.labels;
     if(localStorage.getItem("diagnostic")){
       this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!)
     }
@@ -121,7 +124,7 @@ export class SiteComponent implements OnInit,OnDestroy{
           this.uniqueHabitats = habitats;
           this.uniqueStatuts = statuts;
           this.uniqueDepartements = departements;
-          
+          this.departementService.sortByName(this.uniqueDepartements);
         });
       }
     });
@@ -148,7 +151,8 @@ export class SiteComponent implements OnInit,OnDestroy{
           data: {
             title: this.titleSite,
             message: "Le site suivant vient d'être créé dans la base de données et a été ajouté au diagnostic :",
-            site: site
+            site: site,
+            labels: this.labels
           }
         });
       });
@@ -160,7 +164,8 @@ export class SiteComponent implements OnInit,OnDestroy{
           data: {
             title: this.titleModif,
             message: "Le site suivant vient d'être modifié dans la base de données et a été ajouté au diagnostic :",
-            site: site
+            site: site,
+            labels: this.labels
           }
         });
       });
