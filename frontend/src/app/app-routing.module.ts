@@ -17,6 +17,8 @@ import { DiagosticsListeComponent } from './components/diagnostics-liste/diagnos
 import { ChoixSiteComponent } from './components/choix-site/choix-site.component';
 import { MesDiagnosticsComponent } from './components/mes-diagnostics/mes-diagnostics.component';
 import { SiteComponent } from './components/site/site.component';
+import { ChoixActeursComponent } from './choix-acteurs/choix-acteurs.component';
+import { SiteLsComponent } from './site-ls/site-ls.component';
 
 const routes: Routes = [ { 
   path: '', 
@@ -74,13 +76,23 @@ const routes: Routes = [ {
       path: 'site/:id_site',
       component: SiteComponent,
       canActivate: [AuthGuardService]
+    },
+    {
+      path: 'site-ls/:id_site',
+      component: SiteLsComponent,
+      canActivate: [AuthGuardService]
+    },
+    {
+      path: 'choix-acteurs',
+      component: ChoixActeursComponent,
+      canActivate: [AuthGuardService]
     }
   ]},
    
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes,{ onSameUrlNavigation: 'reload' })],
   exports: [RouterModule]
 })
 export class AppRoutingModule { }

@@ -4,19 +4,11 @@
 @import "assets/css/webflow.css";
 @import "assets/css/rnf-site.webflow.css";
 @import 'conf/custom.scss';
-
+@import 'styles/custom-theme.scss';
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
-.accent-select .mat-form-field-label {
-    color: #40ff69 !important;
-}
-.accent-select .mat-select-arrow {
-    color: #ff4081 !important;
-}
-.accent-select .mat-form-field-underline {
-    background-color: #ff4081 !important;
-}
+
 
 
 

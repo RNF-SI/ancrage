@@ -28,11 +28,15 @@ import { MentionsComponent } from './components/mentions/mentions.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { DiagosticsListeComponent } from './components/diagnostics-liste/diagnostics-liste.component';
 import { ChoixSiteComponent } from './components/choix-site/choix-site.component';
-import { MapComponent } from './components/map/map.component'; 
+import { MapComponent } from './components/parts/map/map.component'; 
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
-import { SitesDiagnosticsViewComponent } from './components/sites-diagnostics-view/sites-diagnostics-view.component';
+import { SitesDiagnosticsViewComponent } from './components/parts/sites-diagnostics-view/sites-diagnostics-view.component';
 import { MesDiagnosticsComponent } from './components/mes-diagnostics/mes-diagnostics.component';
 import { SiteComponent } from './components/site/site.component';
+import { AlerteSiteComponent } from './components/parts/alerte-site/alerte-site.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { ChoixActeursComponent } from './choix-acteurs/choix-acteurs.component';
+import { SiteLsComponent } from './site-ls/site-ls.component';
 
 
 @NgModule({
@@ -44,6 +48,9 @@ import { SiteComponent } from './components/site/site.component';
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
+    SiteLsComponent,
+    
+    
     
     
   ],
@@ -59,12 +66,15 @@ import { SiteComponent } from './components/site/site.component';
     HomeRnfModule,
     RouterModule,
     NgbModule,
+    MatDialogModule,
     DiagosticsListeComponent,
     SitesDiagnosticsViewComponent,
     MapComponent,
     ChoixSiteComponent,
     MesDiagnosticsComponent,
     SiteComponent,
+    AlerteSiteComponent,
+    ChoixActeursComponent,
     ToastrModule.forRoot({
       timeOut: 15000
     }),
@@ -83,4 +93,5 @@ export class AppModule {
         far
       );
     }
+    
 }

@@ -1,5 +1,6 @@
 import { Component, AfterViewInit, Input, SimpleChanges} from '@angular/core';
 import { FormGroup } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Site } from '@app/models/site.model';
 import * as L from 'leaflet';
 import 'leaflet.markercluster';
@@ -21,6 +22,9 @@ L.Marker.prototype.options.icon = L.icon({
  
 })
 export class MapComponent implements AfterViewInit {
+  constructor(private router: Router) {
+    this.router.routeReuseStrategy.shouldReuseRoute = () => false;  // 🔥 Force le reload du composant
+  }
   private map: L.Map | undefined;
   @Input() sites: Site[] = [];
   @Input() changePosition:boolean = false;
@@ -32,7 +36,9 @@ export class MapComponent implements AfterViewInit {
  /*  constructor(private markerService: MarkerService) { } */
   ngAfterViewInit(): void {
     this.initMap();
-
+    setTimeout(() => {
+      this.map?.invalidateSize();
+    }, 0);
   }
 
   ngOnChanges(changes: SimpleChanges): void {

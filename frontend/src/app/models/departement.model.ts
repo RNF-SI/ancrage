@@ -9,7 +9,7 @@ export class Departement implements IDepartement {
     insee_dep = "";
     insee_reg = "";
     communes?: Commune[];
-    region = new Region();
+    region=new Region();
 
     copy(): Departement {
         const copy = new Departement();
@@ -18,7 +18,7 @@ export class Departement implements IDepartement {
         copy.nom_dep = this.nom_dep;
         copy.insee_reg = this.insee_reg;
         copy.communes = this.communes?.map(c=>c.copy());
-        copy.region = this.region.copy();
+        copy.region = this.region?.copy() || new Region();
 
         return copy;
     }
@@ -31,7 +31,7 @@ export class Departement implements IDepartement {
         departement.nom_dep = data.nom_dep;
         departement.insee_reg = data.insee_reg;
         departement.communes = data.communes ? (data.communes || []).map(c => Commune.fromJson(c)):undefined;
-        departement.region = Region.fromJson(data.region);
+        departement.region = Region.fromJson(data.region!) || new Region();
 
 
         return departement;
@@ -46,7 +46,7 @@ export class Departement implements IDepartement {
             nom_dep: this.nom_dep,
             insee_reg: this.insee_reg,
             commune: this.communes?.map(c=>c.copy()),
-            departements: this.region.copy()
+            region: this.region?.copy()
 
         };
 

@@ -8,7 +8,7 @@ import { Site } from '@app/models/site.model';
 import { SiteService } from '@app/services/sites.service';
 import { Subscription, switchMap, of } from 'rxjs';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { SitesDiagnosticsViewComponent } from "../sites-diagnostics-view/sites-diagnostics-view.component";
+import { SitesDiagnosticsViewComponent } from "../parts/sites-diagnostics-view/sites-diagnostics-view.component";
 
 @Component({
   selector: 'app-diagostics-liste',

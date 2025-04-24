@@ -10,12 +10,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { NomenclatureService } from '@app/services/nomenclature.service';
 import { Subscription } from 'rxjs/internal/Subscription';
 import { SiteService } from '@app/services/sites.service';
-import { MapComponent } from "../map/map.component";
+import { MapComponent } from "../parts/map/map.component";
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { Departement } from '@app/models/departement.model';
 import { DepartementService } from '@app/services/departement.service';
+import { MatDialog } from '@angular/material/dialog';
+import { AlerteSiteComponent } from '../parts/alerte-site/alerte-site.component';
 
 
 
@@ -27,8 +29,10 @@ import { DepartementService } from '@app/services/departement.service';
   imports: [MatInputModule, MatFormFieldModule, CommonModule, FormsModule, MatSelectModule, MatButtonModule, MapComponent,ReactiveFormsModule]
 })
 export class SiteComponent implements OnInit,OnDestroy{
+  
   sites:Site[]=[];
-  titleSite="Créer un site";
+  titleSite="Nouveau site";
+  titleModif="Modification du site";
   departementLabel = "Régions";
   departmentLabel ="Départements";
   housingLabel= "Habitats";
@@ -69,7 +73,8 @@ export class SiteComponent implements OnInit,OnDestroy{
   changePosition = true;
   diagnostic:Diagnostic = new Diagnostic();
   private departementService = inject(DepartementService);
-  
+  private dialog = inject(MatDialog);
+
   ngOnInit(): void {
     if(localStorage.getItem("diagnostic")){
       this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!)
@@ -89,6 +94,7 @@ export class SiteComponent implements OnInit,OnDestroy{
           this.uniqueHabitats = habitats;
           this.uniqueStatuts = statuts;
           this.uniqueDepartements = departements;
+          console.log(this.uniqueDepartements)
           this.departementService.sortByName(this.uniqueDepartements);
           this.site = site;
           console.log(this.site);
@@ -110,13 +116,15 @@ export class SiteComponent implements OnInit,OnDestroy{
             position_x: this.site.position_x
           });
           /* this.changeLocation(); */
-          this.titleSite = "Modifier un site";
+          this.titleSite = this.titleModif;
         });
       } else {
 
-        forkJoin([habitats$, statuts$]).subscribe(([habitats, statuts]) => {
+        forkJoin([habitats$, statuts$,departements$]).subscribe(([habitats, statuts,departements]) => {
           this.uniqueHabitats = habitats;
           this.uniqueStatuts = statuts;
+          this.uniqueDepartements = departements;
+          console.log(this.uniqueDepartements);
         });
       }
     });
@@ -139,10 +147,25 @@ export class SiteComponent implements OnInit,OnDestroy{
       this.siteSubscription = this.siteService.add(this.site).subscribe(site=>{
         this.diagnostic.sites.push(site);
         localStorage.setItem("diagnostic",JSON.stringify(this.diagnostic));
+        this.dialog.open(AlerteSiteComponent, {
+          data: {
+            title: this.titleSite,
+            message: "Le site suivant vient d'être créé dans la base de données et a été ajouté au diagnostic :",
+            site: site
+          }
+        });
       });
     }else{
       this.siteSubscription = this.siteService.update(this.site).subscribe(site=>{
-        console.log(site);
+        this.diagnostic.sites.push(site);
+        localStorage.setItem("diagnostic",JSON.stringify(this.diagnostic));
+        this.dialog.open(AlerteSiteComponent, {
+          data: {
+            title: this.titleModif,
+            message: "Le site suivant vient d'être modifié dans la base de données et a été ajouté au diagnostic :",
+            site: site
+          }
+        });
       });
     }
    

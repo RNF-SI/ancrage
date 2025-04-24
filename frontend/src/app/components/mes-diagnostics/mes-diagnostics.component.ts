@@ -7,7 +7,7 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 import { Site } from '@app/models/site.model';
 import { SiteService } from '@app/services/sites.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { SitesDiagnosticsViewComponent } from '../sites-diagnostics-view/sites-diagnostics-view.component';
+import { SitesDiagnosticsViewComponent } from '../parts/sites-diagnostics-view/sites-diagnostics-view.component';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { Subscription } from 'rxjs';
 

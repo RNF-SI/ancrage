@@ -1,6 +1,5 @@
 @import '@angular/material/theming';
 
-// Palette primaire personnalisée (base : #00885b)
 $custom-primary: mat-palette(mat-define-palette((
   50:  #e0f4ed,
   100: #b3e2d1,
@@ -34,7 +33,7 @@ $custom-primary: mat-palette(mat-define-palette((
   )
 )));
 
-// Palette accent inchangée (base : #c8d469)
+
 $custom-accent: mat-palette(mat-define-palette((
   50:  #f8fbe5,
   100: #eef5bd,
@@ -68,7 +67,7 @@ $custom-accent: mat-palette(mat-define-palette((
   )
 )));
 
-// Définir le thème personnalisé
+
 $custom-theme: mat-light-theme((
   color: (
     primary: $custom-primary,
@@ -76,8 +75,8 @@ $custom-theme: mat-light-theme((
   )
 ));
 
-// Import des styles de base Angular Material
+
 @include mat-core();
 
-// Application du thème personnalisé
+
 @include angular-material-theme($custom-theme);

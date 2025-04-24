@@ -1,0 +1,14 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+<mat-dialog-content>
+    <p>{{ data.message }}</p>
+    <p>{{ data.site.nom }}</p>
+    <p *ngFor="let hab of data.site.habitats">{{ hab.libelle }}</p>
+    <p>{{ data.site.type.libelle }}</p>
+    <p *ngFor="let dpt of data.site.departements">{{ dpt.nom_dep }}</p>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+    <button mat-raised-button mat-dialog-close (click)="navigateAndReload('/choix-acteurs')" color="accent">Choisir les acteurs</button>
+    <button mat-raised-button mat-dialog-close (click)="navigateAndReload('/site')" color="accent">Créer un autre site</button>
+    <button mat-raised-button mat-dialog-close (click)="navigateAndReload('/choix-site')" color="accent">Ajouter un site existant</button>
+</mat-dialog-actions>
