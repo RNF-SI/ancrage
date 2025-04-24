@@ -23,7 +23,6 @@ class Region(db.Model):
     id_region = db.Column(db.Integer, primary_key=True)
     geom = db.Column(Geometry('MULTIPOLYGON', srid=4326))
     id_reg = db.Column(VARCHAR(24))
-    nom_reg_m = db.Column(VARCHAR(255))
     nom_reg = db.Column(VARCHAR(255))
     insee_reg = db.Column(VARCHAR(255),unique=True)
 
@@ -38,7 +37,6 @@ class Departement(db.Model):
     id_departement = db.Column(db.Integer, primary_key=True)
     geom = db.Column(Geometry('MULTIPOLYGON', srid=4326))
     id_dep = db.Column(VARCHAR(24))
-    nom_dep_m = db.Column(VARCHAR(30))
     nom_dep = db.Column(VARCHAR(30))
     insee_dep = db.Column(VARCHAR(255),unique=True)
     insee_reg = db.Column(VARCHAR(255),db.ForeignKey('t_regions.insee_reg'))
@@ -56,7 +54,6 @@ class Commune(db.Model):
     id_commune = db.Column(db.String, primary_key=True)
     geom = db.Column(Geometry('MULTIPOLYGON', srid=4326))
     nom_com = db.Column(VARCHAR(50))
-    nom_com_m = db.Column(VARCHAR(50))
     insee_com = db.Column(VARCHAR(5),unique=True)
     statut = db.Column(VARCHAR(24))
     population = db.Column(db.Integer)

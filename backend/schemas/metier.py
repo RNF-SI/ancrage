@@ -9,6 +9,7 @@ class RegionSchema(SQLAlchemyAutoSchema):
         model = Region
         include_relationships = True
         load_instance = True
+        exclude = ('geom', 'departements')
     def get_geom(self, obj):
         # Retourne un GeoJSON à partir de la géométrie PostGIS
         return db.session.scalar(obj.geom.ST_AsGeoJSON()) if obj.geom else None
@@ -23,7 +24,8 @@ class DepartementSchema(SQLAlchemyAutoSchema):
         model = Departement
         include_relationships = True
         load_instance = True
-
+        exclude = ('geom', 'communes', 'sites')
+        
     def get_geom(self, obj):
         return db.session.scalar(obj.geom.ST_AsGeoJSON()) if obj.geom else None
 
