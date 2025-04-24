@@ -35,7 +35,7 @@ import { MesDiagnosticsComponent } from './components/mes-diagnostics/mes-diagno
 import { SiteComponent } from './components/site/site.component';
 import { AlerteSiteComponent } from './components/parts/alerte-site/alerte-site.component';
 import { MatDialogModule } from '@angular/material/dialog';
-import { ChoixActeursComponent } from './choix-acteurs/choix-acteurs.component';
+import { ChoixActeursComponent } from './components/choix-acteurs/choix-acteurs.component';
 import { SiteLsComponent } from './components/site-ls/site-ls.component';
 
 

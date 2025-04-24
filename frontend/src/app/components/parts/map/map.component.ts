@@ -121,13 +121,11 @@ export class MapComponent implements AfterViewInit {
       this.sites=[];
       let latitude:number=+this.formGroup?.get('position_y')?.value;
       let longitude:number=+this.formGroup?.get('position_x')?.value;;
-      if (latitude==0 && longitude==0) {
+      if(longitude==0 || latitude ==0){
         latitude = 47.316667;
-        
-        longitude = 5.016667
-        
+        longitude = 5.016667;
+
       }
-      console.log(latitude);
       if (this.marker) {
         this.marker.remove();
       }

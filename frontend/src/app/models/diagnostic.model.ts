@@ -17,6 +17,20 @@ export class Diagnostic implements IDiagnostic {
 	modified_at: Date | undefined;
 	created_by: number = 0;
 
+	copy(): Diagnostic {
+		const copy = new Diagnostic();
+
+		copy.id_diagnostic = this.id_diagnostic;
+		copy.nom = this.nom;
+		copy.date_debut = this.date_debut ? new Date(this.date_debut.getTime()) : undefined;
+		copy.date_fin = this.date_fin ? new Date(this.date_fin.getTime()) : undefined;
+		copy.sites = this.sites.map(s => s.copy());
+		copy.created_at = this.created_at ? new Date(this.created_at.getTime()) : undefined;
+		copy.modified_at = this.modified_at ? new Date(this.modified_at.getTime()) : undefined;
+		copy.created_by = this.created_by;
+
+		return copy;
+	}
 	/** Création depuis JSON brut */
 	static fromJson(data: IDiagnostic): Diagnostic {
 		const diag = new Diagnostic();

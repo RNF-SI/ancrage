@@ -19,6 +19,23 @@ export class Site implements ISite {
 	modified_by: number = 0;
 	selected=false;
 
+	copy(): Site {
+		const copy = new Site();
+
+		copy.id_site = this.id_site;
+		copy.nom = this.nom;
+		copy.position_x = this.position_x;
+		copy.position_y = this.position_y;
+		copy.diagnostics = this.diagnostics.map(d => d.copy());
+		copy.habitats = this.habitats.map(h => h.copy());
+		copy.type = this.type.copy();
+		copy.created_at = this.created_at ? new Date(this.created_at.getTime()) : undefined;
+		copy.modified_at = this.modified_at ? new Date(this.modified_at.getTime()) : undefined;
+		copy.created_by = this.created_by;
+		copy.modified_by = this.modified_by;
+
+		return copy;
+	}
 	/** Création depuis un JSON brut (avec reconversion des objets internes et dates) */
 	static fromJson(data: ISite): Site {
 		const site = new Site();
