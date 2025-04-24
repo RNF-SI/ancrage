@@ -12,14 +12,14 @@ import { SiteService } from '@app/services/sites.service';
 import { Subscription } from 'rxjs';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-choix-site',
   templateUrl: './choix-site.component.html',
   styleUrls: ['./choix-site.component.css'],
   standalone:true,
-  imports:[MapComponent,CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule]
+  imports:[MapComponent,CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule,RouterModule]
 })
 
 export class ChoixSiteComponent implements OnInit, OnDestroy{
@@ -167,6 +167,10 @@ export class ChoixSiteComponent implements OnInit, OnDestroy{
   
   ngOnDestroy(): void {
     this.sitesSub?.unsubscribe();
+  }
+
+  navigate(path:string){
+    this.siteService.navigateAndReload(path);
   }
 
 }

@@ -61,7 +61,7 @@
                 <!-- Nom Site Column -->
                 <ng-container matColumnDef="nom">
                   <th mat-header-cell *matHeaderCellDef>{{nameLabel}}</th>
-                  <td mat-cell *matCellDef="let site"> {{ site.nom }} </td>
+                  <td mat-cell *matCellDef="let site"> <a (click)="navigate('/site/'+site.id_site)">{{ site.nom }}</a> </td>
                 </ng-container>
                 <ng-container matColumnDef="regions">
                     <th mat-header-cell *matHeaderCellDef>{{regionLabel}}</th>

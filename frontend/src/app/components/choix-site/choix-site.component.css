@@ -29,3 +29,9 @@ h3{
     margin-left:1%;
 }
 
+a{
+    text-decoration: underline !important;
+    color: blue !important;
+    cursor: pointer;
+}
+

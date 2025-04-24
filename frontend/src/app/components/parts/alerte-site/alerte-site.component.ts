@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { Site } from '@app/models/site.model';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { SiteService } from '@app/services/sites.service';
 @Component({
   selector: 'app-alerte-site',
   templateUrl: './alerte-site.component.html',
@@ -17,11 +18,10 @@ export class AlerteSiteComponent {
     public dialogRef: MatDialogRef<AlerteSiteComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { title: string; message: string; site:Site }
   ) {}
-  
-  navigateAndReload(path: string) {
-    
-    this.router.navigate([path]).then(() => {
-      window.location.reload();
-    });;
+  private siteService = inject(SiteService);
+
+  navigate(path:string){
+    this.siteService.navigateAndReload(path)
   }
+  
 } 

@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Site } from '@app/models/site.model';
 import { ISite } from '@app/interfaces/site.interface';
 import { environment } from 'src/environments/environment';
+import { Router } from '@angular/router';
 @Injectable({
 	providedIn: 'root'
 })
@@ -12,7 +13,7 @@ export class SiteService {
 	private GET_ALL_URL = environment.flask_server+'sites';
 	private BASE_URL = environment.flask_server+'site/';
 	private http = inject(HttpClient);
-	
+	private router = inject(Router);
 
 	getAll(): Observable<Site[]> {
 		return this.http.get<ISite[]>(this.GET_ALL_URL).pipe(
@@ -64,6 +65,13 @@ export class SiteService {
 		  var textB = b.nom.toUpperCase();
 		  return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
 		})
+	}
+
+	navigateAndReload(path: string) {
+    
+		this.router.navigate([path]).then(() => {
+		  window.location.reload();
+		});;
 	}
 
 }

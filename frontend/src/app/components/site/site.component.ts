@@ -94,10 +94,8 @@ export class SiteComponent implements OnInit,OnDestroy{
           this.uniqueHabitats = habitats;
           this.uniqueStatuts = statuts;
           this.uniqueDepartements = departements;
-          console.log(this.uniqueDepartements)
           this.departementService.sortByName(this.uniqueDepartements);
           this.site = site;
-          console.log(this.site);
           this.site.habitats = (this.site.habitats || []).map(hab =>
             this.uniqueHabitats.find(uh => uh.id_nomenclature === hab.id_nomenclature) || hab
           );
@@ -115,7 +113,6 @@ export class SiteComponent implements OnInit,OnDestroy{
             position_y: this.site.position_y,
             position_x: this.site.position_x
           });
-          /* this.changeLocation(); */
           this.titleSite = this.titleModif;
         });
       } else {
@@ -124,7 +121,7 @@ export class SiteComponent implements OnInit,OnDestroy{
           this.uniqueHabitats = habitats;
           this.uniqueStatuts = statuts;
           this.uniqueDepartements = departements;
-          console.log(this.uniqueDepartements);
+          
         });
       }
     });
@@ -142,7 +139,7 @@ export class SiteComponent implements OnInit,OnDestroy{
     
     event.preventDefault();
     this.site = Object.assign(new Site(),this.formGroup.value);
-    console.log(this.site)
+    
     if (this.site.id_site == 0){
       this.siteSubscription = this.siteService.add(this.site).subscribe(site=>{
         this.diagnostic.sites.push(site);
@@ -171,9 +168,12 @@ export class SiteComponent implements OnInit,OnDestroy{
    
   }
 
+  navigate(path:string){
+    this.siteService.navigateAndReload(path);
+  }
   ngOnDestroy(): void {
     this.nomenclatureSubscription?.unsubscribe();
-    this.siteSubscription.unsubscribe();
-    this.routeSubscription.unsubscribe();
+    this.siteSubscription?.unsubscribe();
+    this.routeSubscription?.unsubscribe();
   }
 }
