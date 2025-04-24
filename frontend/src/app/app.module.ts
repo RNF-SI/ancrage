@@ -36,7 +36,7 @@ import { SiteComponent } from './components/site/site.component';
 import { AlerteSiteComponent } from './components/parts/alerte-site/alerte-site.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ChoixActeursComponent } from './choix-acteurs/choix-acteurs.component';
-import { SiteLsComponent } from './site-ls/site-ls.component';
+import { SiteLsComponent } from './components/site-ls/site-ls.component';
 
 
 @NgModule({
@@ -48,11 +48,6 @@ import { SiteLsComponent } from './site-ls/site-ls.component';
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
-    SiteLsComponent,
-    
-    
-    
-    
   ],
   imports: [
     BrowserModule,
@@ -75,6 +70,7 @@ import { SiteLsComponent } from './site-ls/site-ls.component';
     SiteComponent,
     AlerteSiteComponent,
     ChoixActeursComponent,
+    SiteLsComponent,
     ToastrModule.forRoot({
       timeOut: 15000
     }),

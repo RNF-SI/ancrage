@@ -48,8 +48,8 @@ export class SiteComponent implements OnInit,OnDestroy{
   uniqueHabitats:Nomenclature[]=[];
   uniqueStatuts:Nomenclature[]=[];
   uniqueDepartements:Departement[]=[];
-  latitude="47.316669";
-  longitude="5.01667";
+  latitude="";
+  longitude="";
   private nomenclatureService = inject(NomenclatureService);
   private siteService = inject(SiteService)
   private nomenclatureSubscription!: Subscription;
@@ -152,7 +152,8 @@ export class SiteComponent implements OnInit,OnDestroy{
             title: this.titleSite,
             message: "Le site suivant vient d'être créé dans la base de données et a été ajouté au diagnostic :",
             site: site,
-            labels: this.labels
+            labels: this.labels,
+            diagnostic:this.diagnostic
           }
         });
       });
@@ -165,7 +166,8 @@ export class SiteComponent implements OnInit,OnDestroy{
             title: this.titleModif,
             message: "Le site suivant vient d'être modifié dans la base de données et a été ajouté au diagnostic :",
             site: site,
-            labels: this.labels
+            labels: this.labels,
+            diagnostic:this.diagnostic
           }
         });
       });
@@ -173,8 +175,8 @@ export class SiteComponent implements OnInit,OnDestroy{
    
   }
 
-  navigate(path:string){
-    this.siteService.navigateAndReload(path);
+  navigate(path:string,diagnostic:Diagnostic){
+    this.siteService.navigateAndReload(path,diagnostic);
   }
   ngOnDestroy(): void {
     this.nomenclatureSubscription?.unsubscribe();

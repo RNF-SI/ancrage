@@ -63,6 +63,7 @@ export class ChoixSiteComponent implements OnInit, OnDestroy{
   chosenSites:String[]=[this.emptyChosenSites];
   private authService = inject(AuthService);
   private router = inject(Router);
+  user_id:number = 0;
 
   ngOnInit(): void {
     this.labels = this.siteService.labels;
@@ -84,6 +85,7 @@ export class ChoixSiteComponent implements OnInit, OnDestroy{
       return this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
     }else{
       this.diagnostic.created_by = user_id;
+      this.user_id = user_id;
       this.diagnostic.id_organisme = id_organisme;
     }
    
@@ -163,11 +165,6 @@ export class ChoixSiteComponent implements OnInit, OnDestroy{
 
   }
 
-  toBrandNewSite(){
-    localStorage.setItem("diagnostic", JSON.stringify(this.diagnostic));
-    this.router.navigate(['/site']);
-  }
-
   toActors(){
 
   }
@@ -176,8 +173,8 @@ export class ChoixSiteComponent implements OnInit, OnDestroy{
     this.sitesSub?.unsubscribe();
   }
 
-  navigate(path:string){
-    this.siteService.navigateAndReload(path);
+  navigate(path:string,diagnostic:Diagnostic){
+    this.siteService.navigateAndReload(path,diagnostic);
   }
 
 }

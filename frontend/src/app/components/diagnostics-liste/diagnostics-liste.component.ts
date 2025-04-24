@@ -30,9 +30,11 @@ export class DiagosticsListeComponent implements OnInit, OnDestroy{
 	private siteService = inject(SiteService);
 	private sitesSub!: Subscription;
 	title="";
+  diagnostic:Diagnostic = new Diagnostic();
 	
-  	ngOnInit(): void {
+  ngOnInit(): void {
 		this.title="Diagnostics";
+    localStorage.removeItem("diagnostic");
 		this.sitesSub = this.siteService.getAll().subscribe(sites => {
       this.siteService.sortByName(sites);
 			return this.sites = sites;
@@ -43,9 +45,6 @@ export class DiagosticsListeComponent implements OnInit, OnDestroy{
 		this.sitesSub?.unsubscribe();
 	}
   
-  modifyDiagnostic(diagnostic: Diagnostic) {
-    throw new Error('Method not implemented.');
-  }
 
 }
 

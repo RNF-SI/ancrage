@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-choix-acteurs',
@@ -6,6 +6,9 @@ import { Component } from '@angular/core';
   styleUrls: ['./choix-acteurs.component.css'],
   standalone:true
 })
-export class ChoixActeursComponent {
+export class ChoixActeursComponent implements OnInit {
+  ngOnInit(): void {
+    console.log(localStorage.getItem("diagnostic"));
+  }
 
 }

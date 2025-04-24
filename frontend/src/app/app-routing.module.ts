@@ -18,7 +18,7 @@ import { ChoixSiteComponent } from './components/choix-site/choix-site.component
 import { MesDiagnosticsComponent } from './components/mes-diagnostics/mes-diagnostics.component';
 import { SiteComponent } from './components/site/site.component';
 import { ChoixActeursComponent } from './choix-acteurs/choix-acteurs.component';
-import { SiteLsComponent } from './site-ls/site-ls.component';
+import { SiteLsComponent } from './components/site-ls/site-ls.component';
 
 const routes: Routes = [ { 
   path: '', 

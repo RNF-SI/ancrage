@@ -5,6 +5,7 @@ import { Site } from '@app/models/site.model';
 import { ISite } from '@app/interfaces/site.interface';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
+import { Diagnostic } from '@app/models/diagnostic.model';
 @Injectable({
 	providedIn: 'root'
 })
@@ -24,7 +25,7 @@ export class SiteService {
 		  longitudeLabel: "Longitude",
 		  btnRecordLabel: "Enregistrer",
 		  btnPreviousStepLabel: "Revenir à l'étape précédente",
-		  regionLabel: ""
+		  regionLabel: "Régions"
 	}
 
 	getAll(): Observable<Site[]> {
@@ -79,8 +80,13 @@ export class SiteService {
 		})
 	}
 
-	navigateAndReload(path: string) {
-    
+	navigateAndReload(path: string,diagnostic:Diagnostic,site?:Site) {
+		if (site){
+			diagnostic.sites.push(site);
+		}
+		
+		localStorage.setItem("diagnostic",JSON.stringify(diagnostic));
+		console.log(localStorage.getItem("diagnostic"));
 		this.router.navigate([path]).then(() => {
 		  window.location.reload();
 		});;

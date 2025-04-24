@@ -36,10 +36,11 @@ import { Subscription } from 'rxjs';
     private user_role_id:number=1;
     private sitesSub!:Subscription;
     title="";
-    
+    diagnostic:Diagnostic = new Diagnostic();
+
     ngOnInit(): void {
       this.title="Mes diagnostics";
-      
+      localStorage.removeItem("diagnostic");
       this.user_role_id = this.authService.getCurrentUser().id_role;
       this.sitesSub =  this.siteService.getAllByUser(this.user_role_id).subscribe(sites => {
         return this.sites = sites;
@@ -48,10 +49,6 @@ import { Subscription } from 'rxjs';
   
     ngOnDestroy(): void {
       this.sitesSub?.unsubscribe();
-    }
-    
-    modifyDiagnostic(diagnostic: Diagnostic) {
-      throw new Error('Method not implemented.');
     }
   
   }

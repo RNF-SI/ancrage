@@ -1,0 +1,24 @@
+<div class="container">
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6">
+            <mat-card class="site-card">
+                <mat-card-header>
+                <mat-card-title>{{ site.nom }}</mat-card-title>
+                </mat-card-header>
+                    
+                <mat-card-content>
+                    <div><b>{{labels.housingLabel}}</b> : <span *ngFor="let hab of site.habitats">{{ hab.libelle }} </span></div>
+                    <div><b>{{labels.statusLabel}}</b> : <span>{{ site.type.libelle }}</span></div>
+                    <div><b>{{labels.departementLabel}}</b> : <span *ngFor="let dpt of site.departements">{{ dpt.nom_dep }} </span></div>
+                </mat-card-content>
+                <mat-card-actions>
+                    <button mat-raised-button mat-dialog-close (click)="navigate('/choix-acteurs',diagnostic)" color="accent">Choisir les acteurs</button>
+                    <button mat-raised-button mat-dialog-close (click)="navigate('/site',diagnostic)" color="accent">Créer un autre site</button>
+                    <button mat-raised-button mat-dialog-close (click)="navigate('/choix-site',diagnostic)" color="accent">Ajouter un site existant</button>
+                </mat-card-actions>
+            </mat-card>
+        </div>
+        <div class="col-3"></div>
+    </div>
+</div>

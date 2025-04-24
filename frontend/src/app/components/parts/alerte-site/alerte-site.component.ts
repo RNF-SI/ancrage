@@ -5,6 +5,7 @@ import { Site } from '@app/models/site.model';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { SiteService } from '@app/services/sites.service';
+import { Diagnostic } from '@app/models/diagnostic.model';
 @Component({
   selector: 'app-alerte-site',
   templateUrl: './alerte-site.component.html',
@@ -29,15 +30,16 @@ export class AlerteSiteComponent {
         longitudeLabel: "",
         btnRecordLabel: "",
         btnPreviousStepLabel: ""
-      } 
+      },
+      diagnostic:Diagnostic;
     }
   ) {}
   
   private siteService = inject(SiteService);
 
 
-  navigate(path:string){
-    this.siteService.navigateAndReload(path)
+  navigate(path:string,diagnostic:Diagnostic){
+    this.siteService.navigateAndReload(path,diagnostic)
   }
   
 } 

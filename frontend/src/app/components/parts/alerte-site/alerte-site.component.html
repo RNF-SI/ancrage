@@ -8,7 +8,7 @@
 </mat-dialog-content>
 
 <mat-dialog-actions>
-    <button mat-raised-button mat-dialog-close (click)="navigate('/choix-acteurs')" color="accent">Choisir les acteurs</button>
-    <button mat-raised-button mat-dialog-close (click)="navigate('/site')" color="accent">Créer un autre site</button>
-    <button mat-raised-button mat-dialog-close (click)="navigate('/choix-site')" color="accent">Ajouter un site existant</button>
+    <button mat-raised-button mat-dialog-close (click)="navigate('/choix-acteurs',this.data.diagnostic)" color="accent">Choisir les acteurs</button>
+    <button mat-raised-button mat-dialog-close (click)="navigate('/site',this.data.diagnostic)" color="accent">Créer un autre site</button>
+    <button mat-raised-button mat-dialog-close (click)="navigate('/choix-site',this.data.diagnostic)" color="accent">Ajouter un site existant</button>
 </mat-dialog-actions>

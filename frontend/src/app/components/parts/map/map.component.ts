@@ -36,21 +36,22 @@ export class MapComponent implements AfterViewInit {
  
   ngAfterViewInit(): void {
     this.initMap();
-   
+    if (this.changePosition){
+      this.moveMarker();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['sites'] && this.map) {
+    if (changes['sites'] && this.map && !this.changePosition) {
       this.addMarkers(); // Ajoute les marqueurs dès que sites est dispo
     }
     if (changes['formGroup'] && this.map) {
       // 🔥 Vérifie si les positions sont prêtes avant de bouger le marqueur
-      const latitude = +this.formGroup?.get('position_y')?.value;
-      const longitude = +this.formGroup?.get('position_x')?.value;
+      let latitude = +this.formGroup?.get('position_y')?.value;
+      let longitude = +this.formGroup?.get('position_x')?.value;
+      
       console.log(latitude);
-      if (latitude && longitude) {
-        this.moveMarker();
-      }
+      this.moveMarker();
     }
   }
 
@@ -73,10 +74,8 @@ export class MapComponent implements AfterViewInit {
         }
       });
     }
-    
-   
-    
   }
+
   addMarkers(){
     const bounds = L.latLngBounds([]);
     if (this.markerClusterGroup) {
@@ -89,14 +88,30 @@ export class MapComponent implements AfterViewInit {
     for(let i=0;i<this.sites.length;i++){
       const lat = parseFloat(this.sites[i].position_y);
       const lng = parseFloat(this.sites[i].position_x);
-      L.marker([lat,lng]).addTo(this.markerClusterGroup);
+      const marker = L.marker([lat,lng]).addTo(this.markerClusterGroup);
+      var habitats:string ="";
+      for (let j=0;j<this.sites[i].habitats.length;j++){
+       
+        habitats += this.sites[i].habitats[j].libelle + " ";
+      }
+      var departements:string ="";
+      for (let k=0;k<this.sites[i].departements.length;k++){
+       
+        departements += this.sites[i].departements[k].nom_dep + " ";
+      }
+      marker.bindPopup(`
+        <strong>${this.sites[i].nom}</strong><br>
+        Départements : ${departements}<br>
+        Statut : ${this.sites[i].type.libelle}<br>
+        Habitats : ${habitats}<br>
+      `);
       bounds.extend([lat, lng]);
       this.markerClusterGroup.addTo(this.map!);
       
     }
 
     if (this.sites.length > 0) {
-      this.map!.fitBounds(bounds, { padding: [30, 30] }); // ← zoom auto sur tous les points
+      this.map!.fitBounds(bounds, { padding: [30, 30] }); 
     }
   }
 
@@ -104,28 +119,29 @@ export class MapComponent implements AfterViewInit {
     if (this.changePosition){
       const bounds = L.latLngBounds([]);
       this.sites=[];
-      const latitude: number = +this.formGroup?.get('position_y')?.value;
-      const longitude: number = +this.formGroup?.get('position_x')?.value;
+      let latitude:number=+this.formGroup?.get('position_y')?.value;
+      let longitude:number=+this.formGroup?.get('position_x')?.value;;
+      if (latitude==0 && longitude==0) {
+        latitude = 47.316667;
+        
+        longitude = 5.016667
+        
+      }
+      console.log(latitude);
       if (this.marker) {
         this.marker.remove();
       }
-         // Initialiser un marqueur à une position par défaut
+  
       this.marker = L.marker([latitude, longitude], { draggable: false }).addTo(this.map!);
-      console.log(this.marker);
-      // 🔥 Écouteur de clic sur la carte
+ 
       this.map!.on('click', (e: L.LeafletMouseEvent) => {
         const { lat, lng } = e.latlng;
 
-        // 🔥 Déplacer le marqueur à la nouvelle position
         this.marker.setLatLng([lat, lng]);
 
-        // 🔥 Récupérer les coordonnées
-        console.log('Nouveau point :', lat, lng);
-
-        // Si tu veux mettre à jour les champs dans le formulaire Angular :
         this.formGroup?.patchValue({
-          position_y: lat.toFixed(6),  // Latitude
-          position_x: lng.toFixed(6)   // Longitude
+          position_y: lat.toFixed(6),  
+          position_x: lng.toFixed(6)   
         });
       });
       bounds.extend([latitude, longitude]);
