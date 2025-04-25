@@ -51,7 +51,7 @@ class Departement(db.Model):
 class Commune(db.Model):
     __tablename__ = 't_communes'
 
-    id_commune = db.Column(db.String, primary_key=True)
+    id_commune = db.Column(db.Integer, primary_key=True)
     geom = db.Column(Geometry('MULTIPOLYGON', srid=4326))
     nom_com = db.Column(VARCHAR(50))
     insee_com = db.Column(VARCHAR(5),unique=True)
@@ -80,14 +80,6 @@ class Site(db.Model):
     modified_at = db.Column(db.DateTime)
     created_by = db.Column(db.Integer)
     modified_by = db.Column(db.Integer)
-
-""" class SiteHabitat(db.Model):
-    __tablename__ = 'cor_site_habitat'
-    id_site_habitat = db.Column(db.Integer, primary_key=True)
-    site_id = db.Column(db.Integer, db.ForeignKey('t_sites.id_site'))
-    habitat_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
-    site = db.relationship('Site', back_populates='habitats')
-    habitat = db.relationship('Nomenclature', back_populates='sites') """
 
 class DiagnosticsSites(db.Model):
     __tablename__ = 'cor_diagnostics_sites'
@@ -128,7 +120,7 @@ class Acteur(db.Model):
     fonction = db.Column(db.Integer)
     telephone = db.Column(db.String)
     mail = db.Column(db.String)
-    commune_id = db.Column(db.String, db.ForeignKey('t_communes.id_commune'))
+    commune_id = db.Column(db.Integer, db.ForeignKey('t_communes.id_commune'))
     profil_cognitif_id = db.Column(db.Integer)
     is_acteur_economique = db.Column(db.Boolean, nullable=False)
     structure = db.Column(db.String)
@@ -138,14 +130,41 @@ class Acteur(db.Model):
     created_by = db.Column(db.Integer)
     modified_by = db.Column(db.Integer)
     commune = db.relationship("Commune", backref="acteurs")
-    categories = db.relationship('CategoriesActeurs', back_populates='acteur')
+    categories = db.relationship('Nomenclature', secondary='cor_categorie_acteur', back_populates='acteurs')
+    questions = db.relationship('Question', secondary='cor_question_acteur', back_populates='acteurs')
+
+acteur_categorie = db.Table(
+    'cor_categorie_acteur',
+    db.Column('acteur_id', db.Integer, db.ForeignKey('t_acteurs.id_acteur', ondelete="CASCADE")),
+    db.Column('categorie_id', db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature', ondelete="CASCADE"))
+)
+
+class Question(db.Model):
+    __tablename__ = 't_questions'
+
+    id_question = db.Column(db.Integer, primary_key=True)
+    libelle = db.Column(db.String)
+    acteurs = db.relationship('Acteur', secondary='cor_question_acteur', back_populates='questions')
+    reponses = db.relationship(
+        'Reponse',
+        back_populates='question'
+    )
+
+acteur_question = db.Table(
+    'cor_question_acteur',
+    db.Column('acteur_id', db.Integer, db.ForeignKey('t_acteurs.id_acteur', ondelete="CASCADE")),
+    db.Column('question_id', db.Integer, db.ForeignKey('t_questions.id_question', ondelete="CASCADE"))
+)
 
 class Reponse(db.Model):
     __tablename__ = 't_reponses'
     id_reponse = db.Column(db.Integer, primary_key=True)
     mot_cle_id = db.Column(db.Integer)
     valeur_reponse_id = db.Column(db.Integer)
+    question_id = db.Column(db.Integer, db.ForeignKey('t_questions.id_question'))
+    question = db.relationship('Question', foreign_keys=[question_id])
     mots_cles = db.relationship('ReponseMotCle', back_populates='reponse')
+
 
 
 class ReponseMotCle(db.Model):
@@ -170,13 +189,5 @@ class Nomenclature(db.Model):
     value = db.Column(db.Integer)
     mnemonique = db.Column(db.String)
     sites = db.relationship('Site', secondary='cor_site_habitat', back_populates='habitats')
-    acteurs = db.relationship('CategoriesActeurs', back_populates='categorie')
-
-class CategoriesActeurs(db.Model):
-    __tablename__ = 'cor_categories_acteurs'
-    id_categories_acteurs = db.Column(db.Integer, primary_key=True)
-    acteur_id = db.Column(db.Integer, db.ForeignKey('t_acteurs.id_acteur'))
-    categorie_acteur_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
-    categorie = db.relationship('Nomenclature', back_populates='acteurs')
-    acteur = db.relationship('Acteur', back_populates='categories')
+    acteurs = db.relationship('Acteur', secondary='cor_categorie_acteur', back_populates='categories')
 

@@ -1,4 +1,4 @@
-from models.models import Acteur, Diagnostic, Document, MotCle, Nomenclature, Reponse, ReponseMotCle, Site,DiagnosticsSites,CategoriesActeurs, Region,Departement,Commune,db
+from models.models import Acteur, Diagnostic, Document, MotCle, Nomenclature, Reponse, ReponseMotCle, Site,DiagnosticsSites,Question, Region,Departement,Commune,db
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from marshmallow import fields
 
@@ -109,19 +109,21 @@ class ActeurSchema(SQLAlchemyAutoSchema):
         model = Acteur
         include_relationships = True
         load_instance = True
+        exclude = ['diagnostic']
 
     diagnostic = fields.Nested(lambda: DiagnosticLiteSchema)
     commune = fields.Nested(lambda: CommuneSchema)
     categories = fields.Nested(lambda: NomenclatureSchema, many=True)
+    questions = fields.Nested(lambda: QuestionSchema, many=True)
 
-class CategoriesActeursSchema(SQLAlchemyAutoSchema):
+class QuestionSchema(SQLAlchemyAutoSchema):
     class Meta:
-        model = CategoriesActeurs
+        model = Question
         include_relationships = True
         load_instance = True
 
-    categorie = fields.Nested(lambda: NomenclatureSchema, exclude=("acteurs",))
-    acteur = fields.Nested(lambda: Acteur, exclude=("categories",))
+    acteurs = fields.Nested(lambda: ActeurSchema, exclude=("questions",))
+    reponses = fields.Nested(lambda: ReponseSchema, exclude=("question",))
 
 class ActeurLiteSchema(SQLAlchemyAutoSchema):
     class Meta:
