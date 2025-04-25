@@ -1,6 +1,5 @@
-import { Component, AfterViewInit, Input, SimpleChanges, inject} from '@angular/core';
+import { Component, AfterViewInit, Input, SimpleChanges} from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { Site } from '@app/models/site.model';
 import * as L from 'leaflet';
 import 'leaflet.markercluster';
@@ -31,7 +30,6 @@ export class MapComponent implements AfterViewInit {
   markerClusterData = [];
   mapPoint: any;
   marker:any;
-  private route:ActivatedRoute = inject(ActivatedRoute);
  
  
   ngAfterViewInit(): void {

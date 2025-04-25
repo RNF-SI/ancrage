@@ -10,11 +10,64 @@
             </button>
         </div>
     </div>
+    
+    <div id="selectors" class="text-center">
+      <mat-form-field appearance="fill" class="w-100">
+        <mat-label>Rechercher un site</mat-label>
+        <input matInput [(ngModel)]="searchSiteName" placeholder="Nom du site">
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+          <mat-label>{{labels.regionLabel}}</mat-label>
+          <mat-select [(value)]="selectedRegion" (selectionChange)="applyFilters()">
+          <!--  <mat-option (click)="clearFilter(selectedRegion)" class="text-danger">
+                  {{reinitialisation}}
+              </mat-option> -->
+              <mat-option *ngFor="let reg of uniqueRegions" [value]="reg">{{ reg }}</mat-option>
+          </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="accent-select">
+          <mat-label>{{labels.departementLabel}}</mat-label>
+          <mat-select [(value)]="selectedDepartement" (selectionChange)="applyFilters()">
+          <!--  <mat-option (click)="clearFilter(selectedDepartement)" class="text-danger">
+                  {{reinitialisation}}
+              </mat-option> -->
+              <mat-option *ngFor="let dep of uniqueDepartements" [value]="dep">{{ dep }}</mat-option>
+          </mat-select>
+      </mat-form-field>
+      
+  
+      <mat-form-field appearance="fill">
+          <mat-label>{{labels.statusLabel}}</mat-label>
+          <mat-select [(value)]="selectedType" (selectionChange)="applyFilters()">
+              <!-- <mat-option (click)="clearFilter(selectedType)" class="text-danger">
+                  {{reinitialisation}}
+              </mat-option> -->
+              <mat-option *ngFor="let type of uniqueTypes" [value]="type">{{ type }}</mat-option>
+              
+          </mat-select>
+      </mat-form-field>
+      
+      <mat-form-field appearance="fill">
+          <mat-label>{{labels.housingLabel}}</mat-label>
+          <mat-select [(value)]="selectedHabitat" (selectionChange)="applyFilters()">
+          <!--  <mat-option (click)="clearFilter(selectedHabitat)" class="text-danger">
+                  {{reinitialisation}}
+              </mat-option> -->
+              <mat-option *ngFor="let hab of uniqueHabitats" [value]="hab">{{ hab }}</mat-option>
+          </mat-select>
+      </mat-form-field>
+      <button id="btnToReinitialize" mat-raised-button (click)="resetFilters()">{{reinitialisation}}</button>
+  </div>
+    <app-map
+     [sites]="filteredSites()"
+    >
+    </app-map>
     <div class="row" id="diagnostics_liste">
         <h2 class="text-center">{{title}}</h2>
         <div class="col-2"></div>
         <div  class="col-8">
-            <div *ngFor="let site of sites" class="mb-4">
+            <div *ngFor="let site of filteredSites()" class="mb-4">
                 <mat-card class="site-card">
                   <mat-card-header>
                     <mat-card-title>{{ site.nom }}</mat-card-title>
