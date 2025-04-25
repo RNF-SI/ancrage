@@ -1,5 +1,6 @@
-import { Component, AfterViewInit, Input, SimpleChanges} from '@angular/core';
+import { Component, AfterViewInit, Input, SimpleChanges, inject} from '@angular/core';
 import { FormGroup } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Site } from '@app/models/site.model';
 import * as L from 'leaflet';
 import 'leaflet.markercluster';
@@ -30,6 +31,7 @@ export class MapComponent implements AfterViewInit {
   markerClusterData = [];
   mapPoint: any;
   marker:any;
+  private route:ActivatedRoute = inject(ActivatedRoute);
  
  
   ngAfterViewInit(): void {
@@ -40,6 +42,7 @@ export class MapComponent implements AfterViewInit {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    console.log('ngOnChanges triggered', changes);
     if (changes['sites'] && this.map && !this.changePosition) {
       this.addMarkers(); // Ajoute les marqueurs dès que sites est dispo
     }
@@ -48,8 +51,10 @@ export class MapComponent implements AfterViewInit {
       let latitude = +this.formGroup?.get('position_y')?.value;
       let longitude = +this.formGroup?.get('position_x')?.value;
       
-      console.log(latitude);
-      this.moveMarker();
+      if (latitude && longitude){
+        this.moveMarker();
+      }
+      
     }
   }
 
@@ -87,29 +92,41 @@ export class MapComponent implements AfterViewInit {
       const lat = parseFloat(this.sites[i].position_y);
       const lng = parseFloat(this.sites[i].position_x);
       const marker = L.marker([lat,lng]).addTo(this.markerClusterGroup);
-      var habitats:string ="";
+      /* var habitats:string ="";
       for (let j=0;j<this.sites[i].habitats.length;j++){
        
         habitats += this.sites[i].habitats[j].libelle + " ";
-      }
+      } */
       var departements:string ="";
+      var regions:string = "";
       for (let k=0;k<this.sites[i].departements.length;k++){
        
         departements += this.sites[i].departements[k].nom_dep + " ";
+        regions += this.sites[i].departements[k].region.nom_reg;
       }
       marker.bindPopup(`
         <strong>${this.sites[i].nom}</strong><br>
-        Départements : ${departements}<br>
         Statut : ${this.sites[i].type.libelle}<br>
-        Habitats : ${habitats}<br>
+        Régions : ${regions}<br>
+        Départements : ${departements}<br>
+        
       `);
+      if (this.sites.length == 1) {
+        console.log(this.sites);
+      }
       bounds.extend([lat, lng]);
       this.markerClusterGroup.addTo(this.map!);
       
     }
 
-    if (this.sites.length > 0) {
+    if (this.sites.length > 1) {
       this.map!.fitBounds(bounds, { padding: [30, 30] }); 
+    }else if(this.sites.length == 1){
+    
+      const lat = parseFloat(this.sites[0].position_y);
+      const lng = parseFloat(this.sites[0].position_x);
+
+      this.map!.setView([lat, lng], 13); 
     }
   }
 
@@ -140,8 +157,7 @@ export class MapComponent implements AfterViewInit {
           position_x: lng.toFixed(6)   
         });
       });
-      bounds.extend([latitude, longitude]);
-      this.map!.fitBounds(bounds, { padding: [30, 30] });
+      this.map!.setView([latitude, longitude], 13); 
     }
   }
   

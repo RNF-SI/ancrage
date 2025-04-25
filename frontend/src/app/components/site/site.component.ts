@@ -158,6 +158,7 @@ export class SiteComponent implements OnInit,OnDestroy{
         });
       });
     }else{
+
       this.siteSubscription = this.siteService.update(this.site).subscribe(site=>{
         this.diagnostic.sites.push(site);
         localStorage.setItem("diagnostic",JSON.stringify(this.diagnostic));

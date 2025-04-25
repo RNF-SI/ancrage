@@ -67,15 +67,19 @@ def changeValuesSite(site,data):
     site.position_x = data['position_x']
     site.position_y = data['position_y']
     site.type_id = data['type']['id_nomenclature']
-    if data['habitats'] :
-        for dept in data['habitats'] :
-            join =  Nomenclature.query.filter_by(id_nomenclature=dept['id_nomenclature']).first()  
-            site.habitats.append(join)
-    if data['departements'] :
-        for dept in data['departements'] :
-            join =  Departement.query.filter_by(id_departement=dept['id_departement']).first()  
-            site.departements.append(join)
-    print(f"Site: {site.nom}, Type ID: {site.type_id}, Departements: {[d.nom_dep for d in site.departements]}")
+    new_dept_ids = {d['id_departement'] for d in data['departements']}
+    current_depts = {d.id_departement for d in site.departements}
+
+    # Supprimer les départements en trop
+    for dept in site.departements[:]:
+        if dept.id_departement not in new_dept_ids:
+            site.departements.remove(dept)
+
+    # Ajouter les nouveaux départements
+    for dept_id in new_dept_ids - current_depts:
+        join = Departement.query.filter_by(id_departement=dept_id).first()
+        site.departements.append(join)
+        print(f"Site: {site.nom}, Type ID: {site.type_id}, Departements: {[d.nom_dep for d in site.departements]}")
     return site
 
 def getSite(site):

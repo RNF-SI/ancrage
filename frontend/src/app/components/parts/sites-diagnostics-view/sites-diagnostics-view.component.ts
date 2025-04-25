@@ -68,13 +68,29 @@ export class SitesDiagnosticsViewComponent implements OnInit{
     chosenSites:String[]=[this.emptyChosenSites];
     user_id:number = 0;
     searchSiteName: string = '';
+    filteredSiteList: Site[] = [];
 
-    filteredSites() {
+    filteredSites():Site[] {
       if (!this.searchSiteName) {
         return this.sites;
       }
       const searchLower = this.searchSiteName.toLowerCase();
       return this.sites.filter(site => site.nom.toLowerCase().includes(searchLower));
+    }
+
+    onSearchChange() {
+
+      console.log(this.sites);
+      
+      if (!this.searchSiteName) {
+        this.filteredSiteList = this.sites;
+        console.log(this.filteredSiteList);
+      } else {
+        const searchLower = this.searchSiteName.toLowerCase();
+        this.filteredSiteList = this.sites.filter(site =>
+          site.nom.toLowerCase().includes(searchLower)
+        );
+      }
     }
 
     ngOnInit(): void {
@@ -87,7 +103,9 @@ export class SitesDiagnosticsViewComponent implements OnInit{
         console.log(this.sites);
         this.sitesSelected = new MatTableDataSource(this.sites);
         this.extractUniqueFilters();
-        return this.sites = sites;
+        this.onSearchChange();
+        this.sites = sites;
+        return this.sites;
       });
       
       let user_id = this.authService.getCurrentUser().id_role;
@@ -100,6 +118,7 @@ export class SitesDiagnosticsViewComponent implements OnInit{
         this.user_id = user_id;
         this.diagnostic.id_organisme = id_organisme;
       }
+      
     }
 
     navigate(path:string,diagnostic:Diagnostic,site?:Site){
@@ -115,8 +134,8 @@ export class SitesDiagnosticsViewComponent implements OnInit{
       this.uniqueTypes = Array.from(new Set(this.sites.map(site =>
         site.type?.libelle).filter(Boolean)));
     
-      this.uniqueHabitats = Array.from(new Set(this.sites.flatMap(site =>
-        site.habitats.map(hab => hab.libelle))));
+      /* this.uniqueHabitats = Array.from(new Set(this.sites.flatMap(site =>
+        site.habitats.map(hab => hab.libelle)))); */
     }
     
     applyFilters() {
@@ -125,9 +144,9 @@ export class SitesDiagnosticsViewComponent implements OnInit{
         const matchDep = !this.selectedDepartement || site.departements.some(dep => dep.nom_dep === this.selectedDepartement);
         const matchReg = !this.selectedRegion || site.departements.some(dep => dep.region.nom_reg === this.selectedRegion);
         const matchType = !this.selectedType || site.type?.libelle === this.selectedType;
-        const matchHab = !this.selectedHabitat || site.habitats.some(hab => hab.libelle === this.selectedHabitat);
-    
-        return matchDep && matchReg && matchType && matchHab;
+        /* const matchHab = !this.selectedHabitat || site.habitats.some(hab => hab.libelle === this.selectedHabitat);
+     */
+        return matchDep && matchReg && matchType /* && matchHab */;
       });
       this.sites = this.sitesSelected.data;
       
@@ -137,7 +156,7 @@ export class SitesDiagnosticsViewComponent implements OnInit{
       this.selectedDepartement = "";
       this.selectedRegion = "";
       this.selectedType = "";
-      this.selectedHabitat = "";
+      /* this.selectedHabitat = ""; */
       this.sites = this.sitesOriginal;
     }
 }
