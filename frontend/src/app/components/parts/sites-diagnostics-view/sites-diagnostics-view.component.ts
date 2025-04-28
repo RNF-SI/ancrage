@@ -148,7 +148,7 @@ export class SitesDiagnosticsViewComponent implements OnInit{
      */
         return matchDep && matchReg && matchType /* && matchHab */;
       });
-      this.sites = this.sitesSelected.data;
+      this.filteredSiteList = this.sitesSelected.data;
       
     }
 
@@ -157,6 +157,6 @@ export class SitesDiagnosticsViewComponent implements OnInit{
       this.selectedRegion = "";
       this.selectedType = "";
       /* this.selectedHabitat = ""; */
-      this.sites = this.sitesOriginal;
+      this.filteredSiteList = this.sitesOriginal;
     }
 }

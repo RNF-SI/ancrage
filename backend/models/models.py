@@ -121,7 +121,8 @@ class Acteur(db.Model):
     telephone = db.Column(db.String)
     mail = db.Column(db.String)
     commune_id = db.Column(db.Integer, db.ForeignKey('t_communes.id_commune'))
-    profil_cognitif_id = db.Column(db.Integer)
+    profil_cognitif_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
+    profil = db.relationship('Nomenclature', foreign_keys=[profil_cognitif_id])
     is_acteur_economique = db.Column(db.Boolean, nullable=False)
     structure = db.Column(db.String)
     diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
@@ -130,13 +131,20 @@ class Acteur(db.Model):
     created_by = db.Column(db.Integer)
     modified_by = db.Column(db.Integer)
     commune = db.relationship("Commune", backref="acteurs")
-    categories = db.relationship('Nomenclature', secondary='cor_categorie_acteur', back_populates='acteurs')
+    categories = db.relationship('Nomenclature', secondary='cor_categorie_acteur', back_populates='acteurs_c')
     questions = db.relationship('Question', secondary='cor_question_acteur', back_populates='acteurs')
+
 
 acteur_categorie = db.Table(
     'cor_categorie_acteur',
     db.Column('acteur_id', db.Integer, db.ForeignKey('t_acteurs.id_acteur', ondelete="CASCADE")),
     db.Column('categorie_id', db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature', ondelete="CASCADE"))
+)
+
+acteur_profil = db.Table(
+    'cor_profil_acteur',
+    db.Column('acteur_id', db.Integer, db.ForeignKey('t_acteurs.id_acteur', ondelete="CASCADE")),
+    db.Column('profil_id', db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature', ondelete="CASCADE"))
 )
 
 class Question(db.Model):
@@ -160,27 +168,23 @@ class Reponse(db.Model):
     __tablename__ = 't_reponses'
     id_reponse = db.Column(db.Integer, primary_key=True)
     mot_cle_id = db.Column(db.Integer)
-    valeur_reponse_id = db.Column(db.Integer)
+    valeur_reponse_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
+    valeur_reponse = db.relationship('Nomenclature', foreign_keys=[valeur_reponse_id])
     question_id = db.Column(db.Integer, db.ForeignKey('t_questions.id_question'))
     question = db.relationship('Question', foreign_keys=[question_id])
-    mots_cles = db.relationship('ReponseMotCle', back_populates='reponse')
+    mots_cles = db.relationship('MotCle', secondary='cor_reponses_mots_cles', back_populates='reponses')
 
-
-
-class ReponseMotCle(db.Model):
-    __tablename__ = 'cor_reponses_mots_cles'
-    id_reponse_mot_cle = db.Column(db.Integer, primary_key=True)
-    mot_cle_id = db.Column(db.Integer, db.ForeignKey('t_mots_cles.id_mot_cle'))
-    reponse_id = db.Column(db.Integer, db.ForeignKey('t_reponses.id_reponse'))
-    mot_cle = db.relationship('MotCle', back_populates='reponses')
-    reponse = db.relationship('Reponse', back_populates='mots_cles')
-
+reponse_mot_cle = db.Table(
+    'cor_reponses_mots_cles',
+    db.Column('reponse_id', db.Integer, db.ForeignKey('t_reponses.id_reponse', ondelete="CASCADE")),
+    db.Column('mot_cle_id', db.Integer, db.ForeignKey('t_mots_cles.id_mot_cle', ondelete="CASCADE"))
+)
 
 class MotCle(db.Model):
     __tablename__ = 't_mots_cles'
     id_mot_cle = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String)  # probablement String au lieu d'Integer
-    reponses = db.relationship('ReponseMotCle', back_populates='mot_cle')
+    reponses = db.relationship('Reponse', secondary='cor_reponses_mots_cles', back_populates='mots_cles')
 
 class Nomenclature(db.Model):
     __tablename__ = 't_nomenclatures'
@@ -189,5 +193,9 @@ class Nomenclature(db.Model):
     value = db.Column(db.Integer)
     mnemonique = db.Column(db.String)
     sites = db.relationship('Site', secondary='cor_site_habitat', back_populates='habitats')
-    acteurs = db.relationship('Acteur', secondary='cor_categorie_acteur', back_populates='categories')
-
+    acteurs_c = db.relationship('Acteur', secondary='cor_categorie_acteur', back_populates='categories')
+    acteurs_p = db.relationship(
+        'Acteur',
+        back_populates='profil',
+        lazy=True
+    )

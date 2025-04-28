@@ -1,4 +1,4 @@
-from models.models import Acteur, Diagnostic, Document, MotCle, Nomenclature, Reponse, ReponseMotCle, Site,DiagnosticsSites,Question, Region,Departement,Commune,db
+from models.models import Acteur, Diagnostic, Document, MotCle, Nomenclature, Reponse, Site,DiagnosticsSites,Question, Region,Departement,Commune,db
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from marshmallow import fields
 
@@ -109,12 +109,13 @@ class ActeurSchema(SQLAlchemyAutoSchema):
         model = Acteur
         include_relationships = True
         load_instance = True
-        exclude = ['diagnostic']
+        exclude = ('diagnostic',)
 
     diagnostic = fields.Nested(lambda: DiagnosticLiteSchema)
     commune = fields.Nested(lambda: CommuneSchema)
     categories = fields.Nested(lambda: NomenclatureSchema, many=True)
     questions = fields.Nested(lambda: QuestionSchema, many=True)
+    profil = fields.Nested(lambda: NomenclatureSchema)
 
 class QuestionSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -129,7 +130,7 @@ class ActeurLiteSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Acteur
         load_instance = True
-        exclude = ("diagnostic",)
+        exclude = ('diagnostic',)
     commune = fields.Nested(lambda: CommuneSchema, exclude=())
 
 class ReponseSchema(SQLAlchemyAutoSchema):
@@ -138,18 +139,8 @@ class ReponseSchema(SQLAlchemyAutoSchema):
         include_relationships = True
         load_instance = True
 
-    mots_cles = fields.Nested(lambda: ReponseMotCleSchema, many=True, exclude=("reponse",))
-
-
-class ReponseMotCleSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = ReponseMotCle
-        include_relationships = True
-        load_instance = True
-
-    mot_cle = fields.Nested(lambda: MotCleSchema, exclude=("reponses",))
-    reponse = fields.Nested(lambda: ReponseSchema, exclude=("mots_cles",))
-
+    mots_cles = fields.Nested(lambda: MotCleSchema, many=True, exclude=("reponses",))
+    question = fields.Nested(lambda: QuestionSchema, exclude=("reponses",))
 
 class MotCleSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -157,13 +148,15 @@ class MotCleSchema(SQLAlchemyAutoSchema):
         include_relationships = True
         load_instance = True
 
-    reponses = fields.Nested(lambda: ReponseMotCleSchema, many=True, exclude=("mot_cle",))
+    reponses = fields.Nested(lambda: ReponseSchema, many=True, exclude=("mots_cles",))
 
 
 class NomenclatureSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Nomenclature
         load_instance = True
+        exclude = ('acteurs_c','acteurs_p',)
 
-    acteurs = fields.Nested(lambda: ActeurSchema, many=True, exclude=("categories", "diagnostic",))
+    acteurs_c = fields.Nested(lambda: ActeurSchema, many=True, exclude=("categories", "diagnostic",))
+    acteurs_p = fields.Nested(lambda: ActeurSchema, many=True, exclude=("categories", "diagnostic",))
     sites = fields.Nested(lambda: SiteSchema, many=True, exclude=("habitats",))
