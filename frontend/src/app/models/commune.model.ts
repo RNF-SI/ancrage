@@ -10,7 +10,7 @@ export class Commune implements ICommune{
     insee_dep="";
     insee_reg="";
     region = new Region();
-    departement = new Departement();
+    departement:Departement = new Departement();
 
 
       /** Copie profonde de l'objet */
@@ -23,8 +23,8 @@ export class Commune implements ICommune{
         copy.insee_com = this.insee_com;
         copy.insee_dep = this.insee_dep;
         copy.insee_reg = this.insee_reg;
-        /* copy.region = this.region.copy();
-        copy.departement = this.departement.copy(); */
+        copy.region = this.region.copy();
+        copy.departement = this.departement.copy();
 
         return copy;
     }

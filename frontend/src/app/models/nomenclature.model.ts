@@ -23,8 +23,10 @@ export class Nomenclature {
 
 	/** Création depuis un objet JSON */
 	static fromJson(data: any): Nomenclature {
+		
 		const nom = new Nomenclature();
-
+		if (!data) return nom;
+		
 		nom.id_nomenclature = data.id_nomenclature;
 		nom.libelle = data.libelle;
 		nom.value = data.value;

@@ -1,0 +1,35 @@
+<div class="container">
+    <div class="row">
+        <div class="col-4">
+
+        </div>
+        <div class="col-6">
+            <h2>
+                {{titleDiagnostic}}
+            </h2>
+
+            
+            <mat-form-field appearance="fill">
+                <mat-label>{{ chooseSiteTitle }}</mat-label>
+                <mat-select multiple [(value)]="chosenSites">
+                  <mat-option *ngFor="let site of uniqueSites" required [value]="site" >{{ site.nom }}</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <h4 >{{chosenSitesTitle}}</h4>
+            <div *ngFor="let site of chosenSites">
+                <p>{{ site.nom }}, {{site.type.libelle}}</p>
+            </div>
+            <h3>
+                {{actorsTitle}}
+            </h3>
+            <app-choix-acteurs
+                [actors]="uniqueActors"
+            >
+
+            </app-choix-acteurs>
+        </div>
+        <div class="col-2">
+
+        </div>
+    </div>
+</div>

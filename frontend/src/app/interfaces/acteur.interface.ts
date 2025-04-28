@@ -10,12 +10,12 @@ export interface IActeur {
     telephone:string;
     mail:string;
     commune:Commune;
-    profilCognitif:Nomenclature;
+    profil?:Nomenclature;
     isActeurEconomique:boolean;
     structure:string;
-    diagnostic:Diagnostic;
-    categories: Nomenclature[];
-    statut_entretien:Nomenclature;
+    diagnostic?:Diagnostic;
+    categories?: Nomenclature[];
+    statut_entretien?:Nomenclature;
     created_at:Date | undefined;
     modified_at:Date | undefined;
     created_by:number;

@@ -37,7 +37,7 @@ export class SitesDiagnosticsViewComponent implements OnInit,OnDestroy{
   @Input() title="";
   @Input() diagnostic:Diagnostic = new Diagnostic();
   private siteService:SiteService = inject(SiteService);
-   displayedColumns: string[] = ['nom', 'regions','departements', 'type','habitats','choix'];
+   displayedColumns: string[] = ['nom', 'regions','departements', 'type',/* 'habitats', */'choix'];
     sitesOriginal: Site[] = []; // sauvegarde de tous les sites
     sitesSelected: MatTableDataSource<Site>= new MatTableDataSource();
     selectedDepartement: string = "";

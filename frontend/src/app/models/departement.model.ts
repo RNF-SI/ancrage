@@ -3,6 +3,9 @@ import { Commune } from "./commune.model";
 import { Region } from "./region.model";
 
 export class Departement implements IDepartement {
+    map(arg0: (dpt: any) => any): Departement {
+      throw new Error('Method not implemented.');
+    }
     id_departement = 0;
     id_dep = "";
     nom_dep = "";

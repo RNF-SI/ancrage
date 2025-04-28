@@ -17,8 +17,9 @@ import { DiagosticsListeComponent } from './components/diagnostics-liste/diagnos
 import { ChoixSiteComponent } from './components/choix-site/choix-site.component';
 import { MesDiagnosticsComponent } from './components/mes-diagnostics/mes-diagnostics.component';
 import { SiteComponent } from './components/site/site.component';
-import { ChoixActeursComponent } from './components/choix-acteurs/choix-acteurs.component';
+import { ChoixActeursComponent } from './components/parts/choix-acteurs/choix-acteurs.component';
 import { SiteLsComponent } from './components/site-ls/site-ls.component';
+import { DiagnosticComponent } from './components/diagnostic/diagnostic.component';
 
 const routes: Routes = [ { 
   path: '', 
@@ -85,6 +86,11 @@ const routes: Routes = [ {
     {
       path: 'choix-acteurs',
       component: ChoixActeursComponent,
+      canActivate: [AuthGuardService]
+    },
+    {
+      path: 'diagnostic',
+      component: DiagnosticComponent,
       canActivate: [AuthGuardService]
     }
   ]},

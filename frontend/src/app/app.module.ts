@@ -35,9 +35,10 @@ import { MesDiagnosticsComponent } from './components/mes-diagnostics/mes-diagno
 import { SiteComponent } from './components/site/site.component';
 import { AlerteSiteComponent } from './components/parts/alerte-site/alerte-site.component';
 import { MatDialogModule } from '@angular/material/dialog';
-import { ChoixActeursComponent } from './components/choix-acteurs/choix-acteurs.component';
+import { ChoixActeursComponent } from './components/parts/choix-acteurs/choix-acteurs.component';
 import { SiteLsComponent } from './components/site-ls/site-ls.component';
 import { AlerteVisualisationSiteComponent } from './components/parts/alerte-visualisation-site/alerte-visualisation-site.component';
+import { DiagnosticComponent } from './components/diagnostic/diagnostic.component';
 
 
 @NgModule({
@@ -49,6 +50,7 @@ import { AlerteVisualisationSiteComponent } from './components/parts/alerte-visu
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
+   
     
   ],
   imports: [
@@ -74,6 +76,7 @@ import { AlerteVisualisationSiteComponent } from './components/parts/alerte-visu
     ChoixActeursComponent,
     SiteLsComponent,
     AlerteVisualisationSiteComponent,
+    DiagnosticComponent,
     ToastrModule.forRoot({
       timeOut: 15000
     }),

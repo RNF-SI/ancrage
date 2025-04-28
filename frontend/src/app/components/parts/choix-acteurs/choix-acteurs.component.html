@@ -1,9 +1,7 @@
-<div class="container">
-    <div class="row" id="choix_site">
-        <h2 mat-tit>{{title}}</h2>
-        <div class="col-1"></div>
-        <div  class="col-10">
-            <h3>{{titleGetActors}}</h3>
+
+       
+        <div>
+            <h4>{{titleGetActors}}</h4>
             <mat-form-field appearance="fill">
                 <mat-label>{{labels.diagnosticsList}}</mat-label>
                 <mat-select [(value)]="selectedDiagnostic" (selectionChange)="applyFilters()">
@@ -15,35 +13,26 @@
             </mat-form-field>
             <h3>{{titleChooseActors}}</h3>
 
+            
             <mat-form-field appearance="fill">
-                <mat-label>{{labels.region}}</mat-label>
-                <mat-select [(value)]="selectedRegion" (selectionChange)="applyFilters()">
+                <mat-label>{{labels.department}}</mat-label>
+                <mat-select [(value)]="selectedDepartment" (selectionChange)="applyFilters()">
                 <!--  <mat-option (click)="clearFilter(selectedRegion)" class="text-danger">
                         {{reinitialisation}}
                     </mat-option> -->
-                    <mat-option *ngFor="let reg of uniqueRegions" [value]="reg">{{ reg }}</mat-option>
+                    <mat-option *ngFor="let dpt of uniqueDepartments" [value]="dpt">{{ dpt }}</mat-option>
                 </mat-select>
             </mat-form-field>
-            
-                <mat-form-field appearance="fill">
-                    <mat-label>{{labels.department}}</mat-label>
-                    <mat-select [(value)]="selectedDepartment" (selectionChange)="applyFilters()">
-                    <!--  <mat-option (click)="clearFilter(selectedRegion)" class="text-danger">
-                            {{reinitialisation}}
-                        </mat-option> -->
-                        <mat-option *ngFor="let dpt of uniqueDepartments" [value]="dpt">{{ dpt }}</mat-option>
-                    </mat-select>
-                </mat-form-field>
 
-                <mat-form-field appearance="fill" class="accent-select">
-                    <mat-label>{{labels.category}}</mat-label>
-                    <mat-select [(value)]="selectedCategory" (selectionChange)="applyFilters()">
-                    <!--  <mat-option (click)="clearFilter(selectedDepartement)" class="text-danger">
-                            {{reinitialisation}}
-                        </mat-option> -->
-                        <mat-option *ngFor="let cat of uniqueCategories" [value]="cat">{{ cat }}</mat-option>
-                    </mat-select>
-                </mat-form-field>
+            <mat-form-field appearance="fill" class="accent-select">
+                <mat-label>{{labels.category}}</mat-label>
+                <mat-select [(value)]="selectedCategory" (selectionChange)="applyFilters()">
+                <!--  <mat-option (click)="clearFilter(selectedDepartement)" class="text-danger">
+                        {{reinitialisation}}
+                    </mat-option> -->
+                    <mat-option *ngFor="let cat of uniqueCategories" [value]="cat">{{ cat }}</mat-option>
+                </mat-select>
+            </mat-form-field>
                 
             <table mat-table [dataSource]="actors" class="mat-elevation-z2" multiTemplateDataRows>
 
@@ -111,19 +100,15 @@
                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                 <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
             </table>
-            <div class="row">
+          <!--   <div class="row">
                 <div class="col-6">
                     <button mat-raised-button color="accent" (click)="navigate('/site',diagnostic)">{{btnNewActorLabel}}</button>
                 </div>
                 <div class="col-6 text-end">
                     <button mat-raised-button color="accent" (click)="navigate('/choix-acteurs',diagnostic)">{{btnToDiagnostic}}</button>
                 </div>
-            </div>
+            </div> -->
             
         </div>
-        <div class="col-1"></div>
-    </div>
-    
-    
-</div>
+       
 

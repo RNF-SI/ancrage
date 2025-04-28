@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -22,6 +22,7 @@ import { ActeurService } from '@app/services/acteur.service';
   imports:[CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule,RouterModule]
 })
 export class ChoixActeursComponent implements OnInit {
+  @Input() actors: Acteur[]=[];
   title: string="Choisir les acteurs";
   titleGetActors = "Récupérer les acteurs d'un précédent diagnostic sur ce site";
   labels = {
@@ -53,7 +54,7 @@ export class ChoixActeursComponent implements OnInit {
   selectedRegion: Region = new Region;
   selectedDepartment: Departement = new Departement();
   selectedCategory: Nomenclature = new Nomenclature();
-  actors: Acteur[]=[];
+ 
   addOrRemoveActor(_t79: any) {
   throw new Error('Method not implemented.');
   }

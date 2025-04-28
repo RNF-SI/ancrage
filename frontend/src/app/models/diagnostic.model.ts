@@ -34,7 +34,7 @@ export class Diagnostic implements IDiagnostic {
 	/** Création depuis JSON brut */
 	static fromJson(data: IDiagnostic): Diagnostic {
 		const diag = new Diagnostic();
-
+		if (!data) return diag;
 		diag.id_diagnostic = data.id_diagnostic;
 		diag.nom = data.nom;
 		diag.date_debut = data.date_debut ? new Date(data.date_debut) : undefined;
