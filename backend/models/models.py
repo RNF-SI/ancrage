@@ -70,7 +70,7 @@ class Site(db.Model):
     nom = db.Column(db.String, nullable=False)
     position_x = db.Column(db.String, nullable=False)
     position_y = db.Column(db.String, nullable=False)
-    diagnostics = db.relationship('DiagnosticsSites', back_populates='site')
+    diagnostics = db.relationship('Diagnostic', secondary='cor_sites_diagnostics', back_populates='sites')
     id_inpn = db.Column(db.String)
     type_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     type = db.relationship('Nomenclature', foreign_keys=[type_id])
@@ -81,13 +81,11 @@ class Site(db.Model):
     created_by = db.Column(db.Integer)
     modified_by = db.Column(db.Integer)
 
-class DiagnosticsSites(db.Model):
-    __tablename__ = 'cor_diagnostics_sites'
-    id_diagnostic_site = db.Column(db.Integer, primary_key=True)
-    site_id = db.Column(db.Integer, db.ForeignKey('t_sites.id_site'))
-    diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
-    site = db.relationship('Site', back_populates='diagnostics')
-    diagnostic = db.relationship('Diagnostic', back_populates='sites')
+site_diagnostic = db.Table(
+    'cor_sites_diagnostics',
+    db.Column('diagnostic_id', db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic', ondelete="CASCADE")),
+    db.Column('site_id', db.Integer, db.ForeignKey('t_sites.id_site', ondelete="CASCADE"))
+)
 
 class Diagnostic(db.Model):
     __tablename__ = 't_diagnostics'
@@ -100,9 +98,9 @@ class Diagnostic(db.Model):
     modified_at = db.Column(db.DateTime)
     created_by = db.Column(db.Integer)
     is_read_only = db.Column(db.Boolean,default='0')
-    acteurs = db.relationship('Acteur', backref='diagnostic')
+    acteurs = db.relationship('Acteur', back_populates='diagnostic')
     documents = db.relationship('Document', backref='diagnostic')
-    sites = db.relationship('DiagnosticsSites', back_populates='diagnostic')
+    sites = db.relationship('Site', secondary='cor_sites_diagnostics', back_populates='diagnostics')
     statut_entretien_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     statut_entretien = db.relationship('Nomenclature', foreign_keys=[statut_entretien_id])
     
@@ -126,6 +124,7 @@ class Acteur(db.Model):
     is_acteur_economique = db.Column(db.Boolean, nullable=False)
     structure = db.Column(db.String)
     diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
+    diagnostic = db.relationship('Diagnostic', back_populates='acteurs')
     created_at = db.Column(db.DateTime)
     modified_at = db.Column(db.DateTime)
     created_by = db.Column(db.Integer)

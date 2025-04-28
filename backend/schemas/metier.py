@@ -1,4 +1,4 @@
-from models.models import Acteur, Diagnostic, Document, MotCle, Nomenclature, Reponse, Site,DiagnosticsSites,Question, Region,Departement,Commune,db
+from models.models import Acteur, Diagnostic, Document, MotCle, Nomenclature, Reponse, Site,Question, Region,Departement,Commune,db
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from marshmallow import fields
 
@@ -47,7 +47,7 @@ class SiteSchema(SQLAlchemyAutoSchema):
         load_instance = True
 
     type = fields.Nested(lambda: NomenclatureSchema, exclude=("sites",))
-    diagnostics = fields.Method("get_diagnostics_flat")
+    diagnostics = fields.Nested(lambda: DiagnosticSchema, many=True, exclude=('sites',))
     departements = fields.Method("get_departements_flat")
     habitats = fields.Method("get_habitats_flat")
 
@@ -65,15 +65,6 @@ class SiteSchema(SQLAlchemyAutoSchema):
             for habitat in obj.habitats
             if habitat
     ]
-    
-class SitesDiagnosticsSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = DiagnosticsSites
-        include_relationships = True
-        load_instance = True
-
-    site = fields.Nested(lambda: SiteSchema, exclude=("diagnostics",))
-    diagnostic = fields.Nested(lambda: DiagnosticSchema, exclude=("sites",))
 
 class DiagnosticSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -83,7 +74,7 @@ class DiagnosticSchema(SQLAlchemyAutoSchema):
 
     acteurs = fields.Nested(lambda: ActeurSchema, many=True, exclude=('diagnostic',))
     documents = fields.Nested(lambda: DocumentSchema, many=True, exclude=("diagnostic",))
-    sites = fields.Method("get_sites_flat")
+    sites = fields.Nested(lambda: SiteSchema, many=True, exclude=('diagnostics',))
 
     def get_sites_flat(self, obj):
         return [SiteSchema().dump(ds.site) for ds in obj.sites]
