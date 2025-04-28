@@ -14,7 +14,7 @@ import { Diagnostic } from '@app/models/diagnostic.model';
   imports:[MatDialogModule,MatButtonModule,CommonModule,RouterModule]
 })
 export class AlerteSiteComponent {
-  private router = inject(Router)
+ 
   constructor(
     public dialogRef: MatDialogRef<AlerteSiteComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { 
@@ -31,7 +31,8 @@ export class AlerteSiteComponent {
         btnRecordLabel: "",
         btnPreviousStepLabel: ""
       },
-      diagnostic:Diagnostic;
+      diagnostic:Diagnostic,
+      previousPage:string;
     }
   ) {}
   

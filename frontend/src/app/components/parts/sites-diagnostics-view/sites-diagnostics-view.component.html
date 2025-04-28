@@ -1,97 +1,112 @@
 <div class="container">
-    <div class="row">
-        <div class="col-3"></div>
-        <div class="col-6  text-center">
-            <button mat-raised-button id="creaBtn"class="col-6" color="accent" (click)="navigate('/choix-site',diagnostic)">{{titleBtnCreaDiag}}</button>
-        </div>
-        <div class="col-3">
-            <button mat-icon-button [matTooltip]="infobulleCreaDiagFromScratch" aria-label="Info création" color="primary">
-                <fa-icon [icon]="['fas', 'question']"></fa-icon>
-            </button>
-        </div>
+  <div class="row">
+    <div class="col-3"></div>
+    <div class="col-6 text-center">
+      <button mat-raised-button id="creaBtn" class="col-6" color="accent" (click)="navigate('/choix-site', diagnostic)">
+        {{ titleBtnCreaDiag }}
+      </button>
     </div>
-    
-    <div id="selectors" class="text-center">
-      <mat-form-field appearance="fill" class="w-100">
-        <mat-label>Rechercher un site</mat-label>
-        <input matInput [(ngModel)]="searchSiteName" (ngModelChange)="onSearchChange()" placeholder="Nom du site">
-      </mat-form-field>
-      <mat-form-field appearance="fill">
-          <mat-label>{{labels.regionLabel}}</mat-label>
-          <mat-select [(value)]="selectedRegion" (selectionChange)="applyFilters()">
-              <mat-option *ngFor="let reg of uniqueRegions" [value]="reg">{{ reg }}</mat-option>
-          </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="fill" class="accent-select">
-          <mat-label>{{labels.departementLabel}}</mat-label>
-          <mat-select [(value)]="selectedDepartement" (selectionChange)="applyFilters()">
-              <mat-option *ngFor="let dep of uniqueDepartements" [value]="dep">{{ dep }}</mat-option>
-          </mat-select>
-      </mat-form-field>
-      
-  
-      <mat-form-field appearance="fill">
-          <mat-label>{{labels.statusLabel}}</mat-label>
-          <mat-select [(value)]="selectedType" (selectionChange)="applyFilters()">
-              <mat-option *ngFor="let type of uniqueTypes" [value]="type">{{ type }}</mat-option>
-              
-          </mat-select>
-      </mat-form-field>
-      
-      <!-- <mat-form-field appearance="fill">
-          <mat-label>{{labels.housingLabel}}</mat-label>
-          <mat-select [(value)]="selectedHabitat" (selectionChange)="applyFilters()">
-              <mat-option *ngFor="let hab of uniqueHabitats" [value]="hab">{{ hab }}</mat-option>
-          </mat-select>
-      </mat-form-field> -->
-      <button id="btnToReinitialize" mat-raised-button (click)="resetFilters()">{{reinitialisation}}</button>
+    <div class="col-3">
+      <button mat-icon-button [matTooltip]="infobulleCreaDiagFromScratch" aria-label="Info création" color="primary">
+        <fa-icon [icon]="['fas', 'question']"></fa-icon>
+      </button>
+    </div>
   </div>
-  <app-map [sites]="filteredSiteList"></app-map>
-    <div class="row" id="diagnostics_liste">
-        <h2 class="text-center">{{title}}</h2>
-        <div class="col-2"></div>
-        <div  class="col-8">
-            <div *ngFor="let site of filteredSites()" class="mb-4">
-                <mat-card class="site-card">
-                  <mat-card-header>
-                    <mat-card-title>{{ site.nom }}</mat-card-title>
-                  </mat-card-header>
-              
-                  <mat-card-content>
-                    <div class="d-flex justify-content-between align-items-center">
-                      <button mat-raised-button class="directBtn" color="accent" (click)="navigate('/choix-acteurs',diagnostic,site)">
-                        {{ titleBtnCreaDiag }}
-                      </button>
-                      <button mat-icon-button [matTooltip]="infobulleCreaDiagFromSite" aria-label="Info création" color="accent">
-                        <fa-icon [icon]="['fas', 'question']"></fa-icon>
-                      </button>
-                    </div>
-              
-                    <div class="mt-3">
-                      <mat-card
-                        *ngFor="let diag of site.diagnostics"
-                        class="diagnostic-card my-2  white-shadow"
-                      >
-                        <mat-card-subtitle>{{ diag.nom }} du {{ diag.date_debut_str }}</mat-card-subtitle>
-                        <mat-card-actions class="text-end" *ngIf="diag.is_read_only; else elseBlock">
-                            <button mat-raised-button color="accent">Modifier</button>
-                          </mat-card-actions>
-                          
-                          <ng-template #elseBlock>
-                            <mat-card-actions class="text-end">
-                              <button mat-raised-button color="accent">Voir</button>
-                            </mat-card-actions>
-                          </ng-template>
-                      </mat-card>
-                    </div>
-                  </mat-card-content>
-                </mat-card>
-            </div>
-        </div>
-        <div class="col-2"></div>
-    </div>
-    
-    
-</div>
 
+  <div id="selectors" class="text-center">
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Rechercher un site</mat-label>
+      <input matInput [(ngModel)]="searchSiteName" (ngModelChange)="onSearchChange()" placeholder="Nom du site" />
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>{{ labels.regionLabel }}</mat-label>
+      <mat-select [(value)]="selectedRegion" (selectionChange)="applyFilters()">
+        <mat-option *ngFor="let reg of uniqueRegions" [value]="reg">{{ reg }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="accent-select">
+      <mat-label>{{ labels.departementLabel }}</mat-label>
+      <mat-select [(value)]="selectedDepartement" (selectionChange)="applyFilters()">
+        <mat-option *ngFor="let dep of uniqueDepartements" [value]="dep">{{ dep }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>{{ labels.statusLabel }}</mat-label>
+      <mat-select [(value)]="selectedType" (selectionChange)="applyFilters()">
+        <mat-option *ngFor="let type of uniqueTypes" [value]="type">{{ type }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- 
+    <mat-form-field appearance="fill">
+      <mat-label>{{ labels.housingLabel }}</mat-label>
+      <mat-select [(value)]="selectedHabitat" (selectionChange)="applyFilters()">
+        <mat-option *ngFor="let hab of uniqueHabitats" [value]="hab">{{ hab }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    -->
+
+    <button id="btnToReinitialize" mat-raised-button (click)="resetFilters()">
+      {{ reinitialisation }}
+    </button>
+  </div>
+
+  <div class="row">
+    <div class="col-6">
+      <app-map [sites]="filteredSiteList"></app-map>
+    </div>
+
+    <div class="col-6">
+      <div id="diagnostics_liste">
+        <h2 class="text-center">{{ title }}</h2>
+
+        <div *ngFor="let site of filteredSites()" class="mb-4">
+          <mat-card class="site-card">
+            <mat-card-header>
+              <ng-container *ngIf="site.created_by == user_id; else other_content">
+                <mat-card-title><a (click)="navigate('/site/' + site.id_site,diagnostic)">{{ site.nom }}</a></mat-card-title> 
+              </ng-container>
+              <ng-template #other_content>
+                <mat-card-title><a (click)="showSiteDetails(site)">{{ site.nom }}</a></mat-card-title>
+              </ng-template>
+            </mat-card-header>
+
+            <mat-card-content>
+              <div class="d-flex justify-content-between align-items-center">
+                <button mat-raised-button class="directBtn" color="accent" (click)="navigate('/choix-acteurs', diagnostic, site)">
+                  {{ titleBtnCreaDiag }}
+                </button>
+                <button mat-icon-button [matTooltip]="infobulleCreaDiagFromSite" aria-label="Info création" color="accent">
+                  <fa-icon [icon]="['fas', 'question']"></fa-icon>
+                </button>
+                
+              </div>
+              <br>
+              <div>
+                <a class="btnToShowDiagnostics" (click)="displayDiagnostics(site)" >{{btnForDiagnosticsLbl}}</a>
+              </div>
+              <div class="mt-3 diagnostics{{site.id_site}} hidden">
+                <mat-card *ngFor="let diag of site.diagnostics" class="diagnostic-card my-2 white-shadow">
+                  <mat-card-subtitle>{{ diag.nom }} du {{ diag.date_debut_str }}</mat-card-subtitle>
+
+                  <mat-card-actions class="text-end" *ngIf="diag.is_read_only; else elseBlock">
+                    <button mat-raised-button color="accent">Modifier</button>
+                  </mat-card-actions>
+
+                  <ng-template #elseBlock>
+                    <mat-card-actions class="text-end">
+                      <button mat-raised-button color="accent">Voir</button>
+                    </mat-card-actions>
+                  </ng-template>
+                </mat-card>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

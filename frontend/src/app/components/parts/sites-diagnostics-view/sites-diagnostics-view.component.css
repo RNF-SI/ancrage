@@ -57,11 +57,16 @@ h3{
     margin-bottom: 3%;
     margin-left:1%;
 }
-mat-card-title{
-    font-size: 18px;
+
+.hidden{
+    display:none;
 }
 
-mat-card_subtitle{
-    font-size:12px;
+.displayed{
+    display:block;
 }
 
+a{
+    text-decoration: underline!important;
+    cursor:pointer;
+}

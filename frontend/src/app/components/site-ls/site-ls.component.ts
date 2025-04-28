@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, Input, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { Site } from '@app/models/site.model';
@@ -21,7 +22,7 @@ export class SiteLsComponent implements OnInit, OnDestroy{
   private route = inject(ActivatedRoute);
   private routeSubscription?:Subscription;
 
-  labels = {
+  @Input() labels = {
     departementLabel: "",
     housingLabel: "",
     statusLabel:"",
@@ -31,18 +32,25 @@ export class SiteLsComponent implements OnInit, OnDestroy{
     btnRecordLabel: "",
     btnPreviousStepLabel: ""
   }
-  site:Site = new Site();
+  @Input() site:Site = new Site();
+  @Input() dialogRef = inject(MatDialogRef)
   diagnostic:Diagnostic = new Diagnostic();
+  siteSubscription?:Subscription;
   
   ngOnInit(): void {
     this.labels = this.siteService.labels;
     this.routeSubscription = this.route.params.subscribe((params: any) => {
-          const id_site = params['id_site'];  
-          if (id_site) {
-            this.siteService.get(id_site).subscribe(site=>{
-              this.site = site;
-            })
-          }
+      const id_site = params['id_site'];
+    
+      if (id_site) {
+        this.siteSubscription = this.siteService.get(id_site).subscribe(site => {
+          this.site = site;
+        });
+      } else if (this.site?.id_site) { 
+        this.siteSubscription = this.siteService.get(this.site.id_site).subscribe(site => {
+          this.site = site;
+        });
+      }
     });
   }
 
@@ -51,5 +59,10 @@ export class SiteLsComponent implements OnInit, OnDestroy{
   }
   ngOnDestroy(): void {
     this.routeSubscription?.unsubscribe();
+    this.siteSubscription?.unsubscribe();
+  }
+
+  cancel(){
+    this.dialogRef.close();
   }
 }

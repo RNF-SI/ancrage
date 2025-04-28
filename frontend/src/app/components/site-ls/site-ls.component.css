@@ -1,6 +1,3 @@
 .container{
-    margin:5%;
-}
-mat-raised-button{
-    margin: 10% !important;
+    width:100%;
 }

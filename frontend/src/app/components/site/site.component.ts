@@ -18,6 +18,7 @@ import { Departement } from '@app/models/departement.model';
 import { DepartementService } from '@app/services/departement.service';
 import { MatDialog } from '@angular/material/dialog';
 import { AlerteSiteComponent } from '../parts/alerte-site/alerte-site.component';
+import { AuthService } from '@app/home-rnf/services/auth-service.service';
 
 
 
@@ -76,8 +77,14 @@ export class SiteComponent implements OnInit,OnDestroy{
   diagnostic:Diagnostic = new Diagnostic();
   private departementService = inject(DepartementService);
   private dialog = inject(MatDialog);
+  private authService = inject(AuthService);
+  user_id=0;
+  previousPage="";
 
   ngOnInit(): void {
+    this.previousPage = localStorage.getItem("previousPage")!;
+    this.user_id = this.authService.getCurrentUser().id_role;
+    console.log(this.user_id);
     this.labels = this.siteService.labels;
     if(localStorage.getItem("diagnostic")){
       this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!)
@@ -110,7 +117,7 @@ export class SiteComponent implements OnInit,OnDestroy{
           this.formGroup.patchValue({
             id_site: this.site.id_site,
             nom: this.site.nom,
-            habitats: this.site.habitats,
+            /* habitats: this.site.habitats, */
             departements: this.site.departements,
             type: this.site.type,
             position_y: this.site.position_y,
@@ -120,8 +127,8 @@ export class SiteComponent implements OnInit,OnDestroy{
         });
       } else {
 
-        forkJoin([habitats$, statuts$,departements$]).subscribe(([habitats, statuts,departements]) => {
-          this.uniqueHabitats = habitats;
+        forkJoin([/* habitats$, */ statuts$,departements$]).subscribe(([/* habitats, */ statuts,departements]) => {
+          /* this.uniqueHabitats = habitats; */
           this.uniqueStatuts = statuts;
           this.uniqueDepartements = departements;
           this.departementService.sortByName(this.uniqueDepartements);
@@ -141,9 +148,11 @@ export class SiteComponent implements OnInit,OnDestroy{
   recordSite(event: Event){
     
     event.preventDefault();
+    
     this.site = Object.assign(new Site(),this.formGroup.value);
     
     if (this.site.id_site == 0){
+      this.site.created_by=this.user_id;
       this.siteSubscription = this.siteService.add(this.site).subscribe(site=>{
         this.diagnostic.sites.push(site);
         localStorage.setItem("diagnostic",JSON.stringify(this.diagnostic));
@@ -158,7 +167,7 @@ export class SiteComponent implements OnInit,OnDestroy{
         });
       });
     }else{
-
+      this.site.modified_by=this.user_id;
       this.siteSubscription = this.siteService.update(this.site).subscribe(site=>{
         this.diagnostic.sites.push(site);
         localStorage.setItem("diagnostic",JSON.stringify(this.diagnostic));
@@ -168,7 +177,8 @@ export class SiteComponent implements OnInit,OnDestroy{
             message: "Le site suivant vient d'être modifié dans la base de données et a été ajouté au diagnostic :",
             site: site,
             labels: this.labels,
-            diagnostic:this.diagnostic
+            diagnostic:this.diagnostic,
+            previousPage:this.previousPage
           }
         });
       });

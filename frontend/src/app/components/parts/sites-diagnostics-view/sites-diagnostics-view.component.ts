@@ -1,11 +1,11 @@
 import { CommonModule } from "@angular/common";
-import { Component, inject, Input, OnInit } from "@angular/core";
+import { Component, inject, Input, OnDestroy, OnInit } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { Site } from "@app/models/site.model";
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { SiteService } from "@app/services/sites.service";
 import { Diagnostic } from "@app/models/diagnostic.model";
 import { MapComponent } from "../map/map.component";
@@ -16,6 +16,10 @@ import { MatTableDataSource } from "@angular/material/table";
 import { AuthService } from "@app/home-rnf/services/auth-service.service";
 import { FormsModule } from "@angular/forms";
 import { MatInputModule } from "@angular/material/input";
+import { AlerteVisualisationSiteComponent } from "../alerte-visualisation-site/alerte-visualisation-site.component";
+import { MatDialog } from "@angular/material/dialog";
+import { DepartementService } from "@app/services/departement.service";
+import { faSort } from "@fortawesome/free-solid-svg-icons";
 
 @Component({
   selector: 'app-sites-diagnostics-view',
@@ -24,11 +28,11 @@ import { MatInputModule } from "@angular/material/input";
   standalone: true,
   imports: [CommonModule, MatCardModule, MatButtonModule, MatTooltipModule, FontAwesomeModule,RouterModule,MapComponent,MatFormFieldModule,MatSelectModule,FormsModule,MatInputModule]
 })
-export class SitesDiagnosticsViewComponent implements OnInit{
+export class SitesDiagnosticsViewComponent implements OnInit,OnDestroy{
 
   @Input() sites: Site[] = [];
   @Input() titleBtnCreaDiag = "Nouveau diagnostic";
-	@Input() infobulleCreaDiagFromSite="Ce bouton vous dirige directement vers le choix des acteurs. Le site indiqué sur cette ligne sera présélectionné.";
+	@Input() infobulleCreaDiagFromSite="Le site indiqué sur cette ligne sera présélectionné lors de la création du diagnostic.";
 	@Input() infobulleCreaDiagFromScratch = "Utilisez ce bouton si le diagnostic comprend plusieurs sites ou si le site ciblé n'est pas dans la liste ci-dessous.";
   @Input() title="";
   @Input() diagnostic:Diagnostic = new Diagnostic();
@@ -67,8 +71,14 @@ export class SitesDiagnosticsViewComponent implements OnInit{
     emptyChosenSites = "Vous n'avez pas encore choisi de sites.";
     chosenSites:String[]=[this.emptyChosenSites];
     user_id:number = 0;
+    id_organisme=0;
     searchSiteName: string = '';
     filteredSiteList: Site[] = [];
+    btnToShowDiagnosticsLbl = "Afficher diagnostics";
+    btnToHideDiagnosticsLbl = "Masquer les diagnostics";
+    btnForDiagnosticsLbl = "";
+    private dialog = inject(MatDialog);
+    private router = inject(Router)
 
     filteredSites():Site[] {
       if (!this.searchSiteName) {
@@ -84,7 +94,6 @@ export class SitesDiagnosticsViewComponent implements OnInit{
       
       if (!this.searchSiteName) {
         this.filteredSiteList = this.sites;
-        console.log(this.filteredSiteList);
       } else {
         const searchLower = this.searchSiteName.toLowerCase();
         this.filteredSiteList = this.sites.filter(site =>
@@ -94,43 +103,44 @@ export class SitesDiagnosticsViewComponent implements OnInit{
     }
 
     ngOnInit(): void {
+      this.btnForDiagnosticsLbl = this.btnToShowDiagnosticsLbl;
       this.labels = this.siteService.labels;
       this.sitesSub = this.siteService.getAll().subscribe(sites => {
       
         this.siteService.sortByName(sites);
         this.sitesOriginal = sites;
         this.sites = sites;
-        console.log(this.sites);
         this.sitesSelected = new MatTableDataSource(this.sites);
         this.extractUniqueFilters();
         this.onSearchChange();
         this.sites = sites;
         return this.sites;
       });
-      
-      let user_id = this.authService.getCurrentUser().id_role;
-      let id_organisme = this.authService.getCurrentUser().id_organisme;
-      if (localStorage.getItem("diagnostic")){
-        console.log(localStorage.getItem("diagnostic"));
-        return this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
-      }else{
-        this.diagnostic.created_by = user_id;
-        this.user_id = user_id;
-        this.diagnostic.id_organisme = id_organisme;
-      }
+      localStorage.removeItem("diagnostic");
+      this.user_id = this.authService.getCurrentUser().id_role;
+      this.id_organisme = this.authService.getCurrentUser().id_organisme;
+      localStorage.setItem("previousPage",this.router.url);
       
     }
 
     navigate(path:string,diagnostic:Diagnostic,site?:Site){
+      if (localStorage.getItem("diagnostic")){
+        console.log(localStorage.getItem("diagnostic"));
+        return this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
+      }else{
+        this.diagnostic.created_by = this.user_id;
+        this.diagnostic.id_organisme = this.id_organisme;
+      }
       this.siteService.navigateAndReload(path,diagnostic,site);
     }
     extractUniqueFilters() {
       this.uniqueDepartements = Array.from(new Set(this.sites.flatMap(site =>
         site.departements.map(dep => dep.nom_dep))));
+      this.uniqueDepartements.sort();
     
       this.uniqueRegions = Array.from(new Set(this.sites.flatMap(site =>
         site.departements.map(dep => dep.region.nom_reg))));
-    
+      
       this.uniqueTypes = Array.from(new Set(this.sites.map(site =>
         site.type?.libelle).filter(Boolean)));
     
@@ -159,4 +169,31 @@ export class SitesDiagnosticsViewComponent implements OnInit{
       /* this.selectedHabitat = ""; */
       this.filteredSiteList = this.sitesOriginal;
     }
+
+    displayDiagnostics(site:Site){
+      const element = document.querySelector(".diagnostics"+site.id_site);
+      if (element?.classList.contains("hidden")){
+        element.classList.remove('hidden');
+        element.classList.add('displayed');
+        this.btnForDiagnosticsLbl = this.btnToHideDiagnosticsLbl;
+      }else{
+        element?.classList.remove('displayed');
+        element?.classList.add('hidden');
+        this.btnForDiagnosticsLbl = this.btnToShowDiagnosticsLbl;
+      }
+    }
+
+    ngOnDestroy(): void {
+      this.sitesSub?.unsubscribe();
+    }
+
+    showSiteDetails(site:Site){
+      this.dialog.open(AlerteVisualisationSiteComponent, {
+                data: {
+                  site: site,
+                  labels: this.labels
+                }
+              });
+    }
+
 }
