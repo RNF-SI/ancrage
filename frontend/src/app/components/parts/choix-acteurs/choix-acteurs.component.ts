@@ -70,14 +70,18 @@ export class ChoixActeursComponent implements OnInit {
   }
 
   applyFilters() {
-    console.log(this.selectedDepartment);
+    let selectedCat = true;
+    if (this.selectedCategory.id_nomenclature == 0){
+      selectedCat = false
+    }
+    console.log(selectedCat);
     this.actorsSelected.data = this.actorsOriginal.filter(actor => {
       console.log(actor.commune?.departement?.nom_dep);
       const matchDep = !this.selectedDepartment.nom_dep || actor.commune?.departement?.nom_dep === this.selectedDepartment.nom_dep;
       console.log(matchDep);
-      const matchCat = !this.selectedCategory.id_nomenclature || actor.categories?.some(cat => cat.id_nomenclature === this.selectedCategory.id_nomenclature);
+      const matchCat = !selectedCat || actor.categories?.some(cat => cat.id_nomenclature === this.selectedCategory.id_nomenclature);
       
-      return (matchDep && matchCat) || matchDep || matchCat ;
+      return matchDep && matchCat;
     });
     console.log(this.actorsSelected.data);
     this.actors = this.actorsSelected.data;
