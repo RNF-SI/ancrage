@@ -27,7 +27,7 @@
                     <mat-option *ngFor="let cat of uniqueCategories" [value]="cat">{{ cat.libelle }}</mat-option>
                 </mat-select>
             </mat-form-field>
-                
+            <button id="btnToReinitialize" mat-raised-button (click)="resetFilters()">{{reinitialisation}}</button>
             <table mat-table [dataSource]="actors" class="mat-elevation-z2" multiTemplateDataRows>
 
                 <!-- Nom Site Column -->

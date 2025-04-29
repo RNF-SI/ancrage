@@ -11,7 +11,7 @@
             
             <mat-form-field appearance="fill">
                 <mat-label>{{ chooseSiteTitle }}</mat-label>
-                <mat-select multiple [(value)]="chosenSites">
+                <mat-select multiple [(value)]="chosenSites" (selectionChange)="getDiagnostics(chosenSites)">
                   <mat-option *ngFor="let site of uniqueSites" required [value]="site" >{{ site.nom }}</mat-option>
                 </mat-select>
             </mat-form-field>
@@ -31,6 +31,8 @@
                 [uniqueDepartments]="uniqueDepartments"
                 [selectedCategory]="selectedCategory"
                 [selectedDepartment]="selectedDepartment"
+                [actorsSelected]="actorsSelected"
+                [actorsOriginal]="uniqueActors"
             >
 
             </app-choix-acteurs>

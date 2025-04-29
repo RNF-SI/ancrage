@@ -24,7 +24,7 @@ import { ActeurService } from '@app/services/acteur.service';
 export class ChoixActeursComponent implements OnInit {
   @Input() actors: Acteur[]=[];
   title: string="Choisir les acteurs";
-  titleGetActors = "Récupérer les acteurs d'un précédent diagnostic sur ce site";
+  titleGetActors = "Récupérer les acteurs d'un précédent diagnostic sur les sites choisis";
   labels = {
     diagnosticsList:"",
     identity:"",
@@ -50,7 +50,9 @@ export class ChoixActeursComponent implements OnInit {
   @Input() selectedDepartment: Departement = new Departement();
   @Input() selectedCategory: Nomenclature = new Nomenclature();
   @Input() selectedDiagnostic: Diagnostic = new Diagnostic();
-  actorsSelected: MatTableDataSource<Acteur>= new MatTableDataSource();
+  @Input() actorsSelected: MatTableDataSource<Acteur>= new MatTableDataSource();
+  @Input() actorsOriginal: Acteur[]=[];
+  reinitialisation = "Réinitialiser"
  
   addOrRemoveActor(_t79: any) {
   throw new Error('Method not implemented.');
@@ -68,15 +70,23 @@ export class ChoixActeursComponent implements OnInit {
   }
 
   applyFilters() {
-    this.actorsSelected.data = this.actors.filter(actor => {
-      const matchDep = !this.selectedDepartment || actor.commune.departement === this.selectedDepartment;
-      const matchCat = !this.selectedCategory || actor.categories?.some(cat => cat.id_nomenclature === this.selectedCategory.id_nomenclature);
+    console.log(this.selectedDepartment);
+    this.actorsSelected.data = this.actorsOriginal.filter(actor => {
+      console.log(actor.commune?.departement?.nom_dep);
+      const matchDep = !this.selectedDepartment.nom_dep || actor.commune?.departement?.nom_dep === this.selectedDepartment.nom_dep;
+      console.log(matchDep);
+      const matchCat = !this.selectedCategory.id_nomenclature || actor.categories?.some(cat => cat.id_nomenclature === this.selectedCategory.id_nomenclature);
       
-      /* const matchHab = !this.selectedHabitat || site.habitats.some(hab => hab.libelle === this.selectedHabitat);
-    */
-      return matchDep && matchCat;
+      return (matchDep && matchCat) || matchDep || matchCat ;
     });
+    console.log(this.actorsSelected.data);
     this.actors = this.actorsSelected.data;
+  }
+
+  resetFilters() {
+    this.selectedDepartment = new Departement();
+    this.selectedCategory = new Nomenclature();
+    this.actors = this.actorsOriginal;
   }
 
 

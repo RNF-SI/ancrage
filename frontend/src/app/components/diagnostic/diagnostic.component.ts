@@ -15,6 +15,7 @@ import { ActeurService } from '@app/services/acteur.service';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
+import { MatTableDataSource } from '@angular/material/table';
 
 @Component({
   selector: 'app-diagnostic',
@@ -59,8 +60,10 @@ export class DiagnosticComponent implements OnInit{
   private route = inject(ActivatedRoute);
   private actorsService = inject(ActeurService);
   private diagnosticsService = inject(DiagnosticService);
+  actorsSelected:MatTableDataSource<Acteur>= new MatTableDataSource();
   
   ngOnInit(): void {
+    this.actorsSelected = new MatTableDataSource(this.actors);
     if (localStorage.getItem("diagnostic")){
 
       this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
@@ -80,7 +83,12 @@ export class DiagnosticComponent implements OnInit{
         forkJoin([sites$, actors$]).subscribe(([sites, acteurs]) => {
           
           this.instructionswithResults(sites,acteurs);
-
+          this.actor.commune.departement = (this.actor.commune?.departement || []).map(dpt =>
+            this.uniqueDepartments.find(ud => ud.id_departement === dpt.id_departement) || dpt
+          );
+          this.actor.categories = (this.actor.categories|| []).map(cat =>
+            this.uniqueCategories.find(uc => uc.id_nomenclature === cat.id_nomenclature) || cat
+          );
         });
       } else {
         
@@ -121,31 +129,28 @@ export class DiagnosticComponent implements OnInit{
       }
       
     }
-    /* this.actor.commune.departement = (this.actor.commune?.departement || []).map(dpt =>
-      this.uniqueDepartments.find(ud => ud.id_departement === dpt.id_departement) || dpt
-    );
-    this.actor.categories = (this.actor.categories|| []).map(cat =>
-      this.uniqueCategories.find(uc => uc.id_nomenclature === cat.id_nomenclature) || cat
-    ); */
+    
     console.log(acteurs);
     this.checkSite();
     this.getDiagnostics(this.chosenSites);
   }
 
   getDiagnostics(sites:Site[]){
-  
-    let array:number[]=[]
-    for (let i = 0;i<sites.length;i++){
-      array.push(sites[i].id_site);
+    if (sites.length > 0){
+      let array:number[]=[]
+      for (let i = 0;i<sites.length;i++){
+        array.push(sites[i].id_site);
+      }
+      let json = {
+        site_ids:array
+      }
+      console.log(json);
+      this.diagnosticsService.getAllBySites(json).subscribe(diagnostics =>{
+        this.uniqueDiagnostics = diagnostics;
+        console.log(diagnostics);
+      });
     }
-    let json = {
-      site_ids:array
-    }
-    console.log(json);
-    this.diagnosticsService.getAllBySites(json).subscribe(diagnostics =>{
-      this.uniqueDiagnostics = diagnostics;
-      console.log(diagnostics);
-    });
+   
   }
   /* applyFilters() {
     this.chosenSites = [];
