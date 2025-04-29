@@ -25,6 +25,7 @@ export class Region implements IRegion{
     /** Création depuis un JSON brut (avec reconversion des objets internes et dates) */
     static fromJson(data: IRegion): Region {
         const region = new Region();
+        if (!data) return region;
         region.id_region = data.id_region;
         region.id_reg = data.id_reg;
         region.nom_reg = data.nom_reg;

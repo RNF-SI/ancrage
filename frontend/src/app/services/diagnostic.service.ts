@@ -10,6 +10,7 @@ import { Observable, map } from 'rxjs';
 export class DiagnosticService {
 
     private GET_ALL_URL = 'http://localhost:5000/diagnostics';
+
     private BASE_URL = 'http://localhost:5000/diagnostic/';
     constructor(
       private _http: HttpClient,
@@ -24,7 +25,15 @@ export class DiagnosticService {
         })
       );
     }
-  
+    getAllBySites(array:any): Observable<Diagnostic[]> {
+      return this._http.post<IDiagnostic[]>(this.GET_ALL_URL+"-site",array).pipe(
+        map(diagnosticJsonArray => {
+          return diagnosticJsonArray.map<Diagnostic>(
+            diagnosticJson => Diagnostic.fromJson(diagnosticJson)
+          )
+        })
+      );
+    }
    /*  get(id: number): Observable<Diagnostic> {
       return this.http.get<IDiagnostic>(this.BASE_URL + id + '/').pipe(
         map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))

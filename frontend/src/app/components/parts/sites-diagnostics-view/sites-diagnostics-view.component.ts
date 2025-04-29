@@ -18,8 +18,6 @@ import { FormsModule } from "@angular/forms";
 import { MatInputModule } from "@angular/material/input";
 import { AlerteVisualisationSiteComponent } from "../alerte-visualisation-site/alerte-visualisation-site.component";
 import { MatDialog } from "@angular/material/dialog";
-import { DepartementService } from "@app/services/departement.service";
-import { faSort } from "@fortawesome/free-solid-svg-icons";
 
 @Component({
   selector: 'app-sites-diagnostics-view',
@@ -37,163 +35,165 @@ export class SitesDiagnosticsViewComponent implements OnInit,OnDestroy{
   @Input() title="";
   @Input() diagnostic:Diagnostic = new Diagnostic();
   private siteService:SiteService = inject(SiteService);
-   displayedColumns: string[] = ['nom', 'regions','departements', 'type',/* 'habitats', */'choix'];
-    sitesOriginal: Site[] = []; // sauvegarde de tous les sites
-    sitesSelected: MatTableDataSource<Site>= new MatTableDataSource();
-    selectedDepartement: string = "";
-    selectedRegion: string = "";
-    selectedType: string ="";
-    selectedHabitat: string = "";
-    uniqueDepartements: string[] = [];
-    uniqueRegions: string[] = [];
-    uniqueTypes: string[] = [];
-    uniqueHabitats: string[] = [];
-    globales={};
-    reinitialisation = 'Réinitialiser';
-    btnToChooseLabel = "Choisir";
-    btnNewSiteLabel = "Nouveau site";
-    btnToChooseActors = "Choix des acteurs";
-  
-    labels = {
-      departementLabel: "",
-      housingLabel: "",
-      statusLabel:"",
-      nameLabel: "",
-      latitudeLabel: "",
-      longitudeLabel: "",
-      btnRecordLabel: "",
-      btnPreviousStepLabel: "",
-      regionLabel: ""
-    }
-    private authService = inject(AuthService);
-    private sitesSub!: Subscription;
-    titleChosenSites="Sites choisis";
-    emptyChosenSites = "Vous n'avez pas encore choisi de sites.";
-    chosenSites:String[]=[this.emptyChosenSites];
-    user_id:number = 0;
-    id_organisme=0;
-    searchSiteName: string = '';
-    filteredSiteList: Site[] = [];
-    btnToShowDiagnosticsLbl = "Afficher diagnostics";
-    btnToHideDiagnosticsLbl = "Masquer les diagnostics";
-    btnForDiagnosticsLbl = "";
-    private dialog = inject(MatDialog);
-    private router = inject(Router)
+  displayedColumns: string[] = ['nom', 'regions','departements', 'type',/* 'habitats', */'choix'];
+  sitesOriginal: Site[] = []; // sauvegarde de tous les sites
+  sitesSelected: MatTableDataSource<Site>= new MatTableDataSource();
+  selectedDepartement: string = "";
+  selectedRegion: string = "";
+  selectedType: string ="";
+  selectedHabitat: string = "";
+  uniqueDepartements: string[] = [];
+  uniqueRegions: string[] = [];
+  uniqueTypes: string[] = [];
+  uniqueHabitats: string[] = [];
+  globales={};
+  reinitialisation = 'Réinitialiser';
+  btnToChooseLabel = "Choisir";
+  btnNewSiteLabel = "Nouveau site";
+  btnToChooseActors = "Choix des acteurs";
 
-    filteredSites():Site[] {
-      if (!this.searchSiteName) {
-        return this.sites;
-      }
+  labels = {
+    departementLabel: "",
+    housingLabel: "",
+    statusLabel:"",
+    nameLabel: "",
+    latitudeLabel: "",
+    longitudeLabel: "",
+    btnRecordLabel: "",
+    btnPreviousStepLabel: "",
+    regionLabel: ""
+  }
+  private authService = inject(AuthService);
+  private sitesSub!: Subscription;
+  titleChosenSites="Sites choisis";
+  emptyChosenSites = "Vous n'avez pas encore choisi de sites.";
+  chosenSites:String[]=[this.emptyChosenSites];
+  user_id:number = 0;
+  id_organisme=0;
+  searchSiteName: string = '';
+  filteredSiteList: Site[] = [];
+  btnToShowDiagnosticsLbl = "Afficher diagnostics";
+  btnToHideDiagnosticsLbl = "Masquer les diagnostics";
+  btnForDiagnosticsLbl = "";
+  private dialog = inject(MatDialog);
+  private router = inject(Router)
+
+  filteredSites():Site[] {
+    if (!this.searchSiteName) {
+      return this.sites;
+    }
+    const searchLower = this.searchSiteName.toLowerCase();
+    return this.sites.filter(site => site.nom.toLowerCase().includes(searchLower));
+  }
+
+  onSearchChange() {
+
+    console.log(this.sites);
+    
+    if (!this.searchSiteName) {
+      this.filteredSiteList = this.sites;
+    } else {
       const searchLower = this.searchSiteName.toLowerCase();
-      return this.sites.filter(site => site.nom.toLowerCase().includes(searchLower));
+      this.filteredSiteList = this.sites.filter(site =>
+        site.nom.toLowerCase().includes(searchLower)
+      );
     }
+  }
 
-    onSearchChange() {
-
-      console.log(this.sites);
-      
-      if (!this.searchSiteName) {
-        this.filteredSiteList = this.sites;
-      } else {
-        const searchLower = this.searchSiteName.toLowerCase();
-        this.filteredSiteList = this.sites.filter(site =>
-          site.nom.toLowerCase().includes(searchLower)
-        );
-      }
-    }
-
-    ngOnInit(): void {
-      this.btnForDiagnosticsLbl = this.btnToShowDiagnosticsLbl;
-      this.labels = this.siteService.labels;
-      this.sitesSub = this.siteService.getAll().subscribe(sites => {
-      
-        this.siteService.sortByName(sites);
-        this.sitesOriginal = sites;
-        this.sites = sites;
-        this.sitesSelected = new MatTableDataSource(this.sites);
-        this.extractUniqueFilters();
-        this.onSearchChange();
-        this.sites = sites;
-        return this.sites;
-      });
-      localStorage.removeItem("diagnostic");
-      this.user_id = this.authService.getCurrentUser().id_role;
-      this.id_organisme = this.authService.getCurrentUser().id_organisme;
-      localStorage.setItem("previousPage",this.router.url);
-      
-    }
-
-    navigate(path:string,diagnostic:Diagnostic,site?:Site){
-      if (localStorage.getItem("diagnostic")){
-        console.log(localStorage.getItem("diagnostic"));
-        return this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
-      }else{
-        this.diagnostic.created_by = this.user_id;
-        this.diagnostic.id_organisme = this.id_organisme;
-      }
-      this.siteService.navigateAndReload(path,diagnostic,site);
-    }
-    extractUniqueFilters() {
-      this.uniqueDepartements = Array.from(new Set(this.sites.flatMap(site =>
-        site.departements.map(dep => dep.nom_dep))));
-      this.uniqueDepartements.sort();
+  ngOnInit(): void {
+    this.btnForDiagnosticsLbl = this.btnToShowDiagnosticsLbl;
+    this.labels = this.siteService.labels;
+    this.sitesSub = this.siteService.getAll().subscribe(sites => {
     
-      this.uniqueRegions = Array.from(new Set(this.sites.flatMap(site =>
-        site.departements.map(dep => dep.region.nom_reg))));
-      
-      this.uniqueTypes = Array.from(new Set(this.sites.map(site =>
-        site.type?.libelle).filter(Boolean)));
+      this.siteService.sortByName(sites);
+      this.sitesOriginal = sites;
+      this.sites = sites;
+      this.sitesSelected = new MatTableDataSource(this.sites);
+      this.extractUniqueFilters();
+      this.onSearchChange();
+      this.sites = sites;
+      return this.sites;
+    });
+    localStorage.removeItem("diagnostic");
+    localStorage.removeItem("previousPage");
+    this.user_id = this.authService.getCurrentUser().id_role;
+    this.id_organisme = this.authService.getCurrentUser().id_organisme;
+    localStorage.setItem("previousPage",this.router.url);
     
-      /* this.uniqueHabitats = Array.from(new Set(this.sites.flatMap(site =>
-        site.habitats.map(hab => hab.libelle)))); */
+  }
+
+  navigate(path:string,diagnostic:Diagnostic,site?:Site){
+    if (localStorage.getItem("diagnostic")){
+      console.log(localStorage.getItem("diagnostic"));
+      return this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
+    }else{
+      this.diagnostic.created_by = this.user_id;
+      this.diagnostic.id_organisme = this.id_organisme;
     }
+    this.siteService.navigateAndReload(path,diagnostic,site);
+  }
+  extractUniqueFilters() {
+    this.uniqueDepartements = Array.from(new Set(this.sites.flatMap(site =>
+      site.departements.map(dep => dep.nom_dep))));
+    this.uniqueDepartements.sort();
+  
+    this.uniqueRegions = Array.from(new Set(this.sites.flatMap(site =>
+      site.departements.map(dep => dep.region.nom_reg))));
     
-    applyFilters() {
+    this.uniqueTypes = Array.from(new Set(this.sites.map(site =>
+      site.type?.libelle).filter(Boolean)));
+  
+    /* this.uniqueHabitats = Array.from(new Set(this.sites.flatMap(site =>
+      site.habitats.map(hab => hab.libelle)))); */
+  }
+  
+  applyFilters() {
+  
+    this.sitesSelected.data = this.sitesOriginal.filter(site => {
+      const matchDep = !this.selectedDepartement || site.departements.some(dep => dep.nom_dep === this.selectedDepartement);
+      const matchReg = !this.selectedRegion || site.departements.some(dep => dep.region.nom_reg === this.selectedRegion);
+      const matchType = !this.selectedType || site.type?.libelle === this.selectedType;
+      /* const matchHab = !this.selectedHabitat || site.habitats.some(hab => hab.libelle === this.selectedHabitat);
+    */
+      return matchDep && matchReg && matchType /* && matchHab */;
+    });
+    this.filteredSiteList = this.sitesSelected.data;
     
-      this.sitesSelected.data = this.sitesOriginal.filter(site => {
-        const matchDep = !this.selectedDepartement || site.departements.some(dep => dep.nom_dep === this.selectedDepartement);
-        const matchReg = !this.selectedRegion || site.departements.some(dep => dep.region.nom_reg === this.selectedRegion);
-        const matchType = !this.selectedType || site.type?.libelle === this.selectedType;
-        /* const matchHab = !this.selectedHabitat || site.habitats.some(hab => hab.libelle === this.selectedHabitat);
-     */
-        return matchDep && matchReg && matchType /* && matchHab */;
-      });
-      this.filteredSiteList = this.sitesSelected.data;
-      
-    }
+  }
 
-    resetFilters() {
-      this.selectedDepartement = "";
-      this.selectedRegion = "";
-      this.selectedType = "";
-      /* this.selectedHabitat = ""; */
-      this.filteredSiteList = this.sitesOriginal;
-    }
+  resetFilters() {
+    this.selectedDepartement = "";
+    this.selectedRegion = "";
+    this.selectedType = "";
+    /* this.selectedHabitat = ""; */
+    this.filteredSiteList = this.sitesOriginal;
+  }
 
-    displayDiagnostics(site:Site){
-      const element = document.querySelector(".diagnostics"+site.id_site);
-      if (element?.classList.contains("hidden")){
-        element.classList.remove('hidden');
-        element.classList.add('displayed');
-        this.btnForDiagnosticsLbl = this.btnToHideDiagnosticsLbl;
-      }else{
-        element?.classList.remove('displayed');
-        element?.classList.add('hidden');
-        this.btnForDiagnosticsLbl = this.btnToShowDiagnosticsLbl;
-      }
+  displayDiagnostics(site:Site){
+    const element = document.querySelector(".diagnostics"+site.id_site);
+    const buttonClass = document.querySelector(".btnToShowDiagnostics"+site.id_site);
+    if (element?.classList.contains("hidden")){
+      element.classList.remove('hidden');
+      element.classList.add('displayed');
+      buttonClass!.innerHTML = this.btnToHideDiagnosticsLbl;
+    }else{
+      element?.classList.remove('displayed');
+      element?.classList.add('hidden');
+      buttonClass!.innerHTML = this.btnToShowDiagnosticsLbl;
     }
+  }
 
-    ngOnDestroy(): void {
-      this.sitesSub?.unsubscribe();
-    }
+  ngOnDestroy(): void {
+    this.sitesSub?.unsubscribe();
+  }
 
-    showSiteDetails(site:Site){
-      this.dialog.open(AlerteVisualisationSiteComponent, {
-                data: {
-                  site: site,
-                  labels: this.labels
-                }
-              });
-    }
+  showSiteDetails(site:Site){
+    this.dialog.open(AlerteVisualisationSiteComponent, {
+              data: {
+                site: site,
+                labels: this.labels
+              }
+            });
+  }
 
 }

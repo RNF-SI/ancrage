@@ -5,7 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
-import { MatTableModule } from '@angular/material/table';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { RouterModule } from '@angular/router';
 import { Acteur } from '@app/models/acteur.model';
 import { Departement } from '@app/models/departement.model';
@@ -38,22 +38,19 @@ export class ChoixActeursComponent implements OnInit {
     mail:"",
     town:""
   };
-  selectedDiagnostic: Diagnostic = new Diagnostic();
-  uniqueDiagnostics: Diagnostic[] = [];
-  uniqueRegions: Region[] = [];
-  uniqueDepartments: Departement[] = [];
-  uniqueCategories: Nomenclature[] = [];
+  @Input() diagnostic: Diagnostic = new Diagnostic();
+  @Input() uniqueDiagnostics: Diagnostic[] = [];
+  @Input() uniqueDepartments: Departement[] = [];
+  @Input() uniqueCategories: Nomenclature[] = [];
   displayedColumns: string[] = ['identity', 'categories','status', 'structure','town','profile','telephone','mail','choice'];
   btnToDiagnostic = "Résumé diagnostic";
   private acteurService = inject(ActeurService);
-  applyFilters() {
-  throw new Error('Method not implemented.');
-  }
   diag: any;
   titleChooseActors: any;
-  selectedRegion: Region = new Region;
-  selectedDepartment: Departement = new Departement();
-  selectedCategory: Nomenclature = new Nomenclature();
+  @Input() selectedDepartment: Departement = new Departement();
+  @Input() selectedCategory: Nomenclature = new Nomenclature();
+  @Input() selectedDiagnostic: Diagnostic = new Diagnostic();
+  actorsSelected: MatTableDataSource<Acteur>= new MatTableDataSource();
  
   addOrRemoveActor(_t79: any) {
   throw new Error('Method not implemented.');
@@ -62,12 +59,25 @@ export class ChoixActeursComponent implements OnInit {
   navigate(arg0: string,arg1: any) {
     throw new Error('Method not implemented.');
   }
-  diagnostic: Diagnostic = new Diagnostic();
+
   btnNewActorLabel = "Nouvel acteur";
   btnToChooseActors: any;
   ngOnInit(): void {
     console.log(localStorage.getItem("diagnostic"));
     this.labels = this.acteurService.labels;
   }
+
+  applyFilters() {
+    this.actorsSelected.data = this.actors.filter(actor => {
+      const matchDep = !this.selectedDepartment || actor.commune.departement === this.selectedDepartment;
+      const matchCat = !this.selectedCategory || actor.categories?.some(cat => cat.id_nomenclature === this.selectedCategory.id_nomenclature);
+      
+      /* const matchHab = !this.selectedHabitat || site.habitats.some(hab => hab.libelle === this.selectedHabitat);
+    */
+      return matchDep && matchCat;
+    });
+    this.actors = this.actorsSelected.data;
+  }
+
 
 }
