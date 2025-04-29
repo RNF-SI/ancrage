@@ -101,8 +101,7 @@ class Diagnostic(db.Model):
     acteurs = db.relationship('Acteur', back_populates='diagnostic')
     documents = db.relationship('Document', backref='diagnostic')
     sites = db.relationship('Site', secondary='cor_sites_diagnostics', back_populates='diagnostics')
-    statut_entretien_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
-    statut_entretien = db.relationship('Nomenclature', foreign_keys=[statut_entretien_id])
+    
     
 class Document(db.Model):
     __tablename__ = 't_documents'
@@ -120,7 +119,6 @@ class Acteur(db.Model):
     mail = db.Column(db.String)
     commune_id = db.Column(db.Integer, db.ForeignKey('t_communes.id_commune'))
     profil_cognitif_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
-    profil = db.relationship('Nomenclature', foreign_keys=[profil_cognitif_id])
     is_acteur_economique = db.Column(db.Boolean, nullable=False)
     structure = db.Column(db.String)
     diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
@@ -132,7 +130,9 @@ class Acteur(db.Model):
     commune = db.relationship("Commune", backref="acteurs")
     categories = db.relationship('Nomenclature', secondary='cor_categorie_acteur', back_populates='acteurs_c')
     questions = db.relationship('Question', secondary='cor_question_acteur', back_populates='acteurs')
-
+    statut_entretien_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
+    profil = db.relationship('Nomenclature', foreign_keys=[profil_cognitif_id], back_populates='acteurs_p')
+    statut_entretien = db.relationship('Nomenclature', foreign_keys=[statut_entretien_id], back_populates='acteurs_se')
 
 acteur_categorie = db.Table(
     'cor_categorie_acteur',
@@ -193,8 +193,5 @@ class Nomenclature(db.Model):
     mnemonique = db.Column(db.String)
     sites = db.relationship('Site', secondary='cor_site_habitat', back_populates='habitats')
     acteurs_c = db.relationship('Acteur', secondary='cor_categorie_acteur', back_populates='categories')
-    acteurs_p = db.relationship(
-        'Acteur',
-        back_populates='profil',
-        lazy=True
-    )
+    acteurs_p = db.relationship('Acteur', back_populates='profil', foreign_keys='Acteur.profil_cognitif_id')
+    acteurs_se = db.relationship('Acteur', back_populates='statut_entretien', foreign_keys='Acteur.statut_entretien_id')

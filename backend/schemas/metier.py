@@ -31,6 +31,7 @@ class DepartementSchema(SQLAlchemyAutoSchema):
 
 class CommuneSchema(SQLAlchemyAutoSchema):
     geom = fields.Method("get_geom")
+    departement = fields.Nested(lambda: DepartementSchema, exclude=("communes",))
 
     class Meta:
         model = Commune
@@ -107,6 +108,7 @@ class ActeurSchema(SQLAlchemyAutoSchema):
     categories = fields.Nested(lambda: NomenclatureSchema, many=True)
     questions = fields.Nested(lambda: QuestionSchema, many=True)
     profil = fields.Nested(lambda: NomenclatureSchema)
+    statut_entretien = fields.Nested(lambda: NomenclatureSchema)
 
 class QuestionSchema(SQLAlchemyAutoSchema):
     class Meta:

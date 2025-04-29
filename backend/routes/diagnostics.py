@@ -1,5 +1,7 @@
 from models.models import db
 from flask import request, jsonify
+from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 from models.models import *
 from schemas.metier import *
 from routes import bp,date_time
@@ -50,6 +52,28 @@ def getAllDiagnostics():
         schema = DiagnosticSchema(many=True)
         usersObj = schema.dump(diagnostics)
         return jsonify(usersObj)
+    
+@bp.route('/diagnostics-site', methods=['POST'])
+def getAllDiagnosticsBySites():
+    data = request.get_json()
+
+    if not data or 'site_ids' not in data:
+        return jsonify({'message': 'Aucun ID de site fourni.'}), 400
+
+    sites_ids = data['site_ids']
+
+    filtered_diagnostics = (
+        Diagnostic.query
+        .join(Diagnostic.sites)
+        .filter(Site.id_site.in_(sites_ids))
+        .distinct()
+        .all()
+    )
+
+    print("Diagnostics filtrés :", [f"id={d.id_diagnostic}, nom={d.nom}" for d in filtered_diagnostics])
+    schema = DiagnosticSchema(many=True)
+    return jsonify(schema.dump(filtered_diagnostics))
+
     
 def changeValuesDiagnostic(diagnostic,data):
     
