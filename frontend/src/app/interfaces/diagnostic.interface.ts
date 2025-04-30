@@ -1,3 +1,4 @@
+import { IActeur } from "./acteur.interface";
 import { ISite } from "./site.interface";
 
 export interface IDiagnostic {
@@ -9,6 +10,7 @@ export interface IDiagnostic {
     is_read_only:boolean;
     id_organisme:number;
     sites?: ISite[];
+    acteurs:IActeur[];
     created_at ?: Date;
     created_at_str?: string;
     modified_at: Date | undefined;

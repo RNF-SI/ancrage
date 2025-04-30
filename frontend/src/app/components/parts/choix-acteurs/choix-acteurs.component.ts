@@ -74,16 +74,18 @@ export class ChoixActeursComponent implements OnInit {
     if (this.selectedCategory.id_nomenclature == 0){
       selectedCat = false
     }
-    console.log(selectedCat);
+    
     this.actorsSelected.data = this.actorsOriginal.filter(actor => {
-      console.log(actor.commune?.departement?.nom_dep);
-      const matchDep = !this.selectedDepartment.nom_dep || actor.commune?.departement?.nom_dep === this.selectedDepartment.nom_dep;
-      console.log(matchDep);
-      const matchCat = !selectedCat || actor.categories?.some(cat => cat.id_nomenclature === this.selectedCategory.id_nomenclature);
       
-      return matchDep && matchCat;
+      const matchDep = !this.selectedDepartment.nom_dep || actor.commune?.departement?.nom_dep === this.selectedDepartment.nom_dep;
+      const matchCat = !selectedCat || actor.categories?.some(cat => cat.id_nomenclature === this.selectedCategory.id_nomenclature);
+      const matchDiag = !this.selectedDiagnostic.id_diagnostic || actor.diagnostic?.id_diagnostic === this.selectedDiagnostic.id_diagnostic;
+      console.log(matchDiag);
+      console.log(this.selectedDiagnostic);
+      console.log(actor.diagnostic);
+      return matchDep && matchCat && matchDiag;
     });
-    console.log(this.actorsSelected.data);
+    
     this.actors = this.actorsSelected.data;
   }
 
@@ -91,6 +93,7 @@ export class ChoixActeursComponent implements OnInit {
     this.selectedDepartment = new Departement();
     this.selectedCategory = new Nomenclature();
     this.actors = this.actorsOriginal;
+    this.selectedDiagnostic = new Diagnostic();
   }
 
 

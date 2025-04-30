@@ -1,10 +1,11 @@
 import { IDiagnostic } from "@app/interfaces/diagnostic.interface";
 import { Site } from "./site.model";
 import * as moment from 'moment';
+import { Acteur } from "./acteur.model";
 
 export class Diagnostic implements IDiagnostic {
 
-	id_diagnostic: number = -1;
+	id_diagnostic: number = 0;
 	nom: string = "Diagnostic";
 	date_debut?= new Date();
 	date_debut_str?: string ="";
@@ -16,6 +17,7 @@ export class Diagnostic implements IDiagnostic {
 	created_at?= new Date();
 	modified_at: Date | undefined;
 	created_by: number = 0;
+	acteurs:Acteur[]=[]
 
 	copy(): Diagnostic {
 		const copy = new Diagnostic();
@@ -25,6 +27,7 @@ export class Diagnostic implements IDiagnostic {
 		copy.date_debut = this.date_debut ? new Date(this.date_debut.getTime()) : undefined;
 		copy.date_fin = this.date_fin ? new Date(this.date_fin.getTime()) : undefined;
 		copy.sites = this.sites.map(s => s.copy());
+		copy.acteurs = this.acteurs.map(a => a.copy());
 		copy.created_at = this.created_at ? new Date(this.created_at.getTime()) : undefined;
 		copy.modified_at = this.modified_at ? new Date(this.modified_at.getTime()) : undefined;
 		copy.created_by = this.created_by;
@@ -43,6 +46,7 @@ export class Diagnostic implements IDiagnostic {
 		diag.id_organisme = data.id_organisme;
 		diag.is_read_only = data.is_read_only;
 		diag.sites = (data.sites || []).map(s => Site.fromJson(s));
+		diag.acteurs = (data.acteurs || []).map(a => Acteur.fromJson(a));
 		diag.created_at = data.created_at ? new Date(data.created_at) : undefined;
 		diag.modified_at = data.modified_at ? new Date(data.modified_at) : undefined;
 		diag.created_by = data.created_by;
@@ -61,6 +65,7 @@ export class Diagnostic implements IDiagnostic {
 			date_fin: this.date_fin ? this.date_fin.toISOString() : undefined,
 			is_read_only: this.is_read_only,
 			sites: this.sites.map(s => s.toJson()),
+			acteurs: this.acteurs.map(a => a.toJson()),
 			created_at: this.created_at ? this.created_at.toISOString() : undefined,
 			modified_at: this.modified_at ? this.modified_at.toISOString() : undefined,
 			created_by: this.created_by,
