@@ -65,6 +65,7 @@ def getAllDiagnosticsBySites():
     filtered_diagnostics = (
         Diagnostic.query
         .join(Diagnostic.sites)
+        .join(Diagnostic.acteurs)
         .filter(Site.id_site.in_(sites_ids))
         .distinct()
         .all()

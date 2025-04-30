@@ -101,9 +101,8 @@ class ActeurSchema(SQLAlchemyAutoSchema):
         model = Acteur
         include_relationships = True
         load_instance = True
-        exclude = ('diagnostic',)
 
-    diagnostic = fields.Nested(lambda: DiagnosticLiteSchema)
+    diagnostic = fields.Nested(lambda: DiagnosticSchema)
     commune = fields.Nested(lambda: CommuneSchema)
     categories = fields.Nested(lambda: NomenclatureSchema, many=True)
     questions = fields.Nested(lambda: QuestionSchema, many=True)
