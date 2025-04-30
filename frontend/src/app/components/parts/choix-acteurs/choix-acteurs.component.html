@@ -6,7 +6,7 @@
                 <mat-label>{{labels.diagnosticsList}}</mat-label>
                 <mat-select [(value)]="selectedDiagnostic" (selectionChange)="applyFilters()">
             
-                    <mat-option *ngFor="let diag of uniqueDiagnostics" [value]="diag">{{ diag.nom }} du {{diag.date_debut}}</mat-option>
+                    <mat-option *ngFor="let diag of uniqueDiagnostics" [value]="diag">{{ diag.nom }} du {{diag.date_debut_str}}</mat-option>
                 </mat-select>
             </mat-form-field>
             <h3>{{titleChooseActors}}</h3>

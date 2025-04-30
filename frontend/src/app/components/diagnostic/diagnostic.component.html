@@ -8,6 +8,11 @@
                 {{titleDiagnostic}}
             </h2>
 
+            <mat-form-field appearance="fill" id="fieldName">
+                <mat-label>{{nameLabel}}</mat-label>
+                <input matInput placeholder="Entrez un nom" formControlName="nom" required >
+                <mat-error *ngIf="formGroup.get('nom')?.hasError('required')">Le nom est requis.</mat-error>
+            </mat-form-field>
             
             <mat-form-field appearance="fill">
                 <mat-label>{{ chooseSiteTitle }}</mat-label>
@@ -15,10 +20,12 @@
                   <mat-option *ngFor="let site of uniqueSites" required [value]="site" >{{ site.nom }}</mat-option>
                 </mat-select>
             </mat-form-field>
-            <h4 >{{chosenSitesTitle}}</h4>
+            <h3 >{{chosenSitesTitle}}</h3>
             <div *ngFor="let site of chosenSites">
                 <p>{{ site.nom }}, {{site.type.libelle}}</p>
+                
             </div>
+            <button mat-raised-button color="accent" type="button" (click)="navigate('/site',diagnostic)">{{btnCreateSiteLabel}}</button>
             <h3>
                 {{actorsTitle}}
             </h3>

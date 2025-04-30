@@ -40,6 +40,8 @@ export class AlerteSiteComponent {
 
 
   navigate(path:string,diagnostic:Diagnostic){
+    console.log(path);
+    console.log(this.data.previousPage);
     this.siteService.navigateAndReload(path,diagnostic)
   }
   

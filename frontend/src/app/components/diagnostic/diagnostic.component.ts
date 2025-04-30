@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -10,26 +10,28 @@ import { forkJoin, Subscription } from 'rxjs';
 import { ChoixActeursComponent } from '../parts/choix-acteurs/choix-acteurs.component';
 import { Acteur } from '@app/models/acteur.model';
 import { Departement } from '@app/models/departement.model';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ActeurService } from '@app/services/acteur.service';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-diagnostic',
   templateUrl: './diagnostic.component.html',
   styleUrls: ['./diagnostic.component.css'],
   standalone:true,
-  imports:[CommonModule,MatSelectModule, MatFormFieldModule,FormsModule,MatInputModule,ChoixActeursComponent]
+  imports:[CommonModule,MatSelectModule, MatFormFieldModule,FormsModule,MatInputModule,ChoixActeursComponent,ReactiveFormsModule,MatButtonModule]
 })
-export class DiagnosticComponent implements OnInit{
-  
+export class DiagnosticComponent implements OnInit, OnDestroy{
+
   titleDiagnostic= "";
   titleCreateDiag="Créer un diagnostic";
   titleModifyDiag="Modifier un diagnostic";
   chooseSiteTitle = "Choisir les sites";
+  btnCreateSiteLabel = "Créer un site";
   labels: any;
   selectedRegion: any;
   sites:Site[]=[]
@@ -37,7 +39,6 @@ export class DiagnosticComponent implements OnInit{
   selectedSite:Site = new Site();
   chosenSitesTitle = "Sites choisis";
   sitesSubscription?:Subscription;
-  private siteService = inject(SiteService);
   chosenSites:Site[] = [];
   actorsTitle ="Acteurs";
   actors:Acteur[]=[];
@@ -53,16 +54,29 @@ export class DiagnosticComponent implements OnInit{
   selectedDepartment:Departement = new Departement();
   diagnostic:Diagnostic = new Diagnostic();
   uniqueStatuts: any;
-  formGroup: any;
   titleSite: any;
   titleModif: any;
+  nameLabel="Nom";
   private routeSubscription?:Subscription;
+  private diagnosticSubscription ?:Subscription;
   private route = inject(ActivatedRoute);
   private actorsService = inject(ActeurService);
   private diagnosticsService = inject(DiagnosticService);
+  private siteService = inject(SiteService);
+  private router = inject(Router)
   actorsSelected:MatTableDataSource<Acteur>= new MatTableDataSource();
+  actorsOriginal:Acteur[] = [];
+  private fb = inject(FormBuilder);
+  formGroup = this.fb.group({
+      id_diagnostic: [0, [Validators.required]],
+      nom: ['', [Validators.required]],
+      sites: this.fb.control<Site[]>([], [Validators.required]),  
+      acteurs: this.fb.control<Acteur[]>([], [Validators.required]),
+      
+    });
   
   ngOnInit(): void {
+    this.titleDiagnostic = this.titleCreateDiag;
     this.actorsSelected = new MatTableDataSource(this.actors);
     if (localStorage.getItem("diagnostic")){
 
@@ -70,6 +84,7 @@ export class DiagnosticComponent implements OnInit{
       this.chosenSites = this.diagnostic.sites;
       
     }
+    localStorage.setItem("previousPage",this.router.url);
     this.routeSubscription = this.route.params.subscribe((params: any) => {
       const id_diagnostic = params['id_diagnostic'];  
   
@@ -145,20 +160,23 @@ export class DiagnosticComponent implements OnInit{
         site_ids:array
       }
       console.log(json);
-      this.diagnosticsService.getAllBySites(json).subscribe(diagnostics =>{
+      this.diagnosticSubscription = this.diagnosticsService.getAllBySites(json).subscribe(diagnostics =>{
         this.uniqueDiagnostics = diagnostics;
         console.log(diagnostics);
       });
     }
    
   }
-  /* applyFilters() {
-    this.chosenSites = [];
-    for (let i = 0; i < this.sites.length; i++) {
-      if (this.sites[i].selected) {
-        this.chosenSites.push(this.sites[i]);
-      }
-    }
-  } */
+
+  navigate(path:string,diagnostic:Diagnostic){
+    diagnostic.sites = this.chosenSites;
+
+    this.siteService.navigateAndReload(path,diagnostic);
+  }
+  
+  ngOnDestroy(): void {
+    this.routeSubscription?.unsubscribe();
+    this.diagnosticSubscription?.unsubscribe();
+  }
 
 }

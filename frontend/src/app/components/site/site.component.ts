@@ -84,7 +84,7 @@ export class SiteComponent implements OnInit,OnDestroy{
   ngOnInit(): void {
     this.previousPage = localStorage.getItem("previousPage")!;
     this.user_id = this.authService.getCurrentUser().id_role;
-    console.log(this.user_id);
+    console.log(this.previousPage);
     this.labels = this.siteService.labels;
     if(localStorage.getItem("diagnostic")){
       this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!)
@@ -162,7 +162,8 @@ export class SiteComponent implements OnInit,OnDestroy{
             message: "Le site suivant vient d'être créé dans la base de données et a été ajouté au diagnostic :",
             site: site,
             labels: this.labels,
-            diagnostic:this.diagnostic
+            diagnostic:this.diagnostic,
+            previousPage:this.previousPage
           }
         });
       });
