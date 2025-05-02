@@ -1,5 +1,6 @@
 from models.models import db
 from flask import request, jsonify
+from sqlalchemy.orm import contains_eager
 from models.models import *
 from schemas.metier import *
 from routes import bp,date_time
@@ -56,7 +57,13 @@ def getAllSites():
 def getAllSitesByUSer(created_by):
     if request.method == 'GET': 
         
-        sites = Site.query.filter_by(created_by=created_by).all()
+        sites = (
+            db.session.query(Site)
+            .join(Site.diagnostics)
+            .filter(Diagnostic.created_by == created_by)
+            .options(contains_eager(Site.diagnostics))
+            .all()
+        )
         schema = SiteSchema(many=True)
         usersObj = schema.dump(sites)
         return jsonify(usersObj)

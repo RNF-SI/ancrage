@@ -32,17 +32,44 @@ def diagnosticMethods(id_diagnostic):
     
 @bp.route('/diagnostic',methods=['POST'])
 def postDiagnostic():
-    if request.method == 'POST': 
-        
-        data = request.get_json()
-        print(data)
-        diagnostic=Diagnostic()
-        diagnostic = changeValuesDiagnostic(diagnostic,data)
-        diagnostic.created_at = date_time
-        diagnostic.created_by = data['created_by']
-        db.session.add(diagnostic)
-        db.session.commit()
-        return getDiagnostic(diagnostic)
+    data = request.get_json()
+
+    diagnostic = Diagnostic()
+    diagnostic = changeValuesDiagnostic(diagnostic, data)
+    diagnostic.created_at = date_time
+    diagnostic.created_by = data['created_by']
+
+    db.session.add(diagnostic)
+    db.session.flush()  # Pour obtenir l'id_diagnostic sans commit immédiat
+
+    # Associer les acteurs transmis
+    new_actors_ids = {a['id_acteur'] for a in data.get('acteurs', [])}
+    if new_actors_ids:
+        acteurs_orig = Acteur.query.filter(Acteur.id_acteur.in_(new_actors_ids)).all()
+        copied_acteurs = []
+
+        for a in acteurs_orig:
+            new_acteur = Acteur(
+                nom=a.nom,
+                prenom=a.prenom,
+                fonction=a.fonction,
+                telephone=a.telephone,
+                mail = a.mail,
+                commune_id = a.commune_id,
+                is_acteur_economique = a.is_acteur_economique,
+                structure = a.structure,
+                created_at = date_time,
+                created_by = data['created_by'],
+                diagnostic_id=diagnostic.id_diagnostic,
+                categories = a.categories,
+                questions = a.questions,
+                statut_entretien = a.statut_entretien
+            )
+            db.session.add(new_acteur)
+            copied_acteurs.append(new_acteur)
+        diagnostic.acteurs = copied_acteurs
+    db.session.commit()
+    return getDiagnostic(diagnostic)
 
 @bp.route('/diagnostics',methods=['GET'])
 def getAllDiagnostics():
@@ -78,9 +105,28 @@ def getAllDiagnosticsBySites():
     
 def changeValuesDiagnostic(diagnostic,data):
     
-    diagnostic.nom = data['nom']
-    diagnostic.date_debut = data['date_debut']
-    diagnostic.date_fin= data['date_fin']
+    diagnostic.nom = data.get('nom', diagnostic.nom)
+
+    if data.get('date_debut'):
+        diagnostic.date_debut = data['date_debut']
+
+    if data.get('date_fin'):
+        diagnostic.date_fin = data['date_fin']
+
+    # Extraire les ID des nouveaux sites
+    new_site_ids = {s['id_site'] for s in data.get('sites', [])}
+    current_site_ids = {s.id_site for s in diagnostic.sites}
+
+    # Supprimer les sites en trop
+    diagnostic.sites = [s for s in diagnostic.sites if s.id_site in new_site_ids]
+
+    # Ajouter les nouveaux sites manquants
+    for site_id in new_site_ids - current_site_ids:
+        site = Site.query.filter_by(id_site=site_id).first()
+        if site:
+            diagnostic.sites.append(site)
+        else:
+            print(f"Site ID {site_id} not found in database.")
 
     return diagnostic
 
