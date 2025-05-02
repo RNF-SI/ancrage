@@ -7,7 +7,7 @@ export class Acteur implements IActeur{
     id_acteur:number = 1;
     nom:string="";
     prenom:string="";
-    statut:string="";
+    fonction:string="";
     telephone:string="06 06 06 06 06";
     mail:string="mail@mail.com";
     commune:Commune = new Commune();
@@ -30,7 +30,7 @@ export class Acteur implements IActeur{
         copy.id_acteur = this.id_acteur;
         copy.nom = this.nom;
         copy.prenom = this.prenom;
-        copy.statut = this.statut;
+        copy.fonction = this.fonction;
         copy.telephone = this.telephone;
         copy.mail = this.mail;
         copy.statut_entretien = this.statut_entretien?.copy();
@@ -55,7 +55,7 @@ export class Acteur implements IActeur{
         acteur.id_acteur = data.id_acteur;
         acteur.nom = data.nom;
         acteur.prenom = data.prenom;
-        acteur.statut = data.statut;
+        acteur.fonction = data.fonction;
         acteur.telephone = data.telephone;
         acteur.mail = data.mail;
         acteur.statut_entretien = Nomenclature.fromJson(data.statut_entretien);

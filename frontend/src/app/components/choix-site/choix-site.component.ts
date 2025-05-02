@@ -72,7 +72,6 @@ export class ChoixSiteComponent implements OnInit, OnDestroy{
       this.siteService.sortByName(sites);
       this.sitesOriginal = sites;
       this.sites = sites;
-      console.log(this.sites);
       this.sitesSelected = new MatTableDataSource(this.sites);
       this.extractUniqueFilters();
       return this.sites = sites;
@@ -131,7 +130,6 @@ export class ChoixSiteComponent implements OnInit, OnDestroy{
     console.log(site.selected);
     if (site.selected){
       this.diagnostic.sites.push(site);
-      console.log(this.diagnostic);
       if(this.chosenSites.includes(this.emptyChosenSites)){
         this.chosenSites=[];
         
@@ -147,7 +145,6 @@ export class ChoixSiteComponent implements OnInit, OnDestroy{
         
       }
       this.diagnostic.sites.splice(iteration,1);
-      console.log(this.diagnostic);
       
       for(let i=0;i<this.chosenSites.length;i++){
         if(this.chosenSites[i] === site.nom){

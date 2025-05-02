@@ -44,7 +44,7 @@
                 >
 
                 </app-choix-acteurs>
-                <button mat-raised-button color="warn" type="submit" >{{btnRecordDiag}}</button>
+                <button mat-raised-button color="warn" type="submit" [disabled]="formGroup.invalid">{{btnRecordDiag}}</button>
         
             </form>
         </div>

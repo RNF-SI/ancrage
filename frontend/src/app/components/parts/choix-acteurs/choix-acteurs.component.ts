@@ -3,6 +3,7 @@ import { Component, inject, Input, OnInit } from '@angular/core';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
@@ -13,13 +14,15 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { Region } from '@app/models/region.model';
 import { ActeurService } from '@app/services/acteur.service';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { AlerteShowActorDetailsComponent } from '../alerte-show-actor-details/alerte-show-actor-details.component';
 
 @Component({
   selector: 'app-choix-acteurs',
   templateUrl: './choix-acteurs.component.html',
   styleUrls: ['./choix-acteurs.component.css'],
   standalone:true,
-  imports:[CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule,RouterModule,ReactiveFormsModule]
+  imports:[CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule,RouterModule,ReactiveFormsModule,FontAwesomeModule]
 })
 export class ChoixActeursComponent implements OnInit {
   @Input() actors: Acteur[]=[];
@@ -36,13 +39,14 @@ export class ChoixActeursComponent implements OnInit {
     profile:"",
     telephone:"",
     mail:"",
-    town:""
+    town:"",
+    state:""
   };
   @Input() diagnostic: Diagnostic = new Diagnostic();
   @Input() uniqueDiagnostics: Diagnostic[] = [];
   @Input() uniqueDepartments: Departement[] = [];
   @Input() uniqueCategories: Nomenclature[] = [];
-  displayedColumns: string[] = ['identity', 'categories','status', 'structure','town','profile','telephone','mail','choice'];
+  displayedColumns: string[] = ['identity', 'categories','state', 'structure','other_infos','choice',];
   btnToDiagnostic = "Résumé diagnostic";
   private acteurService = inject(ActeurService);
   @Input() selectedDepartment: Departement = new Departement();
@@ -57,7 +61,7 @@ export class ChoixActeursComponent implements OnInit {
   emptyChosenActorsTxt = "Vous n'avez pas encore choisi d'acteurs.";
   chosenActors:string[] = [this.emptyChosenActorsTxt]
   titleChooseActors="Acteurs choisis";
- 
+  private dialog = inject(MatDialog);
 
   ngOnInit(): void {
     console.log(localStorage.getItem("diagnostic"));
@@ -126,6 +130,16 @@ export class ChoixActeursComponent implements OnInit {
       }
 
   }
-
+  
+  showOtherInfos(actor:Acteur){
+    this.dialog.open(AlerteShowActorDetailsComponent, {
+              data: {
+                title: "Autres informations",
+                actor: actor,
+                labels: this.labels
+                
+              }
+            });
+  }
 
 }

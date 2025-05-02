@@ -23,6 +23,12 @@ export class NomenclatureService {
       );
     }
   
-    
+    sortByName(objArray:Nomenclature[]){
+        objArray.sort(function(a, b) {
+          var textA = a.libelle.toUpperCase();
+          var textB = b.libelle.toUpperCase();
+          return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+        })
+    }
     
 }

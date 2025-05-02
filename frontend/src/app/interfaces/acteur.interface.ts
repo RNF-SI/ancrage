@@ -6,7 +6,7 @@ export interface IActeur {
     id_acteur:number;
     nom:string;
     prenom:string;
-    statut:string;
+    fonction:string;
     telephone:string;
     mail:string;
     commune:Commune;

@@ -39,6 +39,7 @@ import { ChoixActeursComponent } from './components/parts/choix-acteurs/choix-ac
 import { SiteLsComponent } from './components/site-ls/site-ls.component';
 import { AlerteVisualisationSiteComponent } from './components/parts/alerte-visualisation-site/alerte-visualisation-site.component';
 import { DiagnosticComponent } from './components/diagnostic/diagnostic.component';
+import { AlerteShowActorDetailsComponent } from './components/parts/alerte-show-actor-details/alerte-show-actor-details.component';
 
 
 @NgModule({
@@ -50,8 +51,6 @@ import { DiagnosticComponent } from './components/diagnostic/diagnostic.componen
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
-   
-    
   ],
   imports: [
     BrowserModule,
@@ -77,6 +76,7 @@ import { DiagnosticComponent } from './components/diagnostic/diagnostic.componen
     SiteLsComponent,
     AlerteVisualisationSiteComponent,
     DiagnosticComponent,
+    AlerteShowActorDetailsComponent,
     ToastrModule.forRoot({
       timeOut: 15000
     }),

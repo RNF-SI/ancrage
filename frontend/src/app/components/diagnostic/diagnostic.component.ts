@@ -17,6 +17,8 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
+import { DepartementService } from '@app/services/departement.service';
+import { NomenclatureService } from '@app/services/nomenclature.service';
 
 @Component({
   selector: 'app-diagnostic',
@@ -65,6 +67,8 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   private diagnosticsService = inject(DiagnosticService);
   private siteService = inject(SiteService);
   private router = inject(Router)
+  private departementService = inject(DepartementService);
+  private nomenclatureService = inject(NomenclatureService);
   actorsSelected:MatTableDataSource<Acteur>= new MatTableDataSource();
   actorsOriginal:Acteur[] = [];
   private fb = inject(FormBuilder);
@@ -144,16 +148,29 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
           this.uniqueCategories.push(cat);
         }
       }
+
+      
       
     }
-    
-    console.log(acteurs);
+    this.actorsService.sortByName(this.uniqueActors);
+    this.siteService.sortByName(this.uniqueSites);
+    this.departementService.sortByName(this.uniqueDepartments);
+    this.nomenclatureService.sortByName(this.uniqueCategories);
+  
     this.checkSite();
     this.getDiagnostics(this.chosenSites);
   }
 
   getDiagnostics(sites:any){
     if (sites.length > 0){
+      let nom ="";
+      
+      for (let i =0;i<this.diagnostic.sites.length;i++){
+        nom += this.diagnostic.sites[i].nom + " ";
+        
+      }
+      nom = "Diagnostic - "+ nom + "- " + new Date().getFullYear();
+      this.formGroup.get('nom')?.setValue(nom)
       let array:number[]=[]
       for (let i = 0;i<sites.length;i++){
         array.push(sites[i].id_site);
@@ -164,7 +181,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       console.log(json);
       this.diagnosticSubscription = this.diagnosticsService.getAllBySites(json).subscribe(diagnostics =>{
         this.uniqueDiagnostics = diagnostics;
-        console.log(diagnostics);
+
       });
     }
    
@@ -179,7 +196,6 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   recordDiagnostic(event: Event){
     event.preventDefault();
     this.diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
-    console.log(this.diagnostic);
     this.diagnosticSubscription = this.diagnosticsService.add(this.diagnostic).subscribe(diagnostic=>{
       console.log(diagnostic);
     })

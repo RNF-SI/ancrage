@@ -27,7 +27,8 @@ export class ActeurService {
     profile:"Profil cognitif",
     telephone:"Téléphone",
     mail:"Mail",
-    town:"Commune"
+    town:"Commune",
+    state:'Etat'
   };
 
   getAll(): Observable<Acteur[]> {
