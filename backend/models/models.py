@@ -92,6 +92,7 @@ class Diagnostic(db.Model):
     id_diagnostic = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String, nullable=False)
     date_debut = db.Column(db.DateTime)
+    date_dernier_entretien = db.Column(db.DateTime)
     date_fin = db.Column(db.DateTime)
     id_organisme = db.Column(db.Integer)
     created_at = db.Column(db.DateTime)
@@ -133,6 +134,9 @@ class Acteur(db.Model):
     statut_entretien_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     profil = db.relationship('Nomenclature', foreign_keys=[profil_cognitif_id], back_populates='acteurs_p')
     statut_entretien = db.relationship('Nomenclature', foreign_keys=[statut_entretien_id], back_populates='acteurs_se')
+    acteur_origine_id = db.Column(db.Integer, db.ForeignKey('t_acteurs.id_acteur'))
+    acteur_origine = db.relationship('Acteur', remote_side=[id_acteur], backref='acteurs_issus')
+    is_copy = db.Column(db.Boolean, default=False)
 
 acteur_categorie = db.Table(
     'cor_categorie_acteur',
