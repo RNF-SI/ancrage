@@ -35,7 +35,7 @@ import { Subscription } from 'rxjs';
     private authService= inject(AuthService);
     private user_role_id:number=1;
     private sitesSub!:Subscription;
-    title="";
+    title="Mes diagnostics";
     diagnostic:Diagnostic = new Diagnostic();
 
     ngOnInit(): void {
@@ -43,7 +43,8 @@ import { Subscription } from 'rxjs';
       localStorage.removeItem("diagnostic");
       this.user_role_id = this.authService.getCurrentUser().id_role;
       this.sitesSub =  this.siteService.getAllByUser(this.user_role_id).subscribe(sites => {
-        return this.sites = sites;
+        this.sites = sites;
+        console.log(sites);
       });
     }
   

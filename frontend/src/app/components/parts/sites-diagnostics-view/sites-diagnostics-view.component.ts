@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, inject, Input, OnDestroy, OnInit } from "@angular/core";
+import { AfterViewInit, Component, inject, Input, OnDestroy, OnInit, SimpleChanges } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatTooltipModule } from "@angular/material/tooltip";
@@ -26,7 +26,7 @@ import { MatDialog } from "@angular/material/dialog";
   standalone: true,
   imports: [CommonModule, MatCardModule, MatButtonModule, MatTooltipModule, FontAwesomeModule,RouterModule,MapComponent,MatFormFieldModule,MatSelectModule,FormsModule,MatInputModule]
 })
-export class SitesDiagnosticsViewComponent implements OnInit,OnDestroy{
+export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy{
 
   @Input() sites: Site[] = [];
   @Input() titleBtnCreaDiag = "Nouveau diagnostic";
@@ -78,6 +78,20 @@ export class SitesDiagnosticsViewComponent implements OnInit,OnDestroy{
   private dialog = inject(MatDialog);
   private router = inject(Router)
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['sites'] && this.sites && this.sites.length > 0) {
+      this.handleNewSites();
+    }
+  }
+
+  handleNewSites() {
+    this.siteService.sortByName(this.sites);
+    this.sitesOriginal = this.sites;
+    this.sitesSelected = new MatTableDataSource(this.sitesOriginal);
+    this.extractUniqueFilters();
+    this.onSearchChange();
+  }
+
   filteredSites(sites?:Site[]):Site[] {
     if(sites){
      
@@ -103,20 +117,13 @@ export class SitesDiagnosticsViewComponent implements OnInit,OnDestroy{
     }
   }
 
-  ngOnInit(): void {
+  ngAfterViewInit(): void {
     this.btnForDiagnosticsLbl = this.btnToShowDiagnosticsLbl;
     this.labels = this.siteService.labels;
-    this.sitesSub = this.siteService.getAll().subscribe(sites => {
+    this.handleNewSites();
+    this.extractUniqueFilters();
+    this.onSearchChange();
     
-      this.siteService.sortByName(sites);
-      this.sitesOriginal = sites;
-      this.sites = sites;
-      this.sitesSelected = new MatTableDataSource(this.sitesOriginal);
-      this.extractUniqueFilters();
-      this.onSearchChange();
-      this.sites = sites;
-      return this.sites;
-    });
     localStorage.removeItem("diagnostic");
     localStorage.removeItem("previousPage");
     this.user_id = this.authService.getCurrentUser().id_role;
@@ -190,7 +197,7 @@ export class SitesDiagnosticsViewComponent implements OnInit,OnDestroy{
   }
 
   ngOnDestroy(): void {
-    this.sitesSub?.unsubscribe();
+    
   }
 
   showSiteDetails(site:Site){
