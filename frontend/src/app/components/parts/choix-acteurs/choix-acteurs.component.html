@@ -1,7 +1,11 @@
 
        
         <div>
-            <h4>{{titleGetActors}}</h4>
+        
+            <h4>{{titleChooseActors}}</h4>
+            <div *ngFor="let ca of chosenActors">
+                <p>{{ca}}</p>
+            </div>
             <mat-form-field appearance="fill">
                 <mat-label>{{labels.diagnosticsList}}</mat-label>
                 <mat-select [(value)]="selectedDiagnostic" (selectionChange)="applyFilters()">
@@ -9,8 +13,8 @@
                     <mat-option *ngFor="let diag of uniqueDiagnostics" [value]="diag">{{ diag.nom }} du {{diag.date_debut_str}}</mat-option>
                 </mat-select>
             </mat-form-field>
-            <h3>{{titleChooseActors}}</h3>
-
+            
+            
             
             <mat-form-field appearance="fill">
                 <mat-label>{{labels.department}}</mat-label>
@@ -28,84 +32,78 @@
                 </mat-select>
             </mat-form-field>
             <button id="btnToReinitialize" mat-raised-button (click)="resetFilters()">{{reinitialisation}}</button>
-            <table mat-table [dataSource]="actors" class="mat-elevation-z2" multiTemplateDataRows>
+            <div [formGroup]="formGroup">
+                <table mat-table [dataSource]="actors" class="mat-elevation-z2" multiTemplateDataRows formControlName="acteurs">
 
-                <!-- Nom Site Column -->
-                <ng-container matColumnDef="identity">
-                    <th mat-header-cell *matHeaderCellDef>{{ labels.identity }}</th>
-                    <td mat-cell *matCellDef="let actor">
-                      {{actor.nom}} {{actor.prenom}}
-                    </td>
-                  </ng-container>
-                  <ng-container matColumnDef="categories">
-                    <th mat-header-cell *matHeaderCellDef>{{labels.category}}</th>
-                    <td mat-cell *matCellDef="let actor">
-                        <ng-container *ngFor="let cat of actor.categories">
-                            <div>
-                            {{ cat.libelle }}
-                            </div>
-                        </ng-container>
-                    </td>
-                </ng-container>  
-                <ng-container matColumnDef="status">
-                    <th mat-header-cell *matHeaderCellDef>{{labels.status}}</th>
-                    <td mat-cell *matCellDef="let actor">
-                        {{actor.statut_entretien.libelle}}
-                    </td>
-                </ng-container>  
-                
-                <ng-container matColumnDef="structure">
-                    <th mat-header-cell *matHeaderCellDef>{{labels.structure}}</th>
-                    <td mat-cell *matCellDef="let actor">
-                        {{actor.structure}}
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="town">
-                    <th mat-header-cell *matHeaderCellDef>{{labels.town}}</th>
-                    <td mat-cell *matCellDef="let actor">
-                        {{actor.commune.nom_com}}
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="profile">
-                    <th mat-header-cell *matHeaderCellDef>{{labels.profile}}</th>
-                    <td mat-cell *matCellDef="let actor">
-                        {{actor.profil.libelle}}
-                    </td>
-                </ng-container>
-                
-                <!-- Type Column -->
-                <ng-container matColumnDef="telephone">
-                  <th mat-header-cell *matHeaderCellDef>{{labels.telephone}}</th>
-                  <td mat-cell *matCellDef="let actor"> {{ actor.telephone }} </td>
-                </ng-container>
+                    <!-- Nom Site Column -->
+                    <ng-container matColumnDef="identity">
+                        <th mat-header-cell *matHeaderCellDef>{{ labels.identity }}</th>
+                        <td mat-cell *matCellDef="let actor">
+                        {{actor.nom}} {{actor.prenom}}
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="categories">
+                        <th mat-header-cell *matHeaderCellDef>{{labels.category}}</th>
+                        <td mat-cell *matCellDef="let actor">
+                            <ng-container *ngFor="let cat of actor.categories">
+                                <div>
+                                {{ cat.libelle }}
+                                </div>
+                            </ng-container>
+                        </td>
+                    </ng-container>  
+                    <ng-container matColumnDef="status">
+                        <th mat-header-cell *matHeaderCellDef>{{labels.status}}</th>
+                        <td mat-cell *matCellDef="let actor">
+                            {{actor.statut_entretien.libelle}}
+                        </td>
+                    </ng-container>  
+                    
+                    <ng-container matColumnDef="structure">
+                        <th mat-header-cell *matHeaderCellDef>{{labels.structure}}</th>
+                        <td mat-cell *matCellDef="let actor">
+                            {{actor.structure}}
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="town">
+                        <th mat-header-cell *matHeaderCellDef>{{labels.town}}</th>
+                        <td mat-cell *matCellDef="let actor">
+                            {{actor.commune.nom_com}}
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="profile">
+                        <th mat-header-cell *matHeaderCellDef>{{labels.profile}}</th>
+                        <td mat-cell *matCellDef="let actor">
+                            {{actor.profil.libelle}}
+                        </td>
+                    </ng-container>
+                    
+                    <!-- Type Column -->
+                    <ng-container matColumnDef="telephone">
+                    <th mat-header-cell *matHeaderCellDef>{{labels.telephone}}</th>
+                    <td mat-cell *matCellDef="let actor"> {{ actor.telephone }} </td>
+                    </ng-container>
 
-                <ng-container matColumnDef="mail">
-                    <th mat-header-cell *matHeaderCellDef>{{labels.mail}}</th>
+                    <ng-container matColumnDef="mail">
+                        <th mat-header-cell *matHeaderCellDef>{{labels.mail}}</th>
+                        <td mat-cell *matCellDef="let actor">
+                            {{actor.mail}}
+                        </td>
+                    </ng-container>  
+                
+                    <!-- Checkbox Column -->
+                    <ng-container matColumnDef="choice">
+                    <th mat-header-cell *matHeaderCellDef></th>
                     <td mat-cell *matCellDef="let actor">
-                        {{actor.mail}}
+                        <mat-checkbox  (click)="addOrRemoveActor(actor)">{{btnToChooseLabel}}</mat-checkbox>
                     </td>
-                </ng-container>  
-              
-                <!-- Checkbox Column -->
-                <ng-container matColumnDef="choice">
-                  <th mat-header-cell *matHeaderCellDef></th>
-                  <td mat-cell *matCellDef="let actor">
-                    <mat-checkbox [(ngModel)]="actor.selected" (click)="addOrRemoveActor(actor)">{{btnToChooseLabel}}</mat-checkbox>
-                  </td>
-                </ng-container>
-              
-                <!-- Header and Row Declarations -->
-                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-            </table>
-          <!--   <div class="row">
-                <div class="col-6">
-                    <button mat-raised-button color="accent" (click)="navigate('/site',diagnostic)">{{btnNewActorLabel}}</button>
-                </div>
-                <div class="col-6 text-end">
-                    <button mat-raised-button color="accent" (click)="navigate('/choix-acteurs',diagnostic)">{{btnToDiagnostic}}</button>
-                </div>
-            </div> -->
+                    </ng-container>
+                
+                    <!-- Header and Row Declarations -->
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+                </table>
+            </div>
             
         </div>
        

@@ -32,6 +32,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   titleModifyDiag="Modifier un diagnostic";
   chooseSiteTitle = "Choisir les sites";
   btnCreateSiteLabel = "Créer un site";
+  btnRecordDiag = "Enregistrer";
   labels: any;
   selectedRegion: any;
   sites:Site[]=[]
@@ -120,6 +121,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     if (this.chosenSites?.length) {
       const chosenIds = this.chosenSites.map(site => site.id_site);
       this.chosenSites = this.uniqueSites.filter(site => chosenIds.includes(site.id_site));
+      this.formGroup?.get('sites')?.setValue(this.chosenSites);
     }
   }
 
@@ -150,7 +152,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     this.getDiagnostics(this.chosenSites);
   }
 
-  getDiagnostics(sites:Site[]){
+  getDiagnostics(sites:any){
     if (sites.length > 0){
       let array:number[]=[]
       for (let i = 0;i<sites.length;i++){
@@ -169,11 +171,20 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   }
 
   navigate(path:string,diagnostic:Diagnostic){
-    diagnostic.sites = this.chosenSites;
+    diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
 
     this.siteService.navigateAndReload(path,diagnostic);
   }
   
+  recordDiagnostic(event: Event){
+    event.preventDefault();
+    this.diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
+    console.log(this.diagnostic);
+    this.diagnosticSubscription = this.diagnosticsService.add(this.diagnostic).subscribe(diagnostic=>{
+      console.log(diagnostic);
+    })
+  }
+
   ngOnDestroy(): void {
     this.routeSubscription?.unsubscribe();
     this.diagnosticSubscription?.unsubscribe();

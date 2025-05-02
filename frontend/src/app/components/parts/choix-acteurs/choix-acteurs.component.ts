@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, Input, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
@@ -19,7 +19,7 @@ import { ActeurService } from '@app/services/acteur.service';
   templateUrl: './choix-acteurs.component.html',
   styleUrls: ['./choix-acteurs.component.css'],
   standalone:true,
-  imports:[CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule,RouterModule]
+  imports:[CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule,RouterModule,ReactiveFormsModule]
 })
 export class ChoixActeursComponent implements OnInit {
   @Input() actors: Acteur[]=[];
@@ -45,25 +45,20 @@ export class ChoixActeursComponent implements OnInit {
   displayedColumns: string[] = ['identity', 'categories','status', 'structure','town','profile','telephone','mail','choice'];
   btnToDiagnostic = "Résumé diagnostic";
   private acteurService = inject(ActeurService);
-  diag: any;
-  titleChooseActors: any;
   @Input() selectedDepartment: Departement = new Departement();
   @Input() selectedCategory: Nomenclature = new Nomenclature();
   @Input() selectedDiagnostic: Diagnostic = new Diagnostic();
   @Input() actorsSelected: MatTableDataSource<Acteur>= new MatTableDataSource();
   @Input() actorsOriginal: Acteur[]=[];
+  @Input() formGroup!:FormGroup;
   reinitialisation = "Réinitialiser"
- 
-  addOrRemoveActor(_t79: any) {
-  throw new Error('Method not implemented.');
-  }
   btnToChooseLabel: string = "choisir";
-  navigate(arg0: string,arg1: any) {
-    throw new Error('Method not implemented.');
-  }
-
   btnNewActorLabel = "Nouvel acteur";
-  btnToChooseActors: any;
+  emptyChosenActorsTxt = "Vous n'avez pas encore choisi d'acteurs.";
+  chosenActors:string[] = [this.emptyChosenActorsTxt]
+  titleChooseActors="Acteurs choisis";
+ 
+
   ngOnInit(): void {
     console.log(localStorage.getItem("diagnostic"));
     this.labels = this.acteurService.labels;
@@ -80,13 +75,12 @@ export class ChoixActeursComponent implements OnInit {
       const matchDep = !this.selectedDepartment.nom_dep || actor.commune?.departement?.nom_dep === this.selectedDepartment.nom_dep;
       const matchCat = !selectedCat || actor.categories?.some(cat => cat.id_nomenclature === this.selectedCategory.id_nomenclature);
       const matchDiag = !this.selectedDiagnostic.id_diagnostic || actor.diagnostic?.id_diagnostic === this.selectedDiagnostic.id_diagnostic;
-      console.log(matchDiag);
-      console.log(this.selectedDiagnostic);
-      console.log(actor.diagnostic);
+  
       return matchDep && matchCat && matchDiag;
     });
     
     this.actors = this.actorsSelected.data;
+    console.log(this.actors);
   }
 
   resetFilters() {
@@ -94,6 +88,43 @@ export class ChoixActeursComponent implements OnInit {
     this.selectedCategory = new Nomenclature();
     this.actors = this.actorsOriginal;
     this.selectedDiagnostic = new Diagnostic();
+  }
+
+  addOrRemoveActor(actor:Acteur){
+      actor.selected = !actor.selected;
+      const selectedActors = this.actors.filter(a => a.selected);
+      this.formGroup?.get('acteurs')?.setValue(selectedActors);
+      if (actor.selected){
+        
+        if(this.chosenActors.includes(this.emptyChosenActorsTxt)){
+          this.chosenActors=[];
+          
+        }
+        this.chosenActors.push(actor.nom + " "+ actor.prenom);
+      }else{
+        let iteration=0;
+        /* for(let i=0;i<this.diagnostic.acteurs.length;i++){
+          if(this.diagnostic.acteurs[i].id_acteur === actor.id_acteur){
+           iteration = i;
+           break;
+          }
+          
+        }
+        this.diagnostic.sites.splice(iteration,1); */
+
+        for(let i=0;i<this.chosenActors.length;i++){
+          if(this.chosenActors[i] === actor.nom+ " "+ actor.prenom){
+           iteration = i;
+           break;
+          }
+          
+        }
+        this.chosenActors.splice(iteration,1);
+        if(this.chosenActors.length == 0){
+          this.chosenActors.push(this.emptyChosenActorsTxt);
+        }
+      }
+
   }
 
 

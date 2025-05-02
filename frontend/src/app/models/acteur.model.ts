@@ -21,6 +21,7 @@ export class Acteur implements IActeur{
     modified_at:Date | undefined;
     created_by:number=0;
     modified_by:number=0;
+    selected = false;
 
     /** Copie profonde de l'objet */
     copy(): Acteur {

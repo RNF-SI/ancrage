@@ -78,17 +78,20 @@ export class SitesDiagnosticsViewComponent implements OnInit,OnDestroy{
   private dialog = inject(MatDialog);
   private router = inject(Router)
 
-  filteredSites():Site[] {
+  filteredSites(sites?:Site[]):Site[] {
+    if(sites){
+     
+      return this.sites = sites;
+    }
     if (!this.searchSiteName) {
-      return this.sites;
+      return this.sitesOriginal;
     }
     const searchLower = this.searchSiteName.toLowerCase();
-    return this.sites.filter(site => site.nom.toLowerCase().includes(searchLower));
+    return this.sitesOriginal.filter(site => site.nom.toLowerCase().includes(searchLower));
+
   }
 
   onSearchChange() {
-
-    console.log(this.sites);
     
     if (!this.searchSiteName) {
       this.filteredSiteList = this.sites;
@@ -108,7 +111,7 @@ export class SitesDiagnosticsViewComponent implements OnInit,OnDestroy{
       this.siteService.sortByName(sites);
       this.sitesOriginal = sites;
       this.sites = sites;
-      this.sitesSelected = new MatTableDataSource(this.sites);
+      this.sitesSelected = new MatTableDataSource(this.sitesOriginal);
       this.extractUniqueFilters();
       this.onSearchChange();
       this.sites = sites;
@@ -124,7 +127,7 @@ export class SitesDiagnosticsViewComponent implements OnInit,OnDestroy{
 
   navigate(path:string,diagnostic:Diagnostic,site?:Site){
     if (localStorage.getItem("diagnostic")){
-      console.log(localStorage.getItem("diagnostic"));
+      
       return this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
     }else{
       this.diagnostic.created_by = this.user_id;
@@ -167,6 +170,9 @@ export class SitesDiagnosticsViewComponent implements OnInit,OnDestroy{
     this.selectedType = "";
     /* this.selectedHabitat = ""; */
     this.filteredSiteList = this.sitesOriginal;
+    this.sites = this.sitesOriginal;
+    this.searchSiteName ="";
+
   }
 
   displayDiagnostics(site:Site){

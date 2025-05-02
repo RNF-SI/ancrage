@@ -7,43 +7,48 @@
             <h2>
                 {{titleDiagnostic}}
             </h2>
-
-            <mat-form-field appearance="fill" id="fieldName">
-                <mat-label>{{nameLabel}}</mat-label>
-                <input matInput placeholder="Entrez un nom" formControlName="nom" required >
-                <mat-error *ngIf="formGroup.get('nom')?.hasError('required')">Le nom est requis.</mat-error>
-            </mat-form-field>
-            
-            <mat-form-field appearance="fill">
-                <mat-label>{{ chooseSiteTitle }}</mat-label>
-                <mat-select multiple [(value)]="chosenSites" (selectionChange)="getDiagnostics(chosenSites)">
-                  <mat-option *ngFor="let site of uniqueSites" required [value]="site" >{{ site.nom }}</mat-option>
-                </mat-select>
-            </mat-form-field>
-            <h3 >{{chosenSitesTitle}}</h3>
-            <div *ngFor="let site of chosenSites">
-                <p>{{ site.nom }}, {{site.type.libelle}}</p>
+            <form [formGroup] = "formGroup" (submit)="recordDiagnostic($event)">
+                <mat-form-field appearance="fill" id="fieldName" formControlName="nom">
+                    <mat-label>{{nameLabel}}</mat-label>
+                    <input matInput placeholder="Entrez un nom" formControlName="nom" required >
+                    <mat-error *ngIf="formGroup.get('nom')?.hasError('required')">Le nom est requis.</mat-error>
+                </mat-form-field>
                 
-            </div>
-            <button mat-raised-button color="accent" type="button" (click)="navigate('/site',diagnostic)">{{btnCreateSiteLabel}}</button>
-            <h3>
-                {{actorsTitle}}
-            </h3>
-            <app-choix-acteurs
-                [actors]="uniqueActors"
-                [uniqueDiagnostics]="uniqueDiagnostics"
-                [diagnostic]="diagnostic"
-                [selectedDiagnostic]="selectedDiagnostic"
-                [uniqueCategories]="uniqueCategories"
-                [uniqueDepartments]="uniqueDepartments"
-                [selectedCategory]="selectedCategory"
-                [selectedDepartment]="selectedDepartment"
-                [actorsSelected]="actorsSelected"
-                [actorsOriginal]="uniqueActors"
-            >
+                <mat-form-field appearance="fill">
+                    <mat-label>{{ chooseSiteTitle }}</mat-label>
+                    <mat-select formControlName="sites" multiple (selectionChange)="getDiagnostics(formGroup.value.sites)">
+                      <mat-option *ngFor="let site of uniqueSites" [value]="site">{{ site.nom }}</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                <h4 >{{chosenSitesTitle}}</h4>
+                <div *ngFor="let site of chosenSites">
+                    <p>{{ site.nom }}, {{site.type.libelle}}</p>
+                    
+                </div>
+                <button mat-raised-button color="accent" type="button" (click)="navigate('/site',diagnostic)">{{btnCreateSiteLabel}}</button>
+                <h3>
+                    {{actorsTitle}}
+                </h3>
+                <app-choix-acteurs
+                    [actors]="uniqueActors"
+                    [uniqueDiagnostics]="uniqueDiagnostics"
+                    [diagnostic]="diagnostic"
+                    [selectedDiagnostic]="selectedDiagnostic"
+                    [uniqueCategories]="uniqueCategories"
+                    [uniqueDepartments]="uniqueDepartments"
+                    [selectedCategory]="selectedCategory"
+                    [selectedDepartment]="selectedDepartment"
+                    [actorsSelected]="actorsSelected"
+                    [actorsOriginal]="uniqueActors"
+                    [formGroup]="formGroup"
+                >
 
-            </app-choix-acteurs>
+                </app-choix-acteurs>
+                <button mat-raised-button color="warn" type="submit" >{{btnRecordDiag}}</button>
+        
+            </form>
         </div>
+        
         <div class="col-2">
 
         </div>
