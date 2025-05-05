@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Input, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, Input, OnInit, SimpleChanges } from '@angular/core';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -12,7 +12,7 @@ import { Acteur } from '@app/models/acteur.model';
 import { Departement } from '@app/models/departement.model';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { Nomenclature } from '@app/models/nomenclature.model';
-import { Region } from '@app/models/region.model';
+import { MatListModule } from '@angular/material/list';
 import { ActeurService } from '@app/services/acteur.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { AlerteShowActorDetailsComponent } from '../alerte-show-actor-details/alerte-show-actor-details.component';
@@ -22,9 +22,9 @@ import { AlerteShowActorDetailsComponent } from '../alerte-show-actor-details/al
   templateUrl: './choix-acteurs.component.html',
   styleUrls: ['./choix-acteurs.component.css'],
   standalone:true,
-  imports:[CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule,RouterModule,ReactiveFormsModule,FontAwesomeModule]
+  imports:[CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule,RouterModule,ReactiveFormsModule,FontAwesomeModule,MatListModule]
 })
-export class ChoixActeursComponent implements OnInit {
+export class ChoixActeursComponent implements AfterViewInit {
   @Input() actors: Acteur[]=[];
   title: string="Choisir les acteurs";
   titleGetActors = "Récupérer les acteurs d'un précédent diagnostic sur les sites choisis";
@@ -62,10 +62,26 @@ export class ChoixActeursComponent implements OnInit {
   chosenActors:string[] = [this.emptyChosenActorsTxt]
   titleChooseActors="Acteurs choisis";
   private dialog = inject(MatDialog);
+  is_creation = false;
 
-  ngOnInit(): void {
+  ngOnChanges(changes: SimpleChanges): void {
+      if (changes['actors'] && this.actors && this.actors.length > 0) {
+        console.log(this.diagnostic.id_diagnostic);
+        if(this.diagnostic.id_diagnostic!=0){
+          console.log(this.actors);
+          for (let i = 0;i<this.actors.length;i++){
+              
+              this.addOrRemoveActor(this.actors[i]);
+        
+          }
+        }
+      }
+  }
+
+  ngAfterViewInit(): void {
     console.log(localStorage.getItem("diagnostic"));
     this.labels = this.acteurService.labels;
+    
   }
 
   applyFilters() {
@@ -73,13 +89,13 @@ export class ChoixActeursComponent implements OnInit {
     if (this.selectedCategory.id_nomenclature == 0){
       selectedCat = false
     }
-    
+    console.log(this.selectedDiagnostic);
     this.actorsSelected.data = this.actorsOriginal.filter(actor => {
       
       const matchDep = !this.selectedDepartment.nom_dep || actor.commune?.departement?.nom_dep === this.selectedDepartment.nom_dep;
       const matchCat = !selectedCat || actor.categories?.some(cat => cat.id_nomenclature === this.selectedCategory.id_nomenclature);
       const matchDiag = !this.selectedDiagnostic.id_diagnostic || actor.diagnostic?.id_diagnostic === this.selectedDiagnostic.id_diagnostic;
-  
+      
       return matchDep && matchCat && matchDiag;
     });
     
@@ -94,39 +110,43 @@ export class ChoixActeursComponent implements OnInit {
     this.selectedDiagnostic = new Diagnostic();
   }
 
-  addOrRemoveActor(actor:Acteur){
-      actor.selected = !actor.selected;
+  addOrRemoveActor(actor:Acteur,is_creation?:boolean){
+      if(is_creation){
+        actor.selected = !actor.selected;
+      }
+      
       const selectedActors = this.actors.filter(a => a.selected);
+      console.log(selectedActors);
       this.formGroup?.get('acteurs')?.setValue(selectedActors);
       if (actor.selected){
+        console.log(actor);
         
-        if(this.chosenActors.includes(this.emptyChosenActorsTxt)){
-          this.chosenActors=[];
-          
-        }
+          if(this.chosenActors.includes(this.emptyChosenActorsTxt)){
+            this.chosenActors=[];
+            
+          }
+        
+        
         this.chosenActors.push(actor.nom + " "+ actor.prenom);
+        console.log(this.chosenActors);
       }else{
-        let iteration=0;
-        /* for(let i=0;i<this.diagnostic.acteurs.length;i++){
-          if(this.diagnostic.acteurs[i].id_acteur === actor.id_acteur){
-           iteration = i;
-           break;
-          }
-          
-        }
-        this.diagnostic.sites.splice(iteration,1); */
+        if (is_creation){
+          let iteration=0;
+          console.log('2');
 
-        for(let i=0;i<this.chosenActors.length;i++){
-          if(this.chosenActors[i] === actor.nom+ " "+ actor.prenom){
-           iteration = i;
-           break;
+          for(let i=0;i<this.chosenActors.length;i++){
+            if(this.chosenActors[i] === actor.nom+ " "+ actor.prenom){
+            iteration = i;
+            break;
+            }
+            
           }
-          
+          this.chosenActors.splice(iteration,1);
+          if(this.chosenActors.length == 0){
+            this.chosenActors.push(this.emptyChosenActorsTxt);
+          }
         }
-        this.chosenActors.splice(iteration,1);
-        if(this.chosenActors.length == 0){
-          this.chosenActors.push(this.emptyChosenActorsTxt);
-        }
+        
       }
 
   }
@@ -139,7 +159,7 @@ export class ChoixActeursComponent implements OnInit {
                 labels: this.labels
                 
               }
-            });
+    });
   }
 
 }

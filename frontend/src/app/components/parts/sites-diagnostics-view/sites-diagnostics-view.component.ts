@@ -77,6 +77,7 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy{
   btnForDiagnosticsLbl = "";
   private dialog = inject(MatDialog);
   private router = inject(Router)
+  
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['sites'] && this.sites && this.sites.length > 0) {
@@ -197,16 +198,18 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy{
   }
 
   ngOnDestroy(): void {
-    
+    this.sitesSub?.unsubscribe();
   }
 
   showSiteDetails(site:Site){
+    console.log(this.user_id == site.created_by);
     this.dialog.open(AlerteVisualisationSiteComponent, {
               data: {
                 site: site,
-                labels: this.labels
+                labels: this.labels,
+                can_edit: this.user_id == site.created_by
               }
-            });
+    });
   }
 
 }

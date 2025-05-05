@@ -12,6 +12,7 @@ import { SiteLsComponent } from '@app/components/site-ls/site-ls.component';
   imports:[SiteLsComponent]
 })
 export class AlerteVisualisationSiteComponent {
+
    constructor(
       public dialogRef: MatDialogRef<AlerteVisualisationSiteComponent>,
       @Inject(MAT_DIALOG_DATA) public data: { 
@@ -25,7 +26,8 @@ export class AlerteVisualisationSiteComponent {
           longitudeLabel: "",
           btnRecordLabel: "",
           btnPreviousStepLabel: ""
-        }
+        },
+        can_edit:boolean;
         
       }
     ) {}

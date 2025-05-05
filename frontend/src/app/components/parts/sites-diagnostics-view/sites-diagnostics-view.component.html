@@ -63,15 +63,13 @@
       <div id="diagnostics_liste">
         <h2 class="text-center">{{ title }}</h2>
 
-        <div *ngFor="let site of filteredSites()" class="mb-4">
+        <div *ngFor="let site of filteredSiteList" class="mb-4">
           <mat-card class="site-card">
             <mat-card-header>
-              <ng-container *ngIf="site.created_by == user_id; else other_content">
-                <mat-card-title><a (click)="navigate('/site/' + site.id_site,diagnostic)">{{ site.nom }}</a></mat-card-title> 
-              </ng-container>
-              <ng-template #other_content>
+              <ng-container>
                 <mat-card-title><a (click)="showSiteDetails(site)">{{ site.nom }}</a></mat-card-title>
-              </ng-template>
+              </ng-container>
+             
             </mat-card-header>
 
             <mat-card-content>

@@ -31,6 +31,8 @@ export class Diagnostic implements IDiagnostic {
 		copy.created_at = this.created_at ? new Date(this.created_at.getTime()) : undefined;
 		copy.modified_at = this.modified_at ? new Date(this.modified_at.getTime()) : undefined;
 		copy.created_by = this.created_by;
+		copy.is_read_only = this.is_read_only;
+		copy.id_organisme = this.id_organisme;
 
 		return copy;
 	}
@@ -58,17 +60,13 @@ export class Diagnostic implements IDiagnostic {
 	toJson(): IDiagnostic {
 		const json: IDiagnostic = {
 			...this,
-			id_diagnostic: this.id_diagnostic,
-			nom: this.nom,
 			date_debut: this.date_debut ? this.date_debut : undefined,
 			date_debut_str: this.date_debut ? moment(new Date(this.date_debut)).format("DD/MM/YYYY") : undefined,
 			date_fin: this.date_fin ? this.date_fin.toISOString() : undefined,
-			is_read_only: this.is_read_only,
 			sites: this.sites.map(s => s.toJson()),
 			acteurs: this.acteurs.map(a => a.toJson()),
 			created_at: this.created_at ? this.created_at.toISOString() : undefined,
 			modified_at: this.modified_at ? this.modified_at.toISOString() : undefined,
-			created_by: this.created_by,
 		};
 		return json;
 	}

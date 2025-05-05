@@ -8,7 +8,7 @@
                 {{titleDiagnostic}}
             </h2>
             <form [formGroup] = "formGroup" (submit)="recordDiagnostic($event)">
-                <mat-form-field appearance="fill" id="fieldName" formControlName="nom">
+                <mat-form-field appearance="fill" id="fieldName" >
                     <mat-label>{{nameLabel}}</mat-label>
                     <input matInput placeholder="Entrez un nom" formControlName="nom" required >
                     <mat-error *ngIf="formGroup.get('nom')?.hasError('required')">Le nom est requis.</mat-error>
@@ -30,7 +30,7 @@
                     {{actorsTitle}}
                 </h3>
                 <app-choix-acteurs
-                    [actors]="uniqueActors"
+                    [actors]="actors"
                     [uniqueDiagnostics]="uniqueDiagnostics"
                     [diagnostic]="diagnostic"
                     [selectedDiagnostic]="selectedDiagnostic"

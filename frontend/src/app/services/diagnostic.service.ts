@@ -33,7 +33,7 @@ export class DiagnosticService {
       );
     }
     get(id: number): Observable<Diagnostic> {
-      return this.http.get<IDiagnostic>(this.BASE_URL + id + '/').pipe(
+      return this.http.get<IDiagnostic>(this.BASE_URL + '/' + id ).pipe(
         map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
       );
     }

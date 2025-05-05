@@ -36,6 +36,7 @@ export class SiteLsComponent implements OnInit, OnDestroy{
   @Input() dialogRef = inject(MatDialogRef)
   diagnostic:Diagnostic = new Diagnostic();
   siteSubscription?:Subscription;
+  @Input() can_edit:boolean = false;
   
   ngOnInit(): void {
     this.labels = this.siteService.labels;
@@ -52,6 +53,7 @@ export class SiteLsComponent implements OnInit, OnDestroy{
         });
       }
     });
+    console.log(this.can_edit)
   }
 
   navigate(path:string,diagnostic:Diagnostic){

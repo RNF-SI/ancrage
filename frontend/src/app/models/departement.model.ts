@@ -3,9 +3,7 @@ import { Commune } from "./commune.model";
 import { Region } from "./region.model";
 
 export class Departement implements IDepartement {
-    map(arg0: (dpt: any) => any): Departement {
-      throw new Error('Method not implemented.');
-    }
+   
     id_departement = 0;
     id_dep = "";
     nom_dep = "";
@@ -48,7 +46,7 @@ export class Departement implements IDepartement {
             id_dep: this.id_dep,
             nom_dep: this.nom_dep,
             insee_reg: this.insee_reg,
-            commune: this.communes?.map(c=>c.copy()),
+            communes: this.communes ? this.communes.map(c => c.toJson()) : [],
             region: this.region?.copy()
 
         };

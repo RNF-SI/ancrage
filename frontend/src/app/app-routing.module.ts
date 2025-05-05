@@ -92,6 +92,11 @@ const routes: Routes = [ {
       path: 'diagnostic',
       component: DiagnosticComponent,
       canActivate: [AuthGuardService]
+    },
+    {
+      path: 'diagnostic/:id_diagnostic',
+      component: DiagnosticComponent,
+      canActivate: [AuthGuardService]
     }
   ]},
    
