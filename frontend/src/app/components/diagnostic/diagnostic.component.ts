@@ -6,7 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { Site } from '@app/models/site.model';
 import { SiteService } from '@app/services/sites.service';
-import { forkJoin, Subscription } from 'rxjs';
+import { forkJoin, Subscription, throwError } from 'rxjs';
 import { ChoixActeursComponent } from '../parts/choix-acteurs/choix-acteurs.component';
 import { Acteur } from '@app/models/acteur.model';
 import { Departement } from '@app/models/departement.model';
@@ -114,15 +114,12 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   
         forkJoin([diag$,sites$, actors$]).subscribe(([diag,sites, acteurs]) => {
           
-          this.instructionswithResults(sites,acteurs,this.id_diagnostic);
-          /* diag.acteurs = (diag.acteurs|| []).map(act =>
-            this.uniqueActors.find(ua => ua.id_acteur === act.id_acteur) || act
-          );  */
+          this.instructionswithResults(sites,acteurs);
+         
           this.selectedDiagnostic = diag;
           this.can_edit = diag.created_by == this.user_id;
           this.id_organisme = diag.id_organisme;
           this.user_id = diag.created_by;
-          // Remapping des sites
           const remappedSites = (this.selectedDiagnostic.sites || []).map(site =>
             this.uniqueSites.find(s => s.id_site === site.id_site) || site
           );
@@ -152,7 +149,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
               }
             }
           }
-          /* this.actorsSelected = new MatTableDataSource(this.uniqueActors); */
+          
           this.actors= this.uniqueActors;
           
           console.log(this.actors);
@@ -161,8 +158,8 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
         this.user_id = this.authService.getCurrentUser().id_role;
         this.id_organisme = this.authService.getCurrentUser().id_organisme;
         forkJoin([sites$, actors$]).subscribe(([sites, acteurs]) => {
-          this.instructionswithResults(sites,acteurs,this.id_diagnostic);
-          
+          this.instructionswithResults(sites,acteurs);
+          this.actors = this.uniqueActors;
         });
       }
     });
@@ -178,7 +175,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     }
   }
 
-  instructionswithResults(sites:Site[],acteurs:Acteur[],id_diagnostic:number){
+  instructionswithResults(sites:Site[],acteurs:Acteur[]){
     this.uniqueSites = sites;
     this.uniqueActors = acteurs;
     
@@ -245,7 +242,8 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   
   recordDiagnostic(event: Event){
     event.preventDefault();
-    if (this.id_diagnostic == 0){
+    console.log(this.id_diagnostic);
+    if (this.id_diagnostic == undefined){
       this.formGroup.get("created_by")?.setValue(this.user_id);
       this.formGroup.get("id_organisme")?.setValue(this.id_organisme);
       this.diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);

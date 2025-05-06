@@ -45,7 +45,7 @@ export class DiagnosticService {
     }
   
     update(diagnostic: Diagnostic): Observable<Diagnostic> {
-      return this.http.put<IDiagnostic>(this.BASE_URL + diagnostic.id_diagnostic, diagnostic.toJson()).pipe(
+      return this.http.put<IDiagnostic>(this.BASE_URL + '/' + diagnostic.id_diagnostic, diagnostic.toJson()).pipe(
         map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
       );
     }

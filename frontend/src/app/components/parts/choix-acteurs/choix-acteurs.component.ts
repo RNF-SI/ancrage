@@ -121,11 +121,10 @@ export class ChoixActeursComponent implements AfterViewInit {
       if (actor.selected){
         console.log(actor);
         
-          if(this.chosenActors.includes(this.emptyChosenActorsTxt)){
-            this.chosenActors=[];
-            
-          }
-        
+        if(this.chosenActors.includes(this.emptyChosenActorsTxt)){
+          this.chosenActors=[];
+          
+        }
         
         this.chosenActors.push(actor.nom + " "+ actor.prenom);
         console.log(this.chosenActors);

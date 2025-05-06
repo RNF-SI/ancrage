@@ -34,11 +34,11 @@
             <button id="btnToReinitialize" type="button" mat-raised-button (click)="resetFilters()">{{reinitialisation}}</button>
             <div [formGroup]="formGroup">
                 <mat-selection-list formControlName="acteurs">
-                    <mat-list-option *ngFor="let actor of actors" [value]="actor">
+                    <mat-list-option *ngFor="let actor of actors" [value]="actor" (click)="addOrRemoveActor(actor,true)">
                       <div class="space">{{ actor.nom }} {{ actor.prenom }}   </div>
                       <button mat-raised-button type="button" class="otherInfosBtn" (click)="showOtherInfos(actor)"><fa-icon [icon]="['fas', 'info']"></fa-icon></button>
                     </mat-list-option>
-                  </mat-selection-list>
+                </mat-selection-list>
                 <!-- <table mat-table [dataSource]="actors" class="mat-elevation-z2" multiTemplateDataRows>
 
                     

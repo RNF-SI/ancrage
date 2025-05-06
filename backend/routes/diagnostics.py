@@ -18,6 +18,9 @@ def diagnosticMethods(id_diagnostic):
     
     elif request.method == 'PUT':
         data = request.get_json()
+        diagnostic_id = data['id_diagnostic']
+        print(diagnostic_id)
+        deleteActors(diagnostic_id)
         diagnostic = changeValuesDiagnostic(diagnostic,data)
         diagnostic.modified_at = date_time
 
@@ -35,39 +38,16 @@ def postDiagnostic():
     data = request.get_json()
 
     diagnostic = Diagnostic()
-    diagnostic = changeValuesDiagnostic(diagnostic, data)
+    
     diagnostic.created_at = date_time
     diagnostic.created_by = data['created_by']
 
     db.session.add(diagnostic)
+    diagnostic = changeValuesDiagnostic(diagnostic, data)
     db.session.flush()  # Pour obtenir l'id_diagnostic sans commit immédiat
 
     # Associer les acteurs transmis
-    new_actors_ids = {a['id_acteur'] for a in data.get('acteurs', [])}
-    if new_actors_ids:
-        acteurs_orig = Acteur.query.filter(Acteur.id_acteur.in_(new_actors_ids)).all()
-        copied_acteurs = []
-
-        for a in acteurs_orig:
-            new_acteur = Acteur(
-                nom=a.nom,
-                prenom=a.prenom,
-                fonction=a.fonction,
-                telephone=a.telephone,
-                mail = a.mail,
-                commune_id = a.commune_id,
-                is_acteur_economique = a.is_acteur_economique,
-                structure = a.structure,
-                created_at = date_time,
-                created_by = data['created_by'],
-                diagnostic_id=diagnostic.id_diagnostic,
-                categories = a.categories,
-                questions = a.questions,
-                statut_entretien = a.statut_entretien
-            )
-            db.session.add(new_acteur)
-            copied_acteurs.append(new_acteur)
-        diagnostic.acteurs = copied_acteurs
+   
     db.session.commit()
     return getDiagnostic(diagnostic)
 
@@ -128,7 +108,36 @@ def changeValuesDiagnostic(diagnostic,data):
         else:
             print(f"Site ID {site_id} not found in database.")
 
+    new_actors_ids = {a['id_acteur'] for a in data.get('acteurs', [])}
+    if new_actors_ids:
+        acteurs_orig = Acteur.query.filter(Acteur.id_acteur.in_(new_actors_ids)).all()
+        copied_acteurs = []
+
+        for a in acteurs_orig:
+            new_acteur = Acteur(
+                nom=a.nom,
+                prenom=a.prenom,
+                fonction=a.fonction,
+                telephone=a.telephone,
+                mail = a.mail,
+                commune_id = a.commune_id,
+                is_acteur_economique = a.is_acteur_economique,
+                structure = a.structure,
+                created_at = date_time,
+                created_by = data['created_by'],
+                diagnostic_id=diagnostic.id_diagnostic,
+                categories = a.categories,
+                questions = a.questions,
+                statut_entretien = a.statut_entretien
+            )
+            db.session.add(new_acteur)
+            copied_acteurs.append(new_acteur)
+        diagnostic.acteurs = copied_acteurs
+
     return diagnostic
+
+def deleteActors(diagnostic_id):
+     Acteur.query.filter(Acteur.diagnostic_id== diagnostic_id).delete()
 
 def getDiagnostic(diagnostic):
     schema = DiagnosticSchema(many=False)
