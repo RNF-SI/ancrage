@@ -50,6 +50,7 @@ export class Diagnostic implements IDiagnostic {
 		diag.sites = (data.sites || []).map(s => Site.fromJson(s));
 		diag.acteurs = (data.acteurs || []).map(a => Acteur.fromJson(a));
 		diag.created_at = data.created_at ? new Date(data.created_at) : undefined;
+		diag.created_at_str = moment(new Date(data.created_at!)).format("DD/MM/YYYY");
 		diag.modified_at = data.modified_at ? new Date(data.modified_at) : undefined;
 		diag.created_by = data.created_by;
 

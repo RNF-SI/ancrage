@@ -75,12 +75,17 @@ export class ActeurService {
     return this.http.delete<void>(this.BASE_URL + id + '/');
   }
 
-  sortByName(objArray:Acteur[]){
-    objArray.sort(function(a, b) {
-      var textA = a.nom.toUpperCase();
-      var textB = b.nom.toUpperCase();
-      return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
-    })
+  sortByNameAndSelected(objArray:Acteur[]){
+    objArray.sort((a, b) => {
+      
+      if (a.selected !== b.selected) {
+        return a.selected ? -1 : 1;
+      }
+      
+      const textA = a.nom.toUpperCase();
+      const textB = b.nom.toUpperCase();
+      return textA.localeCompare(textB);
+    });
   }
 
 

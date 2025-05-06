@@ -116,27 +116,27 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
           
           this.instructionswithResults(sites,acteurs);
          
-          this.selectedDiagnostic = diag;
+          /* this.selectedDiagnostic = diag; */
           this.can_edit = diag.created_by == this.user_id;
           this.id_organisme = diag.id_organisme;
           this.user_id = diag.created_by;
-          const remappedSites = (this.selectedDiagnostic.sites || []).map(site =>
+          const remappedSites = (diag.sites || []).map(site =>
             this.uniqueSites.find(s => s.id_site === site.id_site) || site
           );
 
           
-          const remappedActeurs = (this.selectedDiagnostic.acteurs || []).map(act =>
+          const remappedActeurs = (diag.acteurs || []).map(act =>
             this.uniqueActors.find(a => a.id_acteur === act.id_acteur) || act
           );
 
        
-          this.selectedDiagnostic.sites = remappedSites;
-          this.selectedDiagnostic.acteurs = remappedActeurs;
+          /* this.selectedDiagnostic.sites = remappedSites;
+          this.selectedDiagnostic.acteurs = remappedActeurs; */
           this.chosenSites = remappedSites;
 
          
           this.formGroup.patchValue({
-            id_diagnostic: this.selectedDiagnostic.id_diagnostic,
+            id_diagnostic: diag.id_diagnostic,
             nom: this.selectedDiagnostic.nom,
             sites: remappedSites,
             acteurs: remappedActeurs,
@@ -151,7 +151,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
           }
           
           this.actors= this.uniqueActors;
-          
+          this.actorsService.sortByNameAndSelected(this.actors);
           console.log(this.actors);
         });
       } else {
@@ -195,15 +195,13 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
         }
       }
 
-      
-      
     }
-    this.actorsService.sortByName(this.uniqueActors);
+    this.actorsService.sortByNameAndSelected(this.uniqueActors);
     this.siteService.sortByName(this.uniqueSites);
     this.departementService.sortByName(this.uniqueDepartments);
     this.nomenclatureService.sortByName(this.uniqueCategories);
     
-      this.checkSite();
+    this.checkSite();
    
     this.getDiagnostics(this.chosenSites);
   }
@@ -242,7 +240,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   
   recordDiagnostic(event: Event){
     event.preventDefault();
-    console.log(this.id_diagnostic);
+    
     if (this.id_diagnostic == undefined){
       this.formGroup.get("created_by")?.setValue(this.user_id);
       this.formGroup.get("id_organisme")?.setValue(this.id_organisme);
@@ -253,6 +251,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     }else{
       this.formGroup.get("modified_by")?.setValue(this.user_id);
       this.diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
+      console.log(this.diagnostic);
       this.diagnosticSubscription = this.diagnosticsService.update(this.diagnostic).subscribe(diagnostic=>{
         this.siteService.navigateAndReload('/diagnostic/'+diagnostic.id_diagnostic,diagnostic);
       })
