@@ -4,7 +4,6 @@ import { HttpClient } from '@angular/common/http';
 import { Acteur } from '@app/models/acteur.model';
 import { IActeur } from '@app/interfaces/acteur.interface';
 import { environment } from 'src/environments/environment';
-import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -14,22 +13,6 @@ export class ActeurService {
   private GET_ALL_URL = environment.flask_server+'acteurs';
   private BASE_URL = environment.flask_server+'acteur/';
   private http = inject(HttpClient);
-  private router = inject(Router);
-
-  labels = {
-    diagnosticsList:"Liste diagnostics",
-    identity:"Identité",
-    region:"Région",
-    department:"Département",
-    category:"Catégories",
-    status:"Statut",
-    structure:"Structure",
-    profile:"Profil cognitif",
-    telephone:"Téléphone",
-    mail:"Mail",
-    town:"Commune",
-    state:'Etat'
-  };
 
   getAll(): Observable<Acteur[]> {
     return this.http.get<IActeur[]>(this.GET_ALL_URL).pipe(

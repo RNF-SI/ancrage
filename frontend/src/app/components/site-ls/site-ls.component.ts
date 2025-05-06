@@ -7,6 +7,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { Site } from '@app/models/site.model';
 import { SiteService } from '@app/services/sites.service';
+import { Labels } from '@app/utils/labels';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -22,16 +23,7 @@ export class SiteLsComponent implements OnInit, OnDestroy{
   private route = inject(ActivatedRoute);
   private routeSubscription?:Subscription;
 
-  @Input() labels = {
-    departementLabel: "",
-    housingLabel: "",
-    statusLabel:"",
-    nameLabel: "",
-    latitudeLabel: "",
-    longitudeLabel: "",
-    btnRecordLabel: "",
-    btnPreviousStepLabel: ""
-  }
+  @Input() labels = new Labels();
   @Input() site:Site = new Site();
   @Input() dialogRef = inject(MatDialogRef)
   diagnostic:Diagnostic = new Diagnostic();
@@ -39,7 +31,7 @@ export class SiteLsComponent implements OnInit, OnDestroy{
   @Input() can_edit:boolean = false;
   
   ngOnInit(): void {
-    this.labels = this.siteService.labels;
+    
     this.routeSubscription = this.route.params.subscribe((params: any) => {
       const id_site = params['id_site'];
     
@@ -53,7 +45,7 @@ export class SiteLsComponent implements OnInit, OnDestroy{
         });
       }
     });
-    console.log(this.can_edit)
+    
   }
 
   navigate(path:string,diagnostic:Diagnostic){

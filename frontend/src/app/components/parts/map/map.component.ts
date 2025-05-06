@@ -111,9 +111,7 @@ export class MapComponent implements AfterViewInit {
         Départements : ${departements}<br>
         
       `);
-      if (this.sites.length == 1) {
-        console.log(this.sites);
-      }
+      
       bounds.extend([lat, lng]);
       this.markerClusterGroup.addTo(this.map!);
       

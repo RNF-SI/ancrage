@@ -19,6 +19,7 @@ import { DepartementService } from '@app/services/departement.service';
 import { MatDialog } from '@angular/material/dialog';
 import { AlerteSiteComponent } from '../parts/alerte-site/alerte-site.component';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
+import { Labels } from '@app/utils/labels';
 
 
 
@@ -36,16 +37,7 @@ export class SiteComponent implements OnInit,OnDestroy{
   titleModif="Modification du site";
 
   
-  labels = {
-    departementLabel: "",
-    housingLabel: "",
-    statusLabel:"",
-    nameLabel: "",
-    latitudeLabel: "",
-    longitudeLabel: "",
-    btnRecordLabel: "",
-    btnPreviousStepLabel: ""
-  }
+  labels = new Labels();
   uniqueHabitats:Nomenclature[]=[];
   uniqueStatuts:Nomenclature[]=[];
   uniqueDepartements:Departement[]=[];
@@ -85,7 +77,6 @@ export class SiteComponent implements OnInit,OnDestroy{
     this.previousPage = localStorage.getItem("previousPage")!;
     this.user_id = this.authService.getCurrentUser().id_role;
     console.log(this.previousPage);
-    this.labels = this.siteService.labels;
     if(localStorage.getItem("diagnostic")){
       this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!)
     }

@@ -1,0 +1,29 @@
+export class Labels {
+    departementLabel= "Départements";
+    housingLabel= "Habitats";
+    statusLabel="Statut";
+    nameLabel= "Nom";
+    latitudeLabel= "Latitude";
+    longitudeLabel= "Longitude";
+    btnRecordLabel= "Enregistrer";
+    btnPreviousStepLabel= "Revenir à l'étape précédente";
+    regionLabel= "Régions";
+    diagnosticsList="Liste diagnostics";
+    identity="Identité";
+    region="Région";
+    department="Département";
+    category="Catégories";
+    status="Statut";
+    structure="Structure";
+    profile="Profil cognitif";
+    telephone="Téléphone";
+    mail="Mail";
+    town="Commune";
+    state='Etat';
+    chosenSites="Sites choisis";
+    dateBegLabel="Date de début";
+    dateEndLabel="Date de fin";
+    datePublicationReport="Date de publication du rapport";
+    investigatorLabel="Enquêteur / Enquêtrice";
+    modify="Modifier";
+}

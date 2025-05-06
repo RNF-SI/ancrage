@@ -44,7 +44,6 @@ import { Subscription } from 'rxjs';
       this.user_role_id = this.authService.getCurrentUser().id_role;
       this.sitesSub =  this.siteService.getAllByUser(this.user_role_id).subscribe(sites => {
         this.sites = sites;
-        console.log(sites);
       });
     }
   

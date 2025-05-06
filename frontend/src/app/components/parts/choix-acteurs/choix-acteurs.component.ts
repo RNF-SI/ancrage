@@ -16,32 +16,21 @@ import { MatListModule } from '@angular/material/list';
 import { ActeurService } from '@app/services/acteur.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { AlerteShowActorDetailsComponent } from '../alerte-show-actor-details/alerte-show-actor-details.component';
+import { MatCardModule } from '@angular/material/card';
+import { Labels } from '@app/utils/labels';
 
 @Component({
   selector: 'app-choix-acteurs',
   templateUrl: './choix-acteurs.component.html',
   styleUrls: ['./choix-acteurs.component.css'],
   standalone:true,
-  imports:[CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule,RouterModule,ReactiveFormsModule,FontAwesomeModule,MatListModule]
+  imports:[CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule,RouterModule,ReactiveFormsModule,FontAwesomeModule,MatListModule,MatCardModule]
 })
 export class ChoixActeursComponent implements OnInit {
   @Input() actors: Acteur[]=[];
   title: string="Choisir les acteurs";
   titleGetActors = "Récupérer les acteurs d'un précédent diagnostic sur les sites choisis";
-  labels = {
-    diagnosticsList:"",
-    identity:"",
-    region:"",
-    department:"",
-    category:"",
-    status:"",
-    structure:"",
-    profile:"",
-    telephone:"",
-    mail:"",
-    town:"",
-    state:""
-  };
+  labels:Labels = new Labels();
   @Input() diagnostic: Diagnostic = new Diagnostic();
   @Input() uniqueDiagnostics: Diagnostic[] = [];
   @Input() uniqueDepartments: Departement[] = [];
@@ -55,6 +44,7 @@ export class ChoixActeursComponent implements OnInit {
   @Input() actorsSelected: MatTableDataSource<Acteur>= new MatTableDataSource();
   @Input() actorsOriginal: Acteur[]=[];
   @Input() formGroup!:FormGroup;
+  @Input() hideFilters:boolean = false;
   reinitialisation = "Réinitialiser"
   btnToChooseLabel: string = "choisir";
   btnNewActorLabel = "Nouvel acteur";
@@ -71,24 +61,18 @@ export class ChoixActeursComponent implements OnInit {
   }
 
   processActors(): void {
-    console.log("processActors called");
-    console.log("diagnostic.id_diagnostic =", this.diagnostic?.id_diagnostic);
-    console.log("actors =", this.actors);
-  
+    
     if (this.diagnostic.id_diagnostic > 0) {
       this.chosenActors=[];
       for (let acteur of this.actors) {
         this.addOrRemoveActor(acteur);
       }
-    } else {
-      console.warn("processActors skipped because diagnostic.id_diagnostic <= 0");
-    }
+    } 
   }
 
   ngOnInit(): void {
-    console.log(localStorage.getItem("diagnostic"));
-    this.labels = this.acteurService.labels;
-    this.resetFilters();
+   
+    
   }
 
   applyFilters() {
@@ -108,8 +92,6 @@ export class ChoixActeursComponent implements OnInit {
       selectedDiag=false;
     }
 
-   
-    console.log(this.selectedDepartment.nom_dep,this.selectedCategory.id_nomenclature,this.selectedDiagnostic.id_diagnostic)
     this.actorsSelected.data = this.actorsOriginal.filter(actor => {
       
       const matchDep = !selectedDep || actor.commune?.departement?.nom_dep === this.selectedDepartment.nom_dep;
@@ -137,10 +119,9 @@ export class ChoixActeursComponent implements OnInit {
       }
       
       const selectedActors = this.actors.filter(a => a.selected);
-      console.log(selectedActors);
+      
       this.formGroup?.get('acteurs')?.setValue(selectedActors);
       if (actor.selected){
-        console.log(actor);
         
         if(this.chosenActors.includes(this.emptyChosenActorsTxt)){
           this.chosenActors=[];
@@ -148,11 +129,10 @@ export class ChoixActeursComponent implements OnInit {
         }
         
         this.chosenActors.push(actor.nom + " "+ actor.prenom);
-        console.log(this.chosenActors);
+       
       }else{
         if (is_creation){
           let iteration=0;
-          console.log('2');
 
           for(let i=0;i<this.chosenActors.length;i++){
             if(this.chosenActors[i] === actor.nom+ " "+ actor.prenom){

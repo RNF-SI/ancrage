@@ -18,6 +18,7 @@ import { FormsModule } from "@angular/forms";
 import { MatInputModule } from "@angular/material/input";
 import { AlerteVisualisationSiteComponent } from "../alerte-visualisation-site/alerte-visualisation-site.component";
 import { MatDialog } from "@angular/material/dialog";
+import { Labels } from "@app/utils/labels";
 
 @Component({
   selector: 'app-sites-diagnostics-view',
@@ -52,17 +53,7 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy{
   btnNewSiteLabel = "Nouveau site";
   btnToChooseActors = "Choix des acteurs";
 
-  labels = {
-    departementLabel: "",
-    housingLabel: "",
-    statusLabel:"",
-    nameLabel: "",
-    latitudeLabel: "",
-    longitudeLabel: "",
-    btnRecordLabel: "",
-    btnPreviousStepLabel: "",
-    regionLabel: ""
-  }
+  labels = new Labels();
   private authService = inject(AuthService);
   private sitesSub!: Subscription;
   titleChosenSites="Sites choisis";
@@ -120,7 +111,6 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy{
 
   ngAfterViewInit(): void {
     this.btnForDiagnosticsLbl = this.btnToShowDiagnosticsLbl;
-    this.labels = this.siteService.labels;
     this.handleNewSites();
     this.extractUniqueFilters();
     this.onSearchChange();

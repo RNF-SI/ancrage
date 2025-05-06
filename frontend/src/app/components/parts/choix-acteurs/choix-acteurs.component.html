@@ -1,96 +1,72 @@
 
        
         <div>
-        
-            <h4>{{titleChooseActors}}</h4>
-            <div *ngFor="let ca of chosenActors">
-                <p>{{ca}}</p>
+            <div *ngIf="!hideFilters">
+                <h4>{{titleChooseActors}}</h4>
+                <div *ngFor="let ca of chosenActors">
+                    <p>{{ca}}</p>
+                </div>
             </div>
-            <mat-form-field appearance="fill">
-                <mat-label>{{labels.diagnosticsList}}</mat-label>
-                <mat-select [(value)]="selectedDiagnostic" (selectionChange)="applyFilters()" >
+            <div *ngIf="!hideFilters">
+                <mat-form-field appearance="fill">
+                    <mat-label>{{labels.diagnosticsList}}</mat-label>
+                    <mat-select [(value)]="selectedDiagnostic" (selectionChange)="applyFilters()" >
+                
+                        <mat-option *ngFor="let diag of uniqueDiagnostics" [value]="diag">{{ diag.nom }} du {{diag.created_at_str}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                
+                
+                
+                <mat-form-field appearance="fill">
+                    <mat-label>{{labels.department}}</mat-label>
+                    <mat-select [(value)]="selectedDepartment" (selectionChange)="applyFilters()">
             
-                    <mat-option *ngFor="let diag of uniqueDiagnostics" [value]="diag">{{ diag.nom }} du {{diag.created_at_str}}</mat-option>
-                </mat-select>
-            </mat-form-field>
-            
-            
-            
-            <mat-form-field appearance="fill">
-                <mat-label>{{labels.department}}</mat-label>
-                <mat-select [(value)]="selectedDepartment" (selectionChange)="applyFilters()">
-           
-                    <mat-option *ngFor="let dpt of uniqueDepartments" [value]="dpt">{{ dpt.nom_dep }}</mat-option>
-                </mat-select>
-            </mat-form-field>
+                        <mat-option *ngFor="let dpt of uniqueDepartments" [value]="dpt">{{ dpt.nom_dep }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
 
-            <mat-form-field appearance="fill" class="accent-select">
-                <mat-label>{{labels.category}}</mat-label>
-                <mat-select [(value)]="selectedCategory" (selectionChange)="applyFilters()">
-             
-                    <mat-option *ngFor="let cat of uniqueCategories" [value]="cat">{{ cat.libelle }}</mat-option>
-                </mat-select>
-            </mat-form-field>
-            <button id="btnToReinitialize" type="button" mat-raised-button (click)="resetFilters()">{{reinitialisation}}</button>
+                <mat-form-field appearance="fill" class="accent-select">
+                    <mat-label>{{labels.category}}</mat-label>
+                    <mat-select [(value)]="selectedCategory" (selectionChange)="applyFilters()">
+                
+                        <mat-option *ngFor="let cat of uniqueCategories" [value]="cat">{{ cat.libelle }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <button id="btnToReinitialize" type="button" mat-raised-button (click)="resetFilters()">{{reinitialisation}}</button>
+            </div>
             <div [formGroup]="formGroup">
-                <mat-selection-list formControlName="acteurs">
-                    <mat-list-option *ngFor="let actor of actors" [value]="actor" (click)="addOrRemoveActor(actor,true)">
-                      <div class="space">{{ actor.nom }} {{ actor.prenom }}   </div>
-                      <button mat-raised-button type="button" class="otherInfosBtn" (click)="showOtherInfos(actor)"><fa-icon [icon]="['fas', 'info']"></fa-icon></button>
-                    </mat-list-option>
-                </mat-selection-list>
-                <!-- <table mat-table [dataSource]="actors" class="mat-elevation-z2" multiTemplateDataRows>
-
-                    
-                    <ng-container matColumnDef="identity">
-                        <th mat-header-cell *matHeaderCellDef>{{ labels.identity }}</th>
-                        <td mat-cell *matCellDef="let actor">
-                        {{actor.nom}} {{actor.prenom}}
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="categories">
-                        <th mat-header-cell *matHeaderCellDef>{{labels.category}}</th>
-                        <td mat-cell *matCellDef="let actor">
-                            <ng-container *ngFor="let cat of actor.categories">
-                                <div>
-                                {{ cat.libelle }}
-                                </div>
-                            </ng-container>
-                        </td>
-                    </ng-container>  
-                    <ng-container matColumnDef="state">
-                        <th mat-header-cell *matHeaderCellDef>{{labels.state}}</th>
-                        <td mat-cell *matCellDef="let actor">
-                            {{actor.statut_entretien.libelle}}
-                        </td>
-                    </ng-container>  
-            
-                    <ng-container matColumnDef="structure">
-                        <th mat-header-cell *matHeaderCellDef>{{labels.structure}}</th>
-                        <td mat-cell *matCellDef="let actor">
-                            {{actor.structure}}
-                        </td>
-                    </ng-container>
-
-                    <ng-container matColumnDef="other_infos">
-                        <th mat-header-cell *matHeaderCellDef></th>
-                        <td mat-cell *matCellDef="let actor">
-                            <button mat-raised-button (click)="showOtherInfos(actor)"><fa-icon [icon]="['fas', 'info']"></fa-icon></button>
-                        </td>
-                    </ng-container>
-                   
-                   
-                    <ng-container matColumnDef="choice">
-                    <th mat-header-cell *matHeaderCellDef></th>
-                    <td mat-cell *matCellDef="let actor">
-                        <mat-checkbox  (click)="addOrRemoveActor(actor,true)" >{{btnToChooseLabel}}</mat-checkbox>
-                    </td>
-                    </ng-container>
-
-                   
-                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-                </table> -->
+                <ng-container *ngIf="!hideFilters else other_content">
+                    <mat-selection-list formControlName="acteurs">
+                        <mat-list-option *ngFor="let actor of actors" [value]="actor" (click)="addOrRemoveActor(actor, true)">
+                          <div class="space">{{ actor.nom }} {{ actor.prenom }} {{actor.structure}}  </div>
+                          <button mat-raised-button type="button" class="otherInfosBtn" (click)="showOtherInfos(actor)"><fa-icon [icon]="['fas', 'info']"></fa-icon></button>
+                        </mat-list-option>
+                    </mat-selection-list>
+                  </ng-container>
+                  <ng-template #other_content>
+                    <div class="actor-cards">
+                        <mat-card *ngFor="let actor of actors" class="actor-card">
+                          <div class="card-content">
+                      
+                            <div class="actor-info">
+                              <div class="actor-name">
+                                <mat-card-title>{{ actor.nom }} {{ actor.prenom }}</mat-card-title>
+                              </div>
+                              <div class="actor-structure">
+                                {{ actor.structure }}
+                              </div>
+                            </div>
+                      
+                            <div class="actor-actions">
+                              <button mat-icon-button type="button" (click)="showOtherInfos(actor)">
+                                <fa-icon [icon]="['fas', 'info']"></fa-icon>
+                              </button>
+                            </div>
+                          </div>
+                        </mat-card>
+                      </div>
+                  </ng-template>
             </div>
             
         </div>

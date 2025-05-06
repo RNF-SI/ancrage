@@ -20,6 +20,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { DepartementService } from '@app/services/departement.service';
 import { NomenclatureService } from '@app/services/nomenclature.service';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
+import { Labels } from '@app/utils/labels';
 
 @Component({
   selector: 'app-diagnostic',
@@ -33,10 +34,9 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   titleDiagnostic= "";
   titleCreateDiag="Créer un diagnostic";
   titleModifyDiag="Modifier un diagnostic";
-  chooseSiteTitle = "Choisir les sites";
   btnCreateSiteLabel = "Créer un site";
   btnRecordDiag = "Enregistrer";
-  labels: any;
+  labels = new Labels();
   selectedRegion: any;
   sites:Site[]=[]
   uniqueRegions: any;
@@ -88,11 +88,11 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       id_organisme: [0, [Validators.required]],
       modified_by: [0, [Validators.required]],
     });
-
+  previousPage = "";
   
   ngOnInit(): void {
     this.titleDiagnostic = this.titleCreateDiag;
-    /* this.actorsSelected = new MatTableDataSource(this.actors); */
+    this.previousPage = localStorage.getItem("previousPage")!;
     if (localStorage.getItem("diagnostic")){
 
       this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
@@ -100,7 +100,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       
     }
    
-    localStorage.setItem("previousPage",this.router.url);
+    
     this.routeSubscription = this.route.params.subscribe((params: any) => {
       this.id_diagnostic = params['id_diagnostic'];  
   
@@ -116,43 +116,36 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
           
           this.instructionswithResults(sites,acteurs);
          
-          /* this.selectedDiagnostic = diag; */
           this.can_edit = diag.created_by == this.user_id;
           this.id_organisme = diag.id_organisme;
           this.user_id = diag.created_by;
           const remappedSites = (diag.sites || []).map(site =>
             this.uniqueSites.find(s => s.id_site === site.id_site) || site
           );
-
           
           const remappedActeurs = (diag.acteurs || []).map(act =>
             this.uniqueActors.find(a => a.id_acteur === act.id_acteur) || act
           );
 
-       
-          /* this.selectedDiagnostic.sites = remappedSites;
-          this.selectedDiagnostic.acteurs = remappedActeurs; */
           this.chosenSites = remappedSites;
-
-         
           this.formGroup.patchValue({
             id_diagnostic: diag.id_diagnostic,
-            nom: this.selectedDiagnostic.nom,
+            nom: diag.nom,
             sites: remappedSites,
             acteurs: remappedActeurs,
           });
+
           for (let i = 0;i<this.uniqueActors.length;i++){
             for (let j = 0;j<remappedActeurs.length;j++){
               if (this.uniqueActors[i]==remappedActeurs[j]){
                 this.uniqueActors[i].selected = true;
-                console.log(this.uniqueActors[i].nom);
               }
             }
           }
           
           this.actors= this.uniqueActors;
           this.actorsService.sortByNameAndSelected(this.actors);
-          console.log(this.actors);
+          
         });
       } else {
         this.user_id = this.authService.getCurrentUser().id_role;
@@ -170,7 +163,6 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     if (this.chosenSites?.length) {
       const chosenIds = this.chosenSites.map(site => site.id_site);
       this.chosenSites = this.uniqueSites.filter(site => chosenIds.includes(site.id_site));
-      console.log(this.chosenSites);
       this.formGroup?.get('sites')?.setValue(this.chosenSites);
     }
   }
@@ -234,7 +226,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
 
   navigate(path:string,diagnostic:Diagnostic){
     diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
-
+    localStorage.setItem("previousPage",this.router.url);
     this.siteService.navigateAndReload(path,diagnostic);
   }
   
@@ -251,13 +243,10 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     }else{
       this.formGroup.get("modified_by")?.setValue(this.user_id);
       this.diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
-      console.log(this.diagnostic);
       this.diagnosticSubscription = this.diagnosticsService.update(this.diagnostic).subscribe(diagnostic=>{
         this.siteService.navigateAndReload('/diagnostic/'+diagnostic.id_diagnostic,diagnostic);
       })
     }
-    
-   
   }
 
   ngOnDestroy(): void {

@@ -16,18 +16,6 @@ export class SiteService {
 	private http = inject(HttpClient);
 	private router = inject(Router);
 
-	labels = {
-		  departementLabel: "Départements",
-		  housingLabel: "Habitats",
-		  statusLabel:"Statut",
-		  nameLabel: "Nom",
-		  latitudeLabel: "Latitude",
-		  longitudeLabel: "Longitude",
-		  btnRecordLabel: "Enregistrer",
-		  btnPreviousStepLabel: "Revenir à l'étape précédente",
-		  regionLabel: "Régions"
-	}
-
 	getAll(): Observable<Site[]> {
 		return this.http.get<ISite[]>(this.GET_ALL_URL).pipe(
 			map(siteJsonArray => {

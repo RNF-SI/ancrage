@@ -1,6 +1,7 @@
-.otherInfos{
-    margin-left: 1%;
-}
 .space{
    display:inline;
+}
+
+.card-content div, mat-card-title{
+    display:inline;
 }

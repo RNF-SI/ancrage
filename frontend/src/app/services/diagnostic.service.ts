@@ -13,6 +13,7 @@ export class DiagnosticService {
 
     private BASE_URL = 'http://localhost:5000/diagnostic';
     private http = inject(HttpClient);
+    
   
     getAll(): Observable<Diagnostic[]> {
       return this.http.get<IDiagnostic[]>(this.GET_ALL_URL).pipe(
@@ -53,4 +54,5 @@ export class DiagnosticService {
     delete(id: number): Observable<void> {
       return this.http.delete<void>(this.BASE_URL + id);
     }
+    
 }

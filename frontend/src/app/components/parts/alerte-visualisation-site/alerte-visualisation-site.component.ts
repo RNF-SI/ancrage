@@ -3,6 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Site } from '@app/models/site.model';
 import { AlerteSiteComponent } from '../alerte-site/alerte-site.component';
 import { SiteLsComponent } from '@app/components/site-ls/site-ls.component';
+import { Labels } from '@app/utils/labels';
 
 @Component({
   selector: 'app-alerte-visualisation-site',
@@ -17,16 +18,7 @@ export class AlerteVisualisationSiteComponent {
       public dialogRef: MatDialogRef<AlerteVisualisationSiteComponent>,
       @Inject(MAT_DIALOG_DATA) public data: { 
         site:Site, 
-        labels : {
-          departementLabel: "",
-          housingLabel: "",
-          statusLabel:"",
-          nameLabel: "",
-          latitudeLabel: "",
-          longitudeLabel: "",
-          btnRecordLabel: "",
-          btnPreviousStepLabel: ""
-        },
+        labels:Labels,
         can_edit:boolean;
         
       }

@@ -15,7 +15,7 @@
                 </mat-form-field>
                 
                 <mat-form-field appearance="fill">
-                    <mat-label>{{ chooseSiteTitle }}</mat-label>
+                    <mat-label>{{ labels.chosenSites }}</mat-label>
                     <mat-select formControlName="sites" multiple (selectionChange)="getDiagnostics(formGroup.value.sites)">
                       <mat-option *ngFor="let site of uniqueSites" [value]="site">{{ site.nom }}</mat-option>
                     </mat-select>

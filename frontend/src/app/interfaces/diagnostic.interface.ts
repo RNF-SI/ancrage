@@ -7,8 +7,10 @@ export interface IDiagnostic {
     date_debut_str?: string;
     date_debut ?: Date;
     date_fin: Date | undefined;
+    date_rapport ?:Date;
     is_read_only:boolean;
     id_organisme:number;
+    identite_createur:string;
     sites?: ISite[];
     acteurs:IActeur[];
     created_at ?: Date;

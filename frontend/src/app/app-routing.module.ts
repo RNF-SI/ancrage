@@ -14,12 +14,12 @@ import { AuthGuardService } from './home-rnf/services/auth-guard.service';
 import { LogoutLinkService } from './home-rnf/services/logout-link.service';
 import { LazyDialogLoader } from './home-rnf/services/lazy-dialog-loader.service';
 import { DiagosticsListeComponent } from './components/diagnostics-liste/diagnostics-liste.component';
-import { ChoixSiteComponent } from './components/choix-site/choix-site.component';
 import { MesDiagnosticsComponent } from './components/mes-diagnostics/mes-diagnostics.component';
 import { SiteComponent } from './components/site/site.component';
 import { ChoixActeursComponent } from './components/parts/choix-acteurs/choix-acteurs.component';
 import { SiteLsComponent } from './components/site-ls/site-ls.component';
 import { DiagnosticComponent } from './components/diagnostic/diagnostic.component';
+import { DiagnosticVisualisationComponent } from './diagnostic-visualisation/diagnostic-visualisation.component';
 
 const routes: Routes = [ { 
   path: '', 
@@ -64,11 +64,6 @@ const routes: Routes = [ {
       canActivate: [AuthGuardService]
     },
     {
-      path: 'choix-site',
-      component: ChoixSiteComponent,
-      canActivate: [AuthGuardService]
-    },
-    {
       path: 'site',
       component: SiteComponent,
       canActivate: [AuthGuardService]
@@ -96,6 +91,11 @@ const routes: Routes = [ {
     {
       path: 'diagnostic/:id_diagnostic',
       component: DiagnosticComponent,
+      canActivate: [AuthGuardService]
+    },
+    {
+      path: 'diagnostic-visualisation/:id_diagnostic',
+      component: DiagnosticVisualisationComponent,
       canActivate: [AuthGuardService]
     }
   ]},

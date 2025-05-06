@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { SiteService } from '@app/services/sites.service';
 import { Diagnostic } from '@app/models/diagnostic.model';
+import { Labels } from '@app/utils/labels';
 @Component({
   selector: 'app-alerte-site',
   templateUrl: './alerte-site.component.html',
@@ -21,16 +22,7 @@ export class AlerteSiteComponent {
       title: string; 
       message: string; 
       site:Site, 
-      labels : {
-        departementLabel: "",
-        housingLabel: "",
-        statusLabel:"",
-        nameLabel: "",
-        latitudeLabel: "",
-        longitudeLabel: "",
-        btnRecordLabel: "",
-        btnPreviousStepLabel: ""
-      },
+      labels :Labels,
       diagnostic:Diagnostic,
       previousPage:string;
     }
@@ -40,8 +32,6 @@ export class AlerteSiteComponent {
 
 
   navigate(path:string,diagnostic:Diagnostic){
-    console.log(path);
-    console.log(this.data.previousPage);
     this.siteService.navigateAndReload(path,diagnostic)
   }
   

@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterModule } from '@angular/router';
 import { Acteur } from '@app/models/acteur.model';
+import { Labels } from '@app/utils/labels';
 
 @Component({
   selector: 'app-alerte-show-actor-details',
@@ -19,20 +20,7 @@ export class AlerteShowActorDetailsComponent {
       @Inject(MAT_DIALOG_DATA) public data: { 
         title: string; 
         actor:Acteur, 
-        labels:{
-          diagnosticsList:"",
-          identity:"",
-          region:"",
-          department:"",
-          category:"",
-          status:"",
-          structure:"",
-          profile:"",
-          telephone:"",
-          mail:"",
-          town:"",
-          state:""
-        }
+        labels:Labels
         
       }
     ) {}
