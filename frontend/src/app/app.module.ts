@@ -40,6 +40,7 @@ import { AlerteVisualisationSiteComponent } from './components/parts/alerte-visu
 import { DiagnosticComponent } from './components/diagnostic/diagnostic.component';
 import { AlerteShowActorDetailsComponent } from './components/parts/alerte-show-actor-details/alerte-show-actor-details.component';
 import { DiagnosticVisualisationComponent } from './diagnostic-visualisation/diagnostic-visualisation.component';
+import { ActeurComponent } from './components/acteur/acteur.component';
 
 
 @NgModule({
@@ -51,6 +52,7 @@ import { DiagnosticVisualisationComponent } from './diagnostic-visualisation/dia
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
+    
     
   ],
   imports: [
@@ -78,6 +80,7 @@ import { DiagnosticVisualisationComponent } from './diagnostic-visualisation/dia
     DiagnosticComponent,
     AlerteShowActorDetailsComponent,
     DiagnosticVisualisationComponent,
+    ActeurComponent,
     ToastrModule.forRoot({
       timeOut: 15000
     }),
