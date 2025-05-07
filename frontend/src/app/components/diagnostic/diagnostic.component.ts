@@ -83,12 +83,13 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       nom: ['', [Validators.required]],
       sites: this.fb.control<Site[]>([], [Validators.required]),  
       acteurs: this.fb.control<Acteur[]>([], [Validators.required]),
-      diagnostic_selectionne: this.fb.control<Diagnostic | null>(null),
       created_by: [0, [Validators.required]],
       id_organisme: [0, [Validators.required]],
       modified_by: [0, [Validators.required]],
+      identite_createur:[""]
     });
   previousPage = "";
+  user:any;
   
   ngOnInit(): void {
     this.titleDiagnostic = this.titleCreateDiag;
@@ -234,11 +235,15 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     event.preventDefault();
     
     if (this.id_diagnostic == undefined){
+      let nom = this.authService.getCurrentUser().nom_role;
+      let prenom = this.authService.getCurrentUser().prenom_role;
+      console.log(nom);
+      this.formGroup.get("identite_createur")?.setValue(nom + " "+ prenom);
       this.formGroup.get("created_by")?.setValue(this.user_id);
       this.formGroup.get("id_organisme")?.setValue(this.id_organisme);
       this.diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
       this.diagnosticSubscription = this.diagnosticsService.add(this.diagnostic).subscribe(diagnostic=>{
-        this.siteService.navigateAndReload('/diagnostic/'+diagnostic.id_diagnostic,diagnostic);
+        this.siteService.navigateAndReload('/diagnostic-visualisation/'+diagnostic.id_diagnostic,diagnostic);
       })
     }else{
       this.formGroup.get("modified_by")?.setValue(this.user_id);

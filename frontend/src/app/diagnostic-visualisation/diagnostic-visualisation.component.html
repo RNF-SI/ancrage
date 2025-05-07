@@ -7,7 +7,7 @@
             <h2>{{diagnostic.nom}}</h2>
             <div><b>{{labels.dateBegLabel}}</b> : <span>{{ diagnostic.date_debut_str }}</span></div>
             <div><b>{{labels.dateEndLabel}}</b> : <span>{{ diagnostic.date_fin_str }}</span></div>
-            <div><b>{{labels.datePublicationReport}}</b> : <span>{{ diagnostic.date_rapport }}</span></div>
+            <div><b>{{labels.datePublicationReport}}</b> : <span>{{ diagnostic.date_rapport_str }}</span></div>
             <div><b>{{labels.investigatorLabel}}</b> : <span>{{ diagnostic.identite_createur }}</span></div>
             <h3>{{labels.chosenSites}}</h3>
                 <p *ngFor="let site of diagnostic.sites">{{ site.nom }}, {{site.type.libelle}} </p>
@@ -26,6 +26,7 @@
                     [formGroup]="formGroup"
                     [hideFilters]="hideFilters"
             ></app-choix-acteurs>
+            <button mat-raised-button color="accent" type="button" (click)="navigate(previousPage,diagnostic)">{{labels.btnPreviousStepLabel}}</button>
             <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic,diagnostic)">Modifier</button>
         </div>
         <div class="col-2">

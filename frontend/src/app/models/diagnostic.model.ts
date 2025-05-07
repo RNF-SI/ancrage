@@ -49,11 +49,11 @@ export class Diagnostic implements IDiagnostic {
 		diag.id_diagnostic = data.id_diagnostic;
 		diag.nom = data.nom;
 		diag.date_debut = data.date_debut ? new Date(data.date_debut) : undefined;
-		diag.date_debut_str = moment(new Date(data.date_debut!)).format("DD/MM/YYYY");
+		diag.date_debut_str = data.date_debut ? moment(new Date(data.date_debut!)).format("DD/MM/YYYY") : "";
 		diag.date_fin = data.date_fin ? new Date(data.date_fin) : undefined;
-		diag.date_fin_str = moment(new Date(data.date_fin!)).format("DD/MM/YYYY");
+		diag.date_fin_str = data.date_fin ? moment(new Date(data.date_fin!)).format("DD/MM/YYYY") : "";
 		diag.date_rapport = data.date_fin ? new Date(data.date_rapport!) : undefined;
-		diag.date_rapport_str = moment(new Date(data.date_rapport!)).format("DD/MM/YYYY");
+		diag.date_rapport_str = data.date_rapport? moment(new Date(data.date_rapport!)).format("DD/MM/YYYY") : "";
 		diag.identite_createur = data.identite_createur;
 		diag.id_organisme = data.id_organisme;
 		diag.is_read_only = data.is_read_only;

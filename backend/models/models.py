@@ -94,6 +94,8 @@ class Diagnostic(db.Model):
     date_debut = db.Column(db.DateTime)
     date_dernier_entretien = db.Column(db.DateTime)
     date_fin = db.Column(db.DateTime)
+    date_rapport = db.Column(db.DateTime)
+    identite_createur = db.Column(db.String,default="")
     id_organisme = db.Column(db.Integer)
     created_at = db.Column(db.DateTime)
     modified_at = db.Column(db.DateTime)

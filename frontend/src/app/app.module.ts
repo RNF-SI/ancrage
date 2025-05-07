@@ -27,7 +27,6 @@ import { ContactComponent } from './components/contact/contact.component';
 import { MentionsComponent } from './components/mentions/mentions.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { DiagosticsListeComponent } from './components/diagnostics-liste/diagnostics-liste.component';
-import { ChoixSiteComponent } from './components/choix-site/choix-site.component';
 import { MapComponent } from './components/parts/map/map.component'; 
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { SitesDiagnosticsViewComponent } from './components/parts/sites-diagnostics-view/sites-diagnostics-view.component';
@@ -70,7 +69,6 @@ import { DiagnosticVisualisationComponent } from './diagnostic-visualisation/dia
     DiagosticsListeComponent,
     SitesDiagnosticsViewComponent,
     MapComponent,
-    ChoixSiteComponent,
     MesDiagnosticsComponent,
     SiteComponent,
     AlerteSiteComponent,

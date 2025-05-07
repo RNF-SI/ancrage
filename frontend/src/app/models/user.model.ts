@@ -18,4 +18,5 @@ export class User {
     this.nom_complet =  nom_complet;
   }
 
+
 }

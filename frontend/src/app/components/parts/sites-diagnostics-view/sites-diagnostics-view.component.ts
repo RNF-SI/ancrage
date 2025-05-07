@@ -19,13 +19,14 @@ import { MatInputModule } from "@angular/material/input";
 import { AlerteVisualisationSiteComponent } from "../alerte-visualisation-site/alerte-visualisation-site.component";
 import { MatDialog } from "@angular/material/dialog";
 import { Labels } from "@app/utils/labels";
+import { MatExpansionModule } from '@angular/material/expansion';
 
 @Component({
   selector: 'app-sites-diagnostics-view',
   templateUrl: './sites-diagnostics-view.component.html',
   styleUrls: ['./sites-diagnostics-view.component.css'],
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatTooltipModule, FontAwesomeModule,RouterModule,MapComponent,MatFormFieldModule,MatSelectModule,FormsModule,MatInputModule]
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatTooltipModule, FontAwesomeModule,RouterModule,MapComponent,MatFormFieldModule,MatSelectModule,FormsModule,MatInputModule,MatExpansionModule]
 })
 export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy{
 

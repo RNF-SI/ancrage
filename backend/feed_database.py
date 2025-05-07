@@ -60,10 +60,21 @@ with app.app_context():
 
     # Ajout de 3 types de site (mnemonique = 'statut')
     types_sites = []
-    for i in range(1, 4):
+    types_labels = [
+        "Réserves naturelles",
+        "Parc Naturel National",
+        "Parc Naturel Régional",
+        "Espace CEN",
+        "Espace Conservatoire du littoral",
+        "Site Natural 2000",
+        "Réserve de Chasse et de Faune Sauvage",
+        "Espace Naturel Sensible",
+        "Parc Naturel Marin"
+    ]
+    for i, lib in enumerate(types_labels):
         t = Nomenclature(
-            libelle=f"Type {i}",
-            value=random.randint(1, 99),
+            libelle=lib,
+            value=i,
             mnemonique='statut'
         )
         db.session.add(t)
@@ -138,27 +149,57 @@ with app.app_context():
     categories = []
     profils = []
     statuts_entretien = []
+    categorie_labels = [
+        "Animation, pédagogie, tourisme et sensibilisation",
+        "Partenaires, gestionnaires et techniciens",
+        "Riverains, élus et usagers locaux",
+        "Exploitants professionnels des ressources naturelles",
+        "Membres du CCG"
+    ]
 
-    for i in range(5):
+    profils_labels = [
+        "Fédérateur",
+        "Territorial désintéressé",
+        "Territorial intéressé",
+        "Territorial désintéressé",
+        "Contraint"
+    ]
+
+    etats_labels = [
+        "Réalisé",
+        "Reporté",
+        "En cours",
+        "Annulé",
+        "Programmé"
+    ]
+
+    for i, lib in enumerate(categorie_labels):
         c = Nomenclature(
-            libelle=f"Categorie {i}",
+            libelle=lib,
             value=i,
             mnemonique="categorie"
         )
+        db.session.add(c)
+        categories.append(c)
+
+    for i, lib in enumerate(profils_labels):
         p = Nomenclature(
-            libelle=f"Profil {i}",
+            libelle=lib,
             value=i,
             mnemonique="profil"
         )
-        s = Nomenclature(
-            libelle=f"Statut {i}",
+        db.session.add(p)
+        profils.append(p)    
+
+    for i, lib in enumerate(etats_labels):
+        e = Nomenclature(
+            libelle=lib,
             value=i,
             mnemonique="statut_entretien"
         )
-        db.session.add_all([c, p, s])
-        categories.append(c)
-        profils.append(p)
-        statuts_entretien.append(s)
+        db.session.add(e)
+        statuts_entretien.append(e)    
+
 
     db.session.commit()
 
@@ -181,7 +222,7 @@ with app.app_context():
             structure=f"Structure {i}",
             diagnostic_id=diagnostic.id_diagnostic,
             statut_entretien_id=random.choice(statuts_entretien).id_nomenclature,
-            commune_id=random.randint(69931, 100000),  # 🔥 Tirage aléatoire entre 1 et 30 000
+            commune_id=random.randint(69931, 100000), 
             created_at=datetime.now(),
             modified_at=datetime.now(),
             created_by=1,

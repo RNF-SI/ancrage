@@ -44,6 +44,7 @@
                 >
 
                 </app-choix-acteurs>
+                <button mat-raised-button color="accent" (click)="navigate(previousPage,diagnostic)" >{{labels.btnPreviousStepLabel}}</button>
                 <button mat-raised-button color="warn" type="submit" [disabled]="formGroup.invalid">{{btnRecordDiag}}</button>
         
             </form>
