@@ -21,6 +21,8 @@ import { DepartementService } from '@app/services/departement.service';
 import { NomenclatureService } from '@app/services/nomenclature.service';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { Labels } from '@app/utils/labels';
+import { MatDialog } from '@angular/material/dialog';
+import { AlerteDiagnosticComponent } from '../alertes/alerte-diagnostic/alerte-diagnostic.component';
 
 @Component({
   selector: 'app-diagnostic',
@@ -72,6 +74,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   private departementService = inject(DepartementService);
   private nomenclatureService = inject(NomenclatureService);
   private authService = inject(AuthService);
+  private dialog = inject(MatDialog);
   user_id=0;
   id_organisme = 0;
   actorsSelected:MatTableDataSource<Acteur>= new MatTableDataSource();
@@ -247,20 +250,42 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       this.formGroup.get("id_organisme")?.setValue(this.id_organisme);
       this.diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
       this.diagnosticSubscription = this.diagnosticsService.add(this.diagnostic).subscribe(diagnostic=>{
-        this.siteService.navigateAndReload('/diagnostic-visualisation/'+diagnostic.id_diagnostic,diagnostic);
+        this.getConfirmation("Ce diagnostic vient d'être créé dans la base de données et contient ces informations : ",diagnostic);
       })
     }else{
       this.formGroup.get("modified_by")?.setValue(this.user_id);
       this.diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
       this.diagnosticSubscription = this.diagnosticsService.update(this.diagnostic).subscribe(diagnostic=>{
-        this.siteService.navigateAndReload('/diagnostic/'+diagnostic.id_diagnostic,diagnostic);
+        this.getConfirmation("Ce diagnostic vient d'être modifié dans la base de données et contient ces informations :",diagnostic);
       })
     }
+  }
+
+  getConfirmation(message:string,diag:Diagnostic){
+      this.previousPage = localStorage.getItem("previousPage")!;
+      this.diagnostic=diag;
+      localStorage.setItem("diagnostic",JSON.stringify(this.diagnostic));
+     
+      if(diag.id_diagnostic > 0){
+       
+        this.dialog.open(AlerteDiagnosticComponent, {
+          data: {
+            title: this.titleDiagnostic,
+            message: message,
+            labels: this.labels,
+            diagnostic:this.diagnostic,
+            previousPage:this.previousPage
+          }
+        });
+      }
+      
   }
 
   ngOnDestroy(): void {
     this.routeSubscription?.unsubscribe();
     this.diagnosticSubscription?.unsubscribe();
   }
+
+
 
 }

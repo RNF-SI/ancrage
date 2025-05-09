@@ -32,4 +32,5 @@ export class Labels {
     economicActor="Acteur économique";
     chooseProfile = "Choisir un profil";
     chooseCategories = "Choisir les catégories";
+    chosenActors = "Acteurs impliqués";
 }
