@@ -9,6 +9,6 @@
 
 <mat-dialog-actions>
     <button mat-raised-button color="accent" type="button" (click)="navigate(data.previousPage,data.diagnostic)">{{data.labels.btnPreviousStepLabel}}</button>
-    <button mat-raised-button mat-dialog-close (click)="navigate('/site',this.data.diagnostic)" color="accent">Créer un autre site</button>
-    <button mat-raised-button mat-dialog-close (click)="navigate('/choix-site',this.data.diagnostic)" color="accent">Ajouter un site existant</button>
+    <button mat-raised-button mat-dialog-close (click)="navigate('/acteur',data.diagnostic)" color="accent">Créer un autre site</button>
+    <button mat-raised-button mat-dialog-close (click)="close()" color="accent">Corriger ce site</button>
 </mat-dialog-actions>

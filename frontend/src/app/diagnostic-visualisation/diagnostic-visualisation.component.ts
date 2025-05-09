@@ -73,7 +73,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
 
   }
 
-  navigate(path:string,diagnostic:Diagnostic){
+  navigate= (path:string,diagnostic:Diagnostic):void =>{
     localStorage.setItem("previousPage",this.router.url);
     this.siteService.navigateAndReload(path,diagnostic);
   }

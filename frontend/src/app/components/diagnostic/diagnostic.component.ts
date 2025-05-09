@@ -21,6 +21,8 @@ import { DepartementService } from '@app/services/departement.service';
 import { NomenclatureService } from '@app/services/nomenclature.service';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { Labels } from '@app/utils/labels';
+import { MatDialog } from '@angular/material/dialog';
+import { AlerteDiagnosticComponent } from '../alertes/alerte-diagnostic/alerte-diagnostic.component';
 
 @Component({
   selector: 'app-diagnostic',
@@ -72,6 +74,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   private departementService = inject(DepartementService);
   private nomenclatureService = inject(NomenclatureService);
   private authService = inject(AuthService);
+  private dialog = inject(MatDialog);
   user_id=0;
   id_organisme = 0;
   actorsSelected:MatTableDataSource<Acteur>= new MatTableDataSource();
@@ -94,12 +97,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   ngOnInit(): void {
     this.titleDiagnostic = this.titleCreateDiag;
     this.previousPage = localStorage.getItem("previousPage")!;
-    if (localStorage.getItem("diagnostic")){
-
-      this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
-      this.chosenSites = this.diagnostic.sites;
-      
-    }
+    
    
     
     this.routeSubscription = this.route.params.subscribe((params: any) => {
@@ -123,41 +121,50 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
           const remappedSites = (diag.sites || []).map(site =>
             this.uniqueSites.find(s => s.id_site === site.id_site) || site
           );
-          
-          const remappedActeurs = (diag.acteurs || []).map(act =>
-            this.uniqueActors.find(a => a.id_acteur === act.id_acteur) || act
-          );
-
           this.chosenSites = remappedSites;
-          this.formGroup.patchValue({
-            id_diagnostic: diag.id_diagnostic,
-            nom: diag.nom,
-            sites: remappedSites,
-            acteurs: remappedActeurs,
-          });
-
-          for (let i = 0;i<this.uniqueActors.length;i++){
-            for (let j = 0;j<remappedActeurs.length;j++){
-              if (this.uniqueActors[i]==remappedActeurs[j]){
-                this.uniqueActors[i].selected = true;
-              }
-            }
-          }
           
-          this.actors= this.uniqueActors;
-          this.actorsService.sortByNameAndSelected(this.actors);
+          this.setActors(diag);
           
         });
       } else {
+        if (localStorage.getItem("diagnostic")){
+      
+          this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
+          console.log(this.diagnostic);
+          this.chosenSites = this.diagnostic.sites;
+          
+        }
         this.user_id = this.authService.getCurrentUser().id_role;
         this.id_organisme = this.authService.getCurrentUser().id_organisme;
         forkJoin([sites$, actors$]).subscribe(([sites, acteurs]) => {
           this.instructionswithResults(sites,acteurs);
-          this.actors = this.uniqueActors;
+          this.setActors(this.diagnostic);
         });
       }
     });
     
+  }
+
+  setActors(diag:Diagnostic){
+    const remappedActeurs = (diag.acteurs || []).map(act =>
+      this.uniqueActors.find(a => a.id_acteur === act.id_acteur) || act
+    );
+    console.log(remappedActeurs);
+    this.formGroup.patchValue({
+      id_diagnostic: diag.id_diagnostic,
+      nom: diag.nom,
+      sites: this.chosenSites,
+      acteurs: remappedActeurs,
+    });
+
+    const selectedIds = new Set(remappedActeurs.map(a => a.id_acteur));
+    console.log(this.uniqueActors);
+    this.uniqueActors.forEach(actor => {
+      actor.selected = selectedIds.has(actor.id_acteur);
+      console.log(actor.selected);
+    });
+    this.actors= this.uniqueActors;
+    this.actorsService.sortByNameAndSelected(this.actors);
   }
 
   checkSite(){
@@ -225,7 +232,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
    
   }
 
-  navigate(path:string,diagnostic:Diagnostic){
+  navigate= (path:string,diagnostic:Diagnostic):void =>{
     diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
     localStorage.setItem("previousPage",this.router.url);
     this.siteService.navigateAndReload(path,diagnostic);
@@ -243,20 +250,42 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       this.formGroup.get("id_organisme")?.setValue(this.id_organisme);
       this.diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
       this.diagnosticSubscription = this.diagnosticsService.add(this.diagnostic).subscribe(diagnostic=>{
-        this.siteService.navigateAndReload('/diagnostic-visualisation/'+diagnostic.id_diagnostic,diagnostic);
+        this.getConfirmation("Ce diagnostic vient d'être créé dans la base de données et contient ces informations : ",diagnostic);
       })
     }else{
       this.formGroup.get("modified_by")?.setValue(this.user_id);
       this.diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
       this.diagnosticSubscription = this.diagnosticsService.update(this.diagnostic).subscribe(diagnostic=>{
-        this.siteService.navigateAndReload('/diagnostic/'+diagnostic.id_diagnostic,diagnostic);
+        this.getConfirmation("Ce diagnostic vient d'être modifié dans la base de données et contient ces informations :",diagnostic);
       })
     }
+  }
+
+  getConfirmation(message:string,diag:Diagnostic){
+      this.previousPage = localStorage.getItem("previousPage")!;
+      this.diagnostic=diag;
+      localStorage.setItem("diagnostic",JSON.stringify(this.diagnostic));
+     
+      if(diag.id_diagnostic > 0){
+       
+        this.dialog.open(AlerteDiagnosticComponent, {
+          data: {
+            title: this.titleDiagnostic,
+            message: message,
+            labels: this.labels,
+            diagnostic:this.diagnostic,
+            previousPage:this.previousPage
+          }
+        });
+      }
+      
   }
 
   ngOnDestroy(): void {
     this.routeSubscription?.unsubscribe();
     this.diagnosticSubscription?.unsubscribe();
   }
+
+
 
 }

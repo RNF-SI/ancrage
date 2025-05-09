@@ -20,6 +20,7 @@ import { ChoixActeursComponent } from './components/parts/choix-acteurs/choix-ac
 import { SiteLsComponent } from './components/site-ls/site-ls.component';
 import { DiagnosticComponent } from './components/diagnostic/diagnostic.component';
 import { DiagnosticVisualisationComponent } from './diagnostic-visualisation/diagnostic-visualisation.component';
+import { ActeurComponent } from './components/acteur/acteur.component';
 
 const routes: Routes = [ { 
   path: '', 
@@ -96,6 +97,16 @@ const routes: Routes = [ {
     {
       path: 'diagnostic-visualisation/:id_diagnostic',
       component: DiagnosticVisualisationComponent,
+      canActivate: [AuthGuardService]
+    },
+    {
+      path: 'acteur',
+      component: ActeurComponent,
+      canActivate: [AuthGuardService]
+    },
+    {
+      path: 'acteur/:id_acteur',
+      component: ActeurComponent,
       canActivate: [AuthGuardService]
     }
   ]},

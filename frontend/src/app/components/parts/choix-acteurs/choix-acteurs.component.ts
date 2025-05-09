@@ -15,7 +15,7 @@ import { Nomenclature } from '@app/models/nomenclature.model';
 import { MatListModule } from '@angular/material/list';
 import { ActeurService } from '@app/services/acteur.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { AlerteShowActorDetailsComponent } from '../alerte-show-actor-details/alerte-show-actor-details.component';
+import { AlerteShowActorDetailsComponent } from '../../alertes/alerte-show-actor-details/alerte-show-actor-details.component';
 import { MatCardModule } from '@angular/material/card';
 import { Labels } from '@app/utils/labels';
 
@@ -37,7 +37,6 @@ export class ChoixActeursComponent implements OnInit {
   @Input() uniqueCategories: Nomenclature[] = [];
   displayedColumns: string[] = ['identity', 'categories','state', 'structure','other_infos','choice',];
   btnToDiagnostic = "Résumé diagnostic";
-  private acteurService = inject(ActeurService);
   @Input() selectedDepartment: Departement = new Departement();
   @Input() selectedCategory: Nomenclature = new Nomenclature();
   @Input() selectedDiagnostic: Diagnostic = new Diagnostic();
@@ -45,6 +44,7 @@ export class ChoixActeursComponent implements OnInit {
   @Input() actorsOriginal: Acteur[]=[];
   @Input() formGroup!:FormGroup;
   @Input() hideFilters:boolean = false;
+  @Input() navigate!: (path:string,diagnostic:Diagnostic)=>void;
   reinitialisation = "Réinitialiser"
   btnToChooseLabel: string = "choisir";
   btnNewActorLabel = "Nouvel acteur";

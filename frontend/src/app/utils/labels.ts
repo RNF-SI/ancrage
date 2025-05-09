@@ -3,6 +3,7 @@ export class Labels {
     housingLabel= "Habitats";
     statusLabel="Statut";
     nameLabel= "Nom";
+    firstNameLabel="Prénom";
     latitudeLabel= "Latitude";
     longitudeLabel= "Longitude";
     btnRecordLabel= "Enregistrer";
@@ -26,4 +27,10 @@ export class Labels {
     datePublicationReport="Date de publication du rapport";
     investigatorLabel="Enquêteur / Enquêtrice";
     modify="Modifier";
+    modifyActor="Modifier un acteur";
+    createActor="Créer un acteur";
+    economicActor="Acteur économique";
+    chooseProfile = "Choisir un profil";
+    chooseCategories = "Choisir les catégories";
+    chosenActors = "Acteurs impliqués";
 }

@@ -36,6 +36,7 @@ class CommuneSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Commune
         load_instance = True
+        exclude= ('geom','code_epci','insee_arr','insee_can','insee_reg','population','statut')
     def get_geom(self, obj):
         # Retourne un GeoJSON à partir de la géométrie PostGIS
         return db.session.scalar(obj.geom.ST_AsGeoJSON()) if obj.geom else None

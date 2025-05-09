@@ -29,10 +29,15 @@ export class AlerteSiteComponent {
   ) {}
   
   private siteService = inject(SiteService);
-
+  private router = inject(Router);
 
   navigate(path:string,diagnostic:Diagnostic){
+    
     this.siteService.navigateAndReload(path,diagnostic)
+  }
+
+  close(){
+    this.dialogRef.close();
   }
   
 } 

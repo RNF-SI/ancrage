@@ -12,7 +12,7 @@ export class Acteur implements IActeur{
     mail:string="mail@mail.com";
     commune:Commune = new Commune();
     profil?:Nomenclature;
-    isActeurEconomique:boolean=false;
+    is_acteur_economique:boolean=false;
     structure="";
     statut_entretien?: Nomenclature;
     diagnostic?:Diagnostic;
@@ -36,7 +36,7 @@ export class Acteur implements IActeur{
         copy.statut_entretien = this.statut_entretien?.copy();
         copy.profil = this.profil?.copy();
         copy.commune = this.commune?.copy();
-        copy.isActeurEconomique = this.isActeurEconomique;
+        copy.is_acteur_economique = this.is_acteur_economique;
         copy.structure = this.structure;
         copy.diagnostic = this.diagnostic?.copy();
         copy.categories = this.categories?.map(c => c.copy()) || [];
@@ -61,9 +61,9 @@ export class Acteur implements IActeur{
         acteur.statut_entretien = Nomenclature.fromJson(data.statut_entretien);
         acteur.profil = Nomenclature.fromJson(data.profil)
         acteur.commune = Commune.fromJson(data.commune!);
-        acteur.isActeurEconomique = data.isActeurEconomique;
+        acteur.is_acteur_economique = data.is_acteur_economique;
         acteur.structure = data.structure;
-        acteur.diagnostic = Diagnostic.fromJson(data.diagnostic!);
+        acteur.diagnostic = data.diagnostic ? Diagnostic.fromJson(data.diagnostic!) : undefined;
         acteur.categories = (data.categories || []).map(c => Nomenclature.fromJson(c));
         acteur.created_at = data.created_at ? new Date() : undefined;
         acteur.modified_at = data.modified_at ? new Date() : undefined;

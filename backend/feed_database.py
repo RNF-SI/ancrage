@@ -161,7 +161,6 @@ with app.app_context():
         "Fédérateur",
         "Territorial désintéressé",
         "Territorial intéressé",
-        "Territorial désintéressé",
         "Contraint"
     ]
 

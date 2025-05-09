@@ -11,7 +11,7 @@ export interface IActeur {
     mail:string;
     commune:Commune;
     profil?:Nomenclature;
-    isActeurEconomique:boolean;
+    is_acteur_economique:boolean;
     structure:string;
     diagnostic?:Diagnostic;
     categories?: Nomenclature[];
