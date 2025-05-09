@@ -113,37 +113,43 @@ def changeValuesDiagnostic(diagnostic,data):
         
         new_actors_ids = {a['id_acteur'] for a in data['acteurs']}
         acteurs_orig = Acteur.query.filter(Acteur.id_acteur.in_(new_actors_ids)).all()
-
+        
         deleteActors(diagnostic.id_diagnostic)
 
         copied_acteurs = []
-        for a in acteurs_orig:
-            new_acteur = Acteur(
-                nom=a.nom,
-                prenom=a.prenom,
-                fonction=a.fonction,
-                telephone=a.telephone,
-                mail=a.mail,
-                commune_id=a.commune_id,
-                is_acteur_economique=a.is_acteur_economique,
-                structure=a.structure,
-                created_at=date_time,
-                created_by=data['created_by'],
-                diagnostic_id=diagnostic.id_diagnostic,
-                categories=a.categories,
-                questions=a.questions,
-                statut_entretien=a.statut_entretien,
-                acteur_origine_id = a.id_acteur
-            )
-            db.session.add(new_acteur)
-            copied_acteurs.append(new_acteur)
+        with db.session.no_autoflush:
+            for a in acteurs_orig:
+                new_acteur = Acteur(
+                    nom=a.nom,
+                    prenom=a.prenom,
+                    fonction=a.fonction,
+                    telephone=a.telephone,
+                    mail=a.mail,
+                    commune_id=a.commune_id,
+                    is_acteur_economique=a.is_acteur_economique,
+                    structure=a.structure,
+                    created_at=date_time,
+                    created_by=data['created_by'],
+                    diagnostic_id=diagnostic.id_diagnostic,
+                    categories=a.categories,
+                    questions=a.questions,
+                    statut_entretien=a.statut_entretien,
+                    acteur_origine_id = a.acteur_origine_id if a.acteur_origine_id else a.id_acteur,
+                    is_copy=True
+                )
+                db.session.add(new_acteur)
+                copied_acteurs.append(new_acteur)
 
-        diagnostic.acteurs = copied_acteurs
+            diagnostic.acteurs = copied_acteurs
 
     return diagnostic
 
 def deleteActors(diagnostic_id):
-     Acteur.query.filter(Acteur.diagnostic_id== diagnostic_id).delete()
+     
+    Acteur.query.filter(
+        Acteur.diagnostic_id == diagnostic_id,
+        Acteur.is_copy == True
+    ).delete()
 
 def getDiagnostic(diagnostic):
     schema = DiagnosticSchema(many=False)
