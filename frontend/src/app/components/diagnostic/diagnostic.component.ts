@@ -94,12 +94,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   ngOnInit(): void {
     this.titleDiagnostic = this.titleCreateDiag;
     this.previousPage = localStorage.getItem("previousPage")!;
-    if (localStorage.getItem("diagnostic")){
-
-      this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
-      this.chosenSites = this.diagnostic.sites;
-      
-    }
+    
    
     
     this.routeSubscription = this.route.params.subscribe((params: any) => {
@@ -123,41 +118,50 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
           const remappedSites = (diag.sites || []).map(site =>
             this.uniqueSites.find(s => s.id_site === site.id_site) || site
           );
-          
-          const remappedActeurs = (diag.acteurs || []).map(act =>
-            this.uniqueActors.find(a => a.id_acteur === act.id_acteur) || act
-          );
-
           this.chosenSites = remappedSites;
-          this.formGroup.patchValue({
-            id_diagnostic: diag.id_diagnostic,
-            nom: diag.nom,
-            sites: remappedSites,
-            acteurs: remappedActeurs,
-          });
-
-          for (let i = 0;i<this.uniqueActors.length;i++){
-            for (let j = 0;j<remappedActeurs.length;j++){
-              if (this.uniqueActors[i]==remappedActeurs[j]){
-                this.uniqueActors[i].selected = true;
-              }
-            }
-          }
           
-          this.actors= this.uniqueActors;
-          this.actorsService.sortByNameAndSelected(this.actors);
+          this.setActors(diag);
           
         });
       } else {
+        if (localStorage.getItem("diagnostic")){
+      
+          this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
+          console.log(this.diagnostic);
+          this.chosenSites = this.diagnostic.sites;
+          
+        }
         this.user_id = this.authService.getCurrentUser().id_role;
         this.id_organisme = this.authService.getCurrentUser().id_organisme;
         forkJoin([sites$, actors$]).subscribe(([sites, acteurs]) => {
           this.instructionswithResults(sites,acteurs);
-          this.actors = this.uniqueActors;
+          this.setActors(this.diagnostic);
         });
       }
     });
     
+  }
+
+  setActors(diag:Diagnostic){
+    const remappedActeurs = (diag.acteurs || []).map(act =>
+      this.uniqueActors.find(a => a.id_acteur === act.id_acteur) || act
+    );
+    console.log(remappedActeurs);
+    this.formGroup.patchValue({
+      id_diagnostic: diag.id_diagnostic,
+      nom: diag.nom,
+      sites: this.chosenSites,
+      acteurs: remappedActeurs,
+    });
+
+    const selectedIds = new Set(remappedActeurs.map(a => a.id_acteur));
+    console.log(this.uniqueActors);
+    this.uniqueActors.forEach(actor => {
+      actor.selected = selectedIds.has(actor.id_acteur);
+      console.log(actor.selected);
+    });
+    this.actors= this.uniqueActors;
+    this.actorsService.sortByNameAndSelected(this.actors);
   }
 
   checkSite(){
@@ -225,7 +229,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
    
   }
 
-  navigate(path:string,diagnostic:Diagnostic){
+  navigate= (path:string,diagnostic:Diagnostic):void =>{
     diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
     localStorage.setItem("previousPage",this.router.url);
     this.siteService.navigateAndReload(path,diagnostic);

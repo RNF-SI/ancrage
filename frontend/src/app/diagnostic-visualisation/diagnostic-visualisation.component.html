@@ -25,6 +25,7 @@
                     [actorsOriginal]="uniqueActors"
                     [formGroup]="formGroup"
                     [hideFilters]="hideFilters"
+                    [navigate]="navigate"
             ></app-choix-acteurs>
             <button mat-raised-button color="accent" type="button" (click)="navigate(previousPage,diagnostic)">{{labels.btnPreviousStepLabel}}</button>
             <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic,diagnostic)">Modifier</button>

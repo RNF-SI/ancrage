@@ -31,4 +31,5 @@ export class Labels {
     createActor="Créer un acteur";
     economicActor="Acteur économique";
     chooseProfile = "Choisir un profil";
+    chooseCategories = "Choisir les catégories";
 }

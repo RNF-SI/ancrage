@@ -17,7 +17,7 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 import { Departement } from '@app/models/departement.model';
 import { DepartementService } from '@app/services/departement.service';
 import { MatDialog } from '@angular/material/dialog';
-import { AlerteSiteComponent } from '../parts/alerte-site/alerte-site.component';
+import { AlerteSiteComponent } from '../alertes/alerte-site/alerte-site.component';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { Labels } from '@app/utils/labels';
 
@@ -74,7 +74,7 @@ export class SiteComponent implements OnInit,OnDestroy{
   previousPage="";
 
   ngOnInit(): void {
-    this.previousPage = localStorage.getItem("previousPage")!;
+    
     this.user_id = this.authService.getCurrentUser().id_role;
     console.log(this.previousPage);
     if(localStorage.getItem("diagnostic")){
@@ -145,39 +145,32 @@ export class SiteComponent implements OnInit,OnDestroy{
     if (this.site.id_site == 0){
       this.site.created_by=this.user_id;
       this.siteSubscription = this.siteService.add(this.site).subscribe(site=>{
-        this.diagnostic.sites.push(site);
-        localStorage.setItem("diagnostic",JSON.stringify(this.diagnostic));
-        this.dialog.open(AlerteSiteComponent, {
-          data: {
-            title: this.titleSite,
-            message: "Le site suivant vient d'être créé dans la base de données et a été ajouté au diagnostic :",
-            site: site,
-            labels: this.labels,
-            diagnostic:this.diagnostic,
-            previousPage:this.previousPage
-          }
-        });
+        this.getConfirmation("Le site suivant vient d'être créé dans la base de données et a été ajouté au diagnostic :",site);
       });
     }else{
       this.site.modified_by=this.user_id;
       this.siteSubscription = this.siteService.update(this.site).subscribe(site=>{
-        this.diagnostic.sites.push(site);
-        localStorage.setItem("diagnostic",JSON.stringify(this.diagnostic));
-        this.dialog.open(AlerteSiteComponent, {
-          data: {
-            title: this.titleModif,
-            message: "Le site suivant vient d'être modifié dans la base de données et a été ajouté au diagnostic :",
-            site: site,
-            labels: this.labels,
-            diagnostic:this.diagnostic,
-            previousPage:this.previousPage
-          }
-        });
+        this.getConfirmation("Le site suivant vient d'être modifié dans la base de données et a été ajouté au diagnostic :",site);
       });
     }
    
   }
 
+  getConfirmation(message:string,site:Site){
+    this.diagnostic.sites.push(site);
+    this.previousPage = localStorage.getItem("previousPage")!;
+    localStorage.setItem("diagnostic",JSON.stringify(this.diagnostic));
+    this.dialog.open(AlerteSiteComponent, {
+      data: {
+        title: this.titleSite,
+        message: message,
+        site: site,
+        labels: this.labels,
+        diagnostic:this.diagnostic,
+        previousPage:this.previousPage
+      }
+    });
+  }
   navigate(path:string,diagnostic:Diagnostic){
     this.siteService.navigateAndReload(path,diagnostic);
   }

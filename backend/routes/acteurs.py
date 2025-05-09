@@ -84,6 +84,19 @@ def changeValuesActeur(acteur,data):
     acteur.structure = data['structure'] 
     acteur.profil_cognitif_id = data['profil']['id_nomenclature']
     acteur.is_acteur_economique = data['is_acteur_economique']
+    new_cat_ids = {c['id_nomenclature'] for c in data['categories']}
+    current_cats = {c.id_nomenclature for c in acteur.categories}
+
+    # Supprimer les départements en trop
+    for cat in acteur.categories[:]:
+        if cat.id_nomenclature not in new_cat_ids:
+            acteur.categories.remove(cat)
+
+    # Ajouter les nouveaux départements
+    for cat_id in new_cat_ids - current_cats:
+        join = Nomenclature.query.filter_by(id_nomenclature=cat_id).first()
+        acteur.categories.append(join)
+
     return acteur
 
 def getActeur(acteur):

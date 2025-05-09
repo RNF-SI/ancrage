@@ -72,7 +72,7 @@ export class SiteService {
 		if (site){
 			diagnostic.sites.push(site);
 		}
-		
+		localStorage.setItem("previousPage",this.router.url);
 		localStorage.setItem("diagnostic",JSON.stringify(diagnostic));
 		console.log(localStorage.getItem("diagnostic"));
 		this.router.navigate([path]).then(() => {

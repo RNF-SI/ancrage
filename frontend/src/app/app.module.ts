@@ -32,15 +32,16 @@ import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { SitesDiagnosticsViewComponent } from './components/parts/sites-diagnostics-view/sites-diagnostics-view.component';
 import { MesDiagnosticsComponent } from './components/mes-diagnostics/mes-diagnostics.component';
 import { SiteComponent } from './components/site/site.component';
-import { AlerteSiteComponent } from './components/parts/alerte-site/alerte-site.component';
+import { AlerteSiteComponent } from './components/alertes/alerte-site/alerte-site.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ChoixActeursComponent } from './components/parts/choix-acteurs/choix-acteurs.component';
 import { SiteLsComponent } from './components/site-ls/site-ls.component';
-import { AlerteVisualisationSiteComponent } from './components/parts/alerte-visualisation-site/alerte-visualisation-site.component';
+import { AlerteVisualisationSiteComponent } from './components/alertes/alerte-visualisation-site/alerte-visualisation-site.component';
 import { DiagnosticComponent } from './components/diagnostic/diagnostic.component';
-import { AlerteShowActorDetailsComponent } from './components/parts/alerte-show-actor-details/alerte-show-actor-details.component';
+import { AlerteShowActorDetailsComponent } from './components/alertes/alerte-show-actor-details/alerte-show-actor-details.component';
 import { DiagnosticVisualisationComponent } from './diagnostic-visualisation/diagnostic-visualisation.component';
 import { ActeurComponent } from './components/acteur/acteur.component';
+import { AlerteActeurComponent } from './components/alertes/alerte-acteur/alerte-acteur.component';
 
 
 @NgModule({
@@ -52,7 +53,6 @@ import { ActeurComponent } from './components/acteur/acteur.component';
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
-    
     
   ],
   imports: [
@@ -81,6 +81,7 @@ import { ActeurComponent } from './components/acteur/acteur.component';
     AlerteShowActorDetailsComponent,
     DiagnosticVisualisationComponent,
     ActeurComponent,
+    AlerteActeurComponent, 
     ToastrModule.forRoot({
       timeOut: 15000
     }),

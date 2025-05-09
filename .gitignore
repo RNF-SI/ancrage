@@ -3,7 +3,6 @@
 venv/
 ENV/
 
-frontend/src/conf/app.config.ts
 infographies/info-1/images/Trac�-292-p-500.png
 infographies/info-1/images/*
 infographies/info-1/*

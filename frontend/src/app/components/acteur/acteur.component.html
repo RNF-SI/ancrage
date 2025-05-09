@@ -16,6 +16,20 @@
                     <input matInput placeholder="Entrez un prénom" formControlName="prenom" required >
                     <mat-error *ngIf="formGroup.get('prenom')?.hasError('required')">Le prénom est requis.</mat-error>
                 </mat-form-field>
+                <mat-form-field appearance="fill">
+                    <mat-label>{{ labels.chooseCategories }}</mat-label>
+                    <mat-select formControlName="categories" multiple>
+                        <mat-option *ngFor="let cat of uniqueCategories" [value]="cat">{{ cat.libelle }}</mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="formGroup.get('categories')?.hasError('required')">Au moins une catégorie est requise.</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="fill">
+                    <mat-label>{{ labels.chooseProfile }}</mat-label>
+                    <mat-select formControlName="profil">
+                        <mat-option *ngFor="let pfl of uniqueProfiles" [value]="pfl">{{ pfl.libelle }}</mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="formGroup.get('profil')?.hasError('required')">Le profil est requise.</mat-error>
+                </mat-form-field>
                 <mat-form-field appearance="fill" id="fieldName" >
                     <mat-label>{{labels.status}}</mat-label>
                     <input matInput placeholder="Entrez un statut" formControlName="fonction" required >
@@ -24,22 +38,19 @@
                 <mat-form-field appearance="fill" id="fieldName" >
                     <mat-label>{{labels.telephone}}</mat-label>
                     <input matInput placeholder="Entrez un numéro de téléphone" formControlName="telephone"  >
+                    <mat-error *ngIf="formGroup.get('telephone')?.hasError('pattern')">Le format est incorrect.</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill" id="fieldName" >
                     <mat-label>{{labels.mail}}</mat-label>
                     <input matInput placeholder="Entrez un mail" formControlName="mail" >
-                </mat-form-field>
-                <mat-form-field appearance="fill">
-                    <mat-label>{{ labels.chooseProfile }}</mat-label>
-                    <mat-select formControlName="profil">
-                        <mat-option *ngFor="let pfl of uniqueProfiles" [value]="pfl">{{ pfl.libelle }}</mat-option>
-                    </mat-select>
+                    <mat-error *ngIf="formGroup.get('mail')?.hasError('pattern')">Le format est incorrect.</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
                     <mat-label>{{ labels.economicActor }}</mat-label>
                     <mat-select formControlName="is_acteur_economique_txt">
                         <mat-option *ngFor="let opt of options" [value]="opt">{{ opt }}</mat-option>
                     </mat-select>
+                    <mat-error *ngIf="formGroup.get('is_acteur_economique_txt')?.hasError('required')">La structure est requise.</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill" id="fieldName" >
                     <mat-label>{{labels.structure}}</mat-label>
@@ -59,7 +70,8 @@
                     </mat-option>
                     </mat-autocomplete>
                 </mat-form-field>
-                <button mat-raised-button id="btnNewSite"  type="submit"  color="warn">{{labels.btnRecordLabel}}</button>
+                <button mat-raised-button color="warn"  (click)="navigate(previousPage,diagnostic)" >{{labels.btnPreviousStepLabel}}</button>
+                <button mat-raised-button id="btnNewSite"  type="submit"  color="warn" [disabled]="formGroup.invalid">{{labels.btnRecordLabel}}</button>
             </form>
 
         </div>

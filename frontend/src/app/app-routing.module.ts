@@ -103,6 +103,11 @@ const routes: Routes = [ {
       path: 'acteur',
       component: ActeurComponent,
       canActivate: [AuthGuardService]
+    },
+    {
+      path: 'acteur/:id_acteur',
+      component: ActeurComponent,
+      canActivate: [AuthGuardService]
     }
   ]},
    

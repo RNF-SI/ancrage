@@ -16,7 +16,7 @@ import { MatTableDataSource } from "@angular/material/table";
 import { AuthService } from "@app/home-rnf/services/auth-service.service";
 import { FormsModule } from "@angular/forms";
 import { MatInputModule } from "@angular/material/input";
-import { AlerteVisualisationSiteComponent } from "../alerte-visualisation-site/alerte-visualisation-site.component";
+import { AlerteVisualisationSiteComponent } from "../../alertes/alerte-visualisation-site/alerte-visualisation-site.component";
 import { MatDialog } from "@angular/material/dialog";
 import { Labels } from "@app/utils/labels";
 import { MatExpansionModule } from '@angular/material/expansion';
