@@ -112,7 +112,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
                 telephone: this.actor.telephone,
                 mail: this.actor.mail,
                 commune: this.actor.commune,
-                profil: this.actor.profil,
+                profil: this.actor.profil?.id_nomenclature! > 0 ? this.actor.profil : null,
                 categories: this.actor.categories,
                 is_acteur_economique: this.actor.is_acteur_economique,
                 structure: this.actor.structure
@@ -156,7 +156,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
 
   recordActor(event: Event) {
     event.preventDefault();
-   
+    console.log(this.formGroup.get('profil')?.value);
     if (this.formGroup.get('is_acteur_economique_txt')?.value == 'oui'){
       this.formGroup.get('is_acteur_economique')!.setValue(true);
     }else if (this.formGroup.get('is_acteur_economique_txt')?.value == 'non'){
@@ -164,22 +164,25 @@ export class ActeurComponent implements OnInit,OnDestroy{
     }
     if (this.id_actor == undefined){
       this.formGroup.get('created_by')!.setValue(this.user_id);
-      this.actor = Object.assign(new Acteur(),this.formGroup.value);
-
-      this.actorSubscription = this.actorService.add(this.actor).subscribe(
-        actor =>{
-          this.getConfirmation("L'acteur suivant a été créé dans la base de données et a été ajouté au diagnostic : ",actor);
-        }
-      )
+      if (!this.formGroup.invalid){
+        this.actor = Object.assign(new Acteur(),this.formGroup.value);
+        this.actorSubscription = this.actorService.add(this.actor).subscribe(
+          actor =>{
+            this.getConfirmation("L'acteur suivant a été créé dans la base de données et a été ajouté au diagnostic : ",actor);
+          }
+        )
+      }
+      
     }else{
       this.formGroup.get('modified_by')!.setValue(this.user_id);
       this.actor = Object.assign(new Acteur(),this.formGroup.value);
-
-      this.actorSubscription = this.actorService.update(this.actor).subscribe(
-        actor =>{
-          this.getConfirmation("L'acteur suivant a été modifié dans la base de données et a été ajouté au diagnostic : ",actor);
-        }
-      )
+      if (!this.formGroup.invalid){
+        this.actorSubscription = this.actorService.update(this.actor).subscribe(
+          actor =>{
+            this.getConfirmation("L'acteur suivant a été modifié dans la base de données et a été ajouté au diagnostic : ",actor);
+          }
+        )
+      }
     }
     
   }
