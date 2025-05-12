@@ -137,6 +137,8 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
         this.user_id = this.authService.getCurrentUser().id_role;
         this.id_organisme = this.authService.getCurrentUser().id_organisme;
         forkJoin([sites$, actors$]).subscribe(([sites, acteurs]) => {
+         
+          
           this.instructionswithResults(sites,acteurs);
           this.setActors(this.diagnostic);
         });
@@ -207,6 +209,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   }
 
   getDiagnostics(sites:any){
+    console.log(sites);
     if (sites.length > 0){
       let nom ="";
       
@@ -215,7 +218,9 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
         
       }
       nom = "Diagnostic - "+ nom + "- " + new Date().getFullYear();
+      this.diagnostic.nom = nom;
       this.formGroup.get('nom')?.setValue(nom);
+      console.log(this.formGroup.get('nom')?.value);
       let array:number[]=[];
       for (let i = 0;i<sites.length;i++){
         array.push(sites[i].id_site);

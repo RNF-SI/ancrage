@@ -5,6 +5,9 @@
         </div>
         <div class="col-6">
             <h2>{{title}}</h2>
+            <div class="loading-spinner" *ngIf="isLoading">
+                <mat-spinner diameter="50" strokeWidth="5" color="accent"></mat-spinner>
+            </div>
             <form [formGroup] = "formGroup" (submit)="recordActor($event)">
                 <mat-form-field appearance="fill" id="fieldName" >
                     <mat-label>{{labels.nameLabel}}</mat-label>
@@ -38,7 +41,7 @@
                 <mat-form-field appearance="fill" id="fieldName" >
                     <mat-label>{{labels.telephone}}</mat-label>
                     <input matInput placeholder="Entrez un numéro de téléphone" formControlName="telephone"  >
-                    <mat-error *ngIf="formGroup.get('telephone')?.hasError('pattern')">Le format est incorrect.</mat-error>
+                    <mat-error *ngIf="formGroup.get('telephone')?.hasError('pattern')">Le format doit être : 0X XX XX XX XX.</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill" id="fieldName" >
                     <mat-label>{{labels.mail}}</mat-label>
@@ -70,7 +73,7 @@
                     </mat-option>
                     </mat-autocomplete>
                 </mat-form-field>
-                <button mat-raised-button color="warn"  (click)="navigate(previousPage,diagnostic)" >{{labels.btnPreviousStepLabel}}</button>
+                <button mat-raised-button color="accent"  (click)="navigate(previousPage,diagnostic)" >{{labels.btnPreviousStepLabel}}</button>
                 <button mat-raised-button id="btnNewSite"  type="submit"  color="warn" [disabled]="formGroup.invalid">{{labels.btnRecordLabel}}</button>
             </form>
 
