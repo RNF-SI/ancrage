@@ -3,15 +3,15 @@ import { inject, Injectable } from '@angular/core';
 import { IDiagnostic } from '@app/interfaces/diagnostic.interface';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { Observable, map } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DiagnosticService {
 
-    private GET_ALL_URL = 'http://localhost:5000/diagnostics';
-
-    private BASE_URL = 'http://localhost:5000/diagnostic';
+    private GET_ALL_URL = environment.flask_server+ 'diagnostics';
+    private BASE_URL = environment.flask_server+ 'diagnostic';
     private http = inject(HttpClient);
     
   

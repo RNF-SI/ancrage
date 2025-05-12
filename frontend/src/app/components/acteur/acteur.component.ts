@@ -20,13 +20,14 @@ import { debounceTime, forkJoin,  Subscription } from 'rxjs';
 import { AlerteActeurComponent } from '../alertes/alerte-acteur/alerte-acteur.component';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { SiteService } from '@app/services/sites.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-acteur',
   templateUrl: './acteur.component.html',
   styleUrls: ['./acteur.component.css'],
   standalone:true,
-  imports:[CommonModule,MatFormFieldModule,ReactiveFormsModule,MatSelectModule,FormsModule,MatInputModule,MatAutocompleteModule,MatButtonModule]
+  imports:[CommonModule,MatFormFieldModule,ReactiveFormsModule,MatSelectModule,FormsModule,MatInputModule,MatAutocompleteModule,MatButtonModule,MatProgressSpinnerModule]
 })
 export class ActeurComponent implements OnInit,OnDestroy{
   
@@ -70,11 +71,12 @@ export class ActeurComponent implements OnInit,OnDestroy{
   title = "";
   diagnostic:Diagnostic = new Diagnostic();
   previousPage = "";
+  isLoading=false;
   
 
   ngOnInit(): void {
     this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
-    
+    this.isLoading = true;
     this.routeSubscription = this.route.params.subscribe((params: any) => {
           this.id_actor = params['id_acteur'];  
           const communes$ = this.communeService.getAll();
@@ -114,7 +116,8 @@ export class ActeurComponent implements OnInit,OnDestroy{
                 categories: this.actor.categories,
                 is_acteur_economique: this.actor.is_acteur_economique,
                 structure: this.actor.structure
-              })
+              });
+              this.isLoading = false; 
             });
           } else {
             
@@ -122,7 +125,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
             forkJoin([communes$, profils$,categories$]).subscribe(([communes, profils,categories]) => {
               
               this.instructionsWithResults(communes,profils,categories);
-              
+              this.isLoading = false; 
             });
           }
         });
