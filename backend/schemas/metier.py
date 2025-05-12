@@ -118,6 +118,7 @@ class QuestionSchema(SQLAlchemyAutoSchema):
 
     acteurs = fields.Nested(lambda: ActeurSchema, exclude=("questions",))
     reponses = fields.Nested(lambda: ReponseSchema, exclude=("question",))
+    theme = fields.Nested(lambda: NomenclatureSchema, exclude=("questions",))
 
 class ActeurLiteSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -153,3 +154,4 @@ class NomenclatureSchema(SQLAlchemyAutoSchema):
     acteurs_c = fields.Nested(lambda: ActeurSchema, many=True, exclude=("categories", "diagnostic",))
     acteurs_p = fields.Nested(lambda: ActeurSchema, many=True, exclude=("categories", "diagnostic",))
     sites = fields.Nested(lambda: SiteSchema, many=True, exclude=("habitats",))
+    questions = fields.Nested(lambda: QuestionSchema, many=True, exclude=("theme",))
