@@ -3,100 +3,74 @@ from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
 from routes import bp,date_time
-from sqlalchemy.orm import joinedload
-
-@bp.route('/question/<id_question>', methods=['GET','PUT','DELETE'])
-def questionMethods(id_question):
-    question = Question.query.filter_by(id_question=id_question).first()
+from routes.acteurs import getActeur
     
-    print(question)
-    if request.method == 'GET':
+@bp.route('/reponses/objets', methods=['POST'])
+def enregistrer_reponses_depuis_objets():
+    data = request.get_json()
 
-       return getQuestion(question)
+    if not isinstance(data, list):
+        return {"message": "Format invalide"}, 400
+
+    enregistrer_reponses_acteur_depuis_objets(data)
+    acteur_id = data[0].get('acteur', {}).get('id_acteur')
+    acteur = Acteur.query.filter_by(id_acteur=acteur_id).first()
     
-    
-    elif request.method == 'PUT':
-        data = request.get_json()
-        question = changeValuesQuestion(question,data)
+    return getActeur(acteur)
 
-        db.session.commit()
-        return getQuestion(question)
+def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
+    """
+    Enregistre ou met à jour les réponses d’un acteur.
+    :param reponses_objets: Liste d’objets Reponse complets avec : acteur, question, valeur_reponse
+    """
+    if not reponses_objets:
+        return
 
-    elif request.method == 'DELETE':
+    # Récupération de l’acteur à partir du premier objet
+    try:
+        acteur_id = reponses_objets[0]['acteur']['id_acteur']
+    except (KeyError, IndexError, TypeError):
+        print("[ERREUR] Impossible d'extraire l'identifiant de l'acteur.")
+        return
 
-        db.session.delete(question)
-        db.session.commit()
-        return {"success": "Suppression terminée"}
-    
-@bp.route('/question',methods=['POST'])
-def postQuestion():
-    if request.method == 'POST': 
-        
-        data = request.get_json()
-        print(data)
-        question=Question()
-        question = changeValuesQuestion(question,data)
-        db.session.add(question)
-        db.session.commit()
-        return getQuestion(question)
+    # Liste des questions soumises dans cette mise à jour
+    questions_ids_envoyees = set()
 
-@bp.route('/questions',methods=['GET'])
-def getAllQuestions():
-    if request.method == 'GET': 
-        
-         questions = (
-        db.session.query(Question)
-        .options(
-            joinedload(Question.theme),  # charge le thème (Nomenclature)
-            joinedload(Question.reponses).joinedload(Reponse.valeur_reponse)  # charge les réponses + nomenclatures
-        )
-        .all()
-    )
+    for item in reponses_objets:
+        try:
+            question_id = item['question']['id_question']
+            valeur_reponse_id = item['valeur_reponse']['id_nomenclature']
+        except (KeyError, TypeError):
+            continue  # Entrée mal formée
 
-    result = []
+        if not valeur_reponse_id or valeur_reponse_id <= 0:
+            continue  # Réponse vide ou invalide
 
-    for q in questions:
-        reponses_possibles = []
-        for r in q.reponses:
-            if r.valeur_reponse:
-                reponses_possibles.append({
-                    "libelle": r.valeur_reponse.libelle,
-                    "value": r.valeur_reponse.value
-                })
+        questions_ids_envoyees.add(question_id)
 
-        result.append({
-            "id_question": q.id_question,
-            "libelle": q.libelle,
-            "theme": {
-                "id": q.theme.id_nomenclature,
-                "libelle": q.theme.libelle,
-                "mnemonique": q.theme.mnemonique
-            } if q.theme else None,
-            "reponses_possibles": sorted(reponses_possibles, key=lambda x: x["value"])
-        })
+        # Cherche la réponse existante
+        reponse = Reponse.query.filter_by(
+            acteur_id=acteur_id,
+            question_id=question_id
+        ).first()
 
-    return jsonify(result)
-    
-@bp.route('/questions/<mnemonique>',methods=['GET'])
-def getAllQuestionsByUSer(mnemonique):
-    if request.method == 'GET': 
-        
-        questions = Question.query.filter_by(mnemonique=mnemonique).all()
-        schema = QuestionSchema(many=True)
-        questionsObj = schema.dump(questions)
-        return jsonify(questionsObj)
-    
-def changeValuesQuestion(question,data):
-    
-    question.libelle = data['nom']
-    question.mnemonique = data['position_x']
-    
-    return question
+        if reponse:
+            # Mise à jour
+            reponse.valeur_reponse_id = valeur_reponse_id
+        else:
+            # Création
+            nouvelle_reponse = Reponse(
+                acteur_id=acteur_id,
+                question_id=question_id,
+                valeur_reponse_id=valeur_reponse_id
+            )
+            db.session.add(nouvelle_reponse)
 
-def getQuestion(question):
-    schema = QuestionSchema(many=False)
-    questionObj = schema.dump(question)
-    return jsonify(questionObj)
+    # Optionnel : suppression des anciennes réponses non envoyées
+    # Tu peux supprimer ce bloc si tu ne veux pas supprimer
+    reponses_existantes = Reponse.query.filter_by(acteur_id=acteur_id).all()
+    for r in reponses_existantes:
+        if r.question_id not in questions_ids_envoyees:
+            db.session.delete(r)
 
-
-    
+    db.session.commit()

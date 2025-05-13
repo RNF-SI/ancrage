@@ -5,19 +5,6 @@ from sqlalchemy.orm import load_only
 app = create_app()
 
 with app.app_context():
- # TRUNCATE ciblé sans toucher à Region, Departement, Commune
-    tables_to_truncate = [
-        "t_nomenclatures",
-        "t_questions",
-        "t_reponses",
-        "t_mots_cles",
-        "cor_reponses_mots_cles",
-        "cor_question_acteur"
-    ]
-
-    for table in tables_to_truncate:
-        db.session.execute(f'TRUNCATE {table} RESTART IDENTITY CASCADE')
-    db.session.commit()
 
     THEME_MNEMONIQUE = "thème"
     THEME_LIBELLE = "Connaissance"
@@ -46,6 +33,17 @@ with app.app_context():
     ]
 
     score_texts = [
+        ["Protection // Gestion // Sensibilisation",
+         "Surveillance et Police // Suivis, études et inventaires, recherche // Gestion hab-esp, travaux d’entretien et d’équipement // Pédagogie, information, animation, édition // Suivi administratif et financier.",
+         "Nombre cité d'animation par rapport à la programmation du site",
+         "Nom exact du/des organisme(s) gestionnaire(s) de la RN",
+         "Tracé du périmètre",
+         "Nombre de règles citées par rapport à la réglementation en place",
+         "Espèces emblématiques du site citées",
+         "Nombre de documents connus par rapport à la documentation en place",
+         "Nom(s) cité(s)",
+         "Niveau d'accessibilité "
+        ],
         ["Faux ou non réponse", "Faux ou non réponse", "Non réponse", "Faux ou non réponse", "Méconnaissance",
          "Non connue", "Faux ou Non connu", "Ne connaît aucun des documents qui lui sont destinés",
          "FAUX ou non réponse", "Non"],
@@ -88,7 +86,7 @@ with app.app_context():
         db.session.add(question)
         db.session.flush()
 
-        for score in range(1, 6):
+        for score in range(2, 7):
             text = score_texts[score - 1][col_idx].strip()
             if text.lower() == 'x' or not text:
                 continue

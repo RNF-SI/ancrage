@@ -1,5 +1,5 @@
 from app import create_app
-from models.models import db,Acteur, Commune, Departement, Diagnostic, MotCle, Nomenclature, Region, Reponse, Site,site_departement,site_diagnostic,site_habitat,acteur_categorie,acteur_profil,acteur_question
+from models.models import db,Acteur, Commune, Departement, Diagnostic, MotCle, Nomenclature, Region, Reponse, Site,site_departement,site_diagnostic,site_habitat,acteur_categorie,acteur_profil
 from datetime import datetime, timedelta
 import random
 import string
@@ -25,8 +25,7 @@ with app.app_context():
         "cor_site_departement",
         "cor_sites_diagnostics",
         "cor_site_habitat",
-        "cor_categorie_acteur",
-        "cor_question_acteur"
+        "cor_categorie_acteur"
     ]
 
     for table in tables_to_truncate:

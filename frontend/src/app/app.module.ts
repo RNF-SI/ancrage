@@ -39,10 +39,12 @@ import { SiteLsComponent } from './components/site-ls/site-ls.component';
 import { AlerteVisualisationSiteComponent } from './components/alertes/alerte-visualisation-site/alerte-visualisation-site.component';
 import { DiagnosticComponent } from './components/diagnostic/diagnostic.component';
 import { AlerteShowActorDetailsComponent } from './components/alertes/alerte-show-actor-details/alerte-show-actor-details.component';
-import { DiagnosticVisualisationComponent } from './diagnostic-visualisation/diagnostic-visualisation.component';
 import { ActeurComponent } from './components/acteur/acteur.component';
 import { AlerteActeurComponent } from './components/alertes/alerte-acteur/alerte-acteur.component';
 import { AlerteDiagnosticComponent } from './components/alertes/alerte-diagnostic/alerte-diagnostic.component';
+import { EntretienComponent } from './components/entretien/entretien.component';
+import { DiagnosticVisualisationComponent } from './components/diagnostic-visualisation/diagnostic-visualisation.component';
+import { AlerteEntretienComponent } from './components/alertes/alerte-entretien/alerte-entretien.component';
 
 
 @NgModule({
@@ -54,7 +56,7 @@ import { AlerteDiagnosticComponent } from './components/alertes/alerte-diagnosti
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
-    
+    AlerteEntretienComponent,
     
   ],
   imports: [
@@ -85,6 +87,7 @@ import { AlerteDiagnosticComponent } from './components/alertes/alerte-diagnosti
     ActeurComponent,
     AlerteActeurComponent, 
     AlerteDiagnosticComponent,
+    EntretienComponent,
     ToastrModule.forRoot({
       timeOut: 15000
     }),

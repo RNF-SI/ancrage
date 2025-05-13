@@ -106,7 +106,7 @@ class ActeurSchema(SQLAlchemyAutoSchema):
     diagnostic = fields.Nested(lambda: DiagnosticSchema)
     commune = fields.Nested(lambda: CommuneSchema)
     categories = fields.Nested(lambda: NomenclatureSchema, many=True)
-    questions = fields.Nested(lambda: QuestionSchema, many=True)
+    reponses = fields.Nested(lambda: ReponseSchema, many=True,exclude=("acteur",))
     profil = fields.Nested(lambda: NomenclatureSchema)
     statut_entretien = fields.Nested(lambda: NomenclatureSchema)
 
@@ -116,7 +116,7 @@ class QuestionSchema(SQLAlchemyAutoSchema):
         include_relationships = True
         load_instance = True
 
-    acteurs = fields.Nested(lambda: ActeurSchema, exclude=("questions",))
+   
     reponses = fields.Nested(lambda: ReponseSchema, exclude=("question",))
     theme = fields.Nested(lambda: NomenclatureSchema, exclude=("questions",))
 
@@ -135,6 +135,9 @@ class ReponseSchema(SQLAlchemyAutoSchema):
 
     mots_cles = fields.Nested(lambda: MotCleSchema, many=True, exclude=("reponses",))
     question = fields.Nested(lambda: QuestionSchema, exclude=("reponses",))
+    acteur = fields.Nested(lambda: ActeurSchema)
+    valeur_reponse = fields.Nested(lambda: NomenclatureSchema)
+
 
 class MotCleSchema(SQLAlchemyAutoSchema):
     class Meta:

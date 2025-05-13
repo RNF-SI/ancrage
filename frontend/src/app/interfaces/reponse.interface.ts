@@ -1,3 +1,4 @@
+import { Acteur } from "@app/models/acteur.model";
 import { MotCle } from "@app/models/mot-cle.model";
 import { Nomenclature } from "@app/models/nomenclature.model";
 import { Question } from "@app/models/question.model";
@@ -7,4 +8,5 @@ export interface IReponse {
     valeur_reponse:Nomenclature;
     question?:Question;
     mots_cles?:MotCle[];
+    acteur:Acteur;
 }

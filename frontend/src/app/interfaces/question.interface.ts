@@ -9,4 +9,5 @@ export interface IQuestion {
     reponses?:Reponse[];
     theme?:Nomenclature;
     indications:string;
+    choixReponses:Nomenclature[];
 }

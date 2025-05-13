@@ -10,6 +10,7 @@ export class Question {
     reponses?:Reponse[];
     theme?:Nomenclature;
     indications:string="";
+    choixReponses:Nomenclature[]=[];
 
     /** Copie profonde de l'objet */
     copy(): Question {
@@ -21,6 +22,7 @@ export class Question {
         copy.acteurs = this.acteurs?.map(a => a.copy()) || [];
         copy.reponses = this.reponses?.map(r => r.copy()) || [];
         copy.indications = this.indications;
+        copy.choixReponses = this.choixReponses?.map(cr => cr.copy()) || [];
         return copy;
     }
 
@@ -33,19 +35,18 @@ export class Question {
         question.theme = data.theme ? Nomenclature.fromJson(data.theme) : new Nomenclature();
         question.acteurs = (data.acteurs || []).map(a => Acteur.fromJson(a));
         question.reponses = (data.reponses || []).map(r => Reponse.fromJson(r));
-        question.indications = data.indications ?? '';
-
+        question.indications = data.indications;
+        question.choixReponses = (data.choixReponses || []).map(cr => Nomenclature.fromJson(cr));
         return question;
     }
 
-    /** Conversion en JSON, sans id_site si non voulu */
     toJson(): IQuestion {
         return {
             ...this,
             theme: this.theme ? this.theme.toJson() : undefined,
             acteurs: this.acteurs ? this.acteurs.map(a => a.toJson()) : [],
             reponses: this.reponses ? this.reponses.map(r => r.toJson()) : [],
-            indications: this.indications ? this.indications : ""
+            choixReponses: this.choixReponses ? this.choixReponses.map(cr => cr.toJson()) : [],
         };
     }
 

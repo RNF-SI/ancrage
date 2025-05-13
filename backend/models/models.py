@@ -131,7 +131,7 @@ class Acteur(db.Model):
     modified_by = db.Column(db.Integer)
     commune = db.relationship("Commune", backref="acteurs")
     categories = db.relationship('Nomenclature', secondary='cor_categorie_acteur', back_populates='acteurs_c')
-    questions = db.relationship('Question', secondary='cor_question_acteur', back_populates='acteurs')
+    reponses = db.relationship('Reponse', back_populates='acteur')
     statut_entretien_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     profil_cognitif_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     profil = db.relationship('Nomenclature', foreign_keys=[profil_cognitif_id], back_populates='acteurs_p')
@@ -158,19 +158,12 @@ class Question(db.Model):
     id_question = db.Column(db.Integer, primary_key=True)
     libelle = db.Column(db.String)
     indications = db.Column(db.String)
-    acteurs = db.relationship('Acteur', secondary='cor_question_acteur', back_populates='questions')
     reponses = db.relationship(
         'Reponse',
         back_populates='question'
     )
     theme_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     theme = db.relationship('Nomenclature', foreign_keys=[theme_id])
-    
-acteur_question = db.Table(
-    'cor_question_acteur',
-    db.Column('acteur_id', db.Integer, db.ForeignKey('t_acteurs.id_acteur', ondelete="CASCADE")),
-    db.Column('question_id', db.Integer, db.ForeignKey('t_questions.id_question', ondelete="CASCADE"))
-)
 
 class Reponse(db.Model):
     __tablename__ = 't_reponses'
@@ -180,7 +173,8 @@ class Reponse(db.Model):
     question_id = db.Column(db.Integer, db.ForeignKey('t_questions.id_question'))
     question = db.relationship('Question', foreign_keys=[question_id])
     mots_cles = db.relationship('MotCle', secondary='cor_reponses_mots_cles', back_populates='reponses')
-    
+    acteur_id = db.Column(db.Integer, db.ForeignKey('t_acteurs.id_acteur'))
+    acteur = db.relationship('Acteur', foreign_keys=[acteur_id])
 
 reponse_mot_cle = db.Table(
     'cor_reponses_mots_cles',

@@ -1,5 +1,4 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { ChoixActeursComponent } from "../components/parts/choix-acteurs/choix-acteurs.component";
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatTableDataSource, MatTableDataSourcePaginator } from '@angular/material/table';
 import { Acteur } from '@app/models/acteur.model';
@@ -14,6 +13,7 @@ import { CommonModule } from '@angular/common';
 import { SiteService } from '@app/services/sites.service';
 import { MatButtonModule } from '@angular/material/button';
 import { Labels } from '@app/utils/labels';
+import { ChoixActeursComponent } from '../parts/choix-acteurs/choix-acteurs.component';
 
 @Component({
   selector: 'app-diagnostic-visualisation',

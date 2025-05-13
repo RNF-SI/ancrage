@@ -9,7 +9,7 @@ export class Reponse {
     valeur_reponse = new Nomenclature();
     mots_cles?:MotCle[];
     question?:Question;
-   
+    acteur:Acteur = new Acteur();
 
     /** Copie profonde de l'objet */
         copy(): Reponse {
@@ -18,6 +18,7 @@ export class Reponse {
             copy.valeur_reponse = this.valeur_reponse.copy();
             copy.mots_cles = this.mots_cles?.map(mc => mc.copy()) || [];
             copy.question = this.question?.copy();
+            copy.acteur = this.acteur.copy();
     
             return copy;
         }
@@ -30,6 +31,7 @@ export class Reponse {
             reponse.valeur_reponse = data.valeur_reponse ? Nomenclature.fromJson(data.valeur_reponse) : new Nomenclature();
             reponse.mots_cles = (data.mots_cles || []).map(mc => MotCle.fromJson(mc));
             reponse.question = data.question ? Question.fromJson(data.question) : undefined;
+            reponse.acteur = data.acteur ? Acteur.fromJson(data.acteur) : new Acteur();
     
             return reponse;
         }
@@ -40,7 +42,8 @@ export class Reponse {
                 ...this,
                 valeur_reponse: this.valeur_reponse ? this.valeur_reponse.toJson() : undefined,
                 question: this.question ? this.question.toJson() : undefined,
-                mots_cles: this.mots_cles ? this.mots_cles.map(mc => mc.toJson()) : []
+                mots_cles: this.mots_cles ? this.mots_cles.map(mc => mc.toJson()) : [],
+                acteur: this.acteur.toJson(),
             
             };
         }
