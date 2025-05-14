@@ -14,13 +14,14 @@ import { SiteService } from '@app/services/sites.service';
 import { MatButtonModule } from '@angular/material/button';
 import { Labels } from '@app/utils/labels';
 import { ChoixActeursComponent } from '../parts/choix-acteurs/choix-acteurs.component';
+import { GraphiquesComponent } from "../parts/graphiques/graphiques.component";
 
 @Component({
   selector: 'app-diagnostic-visualisation',
   templateUrl: './diagnostic-visualisation.component.html',
   styleUrls: ['./diagnostic-visualisation.component.css'],
   standalone:true,
-  imports: [ChoixActeursComponent,CommonModule,MatButtonModule]
+  imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent,GraphiquesComponent]
 })
 export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
 

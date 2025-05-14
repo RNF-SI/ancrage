@@ -59,6 +59,9 @@
                               <div class="actor-structure">
                                 {{ actor.structure }}
                               </div>
+                              <div class="actor-structure">
+                                {{ actor.statut_entretien?.libelle }}
+                              </div>
                             </div>
                       
                             <div class="actor-actions">
@@ -66,8 +69,12 @@
                                 <fa-icon [icon]="['fas', 'info']"></fa-icon>
                               </button>
                               
-                              <button mat-icon-button type="button" (click)="navigate('/acteur/' + actor.id_acteur,diagnostic)">
+                              <button mat-icon-button type="button" (click)="navigateToActor('/acteur/' + actor.id_acteur,diagnostic)">
                                 <fa-icon [icon]="['fas', 'pen']"></fa-icon>
+                              </button>
+
+                              <button mat-icon-button type="button" (click)="navigate('/entretien/' + actor.id_acteur,diagnostic)">
+                                <fa-icon [icon]="['fas', 'chart-line']"></fa-icon>
                               </button>
                             </div>
                             

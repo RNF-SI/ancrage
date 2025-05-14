@@ -1,7 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { IDiagnostic } from '@app/interfaces/diagnostic.interface';
+import { IGraphMoy } from '@app/interfaces/graph-moy.interface';
 import { Diagnostic } from '@app/models/diagnostic.model';
+import { GraphMoy } from '@app/utils/graph-moy';
 import { Observable, map } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
@@ -33,6 +35,17 @@ export class DiagnosticService {
         })
       );
     }
+
+    getAverageByQuestion(): Observable<GraphMoy[]>{
+      return this.http.get<IGraphMoy[]>(this.GET_ALL_URL+"/charts/average").pipe(
+        map(graphiquesJsonArray => {
+          return graphiquesJsonArray.map<GraphMoy>(
+            graphJson => GraphMoy.fromJson(graphJson)
+          )
+        })
+      );
+    }
+
     get(id: number): Observable<Diagnostic> {
       return this.http.get<IDiagnostic>(this.BASE_URL + '/' + id ).pipe(
         map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))

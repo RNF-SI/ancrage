@@ -1,0 +1,26 @@
+<mat-tab-group>
+    <mat-tab label="Connaissance">
+      <div class="p-3">
+        <div *ngFor="let chartData of chartDataByQuestion">
+          <h3>{{ chartData.question }}</h3>
+          <canvas baseChart
+                  [data]="chartData.chart"
+                  [type]="'bar'">
+          </canvas>
+        </div>
+          
+      </div>
+    </mat-tab>
+  
+    <mat-tab label="Réponses au questionnaire">
+      <div class="p-3">
+        <!-- contenu ici -->
+      </div>
+    </mat-tab>
+  
+    <mat-tab label="Documents">
+      <div class="p-3">
+        <!-- contenu ici -->
+      </div>
+    </mat-tab>
+  </mat-tab-group>

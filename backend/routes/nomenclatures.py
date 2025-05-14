@@ -51,6 +51,16 @@ def getAllNomenclaturesByType(mnemonique,id_acteur):
                 )
                 .all()
             )
+        if id_acteur and nomenclatures == []:
+             nomenclatures = (
+                db.session.query(Nomenclature)
+                .filter(Nomenclature.mnemonique == "thème")
+                .options(
+                    joinedload(Nomenclature.questions)
+                    .joinedload(Question.reponses)
+                )
+                .all()
+            )
         # Tri des thèmes par libellé (ou par ID si souhaité)
         nomenclatures_sorted = sorted(nomenclatures, key=lambda n: n.libelle or "")
 

@@ -45,6 +45,7 @@ import { AlerteDiagnosticComponent } from './components/alertes/alerte-diagnosti
 import { EntretienComponent } from './components/entretien/entretien.component';
 import { DiagnosticVisualisationComponent } from './components/diagnostic-visualisation/diagnostic-visualisation.component';
 import { AlerteEntretienComponent } from './components/alertes/alerte-entretien/alerte-entretien.component';
+import { GraphiquesComponent } from './components/parts/graphiques/graphiques.component';
 
 
 @NgModule({
@@ -88,6 +89,7 @@ import { AlerteEntretienComponent } from './components/alertes/alerte-entretien/
     AlerteDiagnosticComponent,
     EntretienComponent,
     AlerteEntretienComponent,
+    GraphiquesComponent,
     ToastrModule.forRoot({
       timeOut: 15000
     }),

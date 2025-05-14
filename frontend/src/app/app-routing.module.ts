@@ -111,11 +111,6 @@ const routes: Routes = [ {
       canActivate: [AuthGuardService]
     },
     {
-      path: 'entretien',
-      component: EntretienComponent,
-      canActivate: [AuthGuardService]
-    },
-    {
       path: 'entretien/:id_acteur',
       component: EntretienComponent,
       canActivate: [AuthGuardService]

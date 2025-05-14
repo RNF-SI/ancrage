@@ -2,6 +2,8 @@ from models.models import db
 from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
+from sqlalchemy import func
+from sqlalchemy.orm import aliased
 from routes import bp,date_time
 
 @bp.route('/diagnostic/<int:id_diagnostic>', methods=['GET','PUT','DELETE'])
@@ -83,6 +85,49 @@ def getAllDiagnosticsBySites():
     schema = DiagnosticSchema(many=True)
     return jsonify(schema.dump(filtered_diagnostics))
 
+@bp.route('/diagnostics/charts/average')
+def getAveragebyQuestion():
+    # Aliases pour les différentes utilisations de Nomenclature
+    ValeurReponse = aliased(Nomenclature)     # tn
+    StatutEntretien = aliased(Nomenclature)   # tn2 (non utilisé ici, mais joint dans SQL)
+    Categorie = aliased(Nomenclature)         # tn3
+    Theme = aliased(Nomenclature)             # tn4
+
+    
+    query = (
+        db.session.query(
+            Theme.libelle.label("theme"),
+            Question.libelle.label("question"),
+            Categorie.libelle.label("categorie_acteur"),
+            func.avg(ValeurReponse.value).label("moyenne_score")
+        )
+        .select_from(Diagnostic)  # 👈 Obligatoire pour lever l'ambiguïté
+        .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
+        .join(Reponse, Acteur.id_acteur == Reponse.acteur_id)
+        .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
+        .join(Question, Reponse.question_id == Question.id_question)
+        .join(Theme, Question.theme_id == Theme.id_nomenclature)
+        .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
+        .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
+        .group_by(
+            Theme.id_nomenclature, Theme.libelle,
+            Question.id_question, Question.libelle,
+            Categorie.id_nomenclature, Categorie.libelle
+        )
+        .order_by(Question.libelle)
+    )
+
+    results = query.all()
+    data = [
+        {
+            "theme": r.theme,
+            "question": r.question,
+            "categorie": r.categorie_acteur,
+            "moyenne": float(r.moyenne_score)
+        }
+        for r in results
+    ]
+    return jsonify(data)
     
 def changeValuesDiagnostic(diagnostic,data):
     
@@ -132,7 +177,7 @@ def changeValuesDiagnostic(diagnostic,data):
                     created_by=data['created_by'],
                     diagnostic_id=diagnostic.id_diagnostic,
                     categories=a.categories,
-                    questions=a.questions,
+                    reponses=a.reponses,
                     statut_entretien=a.statut_entretien,
                     acteur_origine_id = a.acteur_origine_id if a.acteur_origine_id else a.id_acteur,
                     is_copy=True
