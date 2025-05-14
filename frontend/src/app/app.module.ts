@@ -56,7 +56,6 @@ import { AlerteEntretienComponent } from './components/alertes/alerte-entretien/
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
-    AlerteEntretienComponent,
     
   ],
   imports: [
@@ -88,6 +87,7 @@ import { AlerteEntretienComponent } from './components/alertes/alerte-entretien/
     AlerteActeurComponent, 
     AlerteDiagnosticComponent,
     EntretienComponent,
+    AlerteEntretienComponent,
     ToastrModule.forRoot({
       timeOut: 15000
     }),

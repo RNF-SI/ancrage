@@ -33,4 +33,6 @@ export class Labels {
     chooseProfile = "Choisir un profil";
     chooseCategories = "Choisir les catégories";
     chosenActors = "Acteurs impliqués";
+    addInterview = "Saisir l'entretien";
+    modifyInterview = "Modifier l'entretien";
 }

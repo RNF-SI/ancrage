@@ -2,7 +2,7 @@ from models.models import db
 from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload,aliased
 from routes import bp,date_time
 
 @bp.route('/nomenclature/<id_nomenclature>', methods=['GET','PUT','DELETE'])
@@ -22,21 +22,35 @@ def getAllNomenclatures():
         schema = NomenclatureSchema(many=True)
         usersObj = schema.dump(nomenclatures)
         return jsonify(usersObj)
-    
-@bp.route('/nomenclatures/<mnemonique>', methods=['GET'])
-def getAllNomenclaturesByType(mnemonique):
-    if mnemonique == "thème":
-        nomenclatures = (
-            db.session.query(Nomenclature)
-            .filter(Nomenclature.mnemonique == "thème")
-            .options(
-                joinedload(Nomenclature.questions)
-                .joinedload(Question.reponses)
-                .joinedload(Reponse.valeur_reponse)
-            )
-            .all()
-        )
 
+@bp.route('/nomenclatures/<mnemonique>', defaults={'id_acteur': None},methods=['GET'])
+@bp.route('/nomenclatures/<mnemonique>/<id_acteur>', methods=['GET'])
+def getAllNomenclaturesByType(mnemonique,id_acteur):
+    
+    if mnemonique == "thème":
+        if id_acteur != None:
+
+            ValeurNomenclature = aliased(Nomenclature)
+
+            nomenclatures = (
+                db.session.query(Nomenclature)
+                .join(Nomenclature.questions)
+                .join(Question.reponses)
+                .join(ValeurNomenclature, Reponse.valeur_reponse)
+                .filter(Nomenclature.mnemonique == "thème")
+                .filter(Reponse.acteur_id == int(id_acteur))
+                .all()
+            )
+        else:
+            nomenclatures = (
+                db.session.query(Nomenclature)
+                .filter(Nomenclature.mnemonique == "thème")
+                .options(
+                    joinedload(Nomenclature.questions)
+                    .joinedload(Question.reponses)
+                )
+                .all()
+            )
         # Tri des thèmes par libellé (ou par ID si souhaité)
         nomenclatures_sorted = sorted(nomenclatures, key=lambda n: n.libelle or "")
 
@@ -60,8 +74,28 @@ def getAllNomenclaturesByType(mnemonique):
 
                         if r.acteur_id:
                             reponses_choisies.append({
-                                "acteur_id": r.acteur_id,
-                                **rep_obj
+                               "id_reponse": r.id_reponse,
+                                "acteur": {
+                                    "id_acteur": r.acteur.id_acteur,
+                                    "nom": r.acteur.nom,
+                                    "prenom": r.acteur.prenom,
+                                    "fonction": r.acteur.fonction,
+                                    "telephone": r.acteur.telephone,
+                                    "mail": r.acteur.mail,
+                                    "structure": r.acteur.structure,
+                                },
+                                "question": {
+                                    "id_question": r.question.id_question,
+                                    "libelle": r.question.libelle,
+                                    "indications": r.question.indications
+                                } if r.question else None,
+                                "valeur_reponse": {
+                                    "id_nomenclature": r.valeur_reponse.id_nomenclature if r.valeur_reponse else 0,
+                                    "libelle": r.valeur_reponse.libelle if r.valeur_reponse else '',
+                                    "value": r.valeur_reponse.value if r.valeur_reponse else 1,
+                                    "mnemonique": r.valeur_reponse.mnemonique if r.valeur_reponse else ''
+                                },
+                                "mots_cles": []  # à remplir si besoin
                             })
                         else:
                             reponses_possibles.append(rep_obj)

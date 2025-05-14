@@ -114,6 +114,11 @@ const routes: Routes = [ {
       path: 'entretien',
       component: EntretienComponent,
       canActivate: [AuthGuardService]
+    },
+    {
+      path: 'entretien/:id_acteur',
+      component: EntretienComponent,
+      canActivate: [AuthGuardService]
     }
   ]},
    

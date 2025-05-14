@@ -1,5 +1,5 @@
 from app import create_app
-from models.models import db,Acteur, Commune, Departement, Diagnostic, MotCle, Nomenclature, Region, Reponse, Site,site_departement,site_diagnostic,site_habitat,acteur_categorie,acteur_profil
+from models.models import db,Acteur,Diagnostic,Nomenclature,Site,site_departement,site_diagnostic,acteur_categorie
 from datetime import datetime, timedelta
 import random
 import string
@@ -60,7 +60,7 @@ with app.app_context():
     # Ajout de 3 types de site (mnemonique = 'statut')
     types_sites = []
     types_labels = [
-        "Réserves naturelles",
+        "Réserve naturelle",
         "Parc Naturel National",
         "Parc Naturel Régional",
         "Espace CEN",
@@ -160,7 +160,9 @@ with app.app_context():
         "Fédérateur",
         "Territorial désintéressé",
         "Territorial intéressé",
-        "Contraint"
+        "Contraint",
+        "Environnemental amateur",
+        "Environnemental spécialiste"
     ]
 
     etats_labels = [
