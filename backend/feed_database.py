@@ -156,6 +156,14 @@ with app.app_context():
         "Membres du CCG"
     ]
 
+    cat_short_labels = [
+        "Animation",
+        "Partenaires",
+        "Riverains",
+        "Economie",
+        "CCG"
+    ]
+
     profils_labels = [
         "Fédérateur",
         "Territorial désintéressé",
@@ -164,6 +172,7 @@ with app.app_context():
         "Environnemental amateur",
         "Environnemental spécialiste"
     ]
+    
 
     etats_labels = [
         "Réalisé",
@@ -173,11 +182,12 @@ with app.app_context():
         "Programmé"
     ]
 
-    for i, lib in enumerate(categorie_labels):
+    for i, (lib, lib2) in enumerate(zip(categorie_labels, cat_short_labels)):
         c = Nomenclature(
             libelle=lib,
             value=i,
-            mnemonique="categorie"
+            mnemonique="categorie",
+            libelle_court=lib2
         )
         db.session.add(c)
         categories.append(c)

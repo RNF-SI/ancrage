@@ -29,7 +29,10 @@
             ></app-choix-acteurs>
             
             <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic,diagnostic)">Modifier</button>
-            <app-graphiques></app-graphiques>
+            <app-graphiques
+                [route]="route"
+                [diagnostic]="diagnostic"
+            ></app-graphiques>
         </div>
         <div class="col-2">
             

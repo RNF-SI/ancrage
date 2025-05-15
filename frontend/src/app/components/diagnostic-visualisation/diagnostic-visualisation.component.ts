@@ -41,7 +41,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   private diagnosticService = inject(DiagnosticService);
   private routeSubscription?:Subscription;
   private diagSubscription?:Subscription;
-  private route = inject(ActivatedRoute);
+  route = inject(ActivatedRoute);
   private siteService = inject(SiteService);
   private router = inject(Router)
   id_diagnostic:number = 0;

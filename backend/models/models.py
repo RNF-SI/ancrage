@@ -164,6 +164,7 @@ class Question(db.Model):
     )
     theme_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     theme = db.relationship('Nomenclature', foreign_keys=[theme_id])
+    libelle_graphique = db.Column(db.String)
 
 class Reponse(db.Model):
     __tablename__ = 't_reponses'
@@ -199,3 +200,4 @@ class Nomenclature(db.Model):
     acteurs_p = db.relationship('Acteur', back_populates='profil', foreign_keys='Acteur.profil_cognitif_id')
     acteurs_se = db.relationship('Acteur', back_populates='statut_entretien', foreign_keys='Acteur.statut_entretien_id')
     questions = db.relationship('Question',  back_populates='theme')
+    libelle_court = db.Column(db.String)

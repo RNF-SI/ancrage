@@ -1,17 +1,28 @@
 <mat-tab-group>
     <mat-tab label="Connaissance">
       <div class="p-3">
-        <div *ngFor="let chartData of chartDataByQuestion">
-          <h3>{{ chartData.question }}</h3>
-          <canvas baseChart
-                  [data]="chartData.chart"
-                  [type]="'bar'">
+        <div *ngFor="let question of chartDataByQuestion">
+          <h3>{{ question.question }}</h3>
+      
+          <canvas
+            baseChart
+            [data]="question.chart"
+            [options]="question.chartOptions"
+            [type]="'bar'">
           </canvas>
+      
+          <div *ngIf="groupedData[question.question]">
+            <h4>Répartition des réponses</h4>
+            <canvas
+              baseChart
+              [data]="getChartData(question.question)"
+              [type]="'pie'"
+              [options]="chartOptions">
+            </canvas>
+          </div>
         </div>
-          
       </div>
     </mat-tab>
-  
     <mat-tab label="Réponses au questionnaire">
       <div class="p-3">
         <!-- contenu ici -->

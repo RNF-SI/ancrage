@@ -6,7 +6,7 @@ import { IQuestion } from "@app/interfaces/question.interface";
 export class Nomenclature {
 	id_nomenclature: number = 0;
 	libelle: string = "";
-	value: number = 1;
+	value: number = 0;
 	mnemonique: string = "";
 	questions?:Question[];
 

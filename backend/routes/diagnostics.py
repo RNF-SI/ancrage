@@ -85,8 +85,8 @@ def getAllDiagnosticsBySites():
     schema = DiagnosticSchema(many=True)
     return jsonify(schema.dump(filtered_diagnostics))
 
-@bp.route('/diagnostics/charts/average')
-def getAveragebyQuestion():
+@bp.route('/diagnostics/charts/average/<id_diagnostic>')
+def getAveragebyQuestion(id_diagnostic):
     # Aliases pour les différentes utilisations de Nomenclature
     ValeurReponse = aliased(Nomenclature)     # tn
     StatutEntretien = aliased(Nomenclature)   # tn2 (non utilisé ici, mais joint dans SQL)
@@ -97,8 +97,8 @@ def getAveragebyQuestion():
     query = (
         db.session.query(
             Theme.libelle.label("theme"),
-            Question.libelle.label("question"),
-            Categorie.libelle.label("categorie_acteur"),
+            Question.libelle_graphique.label("question"),
+            Categorie.libelle_court.label("categorie_acteur"),
             func.avg(ValeurReponse.value).label("moyenne_score")
         )
         .select_from(Diagnostic)  # 👈 Obligatoire pour lever l'ambiguïté
@@ -109,6 +109,7 @@ def getAveragebyQuestion():
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
         .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
         .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
+        .filter(Diagnostic.id_diagnostic==id_diagnostic)
         .group_by(
             Theme.id_nomenclature, Theme.libelle,
             Question.id_question, Question.libelle,
@@ -128,6 +129,49 @@ def getAveragebyQuestion():
         for r in results
     ]
     return jsonify(data)
+
+@bp.route("/diagnostics/charts/repartition/<id_diagnostic>", methods=["GET"])
+def get_reponses_par_theme(id_diagnostic):
+    ValeurReponse = aliased(Nomenclature)
+    Categorie = aliased(Nomenclature)
+    Theme = aliased(Nomenclature)
+
+    results = (
+        db.session.query(
+            Theme.libelle.label("theme"),
+            Question.libelle_graphique.label("question"),
+            ValeurReponse.libelle.label("reponse"),
+            func.count(Reponse.id_reponse).label("nombre"),
+            ValeurReponse.value.label("valeur")
+        )
+        .select_from(Diagnostic)  # 👈 Obligatoire pour lever l'ambiguïté
+        .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
+        .join(Reponse, Acteur.id_acteur == Reponse.acteur_id)
+        .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
+        .join(Question, Reponse.question_id == Question.id_question)
+        .join(Theme, Question.theme_id == Theme.id_nomenclature)
+        .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
+        .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
+        .filter(Diagnostic.id_diagnostic==id_diagnostic)
+        .group_by(Theme.id_nomenclature, Question.id_question, ValeurReponse.value, ValeurReponse.libelle)
+        .order_by(Question.libelle_graphique, ValeurReponse.value)
+        .filter(Diagnostic.id_diagnostic==id_diagnostic)
+        .all()
+    )
+
+    # transformer en liste de dicts
+    output = [
+        {
+            "theme": r.theme,
+            "question": r.question,
+            "reponse": r.reponse,
+            "nombre": r.nombre,
+            "valeur": r.valeur
+        }
+        for r in results
+    ]
+
+    return jsonify(output)
     
 def changeValuesDiagnostic(diagnostic,data):
     

@@ -32,6 +32,19 @@ with app.app_context():
         "Les informations sur la RN sont-elles accessibles ?"
     ]
 
+    question_labels_short = [
+        "Connaissance des missions",
+        "Connaissance des actions mises en place",
+        "Connaissance des animations proposées",
+        "Connaissance du gestionnaire",
+        "Connaissance du périmètre",
+        "Connaissance de la règlementation",
+        "Connaissance des espèces emblématique",
+        "Connaissance des outils de communication ",
+        "Connaissance d'un interlocuteur",
+        "Connaissance de médias d'information"
+    ]
+
     score_texts = [
         ["Protection // Gestion // Sensibilisation",
          "Surveillance et Police // Suivis, études et inventaires, recherche // Gestion hab-esp, travaux d’entretien et d’équipement // Pédagogie, information, animation, édition // Suivi administratif et financier.",
@@ -49,7 +62,7 @@ with app.app_context():
          "FAUX ou non réponse", "Non"],
         
         ["1 mission", "1", "x", "x", "Localisation peu assurée",
-         "x", "x", "x", "x", "Peu accessible"],
+         "x", "x", "x", "x", "x"],
         
         ["//si 2 bonnes réponses et 1 réponse fausse//", "2", "moins de 50 %", "Incomplet", "Localisation globalement correcte",
          "Connaissance floue", "Des espèces mais pas celles attendues", "Connaît approximativement la documentation",
@@ -70,24 +83,22 @@ with app.app_context():
         for n in Nomenclature.query.filter_by(mnemonique="reponse_score").all()
     }
 
-    for col_idx, label in enumerate(question_labels):
-        if label in existing_questions:
-            print(f"[!] Question déjà présente : {label}")
-            continue
-
-        # Ajouter les indications à partir du score 1 (par convention ici)
+    for col_idx, (label, sht) in enumerate(zip(question_labels, question_labels_short)):
+        # Les indications proviennent de la première ligne (score_texts[0])
         indications = score_texts[0][col_idx]
 
         question = Question(
             libelle=label,
             theme=theme,
-            indications=indications
+            indications=indications,
+            libelle_graphique=sht
         )
         db.session.add(question)
         db.session.flush()
 
-        for score in range(2, 7):
-            text = score_texts[score - 1][col_idx].strip()
+        # Parcourir uniquement les lignes 1 à 5, correspondant aux scores 1 à 5
+        for score_offset, score in enumerate(range(1, 6)):  # scores 1 à 5
+            text = score_texts[score_offset + 1][col_idx].strip()
             if text.lower() == 'x' or not text:
                 continue
 

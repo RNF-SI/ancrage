@@ -1,11 +1,7 @@
+import { ChartData, ChartOptions } from "chart.js";
+
 export interface AvgPerQuestion {
     question: string;
-    chart: {
-        labels: string[];
-        datasets: {
-        label: string;
-        data: number[];
-        backgroundColor: string;
-        }[];
-    };
-}
+    chart: ChartData<'bar'>;
+    chartOptions: ChartOptions<'bar'>;
+  }
