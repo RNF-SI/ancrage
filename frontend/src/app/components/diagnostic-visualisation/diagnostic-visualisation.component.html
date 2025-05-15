@@ -1,41 +1,55 @@
+
 <div class="container">
     <div class="row">
-        <div class="col-4">
+        <div class="col-3">
 
         </div>
-        <div class="col-6">
-            <h2>{{diagnostic.nom}}</h2>
-            <div><b>{{labels.dateBegLabel}}</b> : <span>{{ diagnostic.date_debut_str }}</span></div>
-            <div><b>{{labels.dateEndLabel}}</b> : <span>{{ diagnostic.date_fin_str }}</span></div>
-            <div><b>{{labels.datePublicationReport}}</b> : <span>{{ diagnostic.date_rapport_str }}</span></div>
-            <div><b>{{labels.investigatorLabel}}</b> : <span>{{ diagnostic.identite_createur }}</span></div>
-            <h3>{{labels.chosenSites}}</h3>
-                <p *ngFor="let site of diagnostic.sites">{{ site.nom }}, {{site.type.libelle}} </p>
-            <h3>Acteurs</h3>
-            <app-choix-acteurs
-                    [actors]="actors"
-                    [uniqueDiagnostics]="uniqueDiagnostics"
-                    [diagnostic]="diagnostic"
-                    [selectedDiagnostic]="selectedDiagnostic"
-                    [uniqueCategories]="uniqueCategories"
-                    [uniqueDepartments]="uniqueDepartments"
-                    [selectedCategory]="selectedCategory"
-                    [selectedDepartment]="selectedDepartment"
-                    [actorsSelected]="actorsSelected"
-                    [actorsOriginal]="uniqueActors"
-                    [formGroup]="formGroup"
-                    [hideFilters]="hideFilters"
-                    [navigate]="navigate"
-            ></app-choix-acteurs>
-            
-            <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic,diagnostic)">Modifier</button>
-            <app-graphiques
-                [route]="route"
-                [diagnostic]="diagnostic"
-            ></app-graphiques>
-        </div>
-        <div class="col-2">
-            
+        <div class="col-9">
+            <mat-tab-group>
+                <mat-tab label="Infos générales">
+                    <div class="p_3">
+                        <h2>{{diagnostic.nom}}</h2>
+                        <div><b>{{labels.dateBegLabel}}</b> : <span>{{ diagnostic.date_debut_str }}</span></div>
+                        <div><b>{{labels.dateEndLabel}}</b> : <span>{{ diagnostic.date_fin_str }}</span></div>
+                        <div><b>{{labels.datePublicationReport}}</b> : <span>{{ diagnostic.date_rapport_str }}</span></div>
+                        <div><b>{{labels.investigatorLabel}}</b> : <span>{{ diagnostic.identite_createur }}</span></div>
+                        <h3>{{labels.chosenSites}}</h3>
+                        <p *ngFor="let site of diagnostic.sites">{{ site.nom }}, {{site.type.libelle}} </p>
+                        <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic,diagnostic)">Modifier</button>
+                    </div>
+                </mat-tab>
+                <mat-tab label="Acteurs">
+                  <div class="p-3">
+                    <h3>Acteurs</h3>
+                    <app-choix-acteurs
+                            [actors]="actors"
+                            [uniqueDiagnostics]="uniqueDiagnostics"
+                            [diagnostic]="diagnostic"
+                            [selectedDiagnostic]="selectedDiagnostic"
+                            [uniqueCategories]="uniqueCategories"
+                            [uniqueDepartments]="uniqueDepartments"
+                            [selectedCategory]="selectedCategory"
+                            [selectedDepartment]="selectedDepartment"
+                            [actorsSelected]="actorsSelected"
+                            [actorsOriginal]="uniqueActors"
+                            [formGroup]="formGroup"
+                            [hideFilters]="hideFilters"
+                            [navigate]="navigate"
+                    ></app-choix-acteurs>
+                    
+                    <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic,diagnostic)">Modifier</button>
+                  </div>
+                </mat-tab>
+              
+                <mat-tab label="Graphiques">
+                  <div class="p-3">
+                    <app-graphiques
+                        [route]="route"
+                        [diagnostic]="diagnostic"
+                    ></app-graphiques>
+                  </div>
+                </mat-tab>
+            </mat-tab-group>
         </div>
     </div>
 </div>

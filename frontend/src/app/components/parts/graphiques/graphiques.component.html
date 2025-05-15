@@ -1,37 +1,30 @@
-<mat-tab-group>
-    <mat-tab label="Connaissance">
-      <div class="p-3">
-        <div *ngFor="let question of chartDataByQuestion">
-          <h3>{{ question.question }}</h3>
-      
-          <canvas
-            baseChart
-            [data]="question.chart"
-            [options]="question.chartOptions"
-            [type]="'bar'">
-          </canvas>
-      
-          <div *ngIf="groupedData[question.question]">
-            <h4>Répartition des réponses</h4>
-            <canvas
-              baseChart
-              [data]="getChartData(question.question)"
-              [type]="'pie'"
-              [options]="chartOptions">
-            </canvas>
-          </div>
-        </div>
+<div *ngFor="let question of chartDataByQuestion" class="mb-5">
+  <div class="row align-items-center" style="min-height: 400px;">
+    <h3 class="text-center">{{ question.question }}</h3>
+    <!-- Colonne gauche (bar chart) -->
+    <div class="col-6 d-flex align-items-center justify-content-center">
+      <div class="w-100">
+        
+        <canvas
+          baseChart
+          [data]="question.chart"
+          [options]="question.chartOptions"
+          [type]="'bar'">
+        </canvas>
       </div>
-    </mat-tab>
-    <mat-tab label="Réponses au questionnaire">
-      <div class="p-3">
-        <!-- contenu ici -->
-      </div>
-    </mat-tab>
+    </div>
+
+    <!-- Colonne droite (pie chart) -->
+    <div class="col-6">
+      <h4 class="text-center">Répartition des réponses</h4>
+      <canvas
+        baseChart
+        [data]="getChartData(question.question)"
+        [type]="'pie'"
+        [options]="chartOptions">
+      </canvas>
+    </div>
+  </div>
+</div>
+
   
-    <mat-tab label="Documents">
-      <div class="p-3">
-        <!-- contenu ici -->
-      </div>
-    </mat-tab>
-  </mat-tab-group>

@@ -15,13 +15,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { Labels } from '@app/utils/labels';
 import { ChoixActeursComponent } from '../parts/choix-acteurs/choix-acteurs.component';
 import { GraphiquesComponent } from "../parts/graphiques/graphiques.component";
+import { MatTabsModule } from '@angular/material/tabs';
 
 @Component({
   selector: 'app-diagnostic-visualisation',
   templateUrl: './diagnostic-visualisation.component.html',
   styleUrls: ['./diagnostic-visualisation.component.css'],
   standalone:true,
-  imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent,GraphiquesComponent]
+  imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent,GraphiquesComponent,MatTabsModule]
 })
 export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
 
