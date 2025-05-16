@@ -6,6 +6,7 @@ export interface ChartBarData {
       label: string;
       data: number[];
       backgroundColor?: string;
+      id_question:number;
     }[];
     options?: ChartOptions<'bar'>;
   }

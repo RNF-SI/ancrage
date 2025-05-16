@@ -1,5 +1,5 @@
 import { Component, inject, Input, OnInit, SimpleChanges } from '@angular/core';
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { GraphMoy } from '@app/models/graph-moy';
@@ -68,10 +68,11 @@ export class GraphiquesComponent{
       this.groupedData = groupedRepartition;
       this.chartDataByQuestion = Array.from(grouped.entries()).map(([question, data]) => {
         const sorted = [...data].sort((a, b) => a.categorie.localeCompare(b.categorie));
-      
+        const id_question = sorted[0]?.id_question;
         const theme = sorted[0]?.theme || "Autres"; // On récupère le thème depuis GraphMoy
       
         const chartData: AvgPerQuestion = {
+          id_question,
           question,
           chart: {
             labels: sorted.map(d => d.categorie),
@@ -133,5 +134,7 @@ export class GraphiquesComponent{
       legend: { position: 'bottom' }
     }
   };
+
+ 
     
 }

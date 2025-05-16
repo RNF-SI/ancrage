@@ -1,16 +1,20 @@
 <form [formGroup]="formGroup" (ngSubmit)="submit()">
     <div class="container">
       <div class="row">
-        <div class="col-4"></div>
+        <div class="col-4">
+          <app-menu-lateral
+            [themes]="themes"
+          ></app-menu-lateral>
+        </div>
   
-        <div class="col-6">
+        <div class="col-8">
           <h2>{{ title }}</h2>
   
           <div *ngFor="let theme of themes">
             <h3>{{ theme.libelle }}</h3>
   
-            <div *ngFor="let q of theme.questions">
-              <h4>{{ q.libelle }}</h4>
+            <div *ngFor="let q of theme.questions" [attr.id]="'question-' + q.id_question">
+              <h4 class="question_d_{{q.id_question}}">{{ q.libelle }}</h4>
               <p><b>Réponses attendues : </b>{{q.indications}}</p>
               <mat-radio-group [formControlName]="'question_' + q.id_question">
                 <mat-radio-button *ngFor="let rep of q.choixReponses" [value]="rep.value" (click)="createReponse(rep,q.id_question)">
@@ -23,7 +27,7 @@
           <button mat-raised-button color="warn" type="submit">Envoyer</button>
         </div>
   
-        <div class="col-2"></div>
+        
       </div>
     </div>
   </form>

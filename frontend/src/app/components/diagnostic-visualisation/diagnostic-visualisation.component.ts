@@ -7,7 +7,7 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { Site } from '@app/models/site.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SiteService } from '@app/services/sites.service';
@@ -15,14 +15,16 @@ import { MatButtonModule } from '@angular/material/button';
 import { Labels } from '@app/utils/labels';
 import { ChoixActeursComponent } from '../parts/choix-acteurs/choix-acteurs.component';
 import { GraphiquesComponent } from "../parts/graphiques/graphiques.component";
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
+import { NomenclatureService } from '@app/services/nomenclature.service';
+import { MenuLateralComponent } from "../parts/menu-lateral/menu-lateral.component";
 
 @Component({
   selector: 'app-diagnostic-visualisation',
   templateUrl: './diagnostic-visualisation.component.html',
   styleUrls: ['./diagnostic-visualisation.component.css'],
   standalone:true,
-  imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent,GraphiquesComponent,MatTabsModule]
+  imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent,MenuLateralComponent]
 })
 export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
 
@@ -45,8 +47,10 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   route = inject(ActivatedRoute);
   private siteService = inject(SiteService);
   private router = inject(Router)
+  private nomenclatureService = inject(NomenclatureService)
   id_diagnostic:number = 0;
   labels = new Labels();
+  themes:Nomenclature[] = [];
 
   formGroup = this.fb.group({
       id_diagnostic: [0, [Validators.required]],
@@ -64,15 +68,37 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
     this.routeSubscription = this.route.params.subscribe((params: any) => {
           this.id_diagnostic = params['id_diagnostic'];          
           if (this.id_diagnostic) {
-        
-            this.diagSubscription = this.diagnosticService.get(this.id_diagnostic).subscribe(diag =>{
+            const diag$ = this.diagnosticService.get(this.id_diagnostic);
+            const themes$ = this.nomenclatureService.getAllByType("thème");
+            forkJoin([diag$, themes$]).subscribe(([diag, themes]) => {
               this.diagnostic = diag;
               this.actors = diag.acteurs;
+              this.themes = themes;
             });
+            
             
           }
     });
 
+  }
+
+  onTabChange(event: MatTabChangeEvent) {
+    let menu = document.getElementById("menu");
+    if (event.index === 2) { 
+      
+      console.log(menu?.className);
+      if (menu?.className == "invisible"){
+        menu?.classList.remove("invisible");
+        menu?.classList.add("visible");
+      }
+      
+      
+    }else{
+      if (menu?.className == "visible"){
+        menu?.classList.remove("visible");
+        menu?.classList.add("invisible");
+      }
+    }
   }
 
   navigate= (path:string,diagnostic:Diagnostic):void =>{

@@ -4,4 +4,5 @@ export interface IGraphRepartition {
     reponse:string;
     theme:string;
     valeur:number;
+    id_question:number;
 }

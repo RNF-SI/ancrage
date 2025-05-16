@@ -6,6 +6,7 @@ export class GraphRepartition {
     reponse= "";
     theme = "";
     valeur = 0;
+    id_question=0;
 
     static fromJson(data: IGraphRepartition): GraphRepartition {
             const graph = new GraphRepartition();
@@ -15,6 +16,7 @@ export class GraphRepartition {
             graph.nombre = data.nombre;
             graph.reponse = data.reponse;
             graph.valeur = graph.valeur;
+            graph.id_question = graph.id_question;
     
             return graph;
     }

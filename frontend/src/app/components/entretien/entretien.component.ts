@@ -15,13 +15,14 @@ import { ReponseService } from '@app/services/reponse.service';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { MatDialog } from '@angular/material/dialog';
 import { AlerteEntretienComponent } from '../alertes/alerte-entretien/alerte-entretien.component';
+import { MenuLateralComponent } from "../parts/menu-lateral/menu-lateral.component";
 
 @Component({
   selector: 'app-entretien',
   templateUrl: './entretien.component.html',
   styleUrls: ['./entretien.component.css'],
   standalone:true,
-  imports:[CommonModule,MatRadioModule,ReactiveFormsModule,MatRadioModule,MatButtonModule,]
+  imports: [CommonModule, MatRadioModule, ReactiveFormsModule, MatRadioModule, MatButtonModule, MenuLateralComponent]
 
 })
 export class EntretienComponent implements OnInit,OnDestroy{
@@ -77,7 +78,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
               
             });
           });
-          console.log(this.reponses);
+        
           this.formGroup = this.fb.group(controls);
           if (this.id_acteur){
             for(let i = 0;i<this.reponses.length;i++){

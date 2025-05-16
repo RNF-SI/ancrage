@@ -1,12 +1,12 @@
 <div *ngFor="let themeEntry of chartDataByTheme | keyvalue" class="mb-5">
   <h2 class="text-center">{{ themeEntry.key }}</h2>
 
-  <div *ngFor="let chart of themeEntry.value" class="mb-4">
+  <div *ngFor="let chart of themeEntry.value" class="mb-4" [attr.id]="'question-' + chart.id_question">
     <h3 class="text-center">{{ chart.question }}</h3>
     
     <div class="row">
       <!-- Colonne gauche (bar chart) -->
-      <div class="col-md-6 d-flex flex-column align-items-center justify-content-center">
+      <div class="col-md-6 d-flex flex-column align-items-center justify-content-center" >
         <canvas baseChart
                 [data]="chart.chart"
                 [options]="chart.chartOptions"

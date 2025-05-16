@@ -6,6 +6,7 @@ export class GraphMoy {
     question = "";
     categorie = "";
     moyenne= 1.2;
+    id_question=0;
 
     static fromJson(data: IGraphMoy): GraphMoy {
         const graph = new GraphMoy();
@@ -14,6 +15,7 @@ export class GraphMoy {
         graph.question = data.question;
         graph.categorie = data.categorie;
         graph.moyenne = data.moyenne;
+        graph.id_question = data.id_question;
 
         return graph;
     }

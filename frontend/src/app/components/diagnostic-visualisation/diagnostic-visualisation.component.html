@@ -2,10 +2,12 @@
 <div class="container">
     <div class="row">
         <div class="col-3">
-
+          <app-menu-lateral class="invisible" id="menu"
+            [themes]="themes"
+          ></app-menu-lateral>
         </div>
         <div class="col-9">
-            <mat-tab-group>
+            <mat-tab-group (selectedTabChange)="onTabChange($event)">
                 <mat-tab label="Infos générales">
                     <div class="p-3">
                         <h2>{{diagnostic.nom}}</h2>
