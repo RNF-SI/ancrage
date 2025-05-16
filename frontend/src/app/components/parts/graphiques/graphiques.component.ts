@@ -36,6 +36,7 @@ export class GraphiquesComponent{
   private diagnosticSubscription?:Subscription;
   private routeSubscription?:Subscription;
   groupedData: { [question: string]: GraphRepartition[] } = {};
+  chartDataByTheme: { [theme: string]: AvgPerQuestion[] } = {};
 
   ngOnChanges(changes: SimpleChanges): void {
       if (changes['diagnostic']) {
@@ -68,7 +69,9 @@ export class GraphiquesComponent{
       this.chartDataByQuestion = Array.from(grouped.entries()).map(([question, data]) => {
         const sorted = [...data].sort((a, b) => a.categorie.localeCompare(b.categorie));
       
-        return {
+        const theme = sorted[0]?.theme || "Autres"; // On récupère le thème depuis GraphMoy
+      
+        const chartData: AvgPerQuestion = {
           question,
           chart: {
             labels: sorted.map(d => d.categorie),
@@ -92,7 +95,14 @@ export class GraphiquesComponent{
             }
           }
         };
-      });    
+      
+        if (!this.chartDataByTheme[theme]) {
+          this.chartDataByTheme[theme] = [];
+        }
+        this.chartDataByTheme[theme].push(chartData);
+      
+        return chartData;
+      });
                     
     });
   }

@@ -1,28 +1,29 @@
-<div *ngFor="let question of chartDataByQuestion" class="mb-5">
-  <div class="row align-items-center" style="min-height: 400px;">
-    <h3 class="text-center">{{ question.question }}</h3>
-    <!-- Colonne gauche (bar chart) -->
-    <div class="col-6 d-flex align-items-center justify-content-center">
-      <div class="w-100">
-        
-        <canvas
-          baseChart
-          [data]="question.chart"
-          [options]="question.chartOptions"
-          [type]="'bar'">
+<div *ngFor="let themeEntry of chartDataByTheme | keyvalue" class="mb-5">
+  <h2 class="text-center">{{ themeEntry.key }}</h2>
+
+  <div *ngFor="let chart of themeEntry.value" class="mb-4">
+    <h3 class="text-center">{{ chart.question }}</h3>
+    
+    <div class="row">
+      <!-- Colonne gauche (bar chart) -->
+      <div class="col-md-6 d-flex flex-column align-items-center justify-content-center">
+        <canvas baseChart
+                [data]="chart.chart"
+                [options]="chart.chartOptions"
+                chartType="bar">
         </canvas>
       </div>
-    </div>
 
-    <!-- Colonne droite (pie chart) -->
-    <div class="col-6">
-      <h4 class="text-center">Répartition des réponses</h4>
-      <canvas
-        baseChart
-        [data]="getChartData(question.question)"
-        [type]="'pie'"
-        [options]="chartOptions">
-      </canvas>
+      <!-- Colonne droite (pie chart) -->
+      <div class="col-md-6 d-flex flex-column align-items-center justify-content-center">
+        <h4 class="text-center">Répartition des réponses</h4>
+        <canvas
+          baseChart
+          [data]="getChartData(chart.question)"
+          [type]="'pie'"
+          [options]="chartOptions">
+        </canvas>
+      </div>
     </div>
   </div>
 </div>

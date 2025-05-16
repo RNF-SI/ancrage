@@ -89,7 +89,6 @@ def getAllDiagnosticsBySites():
 def getAveragebyQuestion(id_diagnostic):
     # Aliases pour les différentes utilisations de Nomenclature
     ValeurReponse = aliased(Nomenclature)     # tn
-    StatutEntretien = aliased(Nomenclature)   # tn2 (non utilisé ici, mais joint dans SQL)
     Categorie = aliased(Nomenclature)         # tn3
     Theme = aliased(Nomenclature)             # tn4
 
@@ -101,7 +100,7 @@ def getAveragebyQuestion(id_diagnostic):
             Categorie.libelle_court.label("categorie_acteur"),
             func.avg(ValeurReponse.value).label("moyenne_score")
         )
-        .select_from(Diagnostic)  # 👈 Obligatoire pour lever l'ambiguïté
+        .select_from(Diagnostic)  
         .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
         .join(Reponse, Acteur.id_acteur == Reponse.acteur_id)
         .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
@@ -144,7 +143,7 @@ def get_reponses_par_theme(id_diagnostic):
             func.count(Reponse.id_reponse).label("nombre"),
             ValeurReponse.value.label("valeur")
         )
-        .select_from(Diagnostic)  # 👈 Obligatoire pour lever l'ambiguïté
+        .select_from(Diagnostic)  
         .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
         .join(Reponse, Acteur.id_acteur == Reponse.acteur_id)
         .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
