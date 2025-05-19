@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { NomenclatureService } from '@app/services/nomenclature.service';
 import { Labels } from '@app/utils/labels';
@@ -10,19 +10,19 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatButtonModule } from '@angular/material/button';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Reponse } from '@app/models/reponse.model';
-import { Acteur } from '@app/models/acteur.model';
 import { ReponseService } from '@app/services/reponse.service';
 import { Diagnostic } from '@app/models/diagnostic.model';
-import { MatDialog } from '@angular/material/dialog';
-import { AlerteEntretienComponent } from '../alertes/alerte-entretien/alerte-entretien.component';
 import { MenuLateralComponent } from "../parts/menu-lateral/menu-lateral.component";
+import { SiteService } from '@app/services/sites.service';
+import { DiagnosticStoreService } from '@app/services/diagnostic-store.service';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 @Component({
   selector: 'app-entretien',
   templateUrl: './entretien.component.html',
   styleUrls: ['./entretien.component.css'],
   standalone:true,
-  imports: [CommonModule, MatRadioModule, ReactiveFormsModule, MatRadioModule, MatButtonModule, MenuLateralComponent]
+  imports: [CommonModule, MatRadioModule, ReactiveFormsModule, MatRadioModule, MatButtonModule, MenuLateralComponent,FontAwesomeModule]
 
 })
 export class EntretienComponent implements OnInit,OnDestroy{
@@ -42,10 +42,18 @@ export class EntretienComponent implements OnInit,OnDestroy{
   formGroup: FormGroup = this.fb.group({});
   previousPage = "";
   diagnostic:Diagnostic = new Diagnostic();
-  private dialog = inject(MatDialog);
   etats:Nomenclature[]=[];
+  siteService = inject(SiteService);
+  private router = inject(Router);
+  private diagnosticStoreSubscription?: Subscription;
+  private diagnosticStoreService = inject(DiagnosticStoreService);
 
   ngOnInit(): void {
+    this.previousPage = localStorage.getItem("previousPage")!;
+    this.diagnosticStoreSubscription = this.diagnosticStoreService.getDiagnostic().subscribe(diag =>{
+      this.diagnostic = diag!;
+    });
+    
      this.routeSubscription = this.route.params.subscribe((params: any) => {
         this.id_acteur = parseInt(params['id_acteur']); 
         this.title = this.labels.addInterview;
@@ -81,18 +89,34 @@ export class EntretienComponent implements OnInit,OnDestroy{
         
           this.formGroup = this.fb.group(controls);
           if (this.id_acteur){
-            for(let i = 0;i<this.reponses.length;i++){
-              this.formGroup.get(`question_${this.reponses[i].question?.id_question}`)?.setValue(this.reponses[i].valeur_reponse.value);
-            }
+            setTimeout(() => {
+              this.patchForm(this.reponses);
+            }, 0);
+            
           }          
           
-                  
         });
-        this.nomenclatureSubscription = this.nomenclatureService.getAllByType("thème",this.id_acteur).subscribe(themes => {
           
-        })
-          
-        });
+      });
+  }
+
+  ngAfterViewInit(){
+    
+  }
+
+  patchForm(reponses:Reponse[]){
+
+    for(let i = 0;i<reponses.length;i++){
+      this.formGroup.get(`question_${reponses[i].question?.id_question}`)?.setValue(reponses[i].valeur_reponse.value);
+      if (reponses[i].valeur_reponse.id_nomenclature > 0){
+        const classe = ".warn_"+reponses[i].question?.id_question;
+        console.log(classe);
+        const element = document.querySelector(classe);
+        console.log(element);
+        element?.classList.add("invisible");
+      }
+      
+    }
   }
 
   createReponse(typeReponse:Nomenclature,id_question:number){
@@ -100,10 +124,13 @@ export class EntretienComponent implements OnInit,OnDestroy{
     for(let i = 0;i<this.reponses.length;i++){
       if(this.reponses[i].question?.id_question === id_question){
         this.reponses[i].valeur_reponse = typeReponse;
+        const element = document.querySelector(".warn_"+id_question);
+        element?.classList.add("invisible");
         break;
       }
       
     }
+    this.submit();
   }
 
   submit(){
@@ -132,39 +159,27 @@ export class EntretienComponent implements OnInit,OnDestroy{
         }
       }
     }
-    console.log(this.reponses);
+    
     if (this.reponses.length>0){
       this.reponsesSubscription = this.reponseService.update(this.reponses).subscribe(acteur => {
-        this.getConfirmation("Vous venez de saisir les réponses de",acteur);
+
+        this.patchForm(acteur.reponses!);
+        
       })
     }
     
-  }
-
-   getConfirmation(message:string,actor:Acteur){
-        this.previousPage = localStorage.getItem("previousPage")!;
-        /* this.diagnostic=diag;
-        localStorage.setItem("diagnostic",JSON.stringify(this.diagnostic)); */
-       
-        if(actor.id_acteur > 0){
-         
-          this.dialog.open(AlerteEntretienComponent, {
-            data: {
-              title: this.title,
-              message: message,
-              labels: this.labels,
-              actor: actor,
-              diagnostic:this.diagnostic,
-              previousPage:this.previousPage
-            }
-          });
-        }
-        
   }
 
   ngOnDestroy(): void {
     this.routeSubscription?.unsubscribe();
     this.nomenclatureSubscription?.unsubscribe();
     this.reponsesSubscription?.unsubscribe();
+  }
+
+  navigate(path:string,diagnostic:Diagnostic){
+    console.log(path);
+    localStorage.setItem("previousPage",this.router.url);
+    this.siteService.navigateAndReload(path,diagnostic);
+    
   }
 }

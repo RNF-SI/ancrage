@@ -17,6 +17,8 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { AlerteShowActorDetailsComponent } from '../../alertes/alerte-show-actor-details/alerte-show-actor-details.component';
 import { MatCardModule } from '@angular/material/card';
 import { Labels } from '@app/utils/labels';
+import { DiagnosticStoreService } from '@app/services/diagnostic-store.service';
+import { AlerteStatutEntretienComponent } from '@app/components/alertes/alerte-statut-entretien/alerte-statut-entretien.component';
 
 @Component({
   selector: 'app-choix-acteurs',
@@ -55,6 +57,7 @@ export class ChoixActeursComponent implements OnInit {
   is_creation = false;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private diagnosticStoreService = inject(DiagnosticStoreService);
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['actors'] && this.actors && this.actors.length > 0) {
@@ -156,8 +159,19 @@ export class ChoixActeursComponent implements OnInit {
   navigateToActor(path:string,diagnostic:Diagnostic){
     diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
     localStorage.setItem("previousPage",this.router.url);
-    localStorage.setItem("diagnostic",JSON.stringify(diagnostic));
+    this.diagnosticStoreService.setDiagnostic(diagnostic);
     this.router.navigate([path]);
+  }
+
+  openAlert(actor:Acteur){
+    this.dialog.open(AlerteStatutEntretienComponent, {
+      data: {
+        title: "Modifier l'état de l'entretien",
+        actor: actor,
+        labels: this.labels
+        
+      }
+    });
   }
   
   showOtherInfos(actor:Acteur){

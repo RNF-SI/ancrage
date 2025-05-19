@@ -23,6 +23,7 @@ import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { Labels } from '@app/utils/labels';
 import { MatDialog } from '@angular/material/dialog';
 import { AlerteDiagnosticComponent } from '../alertes/alerte-diagnostic/alerte-diagnostic.component';
+import { DiagnosticStoreService } from '@app/services/diagnostic-store.service';
 
 @Component({
   selector: 'app-diagnostic',
@@ -75,6 +76,8 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   private nomenclatureService = inject(NomenclatureService);
   private authService = inject(AuthService);
   private dialog = inject(MatDialog);
+  private diagnosticStoreService = inject(DiagnosticStoreService);
+  private diagnosticStoreSubscription ?:Subscription;
   user_id=0;
   id_organisme = 0;
   actorsSelected:MatTableDataSource<Acteur>= new MatTableDataSource();
@@ -127,18 +130,20 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
           
         });
       } else {
-        if (localStorage.getItem("diagnostic")){
-      
-          this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
+        this.diagnosticStoreSubscription = this.diagnosticStoreService.getDiagnostic().subscribe(diag =>{
+          this.diagnostic = diag!;
+          console.log(this.diagnostic);
+        });
+        this.diagnosticStoreSubscription = this.diagnosticStoreService.getDiagnostic().subscribe(diag =>{
+          this.diagnostic = diag!;
           console.log(this.diagnostic);
           this.chosenSites = this.diagnostic.sites;
-          
-        }
+        });
+        
         this.user_id = this.authService.getCurrentUser().id_role;
         this.id_organisme = this.authService.getCurrentUser().id_organisme;
         forkJoin([sites$, actors$]).subscribe(([sites, acteurs]) => {
          
-          
           this.instructionswithResults(sites,acteurs);
           this.setActors(this.diagnostic);
         });
@@ -269,8 +274,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   getConfirmation(message:string,diag:Diagnostic){
       this.previousPage = localStorage.getItem("previousPage")!;
       this.diagnostic=diag;
-      localStorage.setItem("diagnostic",JSON.stringify(this.diagnostic));
-     
+      this.diagnosticStoreService.setDiagnostic(this.diagnostic);
       if(diag.id_diagnostic > 0){
        
         this.dialog.open(AlerteDiagnosticComponent, {

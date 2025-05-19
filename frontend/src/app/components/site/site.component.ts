@@ -20,6 +20,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { AlerteSiteComponent } from '../alertes/alerte-site/alerte-site.component';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { Labels } from '@app/utils/labels';
+import { DiagnosticStoreService } from '@app/services/diagnostic-store.service';
 
 
 
@@ -70,16 +71,23 @@ export class SiteComponent implements OnInit,OnDestroy{
   private departementService = inject(DepartementService);
   private dialog = inject(MatDialog);
   private authService = inject(AuthService);
+  private diagnosticStoreService =inject(DiagnosticStoreService);
   user_id=0;
   previousPage="";
+  private diagnosticStoreSubscription?: Subscription;
 
   ngOnInit(): void {
     
     this.user_id = this.authService.getCurrentUser().id_role;
-    console.log(this.previousPage);
-    if(localStorage.getItem("diagnostic")){
-      this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!)
-    }
+    this.diagnosticStoreSubscription = this.diagnosticStoreService.getDiagnostic().subscribe(diag =>{
+      if (diag){
+      
+        this.diagnostic = diag!;
+        console.log(this.diagnostic)
+      }
+      
+    });
+    
     this.routeSubscription = this.route.params.subscribe((params: any) => {
       const id_site = params['id_site'];  
   
@@ -159,7 +167,7 @@ export class SiteComponent implements OnInit,OnDestroy{
   getConfirmation(message:string,site:Site){
     this.diagnostic.sites.push(site);
     this.previousPage = localStorage.getItem("previousPage")!;
-    localStorage.setItem("diagnostic",JSON.stringify(this.diagnostic));
+    this.diagnosticStoreService.setDiagnostic(this.diagnostic);
     this.dialog.open(AlerteSiteComponent, {
       data: {
         title: this.titleSite,

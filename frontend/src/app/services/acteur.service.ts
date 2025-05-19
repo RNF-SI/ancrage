@@ -34,6 +34,14 @@ export class ActeurService {
     );
   }
 
+  modifiyInterviewState(json:any,id_acteur: number,id_state:number): Observable<Acteur> {
+    const route = this.BASE_URL + id_acteur + '/' + id_state;
+    console.log(route);
+    return this.http.put<IActeur>(route, json).pipe(
+      map(acteurJson => Acteur.fromJson(acteurJson))
+    );
+  }
+
   get(id: number): Observable<Acteur> {
     return this.http.get<IActeur>(this.BASE_URL + id).pipe(
       map(acteurJson => Acteur.fromJson(acteurJson))

@@ -35,4 +35,5 @@ export class Labels {
     chosenActors = "Acteurs impliqués";
     addInterview = "Saisir l'entretien";
     modifyInterview = "Modifier l'entretien";
+    chooseInterviewState = "Choisissez l'état de l'entretien";
 }

@@ -6,6 +6,7 @@ import { ISite } from '@app/interfaces/site.interface';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
 import { Diagnostic } from '@app/models/diagnostic.model';
+import { DiagnosticStoreService } from './diagnostic-store.service';
 @Injectable({
 	providedIn: 'root'
 })
@@ -15,6 +16,7 @@ export class SiteService {
 	private BASE_URL = environment.flask_server+'site/';
 	private http = inject(HttpClient);
 	private router = inject(Router);
+	private diagnosticStoreService = inject(DiagnosticStoreService);
 
 	getAll(): Observable<Site[]> {
 		return this.http.get<ISite[]>(this.GET_ALL_URL).pipe(
@@ -73,8 +75,8 @@ export class SiteService {
 			diagnostic.sites.push(site);
 		}
 		localStorage.setItem("previousPage",this.router.url);
-		localStorage.setItem("diagnostic",JSON.stringify(diagnostic));
-		console.log(localStorage.getItem("diagnostic"));
+		this.diagnosticStoreService.setDiagnostic(diagnostic);
+		
 		this.router.navigate([path]).then(() => {
 		  window.location.reload();
 		});;

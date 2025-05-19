@@ -44,9 +44,9 @@ import { AlerteActeurComponent } from './components/alertes/alerte-acteur/alerte
 import { AlerteDiagnosticComponent } from './components/alertes/alerte-diagnostic/alerte-diagnostic.component';
 import { EntretienComponent } from './components/entretien/entretien.component';
 import { DiagnosticVisualisationComponent } from './components/diagnostic-visualisation/diagnostic-visualisation.component';
-import { AlerteEntretienComponent } from './components/alertes/alerte-entretien/alerte-entretien.component';
 import { GraphiquesComponent } from './components/parts/graphiques/graphiques.component';
 import { MenuLateralComponent } from './components/parts/menu-lateral/menu-lateral.component';
+import { AlerteStatutEntretienComponent } from './components/alertes/alerte-statut-entretien/alerte-statut-entretien.component';
 
 
 @NgModule({
@@ -58,7 +58,7 @@ import { MenuLateralComponent } from './components/parts/menu-lateral/menu-later
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
-    
+   
   ],
   imports: [
     BrowserModule,
@@ -89,9 +89,9 @@ import { MenuLateralComponent } from './components/parts/menu-lateral/menu-later
     AlerteActeurComponent, 
     AlerteDiagnosticComponent,
     EntretienComponent,
-    AlerteEntretienComponent,
     GraphiquesComponent,
     MenuLateralComponent,
+    AlerteStatutEntretienComponent,
     ToastrModule.forRoot({
       timeOut: 15000
     }),

@@ -20,6 +20,7 @@ import { AlerteVisualisationSiteComponent } from "../../alertes/alerte-visualisa
 import { MatDialog } from "@angular/material/dialog";
 import { Labels } from "@app/utils/labels";
 import { MatExpansionModule } from '@angular/material/expansion';
+import { DiagnosticStoreService } from "@app/services/diagnostic-store.service";
 
 @Component({
   selector: 'app-sites-diagnostics-view',
@@ -69,6 +70,8 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy{
   btnForDiagnosticsLbl = "";
   private dialog = inject(MatDialog);
   private router = inject(Router)
+  private diagnosticStoreSubscription?: Subscription;
+  private diagnosticStoreService = inject (DiagnosticStoreService);
   
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -125,14 +128,17 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy{
   }
 
   navigate(path:string,diagnostic:Diagnostic,site?:Site){
-    if (localStorage.getItem("diagnostic")){
+    this.diagnosticStoreSubscription = this.diagnosticStoreService.getDiagnostic().subscribe(diag =>{
+      if (diag){
       
-      return this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
-    }else{
-      this.diagnostic.created_by = this.user_id;
-      this.diagnostic.id_organisme = this.id_organisme;
-    }
-    this.siteService.navigateAndReload(path,diagnostic,site);
+        this.diagnostic = diag!;
+      }else{
+        this.diagnostic.created_by = this.user_id;
+        this.diagnostic.id_organisme = this.id_organisme;
+      }
+      this.siteService.navigateAndReload(path,diagnostic,site);
+    });
+    
   }
   extractUniqueFilters() {
     this.uniqueDepartements = Array.from(new Set(this.sites.flatMap(site =>

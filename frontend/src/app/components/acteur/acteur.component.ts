@@ -21,6 +21,7 @@ import { AlerteActeurComponent } from '../alertes/alerte-acteur/alerte-acteur.co
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { SiteService } from '@app/services/sites.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { DiagnosticStoreService } from '@app/services/diagnostic-store.service';
 
 @Component({
   selector: 'app-acteur',
@@ -64,7 +65,8 @@ export class ActeurComponent implements OnInit,OnDestroy{
   private actorService = inject(ActeurService);
   private dialog = inject(MatDialog);
   private siteService = inject(SiteService);
-  private router = inject(Router);
+  private diagnosticStoreService = inject(DiagnosticStoreService);
+  private diagnosticStoreSubscription?:Subscription;
   user_id=0;
   filteredTowns: Commune[] = [];
   labels = new Labels();
@@ -75,7 +77,10 @@ export class ActeurComponent implements OnInit,OnDestroy{
   
 
   ngOnInit(): void {
-    this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
+    this.diagnosticStoreSubscription = this.diagnosticStoreService.getDiagnostic().subscribe(diag =>{
+      this.diagnostic = diag!;
+      console.log(this.diagnostic);
+    });
     this.isLoading = true;
     this.routeSubscription = this.route.params.subscribe((params: any) => {
           this.id_actor = params['id_acteur'];  
@@ -190,7 +195,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
   getConfirmation(message:string,actor:Acteur){
     this.previousPage = localStorage.getItem("previousPage")!;
     this.diagnostic.acteurs.push(actor);
-    localStorage.setItem("diagnostic",JSON.stringify(this.diagnostic));
+    this.diagnosticStoreService.setDiagnostic(this.diagnostic);
     console.log(actor);
     if(actor.id_acteur > 0){
       console.log(actor);

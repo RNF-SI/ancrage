@@ -1,0 +1,17 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+<mat-dialog-content>
+    <form [formGroup] = "formGroup" (submit)="recordState($event)">
+        <mat-form-field appearance="fill">
+            <mat-label>{{data.labels.chooseInterviewState}}</mat-label>
+            <mat-select required formControlName="statut_entretien" [compareWith]="compareFn">
+                <mat-option *ngFor="let st of uniqueStates" required [value]="st">{{ st.libelle }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="formGroup.get('statut_entretien')?.hasError('required')">L'état est requis.</mat-error>
+        </mat-form-field>
+    
+        <mat-dialog-actions>
+            <button mat-raised-button mat-dialog-close type="submit" color="warn">Enregistrer</button>
+            <button mat-raised-button mat-dialog-close (click)="close()" color="accent">Annuler</button>
+        </mat-dialog-actions>
+    </form>
+</mat-dialog-content>

@@ -36,17 +36,8 @@ with app.app_context():
     # Nomenclatures
     # ---------------------
     nomenclatures = []
-    for i in range(10):
-        n = Nomenclature(
-            libelle=f"Nomenclature {i}",
-            value=i,
-            mnemonique=random_string(5)
-        )
-        db.session.add(n)
-        nomenclatures.append(n)
-    db.session.commit()
 
-        # Ajout de 3 habitats (mnemonique = 'habitats')
+    # Ajout de 3 habitats (mnemonique = 'habitats')
     habitats = []
     for nom in ['Forêt feuillue', 'Prairie humide', 'Landes atlantiques']:
         h = Nomenclature(
@@ -231,7 +222,6 @@ with app.app_context():
             is_acteur_economique=bool(random.getrandbits(1)),
             structure=f"Structure {i}",
             diagnostic_id=diagnostic.id_diagnostic,
-            statut_entretien_id=random.choice(statuts_entretien).id_nomenclature,
             commune_id=random.randint(69931, 100000), 
             created_at=datetime.now(),
             modified_at=datetime.now(),
@@ -250,8 +240,6 @@ with app.app_context():
                     categorie_id=cat.id_nomenclature
                 )
             )
-
-      
 
     db.session.commit()
 

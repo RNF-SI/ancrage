@@ -1,4 +1,4 @@
-<form [formGroup]="formGroup" (ngSubmit)="submit()">
+<form [formGroup]="formGroup">
     <div class="container">
       <div class="row">
         <div class="col-4">
@@ -14,7 +14,7 @@
             <h3>{{ theme.libelle }}</h3>
   
             <div *ngFor="let q of theme.questions" [attr.id]="'question-' + q.id_question">
-              <h4 class="question_d_{{q.id_question}}">{{ q.libelle }}</h4>
+              <h4 class="question_d_{{q.id_question}}">{{ q.libelle }} <fa-icon class="warn warn_{{q.id_question}}"[icon]="['fas', 'triangle-exclamation']"></fa-icon></h4>
               <p><b>Réponses attendues : </b>{{q.indications}}</p>
               <mat-radio-group [formControlName]="'question_' + q.id_question">
                 <mat-radio-button *ngFor="let rep of q.choixReponses" [value]="rep.value" (click)="createReponse(rep,q.id_question)">
@@ -24,11 +24,11 @@
             </div>
           </div>
   
-          <button mat-raised-button color="warn" type="submit">Envoyer</button>
+          <button mat-raised-button color="accent" type="button" (click)="navigate(this.previousPage,this.diagnostic)">{{labels.btnPreviousStepLabel}}</button>
         </div>
   
         
       </div>
     </div>
   </form>
-
+  

@@ -61,6 +61,28 @@
                               </div>
                               <div class="actor-structure">
                                 {{ actor.statut_entretien?.libelle }}
+                                <ng-container [ngSwitch]="actor.statut_entretien?.libelle">
+
+                                  <span *ngSwitchCase="'Réalisé'"><fa-icon class="realized" [icon]="['fas', 'check']"></fa-icon></span>
+                                  <ng-template [ngSwitchCase]="'Reporté'">
+                                    <ng-container *ngTemplateOutlet="postponed"></ng-container>
+                                  </ng-template>
+                                  <ng-template [ngSwitchCase]="'En cours'">
+                                    <ng-container *ngTemplateOutlet="inprogress"></ng-container>
+                                  </ng-template>
+                                  <ng-template [ngSwitchCase]="'Annulé'">
+                                    <ng-container *ngTemplateOutlet="cancel"></ng-container>
+                                  </ng-template>
+                                  <ng-template [ngSwitchCase]="'Programmé'">
+                                    <ng-container *ngTemplateOutlet="planified"></ng-container>
+                                  </ng-template>
+                                  <span *ngSwitchDefault>A faire <fa-icon class="todo" [icon]="['fas', 'triangle-exclamation']"></fa-icon></span>
+                                
+                                </ng-container>
+                                <ng-template #postponed><span><fa-icon class="postponed" [icon]="['fas', 'clock']"></fa-icon></span></ng-template>
+                                <ng-template #inprogress><span><fa-icon class="inprogress" [icon]="['fas', 'triangle-exclamation']"></fa-icon></span></ng-template>
+                                <ng-template #cancel><span><fa-icon class = "canceled" [icon]="['fas', 'circle-xmark']"></fa-icon></span></ng-template>
+                                <ng-template #planified><span><fa-icon class= "planified" [icon]="['fas', 'calendar-check']"></fa-icon></span></ng-template>
                               </div>
                             </div>
                       
@@ -74,7 +96,10 @@
                               </button>
 
                               <button mat-icon-button type="button" (click)="navigate('/entretien/' + actor.id_acteur,diagnostic)">
-                                <fa-icon [icon]="['fas', 'chart-line']"></fa-icon>
+                                <fa-icon [icon]="['fas', 'chart-pie']"></fa-icon>
+                              </button>
+                              <button mat-icon-button type="button" (click)="openAlert(actor)">
+                                <fa-icon [icon]="['fas', 's']"></fa-icon>
                               </button>
                             </div>
                             
