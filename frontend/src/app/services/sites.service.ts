@@ -52,7 +52,6 @@ export class SiteService {
 
 	update(site: Site): Observable<Site> {
 		const route = this.BASE_URL + site.id_site;
-		console.log(route);
 		return this.http.put<ISite>(route, site.toJson()).pipe(
 			map(siteJson => Site.fromJson(siteJson))
 		);

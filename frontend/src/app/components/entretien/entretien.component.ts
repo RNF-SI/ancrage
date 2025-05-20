@@ -110,9 +110,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
       this.formGroup.get(`question_${reponses[i].question?.id_question}`)?.setValue(reponses[i].valeur_reponse.value);
       if (reponses[i].valeur_reponse.id_nomenclature > 0){
         const classe = ".warn_"+reponses[i].question?.id_question;
-        console.log(classe);
         const element = document.querySelector(classe);
-        console.log(element);
         element?.classList.add("invisible");
       }
       
@@ -174,10 +172,10 @@ export class EntretienComponent implements OnInit,OnDestroy{
     this.routeSubscription?.unsubscribe();
     this.nomenclatureSubscription?.unsubscribe();
     this.reponsesSubscription?.unsubscribe();
+    this.diagnosticStoreSubscription?.unsubscribe();
   }
 
   navigate(path:string,diagnostic:Diagnostic){
-    console.log(path);
     localStorage.setItem("previousPage",this.router.url);
     this.siteService.navigateAndReload(path,diagnostic);
     

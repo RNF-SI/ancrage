@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, Inject, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
-import { Router, RouterModule } from '@angular/router';
 import { Acteur } from '@app/models/acteur.model';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { SiteService } from '@app/services/sites.service';
@@ -13,7 +12,7 @@ import { Labels } from '@app/utils/labels';
   templateUrl: './alerte-acteur.component.html',
   styleUrls: ['./alerte-acteur.component.css'],
   standalone:true,
-  imports:[MatDialogModule,MatButtonModule,CommonModule,RouterModule]
+  imports:[MatDialogModule,MatButtonModule,CommonModule]
 })
 export class AlerteActeurComponent {
   constructor(
@@ -27,7 +26,7 @@ export class AlerteActeurComponent {
         previousPage:string;
       }
     ) {}
-    private router = inject(Router);
+  
     private siteService = inject(SiteService);
   
   

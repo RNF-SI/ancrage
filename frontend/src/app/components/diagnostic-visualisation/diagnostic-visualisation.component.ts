@@ -1,5 +1,5 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, Validators } from '@angular/forms';
 import { MatTableDataSource, MatTableDataSourcePaginator } from '@angular/material/table';
 import { Acteur } from '@app/models/acteur.model';
 import { Departement } from '@app/models/departement.model';
@@ -85,8 +85,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   onTabChange(event: MatTabChangeEvent) {
     let menu = document.getElementById("menu");
     if (event.index === 2) { 
-      
-      console.log(menu?.className);
+    
       if (menu?.className == "invisible"){
         menu?.classList.remove("invisible");
         menu?.classList.add("visible");

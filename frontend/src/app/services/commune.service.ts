@@ -39,7 +39,7 @@ export class CommuneService {
   
     update(commune: Commune): Observable<Commune> {
       const route = this.BASE_URL + commune.id_commune;
-      console.log(route);
+      
       return this.http.put<ICommune>(route, commune.toJson()).pipe(
         map(communeJson => Commune.fromJson(communeJson))
       );

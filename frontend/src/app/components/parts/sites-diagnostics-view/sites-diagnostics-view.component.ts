@@ -196,10 +196,11 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy{
 
   ngOnDestroy(): void {
     this.sitesSub?.unsubscribe();
+    this.diagnosticStoreSubscription?.unsubscribe();
   }
 
   showSiteDetails(site:Site){
-    console.log(this.user_id == site.created_by);
+   
     this.dialog.open(AlerteVisualisationSiteComponent, {
               data: {
                 site: site,

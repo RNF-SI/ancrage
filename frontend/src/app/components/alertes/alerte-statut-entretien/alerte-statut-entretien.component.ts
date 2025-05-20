@@ -10,7 +10,6 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { ActeurService } from '@app/services/acteur.service';
 import { NomenclatureService } from '@app/services/nomenclature.service';
-import { SiteService } from '@app/services/sites.service';
 import { Labels } from '@app/utils/labels';
 import { Subscription } from 'rxjs';
 
@@ -41,7 +40,7 @@ export class AlerteStatutEntretienComponent implements OnInit,OnDestroy{
         id_acteur: [0, [Validators.required]],
         statut_entretien: this.fb.control<Nomenclature | null>(null, [Validators.required])
     });
-    private siteService = inject(SiteService);
+
     private acteurService = inject(ActeurService);
     private acteurSubscription?:Subscription;
     private statutsSubcription ?:Subscription;
@@ -49,7 +48,7 @@ export class AlerteStatutEntretienComponent implements OnInit,OnDestroy{
     
 
     ngOnInit(): void {
-      console.log(this.data);
+      
       this.statutsSubcription = this.statutsService.getAllByType("statut_entretien").subscribe(statuts =>{
         for( let i = 0;i<statuts.length;i++){
           if(statuts[i].libelle == "Réalisé" || statuts[i].libelle == "En cours" ){

@@ -83,7 +83,7 @@ export class SiteComponent implements OnInit,OnDestroy{
       if (diag){
       
         this.diagnostic = diag!;
-        console.log(this.diagnostic)
+       
       }
       
     });
@@ -96,7 +96,6 @@ export class SiteComponent implements OnInit,OnDestroy{
       const departements$ = this.departementService.getAll();
 
       if (id_site) {
-        // 🔥 Charger les habitats, statuts ET site
         const site$ = this.siteService.get(id_site);
   
         forkJoin([habitats$, statuts$, site$,departements$]).subscribe(([habitats, statuts, site,departements]) => {
@@ -186,5 +185,6 @@ export class SiteComponent implements OnInit,OnDestroy{
     this.nomenclatureSubscription?.unsubscribe();
     this.siteSubscription?.unsubscribe();
     this.routeSubscription?.unsubscribe();
+    this.diagnosticStoreSubscription?.unsubscribe();
   }
 }

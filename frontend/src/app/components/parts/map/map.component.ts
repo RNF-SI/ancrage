@@ -1,6 +1,5 @@
 import { Component, AfterViewInit, Input, SimpleChanges, inject} from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { Site } from '@app/models/site.model';
 import * as L from 'leaflet';
 import 'leaflet.markercluster';
@@ -31,8 +30,6 @@ export class MapComponent implements AfterViewInit {
   markerClusterData = [];
   mapPoint: any;
   marker:any;
-  private route:ActivatedRoute = inject(ActivatedRoute);
- 
  
   ngAfterViewInit(): void {
     this.initMap();
@@ -42,12 +39,10 @@ export class MapComponent implements AfterViewInit {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    console.log('ngOnChanges triggered', changes);
     if (changes['sites'] && this.map && !this.changePosition) {
-      this.addMarkers(); // Ajoute les marqueurs dès que sites est dispo
+      this.addMarkers(); 
     }
     if (changes['formGroup'] && this.map) {
-      // 🔥 Vérifie si les positions sont prêtes avant de bouger le marqueur
       let latitude = +this.formGroup?.get('position_y')?.value;
       let longitude = +this.formGroup?.get('position_x')?.value;
       
@@ -60,14 +55,14 @@ export class MapComponent implements AfterViewInit {
 
   private initMap(): void {
     this.map = L.map('map', {
-      center: [48.8566, 2.3522], // Coordonnées de Paris par défaut
+      center: [48.8566, 2.3522], 
       zoom: 13
     });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
     if (this.formGroup) {
-      // 🔥 Écoute les changements de valeurs du formGroup
+     
       this.formGroup.valueChanges.subscribe(values => {
         const latitude = +values.position_y;
         const longitude = +values.position_x;

@@ -36,4 +36,7 @@ export class Labels {
     addInterview = "Saisir l'entretien";
     modifyInterview = "Modifier l'entretien";
     chooseInterviewState = "Choisissez l'état de l'entretien";
+    modifyStateInterview = "Modifier l'état de l'entretien";
+    goToInterview = "Accéder à l'entretien";
+    showMoreInfo = "Informations complémentaires";
 }

@@ -7,7 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Acteur } from '@app/models/acteur.model';
 import { Departement } from '@app/models/departement.model';
 import { Diagnostic } from '@app/models/diagnostic.model';
@@ -27,7 +27,7 @@ import { AlerteStatutEntretienComponent } from '@app/components/alertes/alerte-s
   standalone:true,
   imports:[CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule,RouterModule,ReactiveFormsModule,FontAwesomeModule,MatListModule,MatCardModule]
 })
-export class ChoixActeursComponent implements OnInit {
+export class ChoixActeursComponent {
   @Input() actors: Acteur[]=[];
   title: string="Choisir les acteurs";
   titleGetActors = "Récupérer les acteurs d'un précédent diagnostic sur les sites choisis";
@@ -55,7 +55,6 @@ export class ChoixActeursComponent implements OnInit {
   titleChooseActors="Acteurs choisis";
   private dialog = inject(MatDialog);
   is_creation = false;
-  private route = inject(ActivatedRoute);
   private router = inject(Router);
   private diagnosticStoreService = inject(DiagnosticStoreService);
 
@@ -73,11 +72,6 @@ export class ChoixActeursComponent implements OnInit {
         this.addOrRemoveActor(acteur);
       }
     } 
-  }
-
-  ngOnInit(): void {
-   
-    
   }
 
   applyFilters() {
@@ -166,7 +160,7 @@ export class ChoixActeursComponent implements OnInit {
   openAlert(actor:Acteur){
     this.dialog.open(AlerteStatutEntretienComponent, {
       data: {
-        title: "Modifier l'état de l'entretien",
+        title: this.labels.modifyStateInterview,
         actor: actor,
         labels: this.labels
         
@@ -177,7 +171,7 @@ export class ChoixActeursComponent implements OnInit {
   showOtherInfos(actor:Acteur){
     this.dialog.open(AlerteShowActorDetailsComponent, {
               data: {
-                title: "Autres informations",
+                title: this.labels.showMoreInfo,
                 actor: actor,
                 labels: this.labels
                 

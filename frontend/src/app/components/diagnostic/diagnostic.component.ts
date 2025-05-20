@@ -130,13 +130,9 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
           
         });
       } else {
+        
         this.diagnosticStoreSubscription = this.diagnosticStoreService.getDiagnostic().subscribe(diag =>{
           this.diagnostic = diag!;
-          console.log(this.diagnostic);
-        });
-        this.diagnosticStoreSubscription = this.diagnosticStoreService.getDiagnostic().subscribe(diag =>{
-          this.diagnostic = diag!;
-          console.log(this.diagnostic);
           this.chosenSites = this.diagnostic.sites;
         });
         
@@ -156,7 +152,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     const remappedActeurs = (diag.acteurs || []).map(act =>
       this.uniqueActors.find(a => a.id_acteur === act.id_acteur) || act
     );
-    console.log(remappedActeurs);
+    
     this.formGroup.patchValue({
       id_diagnostic: diag.id_diagnostic,
       nom: diag.nom,
@@ -165,10 +161,10 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     });
 
     const selectedIds = new Set(remappedActeurs.map(a => a.id_acteur));
-    console.log(this.uniqueActors);
+    
     this.uniqueActors.forEach(actor => {
       actor.selected = selectedIds.has(actor.id_acteur);
-      console.log(actor.selected);
+      
     });
     this.actors= this.uniqueActors;
     this.actorsService.sortByNameAndSelected(this.actors);
@@ -214,7 +210,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   }
 
   getDiagnostics(sites:any){
-    console.log(sites);
+   
     if (sites.length > 0){
       let nom ="";
       
@@ -225,7 +221,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       nom = "Diagnostic - "+ nom + "- " + new Date().getFullYear();
       this.diagnostic.nom = nom;
       this.formGroup.get('nom')?.setValue(nom);
-      console.log(this.formGroup.get('nom')?.value);
+     
       let array:number[]=[];
       for (let i = 0;i<sites.length;i++){
         array.push(sites[i].id_site);
@@ -254,7 +250,6 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     if (this.id_diagnostic == undefined){
       let nom = this.authService.getCurrentUser().nom_role;
       let prenom = this.authService.getCurrentUser().prenom_role;
-      console.log(nom);
       this.formGroup.get("identite_createur")?.setValue(nom + " "+ prenom);
       this.formGroup.get("created_by")?.setValue(this.user_id);
       this.formGroup.get("id_organisme")?.setValue(this.id_organisme);
@@ -293,6 +288,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   ngOnDestroy(): void {
     this.routeSubscription?.unsubscribe();
     this.diagnosticSubscription?.unsubscribe();
+    this.diagnosticStoreSubscription?.unsubscribe();
   }
 
 

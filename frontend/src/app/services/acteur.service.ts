@@ -36,7 +36,6 @@ export class ActeurService {
 
   modifiyInterviewState(json:any,id_acteur: number,id_state:number): Observable<Acteur> {
     const route = this.BASE_URL + id_acteur + '/' + id_state;
-    console.log(route);
     return this.http.put<IActeur>(route, json).pipe(
       map(acteurJson => Acteur.fromJson(acteurJson))
     );
@@ -56,7 +55,7 @@ export class ActeurService {
 
   update(acteur: Acteur): Observable<Acteur> {
     const route = this.BASE_URL + acteur.id_acteur;
-    console.log(route);
+   
     return this.http.put<IActeur>(route, acteur.toJson()).pipe(
       map(acteurJson => Acteur.fromJson(acteurJson))
     );

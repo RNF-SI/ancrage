@@ -3,7 +3,6 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatButtonModule } from '@angular/material/button';
 import { Site } from '@app/models/site.model';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
 import { SiteService } from '@app/services/sites.service';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { Labels } from '@app/utils/labels';
@@ -12,7 +11,7 @@ import { Labels } from '@app/utils/labels';
   templateUrl: './alerte-site.component.html',
   styleUrls: ['./alerte-site.component.css'],
   standalone:true,
-  imports:[MatDialogModule,MatButtonModule,CommonModule,RouterModule]
+  imports:[MatDialogModule,MatButtonModule,CommonModule]
 })
 export class AlerteSiteComponent {
  
@@ -29,7 +28,6 @@ export class AlerteSiteComponent {
   ) {}
   
   private siteService = inject(SiteService);
-  private router = inject(Router);
 
   navigate(path:string,diagnostic:Diagnostic){
     

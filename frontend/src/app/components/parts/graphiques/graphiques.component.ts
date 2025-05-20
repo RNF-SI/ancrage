@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnInit, SimpleChanges } from '@angular/core';
+import { Component, inject, Input, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
@@ -27,7 +27,7 @@ interface ReponseRep {
   imports:[CommonModule,MatTabsModule,NgChartsModule]
 })
 
-export class GraphiquesComponent{
+export class GraphiquesComponent implements OnDestroy{
  
   @Input() diagnostic = new Diagnostic();
   @Input() route = inject(ActivatedRoute);
@@ -46,7 +46,6 @@ export class GraphiquesComponent{
 
   getCharts(){
     let id_diagnostic = this.diagnostic.id_diagnostic;
-    console.log(id_diagnostic);
     const moyennes$ = this.diagnosticService.getAverageByQuestion(id_diagnostic);
     const repartitions$ = this.diagnosticService.getRepartition(id_diagnostic);
     this.diagnosticSubscription = forkJoin([moyennes$,repartitions$]).subscribe(([graphs,repartitions]) => {
@@ -135,6 +134,10 @@ export class GraphiquesComponent{
     }
   };
 
+  ngOnDestroy(): void {
+    this.diagnosticSubscription?.unsubscribe();
+    this.routeSubscription?.unsubscribe();
+  }
  
     
 }

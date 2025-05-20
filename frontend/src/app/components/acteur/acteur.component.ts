@@ -79,7 +79,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
   ngOnInit(): void {
     this.diagnosticStoreSubscription = this.diagnosticStoreService.getDiagnostic().subscribe(diag =>{
       this.diagnostic = diag!;
-      console.log(this.diagnostic);
+      
     });
     this.isLoading = true;
     this.routeSubscription = this.route.params.subscribe((params: any) => {
@@ -93,7 +93,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
             const actor$ = this.actorService.get(this.id_actor);
 
             forkJoin([actor$, communes$, profils$,categories$]).subscribe(([actor,communes, profils,categories]) => {
-              console.log(actor);
+              
               if (this.formGroup.get('is_acteur_economique')?.value == true){
                 this.formGroup.get('is_acteur_economique_txt')!.setValue('oui');
               }else if (this.formGroup.get('is_acteur_economique')?.value == false){
@@ -161,7 +161,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
 
   recordActor(event: Event) {
     event.preventDefault();
-    console.log(this.formGroup.get('profil')?.value);
+   
     if (this.formGroup.get('is_acteur_economique_txt')?.value == 'oui'){
       this.formGroup.get('is_acteur_economique')!.setValue(true);
     }else if (this.formGroup.get('is_acteur_economique_txt')?.value == 'non'){
@@ -196,9 +196,9 @@ export class ActeurComponent implements OnInit,OnDestroy{
     this.previousPage = localStorage.getItem("previousPage")!;
     this.diagnostic.acteurs.push(actor);
     this.diagnosticStoreService.setDiagnostic(this.diagnostic);
-    console.log(actor);
+    
     if(actor.id_acteur > 0){
-      console.log(actor);
+      
       this.dialog.open(AlerteActeurComponent, {
         data: {
           title: this.title,
@@ -222,5 +222,6 @@ export class ActeurComponent implements OnInit,OnDestroy{
     this.routeSubscription?.unsubscribe();
     this.communeSubscription?.unsubscribe();
     this.actorSubscription?.unsubscribe();
+    this.diagnosticStoreSubscription?.unsubscribe();
   }
 }
