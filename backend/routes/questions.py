@@ -97,5 +97,6 @@ def verifDatesEntretien(diagnostic):
         diagnostic.date_debut = date_time
     if len(listeTermines) == len(diagnostic.acteurs):
         diagnostic.date_fin = date_time
+        diagnostic.is_read_only=True
     db.session.add(diagnostic)
     db.session.commit()

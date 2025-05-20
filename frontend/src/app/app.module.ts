@@ -47,6 +47,7 @@ import { DiagnosticVisualisationComponent } from './components/diagnostic-visual
 import { GraphiquesComponent } from './components/parts/graphiques/graphiques.component';
 import { MenuLateralComponent } from './components/parts/menu-lateral/menu-lateral.component';
 import { AlerteStatutEntretienComponent } from './components/alertes/alerte-statut-entretien/alerte-statut-entretien.component';
+import { TableauStructuresComponent } from './components/parts/tableau-structures/tableau-structures.component';
 
 
 @NgModule({
@@ -92,6 +93,7 @@ import { AlerteStatutEntretienComponent } from './components/alertes/alerte-stat
     GraphiquesComponent,
     MenuLateralComponent,
     AlerteStatutEntretienComponent,
+    TableauStructuresComponent,
     ToastrModule.forRoot({
       timeOut: 15000
     }),

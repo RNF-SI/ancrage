@@ -17,32 +17,47 @@
                         <div><b>{{labels.investigatorLabel}}</b> : <span>{{ diagnostic.identite_createur }}</span></div>
                         <h3>{{labels.chosenSites}}</h3>
                         <p *ngFor="let site of diagnostic.sites">{{ site.nom }}, {{site.type.libelle}} </p>
-                        <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic,diagnostic)">Modifier</button>
+                        <div *ngIf="!diagnostic.is_read_only">
+                          <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic,diagnostic)">Modifier</button>
+                        </div>
+                        
                     </div>
                 </mat-tab>
-                <mat-tab label="Acteurs">
-                  <div class="p-3">
-                    <h3>Acteurs</h3>
-                    <app-choix-acteurs
-                            [actors]="actors"
-                            [uniqueDiagnostics]="uniqueDiagnostics"
-                            [diagnostic]="diagnostic"
-                            [selectedDiagnostic]="selectedDiagnostic"
-                            [uniqueCategories]="uniqueCategories"
-                            [uniqueDepartments]="uniqueDepartments"
-                            [selectedCategory]="selectedCategory"
-                            [selectedDepartment]="selectedDepartment"
-                            [actorsSelected]="actorsSelected"
-                            [actorsOriginal]="uniqueActors"
-                            [formGroup]="formGroup"
-                            [hideFilters]="hideFilters"
-                            [navigate]="navigate"
-                    ></app-choix-acteurs>
+                <div *ngIf="!diagnostic.is_read_only else structures">
+                  <mat-tab label="Acteurs">
+                    <div class="p-3">
                     
-                    <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic,diagnostic)">Modifier</button>
-                  </div>
-                </mat-tab>
-              
+                      <h3>Acteurs</h3>
+                    
+                        <app-choix-acteurs
+                                [actors]="actors"
+                                [uniqueDiagnostics]="uniqueDiagnostics"
+                                [diagnostic]="diagnostic"
+                                [selectedDiagnostic]="selectedDiagnostic"
+                                [uniqueCategories]="uniqueCategories"
+                                [uniqueDepartments]="uniqueDepartments"
+                                [selectedCategory]="selectedCategory"
+                                [selectedDepartment]="selectedDepartment"
+                                [actorsSelected]="actorsSelected"
+                                [actorsOriginal]="uniqueActors"
+                                [formGroup]="formGroup"
+                                [hideFilters]="hideFilters"
+                                [navigate]="navigate"
+                        ></app-choix-acteurs>
+                        <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic,diagnostic)">Modifier</button>
+                      
+                      
+                    </div>
+                  </mat-tab>
+                </div>
+                <ng-template #structures>
+                  <mat-tab label="Structures">
+                  <app-tableau-structures
+                    [diagnostic]="diagnostic"
+                  ></app-tableau-structures>
+                  </mat-tab>
+                </ng-template>
+                
                 <mat-tab label="Graphiques">
                   <div class="p-3">
                     <app-graphiques

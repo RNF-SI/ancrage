@@ -18,13 +18,14 @@ import { GraphiquesComponent } from "../parts/graphiques/graphiques.component";
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import { NomenclatureService } from '@app/services/nomenclature.service';
 import { MenuLateralComponent } from "../parts/menu-lateral/menu-lateral.component";
+import { TableauStructuresComponent } from "../parts/tableau-structures/tableau-structures.component";
 
 @Component({
   selector: 'app-diagnostic-visualisation',
   templateUrl: './diagnostic-visualisation.component.html',
   styleUrls: ['./diagnostic-visualisation.component.css'],
   standalone:true,
-  imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent,MenuLateralComponent]
+  imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent, MenuLateralComponent, TableauStructuresComponent,TableauStructuresComponent]
 })
 export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
 

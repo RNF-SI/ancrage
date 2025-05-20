@@ -175,6 +175,21 @@ def get_reponses_par_theme(id_diagnostic):
     ]
 
     return jsonify(output)
+
+@bp.route('/diagnostic/structures/<int:id_diagnostic>', methods=['GET'])
+def get_structures_by_diagnostic(id_diagnostic):
+
+    structures = (
+        db.session.query(Acteur.structure)
+        .filter(Acteur.diagnostic_id == id_diagnostic)
+        .filter(Acteur.structure.isnot(None))
+        .distinct()
+        .all()
+    )
+
+    structure_list = [s[0] for s in structures]
+
+    return jsonify({'structures': structure_list})
     
 def changeValuesDiagnostic(diagnostic,data):
     

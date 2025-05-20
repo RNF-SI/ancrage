@@ -58,6 +58,10 @@ export class DiagnosticService {
       );
     }
 
+    getStructures(id: number): Observable<any> {
+      return this.http.get<any>(this.BASE_URL + '/structures/' + id ).pipe();
+    }
+
     get(id: number): Observable<Diagnostic> {
       return this.http.get<IDiagnostic>(this.BASE_URL + '/' + id ).pipe(
         map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))

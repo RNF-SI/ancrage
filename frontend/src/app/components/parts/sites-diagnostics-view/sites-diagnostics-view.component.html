@@ -90,7 +90,7 @@
                     {{ diag.nom }} du {{ diag.created_at_str }}
                   </mat-card-subtitle>
           
-                  <mat-card-actions class="text-end" *ngIf="!diag.is_read_only; else readOnlyBlock">
+                  <mat-card-actions class="text-end" *ngIf="diag.is_read_only; else readOnlyBlock">
                     <button mat-raised-button color="accent"
                             (click)="navigate('/diagnostic-visualisation/' + diag.id_diagnostic, diagnostic)">
                       Voir
