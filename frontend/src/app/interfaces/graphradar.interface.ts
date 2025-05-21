@@ -3,4 +3,5 @@ export interface IGraphRadar {
     libelle_graphique:string;
     categorie:string;
     score:number;
+    id_question:number;
 }

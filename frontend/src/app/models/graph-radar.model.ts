@@ -5,6 +5,7 @@ export class GraphRadar {
     categorie="";
     score=0;
     libelle_graphique="";
+    id_question=0;
 
     static fromJson(data: IGraphRadar): GraphRadar {
         const graph = new GraphRadar();

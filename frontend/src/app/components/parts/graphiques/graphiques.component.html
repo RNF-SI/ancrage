@@ -3,11 +3,12 @@
   <ng-container *ngIf="themeEntry">
     <ng-container *ngFor="let chart of radarCharts">
       <div *ngIf="chart.theme === themeEntry.key">
-        <canvas baseChart
+        <canvas class = "graph-radar-{{chart.theme}}" baseChart
                 [data]="chart.data"
                 [type]="'radar'"
                 [options]="radarChartOptions">
         </canvas>
+        <button mat-raised-button (click)="exportChart('graph-radar-'+chart.theme,chart.theme)">{{labels.exportPNG}}</button>
       </div>
     </ng-container>
   </ng-container>
