@@ -213,7 +213,6 @@ def get_structures_by_diagnostic(id_diagnostic):
 
 @bp.route("/diagnostics/charts/radars/<int:id_diagnostic>", methods=["GET"])
 def get_scores(id_diagnostic):
-    diagnostic_id = id_diagnostic
 
     ValeurReponse = aliased(Nomenclature)
     Categorie = aliased(Nomenclature)
@@ -225,7 +224,8 @@ def get_scores(id_diagnostic):
             func.avg(ValeurReponse.value).label("score"),
             Question.libelle_graphique.label("libelle_graphique"),
             Categorie.libelle.label("categorie"),
-            Theme.libelle.label("theme")
+            Theme.libelle.label("theme"),
+            Question.id_question.label("id_question")
         )
         .select_from(Diagnostic)  
         .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
@@ -248,7 +248,8 @@ def get_scores(id_diagnostic):
             "score": round(r.score, 2) if r.score is not None else None,
             "libelle_graphique": r.libelle_graphique,
             "categorie": r.categorie,
-            "theme": r.theme
+            "theme": r.theme,
+            "id_question": r.id_question
         }
         for r in results
     ]
