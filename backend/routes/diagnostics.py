@@ -5,6 +5,7 @@ from schemas.metier import *
 from sqlalchemy import func
 from sqlalchemy.orm import aliased
 from routes import bp,date_time
+from datetime import date, datetime
 
 @bp.route('/diagnostic/<int:id_diagnostic>', methods=['GET','PUT','DELETE'])
 def diagnosticMethods(id_diagnostic):
@@ -26,7 +27,14 @@ def diagnosticMethods(id_diagnostic):
         diagnostic = changeValuesDiagnostic(diagnostic,data)
 
         diagnostic.modified_at = date_time
-
+        raw_date = data.get('date_rapport')
+        print(raw_date)
+        if raw_date != None :
+     
+            date_rapport = datetime.strptime(raw_date, '%d/%m/%Y')
+            diagnostic.is_read_only = True
+            diagnostic.date_rapport = date_rapport
+        """ print_diagnostic(diagnostic); """
         db.session.commit()
         return getDiagnostic(diagnostic)
 
@@ -36,6 +44,18 @@ def diagnosticMethods(id_diagnostic):
         db.session.commit()
         return {"success": "Suppression terminée"}
     
+def print_diagnostic(diagnostic):
+    print("🔍 Diagnostic :")
+    print(f"  ID              : {diagnostic.id_diagnostic}")
+    print(f"  Nom             : {diagnostic.nom}")
+    print(f"  Date début      : {diagnostic.date_debut}")
+    print(f"  Date fin        : {diagnostic.date_fin}")
+    print(f"  Date rapport    : {diagnostic.date_rapport}")
+    print(f"  Créé par        : {diagnostic.created_by}")
+    print(f"  Est en lecture seule : {diagnostic.is_read_only}")
+    print(f"  Sites associés  : {[site.id_site for site in diagnostic.sites]}")
+    print(f"  Acteurs associés: {[acteur.id_acteur for acteur in diagnostic.acteurs]}")
+
 @bp.route('/diagnostic',methods=['POST'])
 def postDiagnostic():
     data = request.get_json()

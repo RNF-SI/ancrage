@@ -4,7 +4,6 @@ from models.models import *
 from schemas.metier import *
 from routes import bp,date_time
 from routes.acteurs import getActeur
-from routes.diagnostics import getDiagnostic
     
 @bp.route('/reponses/objets', methods=['POST'])
 def enregistrer_reponses_depuis_objets():
@@ -75,7 +74,6 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
             )
             db.session.add(nouvelle_reponse)
 
-    # 🔄 Supprime les réponses absentes
     reponses_existantes = Reponse.query.filter_by(acteur_id=acteur_id).all()
     for r in reponses_existantes:
         if r.question_id not in questions_ids_envoyees:
@@ -88,7 +86,7 @@ def verifDatesEntretien(diagnostic):
    
     listeTermines = []
     for actor in diagnostic.acteurs:
-        """ print(f" - Acteur ID={actor.id_acteur} | {actor.nom} {actor.prenom} | Statut entretien = {actor.statut_entretien_id}") """
+       
         if actor.statut_entretien:
             if actor.statut_entretien.libelle == 'Réalisé':
                 listeTermines.append(actor)
@@ -97,6 +95,5 @@ def verifDatesEntretien(diagnostic):
         diagnostic.date_debut = date_time
     if len(listeTermines) == len(diagnostic.acteurs):
         diagnostic.date_fin = date_time
-        diagnostic.is_read_only=True
     db.session.add(diagnostic)
     db.session.commit()
