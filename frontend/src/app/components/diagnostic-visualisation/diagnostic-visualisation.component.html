@@ -45,7 +45,7 @@
                                 [navigate]="navigate"
                         ></app-choix-acteurs>
                         <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic,diagnostic)">Modifier</button>
-                      
+                        <button mat-raised-button type="button" (click)="exportCSV()">{{labels.exportCSV}}</button>
                       
                     </div>
                   </mat-tab>

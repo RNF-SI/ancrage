@@ -7,22 +7,24 @@
     <div class="row">
       <!-- Colonne gauche (bar chart) -->
       <div class="col-md-6 d-flex flex-column align-items-center justify-content-center" >
-        <canvas baseChart
+        <canvas class="graph{{chart.id_question}}" baseChart
                 [data]="chart.chart"
                 [options]="chart.chartOptions"
                 chartType="bar">
         </canvas>
+        <button mat-raised-button (click)="exportChart('graph'+chart.id_question,chart.question+'-score')">{{labels.exportPNG}}</button>
       </div>
 
       <!-- Colonne droite (pie chart) -->
       <div class="col-md-6 d-flex flex-column align-items-center justify-content-center">
         <h4 class="text-center">Répartition des réponses</h4>
-        <canvas
+        <canvas class="graph-rep{{chart.id_question}}"
           baseChart
           [data]="getChartData(chart.question)"
           [type]="'pie'"
           [options]="chartOptions">
         </canvas>
+        <button mat-raised-button (click)="exportChart('graph-rep'+chart.id_question,chart.question+'-repartition')">{{labels.exportPNG}}</button>
       </div>
     </div>
   </div>

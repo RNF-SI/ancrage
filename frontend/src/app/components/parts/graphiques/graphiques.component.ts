@@ -10,6 +10,8 @@ import { NgChartsModule } from 'ng2-charts';
 import { ActivatedRoute } from '@angular/router';
 import { ChartData, ChartOptions } from 'chart.js';
 import { GraphRepartition } from '@app/models/graph-repartition';
+import { MatButtonModule } from '@angular/material/button';
+import { Labels } from '@app/utils/labels';
 
 interface ReponseRep {
   theme: string;
@@ -24,7 +26,7 @@ interface ReponseRep {
   templateUrl: './graphiques.component.html',
   styleUrls: ['./graphiques.component.css'],
   standalone:true,
-  imports:[CommonModule,MatTabsModule,NgChartsModule]
+  imports:[CommonModule,MatTabsModule,NgChartsModule,MatButtonModule]
 })
 
 export class GraphiquesComponent implements OnDestroy{
@@ -37,6 +39,7 @@ export class GraphiquesComponent implements OnDestroy{
   private routeSubscription?:Subscription;
   groupedData: { [question: string]: GraphRepartition[] } = {};
   chartDataByTheme: { [theme: string]: AvgPerQuestion[] } = {};
+  labels = new Labels();
 
   ngOnChanges(changes: SimpleChanges): void {
       if (changes['diagnostic']) {
@@ -139,5 +142,15 @@ export class GraphiquesComponent implements OnDestroy{
     this.routeSubscription?.unsubscribe();
   }
  
+  exportChart(classe:string,titre:string) {
+    const canvas = document.querySelector("."+classe) as HTMLCanvasElement;
+    const image = canvas.toDataURL('image/png');
+    
+    // Création du lien pour téléchargement
+    const link = document.createElement('a');
+    link.href = image;
+    link.download = titre+'.png';
+    link.click();
+  }
     
 }

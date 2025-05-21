@@ -105,6 +105,51 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
     localStorage.setItem("previousPage",this.router.url);
     this.siteService.navigateAndReload(path,diagnostic);
   }
+
+  exportCSV(){
+    let acteurs:Acteur[] = this.diagnostic.acteurs;
+    const separator = ';';
+    const headers = [
+      'id_acteur',
+      'nom',
+      'prenom',
+      'fonction',
+      'structure',
+      'mail',
+      'telephone',
+      'profil',
+      'is_acteur_economique',
+      'commune',
+      'categories'
+    ];
+
+    const csvRows = [
+      headers.join(separator),
+      ...acteurs.map(a => [
+        a.id_acteur,
+        a.nom,
+        a.prenom,
+        a.fonction,
+        a.structure,
+        a.mail,
+        a.telephone,
+        a.profil?.libelle|| '',
+        a.is_acteur_economique,
+        a.commune?.nom_com || '',
+        (a.categories || []).map(c => c.libelle).join(', ')
+      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(separator))
+    ];
+
+    const csvContent = csvRows.join('\n');
+    const BOM = '\uFEFF';  // UTF-8 BOM
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'acteurs - '+this.diagnostic.nom+'.csv';
+    link.click();
+  }
+
   ngOnDestroy(): void {
     this.routeSubscription?.unsubscribe();
     this.diagSubscription?.unsubscribe();

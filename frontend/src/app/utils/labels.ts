@@ -39,4 +39,6 @@ export class Labels {
     modifyStateInterview = "Modifier l'état de l'entretien";
     goToInterview = "Accéder à l'entretien";
     showMoreInfo = "Informations complémentaires";
+    exportPNG = "Exporter en PNG";
+    exportCSV = "Exporter en CSV";
 }
