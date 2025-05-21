@@ -1,6 +1,16 @@
 <div *ngFor="let themeEntry of chartDataByTheme | keyvalue" class="mb-5">
   <h2 class="text-center">{{ themeEntry.key }}</h2>
-
+  <ng-container *ngIf="themeEntry">
+    <ng-container *ngFor="let chart of radarCharts">
+      <div *ngIf="chart.theme === themeEntry.key">
+        <canvas baseChart
+                [data]="chart.data"
+                [type]="'radar'"
+                [options]="radarChartOptions">
+        </canvas>
+      </div>
+    </ng-container>
+  </ng-container>
   <div *ngFor="let chart of themeEntry.value" class="mb-4" [attr.id]="'question-' + chart.id_question">
     <h3 class="text-center">{{ chart.question }}</h3>
     

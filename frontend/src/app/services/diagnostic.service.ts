@@ -2,10 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { IDiagnostic } from '@app/interfaces/diagnostic.interface';
 import { IGraphMoy } from '@app/interfaces/graph-moy.interface';
+import { IGraphRadar } from '@app/interfaces/graphradar.interface';
 import { IGraphRepartition } from '@app/interfaces/igraph-repartition';
 import { Diagnostic } from '@app/models/diagnostic.model';
-import { GraphMoy } from '@app/models/graph-moy';
-import { GraphRepartition } from '@app/models/graph-repartition';
+import { GraphMoy } from '@app/models/graph-moy.model';
+import { GraphRadar } from '@app/models/graph-radar.model';
+import { GraphRepartition } from '@app/models/graph-repartition.model';
 import { Observable, map } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
@@ -53,6 +55,16 @@ export class DiagnosticService {
         map(graphiquesJsonArray => {
           return graphiquesJsonArray.map<GraphRepartition>(
             graphJson => GraphRepartition.fromJson(graphJson)
+          )
+        })
+      );
+    }
+
+    getRadars(id_diagnostic:number): Observable<GraphRadar[]>{
+      return this.http.get<IGraphRadar[]>(this.GET_ALL_URL+"/charts/radars/"+id_diagnostic).pipe(
+        map(graphiquesJsonArray => {
+          return graphiquesJsonArray.map<GraphRadar>(
+            graphJson => GraphRadar.fromJson(graphJson)
           )
         })
       );

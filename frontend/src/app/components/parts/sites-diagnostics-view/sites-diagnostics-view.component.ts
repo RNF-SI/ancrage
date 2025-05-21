@@ -20,8 +20,6 @@ import { AlerteVisualisationSiteComponent } from "../../alertes/alerte-visualisa
 import { MatDialog } from "@angular/material/dialog";
 import { Labels } from "@app/utils/labels";
 import { MatExpansionModule } from '@angular/material/expansion';
-import { DiagnosticStoreService } from "@app/services/diagnostic-store.service";
-import { DiagnosticCacheService } from "@app/services/diagnostic-cache-service.service";
 
 @Component({
   selector: 'app-sites-diagnostics-view',
@@ -69,7 +67,6 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy,On
   btnForDiagnosticsLbl = "";
   private dialog = inject(MatDialog);
   private router = inject(Router)
-  private diagnosticStoreSubscription?: Subscription;
   mapInstanceKey = Date.now();
   
   ngOnInit(): void {
@@ -190,7 +187,6 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy,On
 
   ngOnDestroy(): void {
     this.sitesSub?.unsubscribe();
-    this.diagnosticStoreSubscription?.unsubscribe();
   }
 
   showSiteDetails(site:Site){

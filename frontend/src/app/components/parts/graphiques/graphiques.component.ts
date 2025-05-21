@@ -2,16 +2,17 @@ import { Component, inject, Input, OnDestroy, OnInit, SimpleChanges } from '@ang
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
-import { GraphMoy } from '@app/models/graph-moy';
+import { GraphMoy } from '@app/models/graph-moy.model';
 import { forkJoin, Subscription } from 'rxjs';
 import { AvgPerQuestion } from '@app/interfaces/avg-per-question.interface';
 import { CommonModule } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { ActivatedRoute } from '@angular/router';
 import { ChartData, ChartOptions } from 'chart.js';
-import { GraphRepartition } from '@app/models/graph-repartition';
+import { GraphRepartition } from '@app/models/graph-repartition.model';
 import { MatButtonModule } from '@angular/material/button';
 import { Labels } from '@app/utils/labels';
+import { GraphRadar } from '@app/models/graph-radar.model';
 
 interface ReponseRep {
   theme: string;
@@ -40,6 +41,24 @@ export class GraphiquesComponent implements OnDestroy{
   groupedData: { [question: string]: GraphRepartition[] } = {};
   chartDataByTheme: { [theme: string]: AvgPerQuestion[] } = {};
   labels = new Labels();
+  radarCharts: {
+    theme: string;
+    data: ChartData<'radar'>;
+  }[] = [];
+
+  radarChartOptions: ChartOptions<'radar'> = {
+    responsive: true,
+    plugins: {
+      legend: { position: 'top' },
+      title: { display: false }
+    },
+    scales: {
+      r: {
+        beginAtZero: true,
+        max: 5
+      }
+    }
+  };
 
   ngOnChanges(changes: SimpleChanges): void {
       if (changes['diagnostic']) {
@@ -51,7 +70,8 @@ export class GraphiquesComponent implements OnDestroy{
     let id_diagnostic = this.diagnostic.id_diagnostic;
     const moyennes$ = this.diagnosticService.getAverageByQuestion(id_diagnostic);
     const repartitions$ = this.diagnosticService.getRepartition(id_diagnostic);
-    this.diagnosticSubscription = forkJoin([moyennes$,repartitions$]).subscribe(([graphs,repartitions]) => {
+    const radars$ = this.diagnosticService.getRadars(id_diagnostic);
+    this.diagnosticSubscription = forkJoin([moyennes$,repartitions$,radars$]).subscribe(([graphs,repartitions,radars]) => {
       const grouped = new Map<string, GraphMoy[]>();
       for (const entry of graphs) {
         if (!grouped.has(entry.question)) {
@@ -105,6 +125,40 @@ export class GraphiquesComponent implements OnDestroy{
         this.chartDataByTheme[theme].push(chartData);
       
         return chartData;
+
+        
+      });
+      const dataByTheme = new Map<string, GraphRadar[]>();
+
+      radars.forEach(entry => {
+        const theme = entry.theme || 'Sans thème';
+        if (!dataByTheme.has(theme)) dataByTheme.set(theme, []);
+        dataByTheme.get(theme)!.push(entry);
+      });
+
+      this.radarCharts = Array.from(dataByTheme.entries()).map(([theme, entries]) => {
+        const labels = [...new Set(entries.map(e => e.libelle_graphique))];
+
+        const categories = [...new Set(entries.map(e => e.categorie || 'Sans catégorie'))];
+        const datasets = categories.map(categorie => {
+          const values = labels.map(label => {
+            const match = entries.find(e => e.categorie === categorie && e.libelle_graphique === label);
+            return match ? match.score : 0;
+          });
+
+          return {
+            label: categorie,
+            data: values
+          };
+        });
+
+        return {
+          theme,
+          data: {
+            labels,
+            datasets
+          }
+        };
       });
                     
     });

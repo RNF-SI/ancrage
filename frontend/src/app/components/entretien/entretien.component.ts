@@ -14,9 +14,7 @@ import { ReponseService } from '@app/services/reponse.service';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { MenuLateralComponent } from "../parts/menu-lateral/menu-lateral.component";
 import { SiteService } from '@app/services/sites.service';
-import { DiagnosticStoreService } from '@app/services/diagnostic-store.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { DiagnosticCacheService } from '@app/services/diagnostic-cache-service.service';
 
 @Component({
   selector: 'app-entretien',
@@ -45,10 +43,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
   diagnostic:Diagnostic = new Diagnostic();
   etats:Nomenclature[]=[];
   siteService = inject(SiteService);
-  private router = inject(Router);
   private diagnosticStoreSubscription?: Subscription;
-  private diagnosticStoreService = inject(DiagnosticStoreService);
-  private diagnosticCacheService = inject(DiagnosticCacheService);
   
 
   ngOnInit(): void {

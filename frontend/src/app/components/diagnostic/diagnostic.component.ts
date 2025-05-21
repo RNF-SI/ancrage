@@ -23,9 +23,8 @@ import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { Labels } from '@app/utils/labels';
 import { MatDialog } from '@angular/material/dialog';
 import { AlerteDiagnosticComponent } from '../alertes/alerte-diagnostic/alerte-diagnostic.component';
-import { DiagnosticStoreService } from '@app/services/diagnostic-store.service';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { DateAdapter, MatNativeDateModule } from '@angular/material/core';
+import { DateAdapter } from '@angular/material/core';
 import { MatMomentDateModule, MAT_MOMENT_DATE_ADAPTER_OPTIONS } from '@angular/material-moment-adapter';
 import { MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { LOCALE_ID } from '@angular/core';
@@ -35,7 +34,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import * as moment from 'moment';
 import { Moment } from 'moment';
-import { DiagnosticCacheService } from '@app/services/diagnostic-cache-service.service';
+
 
 registerLocaleData(localeFr);
 
@@ -109,10 +108,9 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   private nomenclatureService = inject(NomenclatureService);
   private authService = inject(AuthService);
   private dialog = inject(MatDialog);
-  private diagnosticStoreService = inject(DiagnosticStoreService);
   private diagnosticStoreSubscription ?:Subscription;
   private dateAdapter = inject(DateAdapter);
-  private diagnosticCacheService = inject(DiagnosticCacheService);
+
   user_id=0;
   id_organisme = 0;
   actorsSelected:MatTableDataSource<Acteur>= new MatTableDataSource();
@@ -316,7 +314,6 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   async getConfirmation(message:string,diag:Diagnostic){
       this.previousPage = localStorage.getItem("previousPage")!;
       this.diagnostic=diag;
-      const cacheId = await this.diagnosticCacheService.save(diag);
       if(diag.id_diagnostic > 0){
        
         this.dialog.open(AlerteDiagnosticComponent, {

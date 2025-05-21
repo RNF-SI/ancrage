@@ -21,8 +21,6 @@ import { AlerteActeurComponent } from '../alertes/alerte-acteur/alerte-acteur.co
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { SiteService } from '@app/services/sites.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { DiagnosticStoreService } from '@app/services/diagnostic-store.service';
-import { DiagnosticCacheService } from '@app/services/diagnostic-cache-service.service';
 
 @Component({
   selector: 'app-acteur',
@@ -66,10 +64,6 @@ export class ActeurComponent implements OnInit,OnDestroy{
   private actorService = inject(ActeurService);
   private dialog = inject(MatDialog);
   private siteService = inject(SiteService);
-  private diagnosticStoreService = inject(DiagnosticStoreService);
-  private diagnosticStoreSubscription?:Subscription;
-  private diagnosticCacheService = inject(DiagnosticCacheService);
-
   user_id=0;
   filteredTowns: Commune[] = [];
   labels = new Labels();
@@ -196,7 +190,6 @@ export class ActeurComponent implements OnInit,OnDestroy{
   async getConfirmation(message:string,actor:Acteur){
     this.previousPage = localStorage.getItem("previousPage")!;
     this.diagnostic.acteurs.push(actor);
-    const cacheId = await this.diagnosticCacheService.save(this.diagnostic);
     
     if(actor.id_acteur > 0){
       
@@ -223,6 +216,5 @@ export class ActeurComponent implements OnInit,OnDestroy{
     this.routeSubscription?.unsubscribe();
     this.communeSubscription?.unsubscribe();
     this.actorSubscription?.unsubscribe();
-    this.diagnosticStoreSubscription?.unsubscribe();
   }
 }

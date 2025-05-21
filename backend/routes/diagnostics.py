@@ -210,6 +210,50 @@ def get_structures_by_diagnostic(id_diagnostic):
     structure_list = [s[0] for s in structures]
 
     return jsonify({'structures': structure_list})
+
+@bp.route("/diagnostics/charts/radars/<int:id_diagnostic>", methods=["GET"])
+def get_scores(id_diagnostic):
+    diagnostic_id = id_diagnostic
+
+    ValeurReponse = aliased(Nomenclature)
+    Categorie = aliased(Nomenclature)
+    Theme = aliased(Nomenclature)
+
+    # Jointure ORM
+    results = (
+        db.session.query(
+            func.avg(ValeurReponse.value).label("score"),
+            Question.libelle_graphique.label("libelle_graphique"),
+            Categorie.libelle.label("categorie"),
+            Theme.libelle.label("theme")
+        )
+        .select_from(Diagnostic)  
+        .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
+        .join(Reponse, Acteur.id_acteur == Reponse.acteur_id)
+        .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
+        .join(Question, Reponse.question_id == Question.id_question)
+        .join(Theme, Question.theme_id == Theme.id_nomenclature)
+        .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
+        .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
+        .filter(Diagnostic.id_diagnostic==id_diagnostic)
+        .group_by(Question.id_question, Question.libelle_graphique,
+                  Categorie.libelle, Theme.libelle)
+        .order_by(Question.libelle_graphique)
+        .all()
+    )
+
+    # Formatage JSON
+    data = [
+        {
+            "score": round(r.score, 2) if r.score is not None else None,
+            "libelle_graphique": r.libelle_graphique,
+            "categorie": r.categorie,
+            "theme": r.theme
+        }
+        for r in results
+    ]
+
+    return jsonify(data)
     
 def changeValuesDiagnostic(diagnostic,data):
     

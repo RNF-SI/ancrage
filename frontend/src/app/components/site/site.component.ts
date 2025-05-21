@@ -20,10 +20,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { AlerteSiteComponent } from '../alertes/alerte-site/alerte-site.component';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { Labels } from '@app/utils/labels';
-import { DiagnosticStoreService } from '@app/services/diagnostic-store.service';
-import { DiagnosticCacheService } from '@app/services/diagnostic-cache-service.service';
-
-
 
 @Component({
   selector: 'app-site',
@@ -70,26 +66,15 @@ export class SiteComponent implements OnInit,OnDestroy{
   private departementService = inject(DepartementService);
   private dialog = inject(MatDialog);
   private authService = inject(AuthService);
-  private diagnosticStoreService =inject(DiagnosticStoreService);
   user_id=0;
   previousPage="";
-  private diagnosticStoreSubscription?: Subscription;
-  private diagnosticCacheService = inject(DiagnosticCacheService);
   showMap=true;
   mapInstanceKey = Date.now();
 
   ngOnInit(): void {
     this.mapInstanceKey = Date.now();
     this.user_id = this.authService.getCurrentUser().id_role;
-    this.diagnosticStoreSubscription = this.diagnosticStoreService.getDiagnostic().subscribe(diag =>{
-      if (diag){
-      
-        this.diagnostic = diag!;
-       
-      }
-      
-    });
-    
+    this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);    
     this.routeSubscription = this.route.params.subscribe((params: any) => {
       const id_site = params['id_site'];  
   
@@ -168,7 +153,6 @@ export class SiteComponent implements OnInit,OnDestroy{
   async getConfirmation(message:string,site:Site){
     this.diagnostic.sites.push(site);
     this.previousPage = localStorage.getItem("previousPage")!;
-    const cacheId = await this.diagnosticCacheService.save(this.diagnostic);
     this.dialog.open(AlerteSiteComponent, {
       data: {
         title: this.titleSite,
@@ -187,6 +171,5 @@ export class SiteComponent implements OnInit,OnDestroy{
     this.nomenclatureSubscription?.unsubscribe();
     this.siteSubscription?.unsubscribe();
     this.routeSubscription?.unsubscribe();
-    this.diagnosticStoreSubscription?.unsubscribe();
   }
 }

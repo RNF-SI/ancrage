@@ -17,9 +17,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { AlerteShowActorDetailsComponent } from '../../alertes/alerte-show-actor-details/alerte-show-actor-details.component';
 import { MatCardModule } from '@angular/material/card';
 import { Labels } from '@app/utils/labels';
-import { DiagnosticStoreService } from '@app/services/diagnostic-store.service';
 import { AlerteStatutEntretienComponent } from '@app/components/alertes/alerte-statut-entretien/alerte-statut-entretien.component';
-import { DiagnosticCacheService } from '@app/services/diagnostic-cache-service.service';
 import { SiteService } from '@app/services/sites.service';
 
 @Component({
@@ -155,8 +153,7 @@ export class ChoixActeursComponent {
   navigateToActor(path:string,diagnostic:Diagnostic){
     diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
     localStorage.setItem("previousPage",this.router.url);
-    let shortDiag = this.siteService.sanitizeDiagnosticForLocalStorage(diagnostic);
-    localStorage.setItem("diagnostic",JSON.stringify(shortDiag));
+    localStorage.setItem("diagnostic",JSON.stringify(diagnostic));
     this.router.navigate([path]);
   }
 
