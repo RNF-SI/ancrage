@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, inject, Input, OnInit, SimpleChanges } from '@angular/core';
+import { Component, inject, Input, OnInit, SimpleChanges } from '@angular/core';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -7,17 +7,18 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Acteur } from '@app/models/acteur.model';
 import { Departement } from '@app/models/departement.model';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { MatListModule } from '@angular/material/list';
-import { ActeurService } from '@app/services/acteur.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { AlerteShowActorDetailsComponent } from '../../alertes/alerte-show-actor-details/alerte-show-actor-details.component';
 import { MatCardModule } from '@angular/material/card';
 import { Labels } from '@app/utils/labels';
+import { AlerteStatutEntretienComponent } from '@app/components/alertes/alerte-statut-entretien/alerte-statut-entretien.component';
+import { SiteService } from '@app/services/sites.service';
 
 @Component({
   selector: 'app-choix-acteurs',
@@ -26,7 +27,7 @@ import { Labels } from '@app/utils/labels';
   standalone:true,
   imports:[CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule,RouterModule,ReactiveFormsModule,FontAwesomeModule,MatListModule,MatCardModule]
 })
-export class ChoixActeursComponent implements OnInit {
+export class ChoixActeursComponent {
   @Input() actors: Acteur[]=[];
   title: string="Choisir les acteurs";
   titleGetActors = "Récupérer les acteurs d'un précédent diagnostic sur les sites choisis";
@@ -45,6 +46,7 @@ export class ChoixActeursComponent implements OnInit {
   @Input() formGroup!:FormGroup;
   @Input() hideFilters:boolean = false;
   @Input() navigate!: (path:string,diagnostic:Diagnostic)=>void;
+  @Input() previousPage="";
   reinitialisation = "Réinitialiser"
   btnToChooseLabel: string = "choisir";
   btnNewActorLabel = "Nouvel acteur";
@@ -53,6 +55,8 @@ export class ChoixActeursComponent implements OnInit {
   titleChooseActors="Acteurs choisis";
   private dialog = inject(MatDialog);
   is_creation = false;
+  private router = inject(Router);
+  private siteService = inject(SiteService);
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['actors'] && this.actors && this.actors.length > 0) {
@@ -68,11 +72,6 @@ export class ChoixActeursComponent implements OnInit {
         this.addOrRemoveActor(acteur);
       }
     } 
-  }
-
-  ngOnInit(): void {
-   
-    
   }
 
   applyFilters() {
@@ -150,11 +149,29 @@ export class ChoixActeursComponent implements OnInit {
       }
 
   }
+
+  navigateToActor(path:string,diagnostic:Diagnostic){
+    diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
+    localStorage.setItem("previousPage",this.router.url);
+    localStorage.setItem("diagnostic",JSON.stringify(diagnostic));
+    this.router.navigate([path]);
+  }
+
+  openAlert(actor:Acteur){
+    this.dialog.open(AlerteStatutEntretienComponent, {
+      data: {
+        title: this.labels.modifyStateInterview,
+        actor: actor,
+        labels: this.labels
+        
+      }
+    });
+  }
   
   showOtherInfos(actor:Acteur){
     this.dialog.open(AlerteShowActorDetailsComponent, {
               data: {
-                title: "Autres informations",
+                title: this.labels.showMoreInfo,
                 actor: actor,
                 labels: this.labels
                 

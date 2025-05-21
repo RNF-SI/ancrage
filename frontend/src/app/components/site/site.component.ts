@@ -21,8 +21,6 @@ import { AlerteSiteComponent } from '../alertes/alerte-site/alerte-site.componen
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { Labels } from '@app/utils/labels';
 
-
-
 @Component({
   selector: 'app-site',
   templateUrl: './site.component.html',
@@ -60,11 +58,9 @@ export class SiteComponent implements OnInit,OnDestroy{
 		position_x: [this.longitude, [Validators.required,Validators.pattern('^(\\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$')]]
   });
   site:Site = Object.assign(new Site(),this.formGroup.value);
-  routeSubscription: any;
+  routeSubscription?: Subscription;
   route = inject(ActivatedRoute)
   id_site: number = 1;
-  monsterService: any;
-  monster: any;
   changePosition = true;
   diagnostic:Diagnostic = new Diagnostic();
   private departementService = inject(DepartementService);
@@ -72,14 +68,13 @@ export class SiteComponent implements OnInit,OnDestroy{
   private authService = inject(AuthService);
   user_id=0;
   previousPage="";
+  showMap=true;
+  mapInstanceKey = Date.now();
 
   ngOnInit(): void {
-    
+    this.mapInstanceKey = Date.now();
     this.user_id = this.authService.getCurrentUser().id_role;
-    console.log(this.previousPage);
-    if(localStorage.getItem("diagnostic")){
-      this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!)
-    }
+    this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);    
     this.routeSubscription = this.route.params.subscribe((params: any) => {
       const id_site = params['id_site'];  
   
@@ -88,7 +83,6 @@ export class SiteComponent implements OnInit,OnDestroy{
       const departements$ = this.departementService.getAll();
 
       if (id_site) {
-        // 🔥 Charger les habitats, statuts ET site
         const site$ = this.siteService.get(id_site);
   
         forkJoin([habitats$, statuts$, site$,departements$]).subscribe(([habitats, statuts, site,departements]) => {
@@ -156,10 +150,9 @@ export class SiteComponent implements OnInit,OnDestroy{
    
   }
 
-  getConfirmation(message:string,site:Site){
+  async getConfirmation(message:string,site:Site){
     this.diagnostic.sites.push(site);
     this.previousPage = localStorage.getItem("previousPage")!;
-    localStorage.setItem("diagnostic",JSON.stringify(this.diagnostic));
     this.dialog.open(AlerteSiteComponent, {
       data: {
         title: this.titleSite,

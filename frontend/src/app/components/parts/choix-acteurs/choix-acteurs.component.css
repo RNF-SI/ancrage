@@ -20,3 +20,23 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+.realized{
+    color:green;
+}
+
+.postponed{
+    color:orange;
+}
+.inprogress{
+    color:orange;
+}
+.canceled{
+    color:red;
+}
+.planified{
+    color:orange;
+}
+.todo{
+    color:red;
+}

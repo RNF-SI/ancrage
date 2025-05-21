@@ -39,10 +39,15 @@ import { SiteLsComponent } from './components/site-ls/site-ls.component';
 import { AlerteVisualisationSiteComponent } from './components/alertes/alerte-visualisation-site/alerte-visualisation-site.component';
 import { DiagnosticComponent } from './components/diagnostic/diagnostic.component';
 import { AlerteShowActorDetailsComponent } from './components/alertes/alerte-show-actor-details/alerte-show-actor-details.component';
-import { DiagnosticVisualisationComponent } from './diagnostic-visualisation/diagnostic-visualisation.component';
 import { ActeurComponent } from './components/acteur/acteur.component';
 import { AlerteActeurComponent } from './components/alertes/alerte-acteur/alerte-acteur.component';
 import { AlerteDiagnosticComponent } from './components/alertes/alerte-diagnostic/alerte-diagnostic.component';
+import { EntretienComponent } from './components/entretien/entretien.component';
+import { DiagnosticVisualisationComponent } from './components/diagnostic-visualisation/diagnostic-visualisation.component';
+import { GraphiquesComponent } from './components/parts/graphiques/graphiques.component';
+import { MenuLateralComponent } from './components/parts/menu-lateral/menu-lateral.component';
+import { AlerteStatutEntretienComponent } from './components/alertes/alerte-statut-entretien/alerte-statut-entretien.component';
+import { TableauStructuresComponent } from './components/parts/tableau-structures/tableau-structures.component';
 
 
 @NgModule({
@@ -54,8 +59,7 @@ import { AlerteDiagnosticComponent } from './components/alertes/alerte-diagnosti
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
-    
-    
+   
   ],
   imports: [
     BrowserModule,
@@ -85,6 +89,11 @@ import { AlerteDiagnosticComponent } from './components/alertes/alerte-diagnosti
     ActeurComponent,
     AlerteActeurComponent, 
     AlerteDiagnosticComponent,
+    EntretienComponent,
+    GraphiquesComponent,
+    MenuLateralComponent,
+    AlerteStatutEntretienComponent,
+    TableauStructuresComponent,
     ToastrModule.forRoot({
       timeOut: 15000
     }),

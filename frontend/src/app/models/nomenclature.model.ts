@@ -1,11 +1,14 @@
 import { INomenclature } from "@app/interfaces/nomenclature.interface";
+import { Question } from "./question.model";
+import { IQuestion } from "@app/interfaces/question.interface";
 
 
 export class Nomenclature {
 	id_nomenclature: number = 0;
 	libelle: string = "";
-	value: number = 1;
+	value: number = 0;
 	mnemonique: string = "";
+	questions?:Question[];
 
 
 	/** Copie profonde */
@@ -14,15 +17,15 @@ export class Nomenclature {
 
 		copy.id_nomenclature = this.id_nomenclature;
 		copy.libelle = this.libelle;
-		
 		copy.value = this.value;
 		copy.mnemonique = this.mnemonique;
+		copy.questions = this.questions?.map(q => q.copy()) || [];
 
 		return copy;
 	}
 
 	/** Création depuis un objet JSON */
-	static fromJson(data: any): Nomenclature {
+	static fromJson(data: INomenclature): Nomenclature {
 		
 		const nom = new Nomenclature();
 		if (!data) return nom;
@@ -31,17 +34,15 @@ export class Nomenclature {
 		nom.libelle = data.libelle;
 		nom.value = data.value;
 		nom.mnemonique = data.mnemonique;
+		nom.questions = (data.questions || []).map(q => Question.fromJson(q));
 		return nom;
 	}
 
 	/** Sérialisation vers JSON */
 	toJson(): INomenclature {
 		return {
-			id_nomenclature: this.id_nomenclature,
-			libelle: this.libelle,
-			value: this.value,
-			mnemonique: this.mnemonique,
-
+			...this,
+			questions: this.questions?.map(q => q.toJson()) ?? undefined,
 		};
 	}
 }

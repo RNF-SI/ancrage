@@ -33,4 +33,12 @@ export class Labels {
     chooseProfile = "Choisir un profil";
     chooseCategories = "Choisir les catégories";
     chosenActors = "Acteurs impliqués";
+    addInterview = "Saisir l'entretien";
+    modifyInterview = "Modifier l'entretien";
+    chooseInterviewState = "Choisissez l'état de l'entretien";
+    modifyStateInterview = "Modifier l'état de l'entretien";
+    goToInterview = "Accéder à l'entretien";
+    showMoreInfo = "Informations complémentaires";
+    exportPNG = "Exporter en PNG";
+    exportCSV = "Exporter en CSV";
 }

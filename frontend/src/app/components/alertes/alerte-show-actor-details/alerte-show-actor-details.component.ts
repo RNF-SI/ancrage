@@ -3,7 +3,6 @@ import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/materia
 import { AlerteSiteComponent } from '../alerte-site/alerte-site.component';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { RouterModule } from '@angular/router';
 import { Acteur } from '@app/models/acteur.model';
 import { Labels } from '@app/utils/labels';
 
@@ -12,7 +11,7 @@ import { Labels } from '@app/utils/labels';
   templateUrl: './alerte-show-actor-details.component.html',
   styleUrls: ['./alerte-show-actor-details.component.css'],
   standalone:true,
-  imports:[MatDialogModule,MatButtonModule,CommonModule,RouterModule]
+  imports:[MatDialogModule,MatButtonModule,CommonModule]
 })
 export class AlerteShowActorDetailsComponent {
   constructor(

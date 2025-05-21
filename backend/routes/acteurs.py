@@ -54,6 +54,18 @@ def postActeur():
         db.session.add(acteur)
         db.session.commit()
         return getActeur(acteur)
+    
+@bp.route('/acteur/<id_acteur>/<id_statut>',methods=['PUT'])
+def changeStateInterview(id_acteur,id_statut):
+    if request.method == 'PUT': 
+        data = request.get_json()
+        acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
+        acteur.statut_entretien_id = id_statut
+        acteur.modified_at = now
+        acteur.modified_by = data['modified_by']
+        db.session.add(acteur)
+        db.session.commit()
+        return getActeur(acteur)
 
 @bp.route('/acteurs',methods=['GET'])
 def getAllActeurs():

@@ -1,0 +1,17 @@
+<div class="sticky-menu">
+  <mat-accordion multi>
+    <mat-expansion-panel *ngFor="let theme of themes" class="themes">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{ theme.libelle }}
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div *ngFor="let q of theme.questions" class="py-2 px-3">
+        <p class="m-0" style="white-space: normal; word-break: break-word;" (click)="scrollToQuestion(q.id_question)" class="question">
+          {{ q.libelle }}
+        </p>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
+</div>

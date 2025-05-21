@@ -1,6 +1,5 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { ChoixActeursComponent } from "../components/parts/choix-acteurs/choix-acteurs.component";
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, Validators } from '@angular/forms';
 import { MatTableDataSource, MatTableDataSourcePaginator } from '@angular/material/table';
 import { Acteur } from '@app/models/acteur.model';
 import { Departement } from '@app/models/departement.model';
@@ -8,19 +7,25 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { Site } from '@app/models/site.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SiteService } from '@app/services/sites.service';
 import { MatButtonModule } from '@angular/material/button';
 import { Labels } from '@app/utils/labels';
+import { ChoixActeursComponent } from '../parts/choix-acteurs/choix-acteurs.component';
+import { GraphiquesComponent } from "../parts/graphiques/graphiques.component";
+import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
+import { NomenclatureService } from '@app/services/nomenclature.service';
+import { MenuLateralComponent } from "../parts/menu-lateral/menu-lateral.component";
+import { TableauStructuresComponent } from "../parts/tableau-structures/tableau-structures.component";
 
 @Component({
   selector: 'app-diagnostic-visualisation',
   templateUrl: './diagnostic-visualisation.component.html',
   styleUrls: ['./diagnostic-visualisation.component.css'],
   standalone:true,
-  imports: [ChoixActeursComponent,CommonModule,MatButtonModule]
+  imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent, MenuLateralComponent, TableauStructuresComponent,TableauStructuresComponent]
 })
 export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
 
@@ -40,11 +45,13 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   private diagnosticService = inject(DiagnosticService);
   private routeSubscription?:Subscription;
   private diagSubscription?:Subscription;
-  private route = inject(ActivatedRoute);
+  route = inject(ActivatedRoute);
   private siteService = inject(SiteService);
   private router = inject(Router)
+  private nomenclatureService = inject(NomenclatureService)
   id_diagnostic:number = 0;
   labels = new Labels();
+  themes:Nomenclature[] = [];
 
   formGroup = this.fb.group({
       id_diagnostic: [0, [Validators.required]],
@@ -62,21 +69,87 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
     this.routeSubscription = this.route.params.subscribe((params: any) => {
           this.id_diagnostic = params['id_diagnostic'];          
           if (this.id_diagnostic) {
-        
-            this.diagSubscription = this.diagnosticService.get(this.id_diagnostic).subscribe(diag =>{
+            const diag$ = this.diagnosticService.get(this.id_diagnostic);
+            const themes$ = this.nomenclatureService.getAllByType("thème");
+            forkJoin([diag$, themes$]).subscribe(([diag, themes]) => {
               this.diagnostic = diag;
               this.actors = diag.acteurs;
+              this.themes = themes;
             });
+            
             
           }
     });
 
   }
 
+  onTabChange(event: MatTabChangeEvent) {
+    let menu = document.getElementById("menu");
+    if (event.index === 2) { 
+    
+      if (menu?.className == "invisible"){
+        menu?.classList.remove("invisible");
+        menu?.classList.add("visible");
+      }
+      
+      
+    }else{
+      if (menu?.className == "visible"){
+        menu?.classList.remove("visible");
+        menu?.classList.add("invisible");
+      }
+    }
+  }
+
   navigate= (path:string,diagnostic:Diagnostic):void =>{
     localStorage.setItem("previousPage",this.router.url);
     this.siteService.navigateAndReload(path,diagnostic);
   }
+
+  exportCSV(){
+    let acteurs:Acteur[] = this.diagnostic.acteurs;
+    const separator = ';';
+    const headers = [
+      'id_acteur',
+      'nom',
+      'prenom',
+      'fonction',
+      'structure',
+      'mail',
+      'telephone',
+      'profil',
+      'is_acteur_economique',
+      'commune',
+      'categories'
+    ];
+
+    const csvRows = [
+      headers.join(separator),
+      ...acteurs.map(a => [
+        a.id_acteur,
+        a.nom,
+        a.prenom,
+        a.fonction,
+        a.structure,
+        a.mail,
+        a.telephone,
+        a.profil?.libelle|| '',
+        a.is_acteur_economique,
+        a.commune?.nom_com || '',
+        (a.categories || []).map(c => c.libelle).join(', ')
+      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(separator))
+    ];
+
+    const csvContent = csvRows.join('\n');
+    const BOM = '\uFEFF';  // UTF-8 BOM
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'acteurs - '+this.diagnostic.nom+'.csv';
+    link.click();
+  }
+
   ngOnDestroy(): void {
     this.routeSubscription?.unsubscribe();
     this.diagSubscription?.unsubscribe();

@@ -20,7 +20,7 @@ export const AppConfig = {
         {
             "texte":"Mes diagnostics",
             "classFa":"fas" as const,
-            "nomFa":"chart-line" as const,
+            "nomFa":"chart-pie" as const,
             "lien":"mes-diagnostics"
         },
     ],
@@ -39,7 +39,7 @@ export const AppConfig = {
         {
             "nom":"diagnostics",
             "classFa":"fas" as const,
-            "nomFa":"chart-line" as const,
+            "nomFa":"chart-pie" as const,
             "lien":"diagnostics-liste"
         },
         {

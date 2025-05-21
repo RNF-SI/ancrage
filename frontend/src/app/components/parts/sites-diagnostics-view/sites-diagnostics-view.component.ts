@@ -28,7 +28,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
   standalone: true,
   imports: [CommonModule, MatCardModule, MatButtonModule, MatTooltipModule, FontAwesomeModule,RouterModule,MapComponent,MatFormFieldModule,MatSelectModule,FormsModule,MatInputModule,MatExpansionModule]
 })
-export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy{
+export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy,OnInit{
 
   @Input() sites: Site[] = [];
   @Input() titleBtnCreaDiag = "Nouveau diagnostic";
@@ -48,18 +48,16 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy{
   uniqueRegions: string[] = [];
   uniqueTypes: string[] = [];
   uniqueHabitats: string[] = [];
-  globales={};
   reinitialisation = 'Réinitialiser';
   btnToChooseLabel = "Choisir";
   btnNewSiteLabel = "Nouveau site";
   btnToChooseActors = "Choix des acteurs";
-
   labels = new Labels();
   private authService = inject(AuthService);
   private sitesSub!: Subscription;
   titleChosenSites="Sites choisis";
   emptyChosenSites = "Vous n'avez pas encore choisi de sites.";
-  chosenSites:String[]=[this.emptyChosenSites];
+  chosenSites:string[]=[this.emptyChosenSites];
   user_id:number = 0;
   id_organisme=0;
   searchSiteName: string = '';
@@ -69,8 +67,11 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy{
   btnForDiagnosticsLbl = "";
   private dialog = inject(MatDialog);
   private router = inject(Router)
+  mapInstanceKey = Date.now();
   
-
+  ngOnInit(): void {
+    this.mapInstanceKey = Date.now();
+  }
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['sites'] && this.sites && this.sites.length > 0) {
       this.handleNewSites();
@@ -86,10 +87,7 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy{
   }
 
   filteredSites(sites?:Site[]):Site[] {
-    if(sites){
-     
-      return this.sites = sites;
-    }
+    if (sites) return this.sites = sites;
     if (!this.searchSiteName) {
       return this.sitesOriginal;
     }
@@ -111,28 +109,41 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy{
   }
 
   ngAfterViewInit(): void {
+   
+    this.initUI();
+    this.initSites();
+    this.initUserContext();
+  }
+  
+  private initUI() {
     this.btnForDiagnosticsLbl = this.btnToShowDiagnosticsLbl;
+    localStorage.removeItem("diagnostic");
+    localStorage.removeItem("previousPage");
+    localStorage.setItem("previousPage", this.router.url);
+  }
+  
+  private initSites() {
     this.handleNewSites();
     this.extractUniqueFilters();
     this.onSearchChange();
-    
-    localStorage.removeItem("diagnostic");
-    localStorage.removeItem("previousPage");
-    this.user_id = this.authService.getCurrentUser().id_role;
-    this.id_organisme = this.authService.getCurrentUser().id_organisme;
-    localStorage.setItem("previousPage",this.router.url);
-    
+  }
+  
+  private initUserContext() {
+    const user = this.authService.getCurrentUser();
+    this.user_id = user.id_role;
+    this.id_organisme = user.id_organisme;
   }
 
-  navigate(path:string,diagnostic:Diagnostic,site?:Site){
-    if (localStorage.getItem("diagnostic")){
-      
-      return this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
-    }else{
-      this.diagnostic.created_by = this.user_id;
-      this.diagnostic.id_organisme = this.id_organisme;
-    }
-    this.siteService.navigateAndReload(path,diagnostic,site);
+  async navigate(path:string,diagnostic:Diagnostic,site?:Site){
+    const diagToStore = {
+      ...diagnostic,
+      created_by: diagnostic.id_diagnostic > 0 ? diagnostic.created_by : this.user_id,
+      id_organisme: diagnostic.id_diagnostic > 0 ? diagnostic.id_organisme : this.id_organisme
+    };
+  
+    this.siteService.navigateAndReload(path, diagToStore as Diagnostic, site);
+    
+    
   }
   extractUniqueFilters() {
     this.uniqueDepartements = Array.from(new Set(this.sites.flatMap(site =>
@@ -174,26 +185,12 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy{
 
   }
 
-  displayDiagnostics(site:Site){
-    const element = document.querySelector(".diagnostics"+site.id_site);
-    const buttonClass = document.querySelector(".btnToShowDiagnostics"+site.id_site);
-    if (element?.classList.contains("hidden")){
-      element.classList.remove('hidden');
-      element.classList.add('displayed');
-      buttonClass!.innerHTML = this.btnToHideDiagnosticsLbl;
-    }else{
-      element?.classList.remove('displayed');
-      element?.classList.add('hidden');
-      buttonClass!.innerHTML = this.btnToShowDiagnosticsLbl;
-    }
-  }
-
   ngOnDestroy(): void {
     this.sitesSub?.unsubscribe();
   }
 
   showSiteDetails(site:Site){
-    console.log(this.user_id == site.created_by);
+   
     this.dialog.open(AlerteVisualisationSiteComponent, {
               data: {
                 site: site,
