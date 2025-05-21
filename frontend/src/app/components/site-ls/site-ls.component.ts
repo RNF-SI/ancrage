@@ -34,13 +34,13 @@ export class SiteLsComponent implements OnInit, OnDestroy{
     
     this.routeSubscription = this.route.params.subscribe((params: any) => {
       const id_site = params['id_site'];
-    
-      if (id_site) {
-        this.siteSubscription = this.siteService.get(id_site).subscribe(site => {
+      const slug = params['slug'];
+      if (slug && id_site) {
+        this.siteSubscription = this.siteService.get(id_site, slug).subscribe(site => {
           this.site = site;
         });
       } else if (this.site?.id_site) { 
-        this.siteSubscription = this.siteService.get(this.site.id_site).subscribe(site => {
+        this.siteSubscription = this.siteService.get(this.site.id_site,this.site.slug).subscribe(site => {
           this.site = site;
         });
       }

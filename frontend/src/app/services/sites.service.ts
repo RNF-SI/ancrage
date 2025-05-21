@@ -38,8 +38,8 @@ export class SiteService {
 		);
 	}
 
-	get(id: number): Observable<Site> {
-		return this.http.get<ISite>(this.BASE_URL + id).pipe(
+	get(id:number,slug: string): Observable<Site> {
+		return this.http.get<ISite>(this.BASE_URL + id + '/' + slug).pipe(
 			map(siteJson => Site.fromJson(siteJson))
 		);
 	}

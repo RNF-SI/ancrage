@@ -41,4 +41,5 @@ export class Labels {
     showMoreInfo = "Informations complémentaires";
     exportPNG = "Exporter en PNG";
     exportCSV = "Exporter en CSV";
+    slug="Slug";
 }

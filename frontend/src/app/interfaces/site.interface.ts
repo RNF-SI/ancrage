@@ -18,4 +18,5 @@ export interface ISite {
     created_by:number;
     modified_by:number;
     selected:boolean;
+    slug:string;
 }

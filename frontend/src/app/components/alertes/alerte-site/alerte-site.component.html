@@ -5,6 +5,7 @@
     <!-- <div><b>{{data.labels.housingLabel}}</b> : <span *ngFor="let hab of data.site.habitats">{{ hab.libelle }} </span></div> -->
     <div><b>{{data.labels.statusLabel}}</b> : <span>{{ data.site.type.libelle }}</span></div>
     <div><b>{{data.labels.departementLabel}}</b> : <span *ngFor="let dpt of data.site.departements">{{ dpt.nom_dep }} </span></div>
+    <div><b>{{data.labels.slug}}</b> : <span>{{ data.site.slug }}</span></div>
 </mat-dialog-content>
 
 <mat-dialog-actions>

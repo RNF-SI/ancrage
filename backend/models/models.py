@@ -80,6 +80,7 @@ class Site(db.Model):
     modified_at = db.Column(db.DateTime)
     created_by = db.Column(db.Integer)
     modified_by = db.Column(db.Integer)
+    slug = db.Column(db.String)
 
 site_diagnostic = db.Table(
     'cor_sites_diagnostics',
@@ -104,7 +105,7 @@ class Diagnostic(db.Model):
     acteurs = db.relationship('Acteur', back_populates='diagnostic')
     documents = db.relationship('Document', backref='diagnostic')
     sites = db.relationship('Site', secondary='cor_sites_diagnostics', back_populates='diagnostics')
-    
+    slug = db.Column(db.String)
     
 class Document(db.Model):
     __tablename__ = 't_documents'
@@ -139,6 +140,7 @@ class Acteur(db.Model):
     acteur_origine_id = db.Column(db.Integer, db.ForeignKey('t_acteurs.id_acteur'))
     acteur_origine = db.relationship('Acteur', remote_side=[id_acteur], backref='acteurs_issus')
     is_copy = db.Column(db.Boolean, default=False)
+    slug = db.Column(db.String)
 
 acteur_categorie = db.Table(
     'cor_categorie_acteur',

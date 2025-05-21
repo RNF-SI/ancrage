@@ -71,12 +71,12 @@ const routes: Routes = [ {
       canActivate: [AuthGuardService]
     },
     {
-      path: 'site/:id_site',
+      path: 'site/:id_site/:slug',
       component: SiteComponent,
       canActivate: [AuthGuardService]
     },
     {
-      path: 'site-ls/:id_site',
+      path: 'site-ls/:id_site/:slug',
       component: SiteLsComponent,
       canActivate: [AuthGuardService]
     },

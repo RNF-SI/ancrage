@@ -18,6 +18,7 @@ export class Site implements ISite {
 	created_by: number = 0;
 	modified_by: number = 0;
 	selected=false;
+	slug="";
 
 	copy(): Site {
 		const copy = new Site();
@@ -33,6 +34,7 @@ export class Site implements ISite {
 		copy.modified_at = this.modified_at ? new Date(this.modified_at.getTime()) : undefined;
 		copy.created_by = this.created_by;
 		copy.modified_by = this.modified_by;
+		copy.slug = this.slug;
 
 		return copy;
 	}
@@ -53,6 +55,7 @@ export class Site implements ISite {
 		site.modified_at = data.modified_at ? new Date(data.modified_at) : undefined;
 		site.created_by = data.created_by;
 		site.modified_by = data.modified_by;
+		site.slug = data.slug;
 
 		return site;
 	}
@@ -65,11 +68,8 @@ export class Site implements ISite {
 			habitats: this.habitats.map(h => h.toJson()),
 			departements: this.departements.map(h => h.toJson()),
 			type: this.type.toJson(),
-			id_inpn:this.id_inpn,
 			created_at: this.created_at ? new Date(this.created_at) : undefined,
-			modified_at: this.modified_at ? new Date(this.modified_at) : undefined,
-			created_by: this.created_by,
-			modified_by: this.modified_by
+			modified_at: this.modified_at ? new Date(this.modified_at) : undefined			
 		};
 	
 		return json;

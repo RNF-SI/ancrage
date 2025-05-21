@@ -4,15 +4,17 @@ from sqlalchemy.orm import contains_eager
 from models.models import *
 from schemas.metier import *
 from routes import bp,date_time
+from slugify import slugify
+import uuid
 
-@bp.route('/site/<id_site>', methods=['GET','PUT','DELETE'])
-def siteMethods(id_site):
+@bp.route('/site/<id_site>/<slug>', methods=['GET','PUT','DELETE'])
+def siteMethods(id_site,slug):
     site = Site.query.filter_by(id_site=id_site).first()
     
-    print(site)
     if request.method == 'GET':
-
-       return getSite(site)
+        if site.slug == slug:
+            print('ok')
+            return getSite(site)
     
     
     elif request.method == 'PUT':
@@ -71,6 +73,9 @@ def getAllSitesByUSer(created_by):
 def changeValuesSite(site,data):
     
     site.nom = data['nom']
+    myuuid = uuid.uuid4()
+    site.slug = slugify(site.nom) + '-' + str(myuuid)
+    print(site.slug)
     site.position_x = data['position_x']
     site.position_y = data['position_y']
     site.type_id = data['type']['id_nomenclature']

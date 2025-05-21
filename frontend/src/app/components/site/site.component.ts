@@ -60,7 +60,8 @@ export class SiteComponent implements OnInit,OnDestroy{
   site:Site = Object.assign(new Site(),this.formGroup.value);
   routeSubscription?: Subscription;
   route = inject(ActivatedRoute)
-  id_site: number = 1;
+  slug = "";
+  id_site = 0
   changePosition = true;
   diagnostic:Diagnostic = new Diagnostic();
   private departementService = inject(DepartementService);
@@ -76,14 +77,14 @@ export class SiteComponent implements OnInit,OnDestroy{
     this.user_id = this.authService.getCurrentUser().id_role;
     this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);    
     this.routeSubscription = this.route.params.subscribe((params: any) => {
-      const id_site = params['id_site'];  
-  
+      this.slug = params['slug'];  
+      this.id_site = params['id_site'];
       const habitats$ = this.nomenclatureService.getAllByType(this.mnemoHabitats);
       const statuts$ = this.nomenclatureService.getAllByType(this.mnemoStatuts);
       const departements$ = this.departementService.getAll();
 
-      if (id_site) {
-        const site$ = this.siteService.get(id_site);
+      if (this.id_site && this.slug) {
+        const site$ = this.siteService.get(this.id_site,this.slug);
   
         forkJoin([habitats$, statuts$, site$,departements$]).subscribe(([habitats, statuts, site,departements]) => {
           this.uniqueHabitats = habitats;
