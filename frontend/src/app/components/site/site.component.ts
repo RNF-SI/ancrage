@@ -21,6 +21,7 @@ import { AlerteSiteComponent } from '../alertes/alerte-site/alerte-site.componen
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { Labels } from '@app/utils/labels';
 import { DiagnosticStoreService } from '@app/services/diagnostic-store.service';
+import { DiagnosticCacheService } from '@app/services/diagnostic-cache-service.service';
 
 
 
@@ -61,11 +62,9 @@ export class SiteComponent implements OnInit,OnDestroy{
 		position_x: [this.longitude, [Validators.required,Validators.pattern('^(\\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$')]]
   });
   site:Site = Object.assign(new Site(),this.formGroup.value);
-  routeSubscription: any;
+  routeSubscription?: Subscription;
   route = inject(ActivatedRoute)
   id_site: number = 1;
-  monsterService: any;
-  monster: any;
   changePosition = true;
   diagnostic:Diagnostic = new Diagnostic();
   private departementService = inject(DepartementService);
@@ -75,9 +74,12 @@ export class SiteComponent implements OnInit,OnDestroy{
   user_id=0;
   previousPage="";
   private diagnosticStoreSubscription?: Subscription;
+  private diagnosticCacheService = inject(DiagnosticCacheService);
+  showMap=true;
+  mapInstanceKey = Date.now();
 
   ngOnInit(): void {
-    
+    this.mapInstanceKey = Date.now();
     this.user_id = this.authService.getCurrentUser().id_role;
     this.diagnosticStoreSubscription = this.diagnosticStoreService.getDiagnostic().subscribe(diag =>{
       if (diag){
@@ -163,10 +165,10 @@ export class SiteComponent implements OnInit,OnDestroy{
    
   }
 
-  getConfirmation(message:string,site:Site){
+  async getConfirmation(message:string,site:Site){
     this.diagnostic.sites.push(site);
     this.previousPage = localStorage.getItem("previousPage")!;
-    this.diagnosticStoreService.setDiagnostic(this.diagnostic);
+    const cacheId = await this.diagnosticCacheService.save(this.diagnostic);
     this.dialog.open(AlerteSiteComponent, {
       data: {
         title: this.titleSite,

@@ -19,6 +19,8 @@ import { MatCardModule } from '@angular/material/card';
 import { Labels } from '@app/utils/labels';
 import { DiagnosticStoreService } from '@app/services/diagnostic-store.service';
 import { AlerteStatutEntretienComponent } from '@app/components/alertes/alerte-statut-entretien/alerte-statut-entretien.component';
+import { DiagnosticCacheService } from '@app/services/diagnostic-cache-service.service';
+import { SiteService } from '@app/services/sites.service';
 
 @Component({
   selector: 'app-choix-acteurs',
@@ -56,7 +58,7 @@ export class ChoixActeursComponent {
   private dialog = inject(MatDialog);
   is_creation = false;
   private router = inject(Router);
-  private diagnosticStoreService = inject(DiagnosticStoreService);
+  private siteService = inject(SiteService);
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['actors'] && this.actors && this.actors.length > 0) {
@@ -153,7 +155,8 @@ export class ChoixActeursComponent {
   navigateToActor(path:string,diagnostic:Diagnostic){
     diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
     localStorage.setItem("previousPage",this.router.url);
-    this.diagnosticStoreService.setDiagnostic(diagnostic);
+    let shortDiag = this.siteService.sanitizeDiagnosticForLocalStorage(diagnostic);
+    localStorage.setItem("diagnostic",JSON.stringify(shortDiag));
     this.router.navigate([path]);
   }
 

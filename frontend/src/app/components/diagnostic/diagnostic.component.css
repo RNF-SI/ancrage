@@ -1,4 +1,7 @@
-#fieldName{
+.fieldName{
     display:block;
+    width:50%;
+}
+.date{
     width:50%;
 }

@@ -22,6 +22,7 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 import { SiteService } from '@app/services/sites.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DiagnosticStoreService } from '@app/services/diagnostic-store.service';
+import { DiagnosticCacheService } from '@app/services/diagnostic-cache-service.service';
 
 @Component({
   selector: 'app-acteur',
@@ -67,6 +68,8 @@ export class ActeurComponent implements OnInit,OnDestroy{
   private siteService = inject(SiteService);
   private diagnosticStoreService = inject(DiagnosticStoreService);
   private diagnosticStoreSubscription?:Subscription;
+  private diagnosticCacheService = inject(DiagnosticCacheService);
+
   user_id=0;
   filteredTowns: Commune[] = [];
   labels = new Labels();
@@ -77,10 +80,8 @@ export class ActeurComponent implements OnInit,OnDestroy{
   
 
   ngOnInit(): void {
-    this.diagnosticStoreSubscription = this.diagnosticStoreService.getDiagnostic().subscribe(diag =>{
-      this.diagnostic = diag!;
-      
-    });
+    
+    this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
     this.isLoading = true;
     this.routeSubscription = this.route.params.subscribe((params: any) => {
           this.id_actor = params['id_acteur'];  
@@ -192,10 +193,10 @@ export class ActeurComponent implements OnInit,OnDestroy{
     
   }
   
-  getConfirmation(message:string,actor:Acteur){
+  async getConfirmation(message:string,actor:Acteur){
     this.previousPage = localStorage.getItem("previousPage")!;
     this.diagnostic.acteurs.push(actor);
-    this.diagnosticStoreService.setDiagnostic(this.diagnostic);
+    const cacheId = await this.diagnosticCacheService.save(this.diagnostic);
     
     if(actor.id_acteur > 0){
       

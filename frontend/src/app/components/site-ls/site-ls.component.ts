@@ -50,6 +50,7 @@ export class SiteLsComponent implements OnInit, OnDestroy{
 
   navigate(path:string,diagnostic:Diagnostic){
     this.siteService.navigateAndReload(path,diagnostic);
+    this.dialogRef.close();
   }
   ngOnDestroy(): void {
     this.routeSubscription?.unsubscribe();

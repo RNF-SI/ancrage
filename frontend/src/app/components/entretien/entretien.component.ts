@@ -16,6 +16,7 @@ import { MenuLateralComponent } from "../parts/menu-lateral/menu-lateral.compone
 import { SiteService } from '@app/services/sites.service';
 import { DiagnosticStoreService } from '@app/services/diagnostic-store.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { DiagnosticCacheService } from '@app/services/diagnostic-cache-service.service';
 
 @Component({
   selector: 'app-entretien',
@@ -47,14 +48,13 @@ export class EntretienComponent implements OnInit,OnDestroy{
   private router = inject(Router);
   private diagnosticStoreSubscription?: Subscription;
   private diagnosticStoreService = inject(DiagnosticStoreService);
+  private diagnosticCacheService = inject(DiagnosticCacheService);
+  
 
   ngOnInit(): void {
     this.previousPage = localStorage.getItem("previousPage")!;
-    this.diagnosticStoreSubscription = this.diagnosticStoreService.getDiagnostic().subscribe(diag =>{
-      this.diagnostic = diag!;
-    });
-    
-     this.routeSubscription = this.route.params.subscribe((params: any) => {
+    this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
+    this.routeSubscription = this.route.params.subscribe((params: any) => {
         this.id_acteur = parseInt(params['id_acteur']); 
         this.title = this.labels.addInterview;
         const themes$ = this.nomenclatureService.getAllByType("thème",this.id_acteur);
@@ -176,7 +176,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
   }
 
   navigate(path:string,diagnostic:Diagnostic){
-    localStorage.setItem("previousPage",this.router.url);
+    
     this.siteService.navigateAndReload(path,diagnostic);
     
   }

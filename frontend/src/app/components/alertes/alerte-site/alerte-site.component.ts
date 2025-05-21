@@ -30,7 +30,7 @@ export class AlerteSiteComponent {
   private siteService = inject(SiteService);
 
   navigate(path:string,diagnostic:Diagnostic){
-    
+    this.dialogRef.close();
     this.siteService.navigateAndReload(path,diagnostic)
   }
 

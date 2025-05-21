@@ -7,7 +7,7 @@
       </button>
     </div>
     <div class="col-3">
-      <button mat-icon-button [matTooltip]="infobulleCreaDiagFromScratch" aria-label="Info création" color="primary">
+      <button mat-icon-button [matTooltip]="infobulleCreaDiagFromScratch" aria-label="Info création" color="accent">
         <fa-icon [icon]="['fas', 'question']"></fa-icon>
       </button>
     </div>
@@ -56,7 +56,10 @@
 
   <div class="row">
     <div class="col-6">
-      <app-map [sites]="filteredSiteList"></app-map>
+      <app-map 
+        [sites]="filteredSiteList"
+        [attr.key]="mapInstanceKey"
+      ></app-map>
     </div>
 
     <div class="col-6">

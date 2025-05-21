@@ -24,13 +24,46 @@ import { Labels } from '@app/utils/labels';
 import { MatDialog } from '@angular/material/dialog';
 import { AlerteDiagnosticComponent } from '../alertes/alerte-diagnostic/alerte-diagnostic.component';
 import { DiagnosticStoreService } from '@app/services/diagnostic-store.service';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { DateAdapter, MatNativeDateModule } from '@angular/material/core';
+import { MatMomentDateModule, MAT_MOMENT_DATE_ADAPTER_OPTIONS } from '@angular/material-moment-adapter';
+import { MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
+import { LOCALE_ID } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeFr from '@angular/common/locales/fr';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import * as moment from 'moment';
+import { Moment } from 'moment';
+import { DiagnosticCacheService } from '@app/services/diagnostic-cache-service.service';
+
+registerLocaleData(localeFr);
 
 @Component({
   selector: 'app-diagnostic',
   templateUrl: './diagnostic.component.html',
   styleUrls: ['./diagnostic.component.css'],
   standalone:true,
-  imports:[CommonModule,MatSelectModule, MatFormFieldModule,FormsModule,MatInputModule,ChoixActeursComponent,ReactiveFormsModule,MatButtonModule]
+  imports:[CommonModule,MatSelectModule, MatFormFieldModule,FormsModule,MatInputModule,ChoixActeursComponent,ReactiveFormsModule,MatButtonModule,MatDatepickerModule,MatMomentDateModule,FontAwesomeModule,MatTooltipModule],
+  providers: [
+    { provide: LOCALE_ID, useValue: 'fr-FR' },
+    { provide: MAT_DATE_LOCALE, useValue: 'fr-FR' },
+    { provide: MAT_MOMENT_DATE_ADAPTER_OPTIONS, useValue: { useUtc: true } },
+    {
+      provide: MAT_DATE_FORMATS,
+      useValue: {
+        parse: {
+          dateInput: 'DD/MM/YY', 
+        },
+        display: {
+          dateInput: 'DD/MM/YY',
+          monthYearLabel: 'MMMM YYYY',
+          dateA11yLabel: 'LL',
+          monthYearA11yLabel: 'MMMM YYYY',
+        },
+      },
+    },
+  ]
 })
 export class DiagnosticComponent implements OnInit, OnDestroy{
 
@@ -78,6 +111,8 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   private dialog = inject(MatDialog);
   private diagnosticStoreService = inject(DiagnosticStoreService);
   private diagnosticStoreSubscription ?:Subscription;
+  private dateAdapter = inject(DateAdapter);
+  private diagnosticCacheService = inject(DiagnosticCacheService);
   user_id=0;
   id_organisme = 0;
   actorsSelected:MatTableDataSource<Acteur>= new MatTableDataSource();
@@ -89,21 +124,23 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       nom: ['', [Validators.required]],
       sites: this.fb.control<Site[]>([], [Validators.required]),  
       acteurs: this.fb.control<Acteur[]>([], [Validators.required]),
-      created_by: [0, [Validators.required]],
-      id_organisme: [0, [Validators.required]],
-      modified_by: [0, [Validators.required]],
+      date_rapport: this.fb.control<Moment | null>(null),
+      created_by: [0, []],
+      id_organisme: [0, []],
+      modified_by: [0, []],
       identite_createur:[""]
     });
   previousPage = "";
   user:any;
+  infobulleSaisieDateRapport = "Attention ! Ne saisissez ce champ uniquement si vous avez publié votre rapport. Après la saisie de cette date, vous ne pourrez plus modifier le diagnostic.";
+
   
   ngOnInit(): void {
+    this.dateAdapter.setLocale('fr-FR');
     this.titleDiagnostic = this.titleCreateDiag;
     this.previousPage = localStorage.getItem("previousPage")!;
-    
-   
-    
-    this.routeSubscription = this.route.params.subscribe((params: any) => {
+    this.user = this.authService.getCurrentUser();
+    this.routeSubscription = this.route.params.subscribe(async (params: any) => {
       this.id_diagnostic = params['id_diagnostic'];  
   
       const sites$ = this.siteService.getAll();
@@ -115,7 +152,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
         this.formGroup.get('id_diagnostic')?.setValue(this.id_diagnostic);
   
         forkJoin([diag$,sites$, actors$]).subscribe(([diag,sites, acteurs]) => {
-          
+          this.diagnostic = diag;
           this.instructionswithResults(sites,acteurs);
          
           this.can_edit = diag.created_by == this.user_id;
@@ -131,13 +168,11 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
         });
       } else {
         
-        this.diagnosticStoreSubscription = this.diagnosticStoreService.getDiagnostic().subscribe(diag =>{
-          this.diagnostic = diag!;
-          this.chosenSites = this.diagnostic.sites;
-        });
-        
-        this.user_id = this.authService.getCurrentUser().id_role;
-        this.id_organisme = this.authService.getCurrentUser().id_organisme;
+        this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
+        console.log(this.diagnostic);
+        this.chosenSites = this.diagnostic.sites;
+        this.user_id = this.user?.id_role;
+        this.id_organisme = this.user.id_organisme;
         forkJoin([sites$, actors$]).subscribe(([sites, acteurs]) => {
          
           this.instructionswithResults(sites,acteurs);
@@ -239,7 +274,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   }
 
   navigate= (path:string,diagnostic:Diagnostic):void =>{
-    diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
+    
     localStorage.setItem("previousPage",this.router.url);
     this.siteService.navigateAndReload(path,diagnostic);
   }
@@ -248,28 +283,40 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     event.preventDefault();
     
     if (this.id_diagnostic == undefined){
-      let nom = this.authService.getCurrentUser().nom_role;
-      let prenom = this.authService.getCurrentUser().prenom_role;
+      let nom = this.user.nom_role;
+      let prenom = this.user.prenom_role;
       this.formGroup.get("identite_createur")?.setValue(nom + " "+ prenom);
       this.formGroup.get("created_by")?.setValue(this.user_id);
       this.formGroup.get("id_organisme")?.setValue(this.id_organisme);
-      this.diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
-      this.diagnosticSubscription = this.diagnosticsService.add(this.diagnostic).subscribe(diagnostic=>{
-        this.getConfirmation("Ce diagnostic vient d'être créé dans la base de données et contient ces informations : ",diagnostic);
-      })
+     
+      if (this.formGroup.valid) {
+          this.convertDateReport();    
+          this.diagnosticSubscription = this.diagnosticsService.add(this.diagnostic).subscribe(diagnostic=>{
+            this.getConfirmation("Ce diagnostic vient d'être créé dans la base de données et contient ces informations : ",diagnostic);
+          });
+      }else{
+        this.formGroup.markAllAsTouched();
+      }
+      
     }else{
       this.formGroup.get("modified_by")?.setValue(this.user_id);
-      this.diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
-      this.diagnosticSubscription = this.diagnosticsService.update(this.diagnostic).subscribe(diagnostic=>{
-        this.getConfirmation("Ce diagnostic vient d'être modifié dans la base de données et contient ces informations :",diagnostic);
-      })
+      this.convertDateReport();
+      if (this.formGroup.valid) {
+        
+        console.log(this.diagnostic);
+        this.diagnosticSubscription = this.diagnosticsService.update(this.diagnostic).subscribe(diagnostic=>{
+          this.getConfirmation("Ce diagnostic vient d'être créé dans la base de données et contient ces informations : ",diagnostic);
+        });
+      }else{
+        this.formGroup.markAllAsTouched();
+      }
     }
   }
 
-  getConfirmation(message:string,diag:Diagnostic){
+  async getConfirmation(message:string,diag:Diagnostic){
       this.previousPage = localStorage.getItem("previousPage")!;
       this.diagnostic=diag;
-      this.diagnosticStoreService.setDiagnostic(this.diagnostic);
+      const cacheId = await this.diagnosticCacheService.save(diag);
       if(diag.id_diagnostic > 0){
        
         this.dialog.open(AlerteDiagnosticComponent, {
@@ -283,6 +330,17 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
         });
       }
       
+  }
+
+  convertDateReport(){
+    const rawValue = this.formGroup.getRawValue(); // ou .value si pas désactivé
+    const payload = {
+      ...rawValue,
+      date_rapport: moment.isMoment(rawValue.date_rapport)
+        ? rawValue.date_rapport.format('DD/MM/YYYY')
+        : null
+    };
+    this.diagnostic = Object.assign(new Diagnostic(),payload);
   }
 
   ngOnDestroy(): void {

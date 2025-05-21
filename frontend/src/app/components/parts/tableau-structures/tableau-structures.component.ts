@@ -23,7 +23,7 @@ export class TableauStructuresComponent implements OnInit,OnDestroy{
   ngOnInit(): void {
     this.structuresSubscription = this.diagnosticService.getStructures(this.diagnostic.id_diagnostic).subscribe(
       reponses =>{
-        this.structures = reponses.structures;
+        this.structures = reponses.structures.sort();
       }
     )
   }
