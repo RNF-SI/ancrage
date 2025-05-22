@@ -5,6 +5,7 @@ from schemas.metier import *
 from routes import bp,now
 from datetime import datetime,timezone
 
+
 @bp.route('/acteur/<id_acteur>', methods=['GET','PUT','DELETE'])
 def acteurMethods(id_acteur):
     acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
@@ -38,6 +39,9 @@ def postActeur():
     
         acteur=Acteur()
         acteur = changeValuesActeur(acteur,data)
+
+        acteur.created_at = now
+        acteur.created_by = data['created_by']
         print(f"""✔ Données acteur mises à jour :
         - Nom        : {acteur.nom}
         - Prénom     : {acteur.prenom}

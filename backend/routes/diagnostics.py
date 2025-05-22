@@ -2,6 +2,7 @@ from models.models import db
 from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
+from routes import bp,now
 from sqlalchemy import func
 from sqlalchemy.orm import aliased
 from routes import bp,date_time
@@ -26,6 +27,8 @@ def diagnosticMethods(id_diagnostic):
         
         diagnostic = changeValuesDiagnostic(diagnostic,data)
 
+
+        diagnostic.modified_at = now
         diagnostic.modified_at = date_time
         raw_date = data.get('date_rapport')
         print(raw_date)
@@ -34,7 +37,6 @@ def diagnosticMethods(id_diagnostic):
             date_rapport = datetime.strptime(raw_date, '%d/%m/%Y')
             diagnostic.is_read_only = True
             diagnostic.date_rapport = date_rapport
-        """ print_diagnostic(diagnostic); """
         db.session.commit()
         return getDiagnostic(diagnostic)
 
@@ -62,7 +64,7 @@ def postDiagnostic():
 
     diagnostic = Diagnostic()
     
-    diagnostic.created_at = date_time
+    diagnostic.created_at = now
     diagnostic.created_by = data['created_by']
     diagnostic.identite_createur = data['identite_createur']
     db.session.add(diagnostic)
@@ -289,6 +291,7 @@ def changeValuesDiagnostic(diagnostic,data):
         deleteActors(diagnostic.id_diagnostic)
 
         copied_acteurs = []
+
         with db.session.no_autoflush:
             for a in acteurs_orig:
                 new_acteur = Acteur(
