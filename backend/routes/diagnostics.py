@@ -8,6 +8,8 @@ from sqlalchemy.orm import aliased
 from routes import bp,date_time
 from datetime import date, datetime
 
+
+
 @bp.route('/diagnostic/<int:id_diagnostic>', methods=['GET','PUT','DELETE'])
 def diagnosticMethods(id_diagnostic):
     diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
