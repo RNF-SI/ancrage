@@ -2,7 +2,7 @@ from models.models import db
 from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
-from routes import bp,date_time
+from routes import bp,now
 
 @bp.route('/diagnostic/<int:id_diagnostic>', methods=['GET','PUT','DELETE'])
 def diagnosticMethods(id_diagnostic):
@@ -23,7 +23,7 @@ def diagnosticMethods(id_diagnostic):
         
         diagnostic = changeValuesDiagnostic(diagnostic,data)
 
-        diagnostic.modified_at = date_time
+        diagnostic.modified_at = now
 
         db.session.commit()
         return getDiagnostic(diagnostic)
@@ -40,7 +40,7 @@ def postDiagnostic():
 
     diagnostic = Diagnostic()
     
-    diagnostic.created_at = date_time
+    diagnostic.created_at = now
     diagnostic.created_by = data['created_by']
     diagnostic.identite_createur = data['identite_createur']
     db.session.add(diagnostic)
@@ -127,7 +127,7 @@ def changeValuesDiagnostic(diagnostic,data):
                 commune_id=a.commune_id,
                 is_acteur_economique=a.is_acteur_economique,
                 structure=a.structure,
-                created_at=date_time,
+                created_at=now,
                 created_by=data['created_by'],
                 diagnostic_id=diagnostic.id_diagnostic,
                 categories=a.categories,
