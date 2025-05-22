@@ -2,8 +2,9 @@ from models.models import db
 from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
+from routes import bp
 from sqlalchemy.orm import joinedload,aliased
-from routes import bp,date_time
+
 
 @bp.route('/nomenclature/<id_nomenclature>', methods=['GET','PUT','DELETE'])
 def nomenclatureMethods(id_nomenclature):

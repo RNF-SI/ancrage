@@ -2,7 +2,7 @@ from models.models import db
 from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
-from routes import bp,date_time
+from routes import bp
 
 @bp.route('/region/<id_region>', methods=['GET','PUT','DELETE'])
 def regionMethods(id_region):
