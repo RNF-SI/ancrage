@@ -91,12 +91,12 @@ const routes: Routes = [ {
       canActivate: [AuthGuardService]
     },
     {
-      path: 'diagnostic/:id_diagnostic',
+      path: 'diagnostic/:id_diagnostic/:slug',
       component: DiagnosticComponent,
       canActivate: [AuthGuardService]
     },
     {
-      path: 'diagnostic-visualisation/:id_diagnostic',
+      path: 'diagnostic-visualisation/:id_diagnostic/:slug',
       component: DiagnosticVisualisationComponent,
       canActivate: [AuthGuardService]
     },
@@ -106,12 +106,12 @@ const routes: Routes = [ {
       canActivate: [AuthGuardService]
     },
     {
-      path: 'acteur/:id_acteur',
+      path: 'acteur/:id_acteur/:slug',
       component: ActeurComponent,
       canActivate: [AuthGuardService]
     },
     {
-      path: 'entretien/:id_acteur',
+      path: 'entretien/:id_acteur/:slug',
       component: EntretienComponent,
       canActivate: [AuthGuardService]
     }

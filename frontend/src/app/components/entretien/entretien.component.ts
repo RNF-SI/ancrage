@@ -43,56 +43,55 @@ export class EntretienComponent implements OnInit,OnDestroy{
   diagnostic:Diagnostic = new Diagnostic();
   etats:Nomenclature[]=[];
   siteService = inject(SiteService);
-  private diagnosticStoreSubscription?: Subscription;
-  
+  slug="";
 
   ngOnInit(): void {
     this.previousPage = localStorage.getItem("previousPage")!;
     this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
     this.routeSubscription = this.route.params.subscribe((params: any) => {
         this.id_acteur = parseInt(params['id_acteur']); 
+        this.slug = params['slug'];  
         this.title = this.labels.addInterview;
-        const themes$ = this.nomenclatureService.getAllByType("thème",this.id_acteur);
-        const etats$ = this.nomenclatureService.getAllByType("statut_entretien");
+        if (this.id_acteur && this.slug){
+          const themes$ = this.nomenclatureService.getAllByType("thème",this.id_acteur);
+          const etats$ = this.nomenclatureService.getAllByType("statut_entretien");
 
-        forkJoin([themes$,etats$]).subscribe(([themes,etats]) => {
-          this.themes = themes;
-          this.etats = etats;
-          const controls: { [key: string]: any } = {};
-          this.themes.forEach(theme => {
-            
-            theme.questions!.forEach(q => {
-              controls[`question_${q.id_question}`] = this.fb.control(null);
-              if (this.id_acteur){
-                  let reponse:Reponse = new Reponse();
-                    
-                  reponse.question = q;
-                  reponse.acteur.id_acteur = this.id_acteur;
-
-                  
-                q.reponses?.forEach(rep => {
-                  if (rep.acteur.id_acteur==this.id_acteur){
-                    reponse = rep;
-                  }
-                });
-                this.reponses.push(reponse);
-              }
-            
+          forkJoin([themes$,etats$]).subscribe(([themes,etats]) => {
+            this.themes = themes;
+            this.etats = etats;
+            const controls: { [key: string]: any } = {};
+            this.themes.forEach(theme => {
               
+              theme.questions!.forEach(q => {
+                controls[`question_${q.id_question}`] = this.fb.control(null);
+                if (this.id_acteur){
+                    let reponse:Reponse = new Reponse();
+                      
+                    reponse.question = q;
+                    reponse.acteur.id_acteur = this.id_acteur;
+
+                    
+                  q.reponses?.forEach(rep => {
+                    if (rep.acteur.id_acteur==this.id_acteur){
+                      reponse = rep;
+                    }
+                  });
+                  this.reponses.push(reponse);
+                }
+              });
             });
-          });
-        
-          this.formGroup = this.fb.group(controls);
-          if (this.id_acteur){
-            setTimeout(() => {
-              this.patchForm(this.reponses);
-            }, 0);
+          
+            this.formGroup = this.fb.group(controls);
+            if (this.id_acteur){
+              setTimeout(() => {
+                this.patchForm(this.reponses);
+              }, 0);
+              
+            }          
             
-          }          
-          
+          });
+          }
         });
-          
-      });
   }
 
   ngAfterViewInit(){
@@ -167,7 +166,6 @@ export class EntretienComponent implements OnInit,OnDestroy{
     this.routeSubscription?.unsubscribe();
     this.nomenclatureSubscription?.unsubscribe();
     this.reponsesSubscription?.unsubscribe();
-    this.diagnosticStoreSubscription?.unsubscribe();
   }
 
   navigate(path:string,diagnostic:Diagnostic){

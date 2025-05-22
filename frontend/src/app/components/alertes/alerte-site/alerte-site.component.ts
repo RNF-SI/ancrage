@@ -31,7 +31,8 @@ export class AlerteSiteComponent {
 
   navigate(path:string,diagnostic:Diagnostic){
     this.dialogRef.close();
-    this.siteService.navigateAndReload(path,diagnostic)
+    console.log(diagnostic);
+    this.siteService.navigateAndReload(path,diagnostic);
   }
 
   close(){

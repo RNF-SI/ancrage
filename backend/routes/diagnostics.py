@@ -4,45 +4,38 @@ from models.models import *
 from schemas.metier import *
 from sqlalchemy import func
 from sqlalchemy.orm import aliased
-from routes import bp,date_time
-from datetime import date, datetime
+from routes import bp,date_time, slugify, uuid
+from datetime import datetime
 
-@bp.route('/diagnostic/<int:id_diagnostic>', methods=['GET','PUT','DELETE'])
-def diagnosticMethods(id_diagnostic):
+@bp.route('/diagnostic/<int:id_diagnostic>/<slug>', methods=['GET','PUT'])
+def diagnosticMethods(id_diagnostic,slug):
     diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
     
     if request.method == 'GET':
-
-       return getDiagnostic(diagnostic)
+        if diagnostic.slug == slug:
+            return getDiagnostic(diagnostic)
     
     
     elif request.method == 'PUT':
-        data = request.get_json()
+        if diagnostic.slug == slug:
+            data = request.get_json()
+            
+            if 'acteurs' in data:
+                print(f"Acteurs reçus ({len(data['acteurs'])}) :")
+                for acteur in data['acteurs']:
+                    print(f" - ID: {acteur.get('id_acteur')}, Nom: {acteur.get('nom')}")
+            
+            diagnostic = changeValuesDiagnostic(diagnostic,data)
+
+            diagnostic.modified_at = date_time
+            raw_date = data.get('date_rapport')
+            if raw_date != None :
         
-        if 'acteurs' in data:
-            print(f"Acteurs reçus ({len(data['acteurs'])}) :")
-            for acteur in data['acteurs']:
-                print(f" - ID: {acteur.get('id_acteur')}, Nom: {acteur.get('nom')}")
-        
-        diagnostic = changeValuesDiagnostic(diagnostic,data)
-
-        diagnostic.modified_at = date_time
-        raw_date = data.get('date_rapport')
-        print(raw_date)
-        if raw_date != None :
-     
-            date_rapport = datetime.strptime(raw_date, '%d/%m/%Y')
-            diagnostic.is_read_only = True
-            diagnostic.date_rapport = date_rapport
-        """ print_diagnostic(diagnostic); """
-        db.session.commit()
-        return getDiagnostic(diagnostic)
-
-    elif request.method == 'DELETE':
-
-        db.session.delete(diagnostic)
-        db.session.commit()
-        return {"success": "Suppression terminée"}
+                date_rapport = datetime.strptime(raw_date, '%d/%m/%Y')
+                diagnostic.is_read_only = True
+                diagnostic.date_rapport = date_rapport
+            db.session.commit()
+            return getDiagnostic(diagnostic)
     
 def print_diagnostic(diagnostic):
     print("🔍 Diagnostic :")
@@ -65,6 +58,8 @@ def postDiagnostic():
     diagnostic.created_at = date_time
     diagnostic.created_by = data['created_by']
     diagnostic.identite_createur = data['identite_createur']
+    myuuid = uuid.uuid4()
+    diagnostic.slug = slugify(diagnostic.nom) + '-' + str(myuuid)
     db.session.add(diagnostic)
     diagnostic = changeValuesDiagnostic(diagnostic, data)
     db.session.flush()  # Pour obtenir l'id_diagnostic sans commit immédiat
@@ -259,7 +254,6 @@ def get_scores(id_diagnostic):
 def changeValuesDiagnostic(diagnostic,data):
     
     diagnostic.nom = data.get('nom', diagnostic.nom)
-
     if data.get('date_debut'):
         diagnostic.date_debut = data['date_debut']
 

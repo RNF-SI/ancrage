@@ -2,33 +2,26 @@ from models.models import db
 from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
-from routes import bp,now
-from datetime import datetime,timezone
+from routes import bp,now,slugify,uuid
 
-@bp.route('/acteur/<id_acteur>', methods=['GET','PUT','DELETE'])
-def acteurMethods(id_acteur):
+@bp.route('/acteur/<id_acteur>/<slug>', methods=['GET','PUT'])
+def acteurMethods(id_acteur,slug):
     acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
-    
-    print(acteur)
+   
     if request.method == 'GET':
-
-       return getActeur(acteur)
+        if acteur.slug == slug:
+            return getActeur(acteur)
     
     
     elif request.method == 'PUT':
-        data = request.get_json()
-        acteur = changeValuesActeur(acteur,data)
-        acteur.modified_at = now
-        acteur.modified_by = data['modified_by']
+        if acteur.slug == slug:
+            data = request.get_json()
+            acteur = changeValuesActeur(acteur,data)
+            acteur.modified_at = now
+            acteur.modified_by = data['modified_by']
 
-        db.session.commit()
-        return getActeur(acteur)
-
-    elif request.method == 'DELETE':
-
-        db.session.delete(acteur)
-        db.session.commit()
-        return {"success": "Suppression terminée"}
+            db.session.commit()
+            return getActeur(acteur)
     
 @bp.route('/acteur/',methods=['POST'])
 def postActeur():
@@ -50,6 +43,8 @@ def postActeur():
         - is_acteur  : {acteur.is_acteur_economique}
         """)
         acteur.created_at = now
+        myuuid = uuid.uuid4()
+        acteur.slug = slugify(acteur.nom) + '-' + str(myuuid)
         acteur.created_by = data.get('created_by', 'unknown')
         db.session.add(acteur)
         db.session.commit()

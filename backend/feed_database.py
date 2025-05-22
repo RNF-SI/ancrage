@@ -1,6 +1,7 @@
 from app import create_app
 from models.models import db,Acteur,Diagnostic,Nomenclature,Site,site_departement,site_diagnostic,acteur_categorie
 from datetime import datetime, timedelta
+from routes import slugify,uuid
 import random
 import string
 
@@ -77,15 +78,18 @@ with app.app_context():
     # ---------------------
     diagnostics = []
     for i in range(10):
+        nom = f"Diagnostic {i}"
+        myuuid = uuid.uuid4()
+
         d = Diagnostic(
-            nom=f"Diagnostic {i}",
+            nom=nom,
+            slug=slugify(nom) + '-' + str(myuuid),
             date_debut=random_date(),
             date_fin=random_date(0, 50),
             is_read_only=False,
             created_at=datetime.now(),
             modified_at=datetime.now(),
             created_by=random.randint(1, 5),
-            
         )
         db.session.add(d)
         diagnostics.append(d)
@@ -107,9 +111,12 @@ with app.app_context():
     ]
 
     for idx, (lat, lon) in enumerate(site_data):
+        myuuid = uuid.uuid4()
+        nom=f"Site {idx}"
         # Création du site
         site = Site(
-            nom=f"Site {idx}",
+            nom=nom,
+            slug = slugify(nom) + '-' + str(myuuid),
             position_x=str(lon),
             position_y=str(lat),
             type_id=random.choice(types_sites).id_nomenclature,  # type au hasard
@@ -211,9 +218,11 @@ with app.app_context():
     for i in range(20):
         # Choisir un diagnostic existant au hasard
         diagnostic = random.choice(diagnostics)
-
+        nom=f"Nom {i}"
+        myuuid = uuid.uuid4()
         acteur = Acteur(
-            nom=f"Nom {i}",
+            nom=nom,
+            slug = slugify(nom) + '-' + str(myuuid),
             prenom=f"Prénom {i}",
             fonction=random.randint(1, 3),
             telephone="0600000000",

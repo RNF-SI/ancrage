@@ -3,9 +3,8 @@ from flask import request, jsonify
 from sqlalchemy.orm import contains_eager
 from models.models import *
 from schemas.metier import *
-from routes import bp,date_time
-from slugify import slugify
-import uuid
+from routes import bp,date_time,slugify,uuid
+
 
 @bp.route('/site/<id_site>/<slug>', methods=['GET','PUT','DELETE'])
 def siteMethods(id_site,slug):
@@ -18,19 +17,14 @@ def siteMethods(id_site,slug):
     
     
     elif request.method == 'PUT':
-        data = request.get_json()
-        site = changeValuesSite(site,data)
-        site.modified_at = date_time
-        site.modified_by = data['modified_by']
+        if site.slug == slug:
+            data = request.get_json()
+            site = changeValuesSite(site,data)
+            site.modified_at = date_time
+            site.modified_by = data['modified_by']
 
-        db.session.commit()
-        return getSite(site)
-
-    elif request.method == 'DELETE':
-
-        db.session.delete(site)
-        db.session.commit()
-        return {"success": "Suppression terminée"}
+            db.session.commit()
+            return getSite(site)
     
 @bp.route('/site/',methods=['POST'])
 def postSite():
@@ -40,6 +34,8 @@ def postSite():
     
         site=Site()
         site = changeValuesSite(site,data)
+        myuuid = uuid.uuid4()
+        site.slug = slugify(site.nom) + '-' + str(myuuid)
         site.created_at = date_time
         site.created_by = data['created_by']
         db.session.add(site)
@@ -73,9 +69,6 @@ def getAllSitesByUSer(created_by):
 def changeValuesSite(site,data):
     
     site.nom = data['nom']
-    myuuid = uuid.uuid4()
-    site.slug = slugify(site.nom) + '-' + str(myuuid)
-    print(site.slug)
     site.position_x = data['position_x']
     site.position_y = data['position_y']
     site.type_id = data['type']['id_nomenclature']

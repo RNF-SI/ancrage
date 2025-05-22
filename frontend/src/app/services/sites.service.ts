@@ -51,7 +51,7 @@ export class SiteService {
 	}
 
 	update(site: Site): Observable<Site> {
-		const route = this.BASE_URL + site.id_site;
+		const route = this.BASE_URL + site.id_site + '/' + site.slug;
 		return this.http.put<ISite>(route, site.toJson()).pipe(
 			map(siteJson => Site.fromJson(siteJson))
 		);
@@ -74,13 +74,11 @@ export class SiteService {
 			diagnostic.acteurs[i].reponses = [];
 			
 		}
-		// Sauvegarde en cache Dexie
+		localStorage.removeItem("diagnostic");
 		localStorage.setItem("diagnostic",JSON.stringify(diagnostic));
-	  
-		// Mémorise l'URL précédente si besoin
+		
 		localStorage.setItem("previousPage", this.router.url);
 	  
-		// Navigue avec le cacheId comme paramètre de route
 		this.router.navigate([path]);
 	}
 

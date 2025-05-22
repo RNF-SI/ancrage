@@ -1,6 +1,7 @@
 from flask import Blueprint
 from datetime import datetime
-
+from slugify import slugify
+import uuid
 bp = Blueprint('main', __name__)
 now = datetime.now()
 date_time = now.strftime("%m/%d/%Y, %H:%M:%S")

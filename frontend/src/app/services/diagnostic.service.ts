@@ -74,8 +74,8 @@ export class DiagnosticService {
       return this.http.get<any>(this.BASE_URL + '/structures/' + id ).pipe();
     }
 
-    get(id: number): Observable<Diagnostic> {
-      return this.http.get<IDiagnostic>(this.BASE_URL + '/' + id ).pipe(
+    get(id: number,slug:string): Observable<Diagnostic> {
+      return this.http.get<IDiagnostic>(this.BASE_URL + '/' + id + '/' + slug ).pipe(
         map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
       );
     }
@@ -87,7 +87,7 @@ export class DiagnosticService {
     }
   
     update(diagnostic: Diagnostic): Observable<Diagnostic> {
-      return this.http.put<IDiagnostic>(this.BASE_URL + '/' + diagnostic.id_diagnostic, diagnostic.toJson()).pipe(
+      return this.http.put<IDiagnostic>(this.BASE_URL + '/' + diagnostic.id_diagnostic + '/' + diagnostic.slug, diagnostic.toJson()).pipe(
         map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
       );
     }

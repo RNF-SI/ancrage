@@ -95,7 +95,7 @@
           
                   <mat-card-actions class="text-end" *ngIf="diag.is_read_only; else readOnlyBlock">
                     <button mat-raised-button color="accent"
-                            (click)="navigate('/diagnostic-visualisation/' + diag.id_diagnostic, diagnostic)">
+                            (click)="navigate('/diagnostic-visualisation/' + diag.id_diagnostic + '/' + diag.slug, diagnostic)">
                       Voir
                     </button>
                   </mat-card-actions>
@@ -103,7 +103,7 @@
                   <ng-template #readOnlyBlock>
                     <mat-card-actions class="text-end">
                       <button mat-raised-button color="accent"
-                              (click)="navigate('/diagnostic/' + diag.id_diagnostic, diagnostic)">
+                              (click)="navigate('/diagnostic/' + diag.id_diagnostic + '/' + diag.slug, diagnostic)">
                         Modifier
                       </button>
                     </mat-card-actions>

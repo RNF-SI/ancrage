@@ -62,14 +62,15 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
       id_organisme: [0, [Validators.required]],
       modified_by: [0, [Validators.required]],
   });
-    
+  slug="";
 
   ngOnInit(): void {
     this.previousPage = localStorage.getItem("previousPage")!;
     this.routeSubscription = this.route.params.subscribe((params: any) => {
-          this.id_diagnostic = params['id_diagnostic'];          
-          if (this.id_diagnostic) {
-            const diag$ = this.diagnosticService.get(this.id_diagnostic);
+          this.id_diagnostic = params['id_diagnostic'];   
+          this.slug = params['slug'];       
+          if (this.id_diagnostic && this.slug) {
+            const diag$ = this.diagnosticService.get(this.id_diagnostic,this.slug);
             const themes$ = this.nomenclatureService.getAllByType("thème");
             forkJoin([diag$, themes$]).subscribe(([diag, themes]) => {
               this.diagnostic = diag;

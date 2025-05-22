@@ -22,6 +22,7 @@ export class Diagnostic implements IDiagnostic {
 	modified_at: Date | undefined;
 	created_by: number = 0;
 	acteurs:Acteur[]=[]
+	slug="";
 
 	copy(): Diagnostic {
 		const copy = new Diagnostic();
@@ -39,6 +40,7 @@ export class Diagnostic implements IDiagnostic {
 		copy.created_by = this.created_by;
 		copy.is_read_only = this.is_read_only;
 		copy.id_organisme = this.id_organisme;
+		copy.slug = this.slug;
 
 		return copy;
 	}
@@ -63,6 +65,7 @@ export class Diagnostic implements IDiagnostic {
 		diag.created_at_str = moment(new Date(data.created_at!)).format("DD/MM/YYYY");
 		diag.modified_at = data.modified_at ? new Date(data.modified_at) : undefined;
 		diag.created_by = data.created_by;
+		diag.slug = data.slug;
 
 		return diag;
 	}

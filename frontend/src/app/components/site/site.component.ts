@@ -49,11 +49,12 @@ export class SiteComponent implements OnInit,OnDestroy{
   mnemoStatuts = "statut";
   private fb = inject(FormBuilder);
   formGroup = this.fb.group({
-    id_site: [0, [Validators.required]],
+    id_site: [0],
     nom: ['', [Validators.required]],
-    habitats: this.fb.control<Nomenclature[]>([], [Validators.required]),  
+    /* habitats: this.fb.control<Nomenclature[]>([], [Validators.required]),   */
     type: this.fb.control<Nomenclature | null>(null, [Validators.required]),
     departements: this.fb.control<Departement[]>([], [Validators.required]),  
+    slug:[""],
     position_y: [this.latitude, [Validators.required,Validators.pattern('^(\\+|-)?(?:90(?:\.0{1,6})?|(?:[0-9]|[1-8][0-9])(?:\.[0-9]{1,6})?)$')]],
 		position_x: [this.longitude, [Validators.required,Validators.pattern('^(\\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$')]]
   });
@@ -107,7 +108,8 @@ export class SiteComponent implements OnInit,OnDestroy{
             departements: this.site.departements,
             type: this.site.type,
             position_y: this.site.position_y,
-            position_x: this.site.position_x
+            position_x: this.site.position_x,
+            slug: this.site.slug
           });
           this.titleSite = this.titleModif;
         });
@@ -136,23 +138,24 @@ export class SiteComponent implements OnInit,OnDestroy{
     event.preventDefault();
     
     this.site = Object.assign(new Site(),this.formGroup.value);
-    
-    if (this.site.id_site == 0){
-      this.site.created_by=this.user_id;
-      this.siteSubscription = this.siteService.add(this.site).subscribe(site=>{
-        this.getConfirmation("Le site suivant vient d'être créé dans la base de données et a été ajouté au diagnostic :",site);
-      });
-    }else{
-      this.site.modified_by=this.user_id;
-      this.siteSubscription = this.siteService.update(this.site).subscribe(site=>{
-        this.getConfirmation("Le site suivant vient d'être modifié dans la base de données et a été ajouté au diagnostic :",site);
-      });
+    if(this.formGroup.valid){
+      if (this.site.id_site == 0){
+        this.site.created_by=this.user_id;
+        this.siteSubscription = this.siteService.add(this.site).subscribe(site=>{
+          this.getConfirmation("Le site suivant vient d'être créé dans la base de données et a été ajouté au diagnostic :",site);
+        });
+      }else{
+        this.site.modified_by=this.user_id;
+        this.siteSubscription = this.siteService.update(this.site).subscribe(site=>{
+          this.getConfirmation("Le site suivant vient d'être modifié dans la base de données et a été ajouté au diagnostic :",site);
+        });
+      }
     }
-   
   }
 
   async getConfirmation(message:string,site:Site){
     this.diagnostic.sites.push(site);
+    console.log(this.diagnostic);
     this.previousPage = localStorage.getItem("previousPage")!;
     this.dialog.open(AlerteSiteComponent, {
       data: {

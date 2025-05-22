@@ -22,4 +22,5 @@ export interface IActeur {
     modified_at:Date | undefined;
     created_by:number;
     modified_by:number;
+    slug:string;
 }

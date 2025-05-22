@@ -41,8 +41,8 @@ export class ActeurService {
     );
   }
 
-  get(id: number): Observable<Acteur> {
-    return this.http.get<IActeur>(this.BASE_URL + id).pipe(
+  get(id: number,slug:string): Observable<Acteur> {
+    return this.http.get<IActeur>(this.BASE_URL + id + '/'+ slug).pipe(
       map(acteurJson => Acteur.fromJson(acteurJson))
     );
   }
@@ -54,7 +54,7 @@ export class ActeurService {
   }
 
   update(acteur: Acteur): Observable<Acteur> {
-    const route = this.BASE_URL + acteur.id_acteur;
+    const route = this.BASE_URL + acteur.id_acteur + '/' + acteur.slug;
    
     return this.http.put<IActeur>(route, acteur.toJson()).pipe(
       map(acteurJson => Acteur.fromJson(acteurJson))

@@ -51,11 +51,13 @@ export class ActeurComponent implements OnInit,OnDestroy{
         is_acteur_economique: [false],
         is_acteur_economique_txt: ['', [Validators.required]],
         structure: ['', [Validators.required]],
-        modified_by: [0]
+        modified_by: [0],
+        slug: ['']
   });
   private routeSubscription?:Subscription;
   private route = inject(ActivatedRoute);
   id_actor = 0;
+  slug="";
   private communeService = inject(CommuneService);
   private nomenclatureService = inject(NomenclatureService);
   private authService = inject(AuthService);
@@ -79,13 +81,14 @@ export class ActeurComponent implements OnInit,OnDestroy{
     this.isLoading = true;
     this.routeSubscription = this.route.params.subscribe((params: any) => {
           this.id_actor = params['id_acteur'];  
+          this.slug = params['slug'];
           const communes$ = this.communeService.getAll();
           const profils$ = this.nomenclatureService.getAllByType("profil");
           const categories$ = this.nomenclatureService.getAllByType("categorie");
           this.user_id = this.authService.getCurrentUser().id_role;
-          if (this.id_actor) {
+          if (this.id_actor && this.slug) {
             this.title = this.labels.modifyActor;
-            const actor$ = this.actorService.get(this.id_actor);
+            const actor$ = this.actorService.get(this.id_actor,this.slug);
 
             forkJoin([actor$, communes$, profils$,categories$]).subscribe(([actor,communes, profils,categories]) => {
               
@@ -115,7 +118,8 @@ export class ActeurComponent implements OnInit,OnDestroy{
                 profil: this.actor.profil?.id_nomenclature! > 0 ? this.actor.profil : null,
                 categories: this.actor.categories,
                 is_acteur_economique: this.actor.is_acteur_economique,
-                structure: this.actor.structure
+                structure: this.actor.structure,
+                slug: this.actor.slug
               });
               this.isLoading = false; 
             });

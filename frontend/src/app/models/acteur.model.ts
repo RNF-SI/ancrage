@@ -24,6 +24,7 @@ export class Acteur implements IActeur{
     modified_by:number=0;
     selected = false;
     reponses?:Reponse[];
+    slug = "";
 
     /** Copie profonde de l'objet */
     copy(): Acteur {
@@ -47,6 +48,7 @@ export class Acteur implements IActeur{
         copy.modified_at = this.modified_at ? new Date(this.modified_at.getTime()) : undefined;
         copy.created_by = this.created_by;
         copy.modified_by = this.modified_by;
+        copy.slug = this.slug;
 
         return copy;
     }
@@ -73,6 +75,7 @@ export class Acteur implements IActeur{
         acteur.modified_at = data.modified_at ? new Date() : undefined;
         acteur.created_by = data.created_by;
         acteur.modified_by = data.modified_by;
+        acteur.slug = data.slug;
 
         return acteur;
     }

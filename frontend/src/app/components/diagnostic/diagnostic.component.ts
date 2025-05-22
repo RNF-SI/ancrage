@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -126,37 +126,46 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       created_by: [0, []],
       id_organisme: [0, []],
       modified_by: [0, []],
-      identite_createur:[""]
+      identite_createur:[""],
+      slug:['']
     });
   previousPage = "";
   user:any;
   infobulleSaisieDateRapport = "Attention ! Ne saisissez ce champ uniquement si vous avez publié votre rapport. Après la saisie de cette date, vous ne pourrez plus modifier le diagnostic.";
-
+  slug="";
   
   ngOnInit(): void {
+    console.log('init');
+    let diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
     this.dateAdapter.setLocale('fr-FR');
     this.titleDiagnostic = this.titleCreateDiag;
     this.previousPage = localStorage.getItem("previousPage")!;
     this.user = this.authService.getCurrentUser();
     this.routeSubscription = this.route.params.subscribe(async (params: any) => {
       this.id_diagnostic = params['id_diagnostic'];  
-  
+      this.slug = params['slug'];
       const sites$ = this.siteService.getAll();
       const actors$ = this.actorsService.getAll();
   
-      if (this.id_diagnostic) {
+      if (this.id_diagnostic && this.slug) {
         this.titleDiagnostic = this.titleModifyDiag;
-        const diag$ = this.diagnosticsService.get(this.id_diagnostic);
+        const diag$ = this.diagnosticsService.get(this.id_diagnostic,this.slug);
         this.formGroup.get('id_diagnostic')?.setValue(this.id_diagnostic);
   
         forkJoin([diag$,sites$, actors$]).subscribe(([diag,sites, acteurs]) => {
-          this.diagnostic = diag;
+          
+          if(diagnostic.sites.length > diag.sites.length || diagnostic.acteurs.length > diag.acteurs.length){
+            this.diagnostic = diagnostic;
+          }else{
+            this.diagnostic = diag;
+          }
+
           this.instructionswithResults(sites,acteurs);
          
           this.can_edit = diag.created_by == this.user_id;
           this.id_organisme = diag.id_organisme;
           this.user_id = diag.created_by;
-          const remappedSites = (diag.sites || []).map(site =>
+          const remappedSites = (this.diagnostic.sites || []).map(site =>
             this.uniqueSites.find(s => s.id_site === site.id_site) || site
           );
           this.chosenSites = remappedSites;
@@ -166,7 +175,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
         });
       } else {
         
-        this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
+        this.diagnostic = diagnostic;
         console.log(this.diagnostic);
         this.chosenSites = this.diagnostic.sites;
         this.user_id = this.user?.id_role;
@@ -182,7 +191,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   }
 
   setActors(diag:Diagnostic){
-    const remappedActeurs = (diag.acteurs || []).map(act =>
+    const remappedActeurs = (this.diagnostic.acteurs || []).map(act =>
       this.uniqueActors.find(a => a.id_acteur === act.id_acteur) || act
     );
     
@@ -191,6 +200,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       nom: diag.nom,
       sites: this.chosenSites,
       acteurs: remappedActeurs,
+      slug: diag.slug
     });
 
     const selectedIds = new Set(remappedActeurs.map(a => a.id_acteur));

@@ -17,4 +17,5 @@ export interface IDiagnostic {
     created_at_str?: string;
     modified_at: Date | undefined;
     created_by: number;
+    slug:string;
 }
