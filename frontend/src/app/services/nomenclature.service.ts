@@ -13,14 +13,25 @@ export class NomenclatureService {
     private GET_ALL_URL = environment.flask_server+'nomenclatures';
     private http = inject(HttpClient);
   
-    getAllByType(mnemonique:string): Observable<Nomenclature[]> {
-      return this.http.get<INomenclature[]>(this.GET_ALL_URL+'/'+mnemonique).pipe(
-        map(nomenclatureJsonArray => {
-          return nomenclatureJsonArray.map<Nomenclature>(
-            nomenclatureJson => Nomenclature.fromJson(nomenclatureJson)
-          )
-        })
-      );
+    getAllByType(mnemonique:string,id_acteur?:number): Observable<Nomenclature[]> {
+      if (id_acteur){
+        return this.http.get<INomenclature[]>(this.GET_ALL_URL+'/'+mnemonique + '/'+id_acteur).pipe(
+          map(nomenclatureJsonArray => {
+            return nomenclatureJsonArray.map<Nomenclature>(
+              nomenclatureJson => Nomenclature.fromJson(nomenclatureJson)
+            )
+          })
+        );
+      }else{
+        return this.http.get<INomenclature[]>(this.GET_ALL_URL+'/'+mnemonique).pipe(
+          map(nomenclatureJsonArray => {
+            return nomenclatureJsonArray.map<Nomenclature>(
+              nomenclatureJson => Nomenclature.fromJson(nomenclatureJson)
+            )
+          })
+        );
+      }
+     
     }
   
     sortByName(objArray:Nomenclature[]){

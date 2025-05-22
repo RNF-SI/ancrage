@@ -1,0 +1,44 @@
+<div *ngFor="let themeEntry of chartDataByTheme | keyvalue" class="mb-5">
+  <h2 class="text-center">{{ themeEntry.key }}</h2>
+  <ng-container *ngIf="themeEntry">
+    <ng-container *ngFor="let chart of radarCharts">
+      <div *ngIf="chart.theme === themeEntry.key">
+        <canvas class = "graph-radar-{{chart.theme}}" baseChart
+                [data]="chart.data"
+                [type]="'radar'"
+                [options]="radarChartOptions">
+        </canvas>
+        <button mat-raised-button (click)="exportChart('graph-radar-'+chart.theme,chart.theme)">{{labels.exportPNG}}</button>
+      </div>
+    </ng-container>
+  </ng-container>
+  <div *ngFor="let chart of themeEntry.value" class="mb-4" [attr.id]="'question-' + chart.id_question">
+    <h3 class="text-center">{{ chart.question }}</h3>
+    
+    <div class="row">
+      <!-- Colonne gauche (bar chart) -->
+      <div class="col-md-6 d-flex flex-column align-items-center justify-content-center" >
+        <canvas class="graph{{chart.id_question}}" baseChart
+                [data]="chart.chart"
+                [options]="chart.chartOptions"
+                chartType="bar">
+        </canvas>
+        <button mat-raised-button (click)="exportChart('graph'+chart.id_question,chart.question+'-score')">{{labels.exportPNG}}</button>
+      </div>
+
+      <!-- Colonne droite (pie chart) -->
+      <div class="col-md-6 d-flex flex-column align-items-center justify-content-center">
+        <h4 class="text-center">Répartition des réponses</h4>
+        <canvas class="graph-rep{{chart.id_question}}"
+          baseChart
+          [data]="getChartData(chart.question)"
+          [type]="'pie'"
+          [options]="chartOptions">
+        </canvas>
+        <button mat-raised-button (click)="exportChart('graph-rep'+chart.id_question,chart.question+'-repartition')">{{labels.exportPNG}}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  

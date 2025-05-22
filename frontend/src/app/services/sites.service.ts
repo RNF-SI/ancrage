@@ -6,16 +6,18 @@ import { ISite } from '@app/interfaces/site.interface';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
 import { Diagnostic } from '@app/models/diagnostic.model';
+
 @Injectable({
 	providedIn: 'root'
 })
+
 export class SiteService {
 
 	private GET_ALL_URL = environment.flask_server+'sites';
 	private BASE_URL = environment.flask_server+'site/';
 	private http = inject(HttpClient);
 	private router = inject(Router);
-
+	
 	getAll(): Observable<Site[]> {
 		return this.http.get<ISite[]>(this.GET_ALL_URL).pipe(
 			map(siteJsonArray => {
@@ -50,14 +52,9 @@ export class SiteService {
 
 	update(site: Site): Observable<Site> {
 		const route = this.BASE_URL + site.id_site;
-		console.log(route);
 		return this.http.put<ISite>(route, site.toJson()).pipe(
 			map(siteJson => Site.fromJson(siteJson))
 		);
-	}
-
-	delete(id: number): Observable<void> {
-		return this.http.delete<void>(this.BASE_URL + id + '/');
 	}
 
 	sortByName(objArray:Site[]){
@@ -68,16 +65,23 @@ export class SiteService {
 		})
 	}
 
-	navigateAndReload(path: string,diagnostic:Diagnostic,site?:Site) {
-		if (site){
-			diagnostic.sites.push(site);
+	navigateAndReload(path: string,diagnostic: Diagnostic,site?: Site) {
+		// Ajouter le site si non déjà présent
+		if (site && !diagnostic.sites.some(s => s.id_site === site.id_site)) {
+		  diagnostic.sites.push(site);
 		}
-		
+		for(let i = 0;i<diagnostic.acteurs.length;i++){
+			diagnostic.acteurs[i].reponses = [];
+			
+		}
+		// Sauvegarde en cache Dexie
 		localStorage.setItem("diagnostic",JSON.stringify(diagnostic));
-		console.log(localStorage.getItem("diagnostic"));
-		this.router.navigate([path]).then(() => {
-		  window.location.reload();
-		});;
+	  
+		// Mémorise l'URL précédente si besoin
+		localStorage.setItem("previousPage", this.router.url);
+	  
+		// Navigue avec le cacheId comme paramètre de route
+		this.router.navigate([path]);
 	}
 
 }

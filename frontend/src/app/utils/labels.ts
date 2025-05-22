@@ -3,6 +3,7 @@ export class Labels {
     housingLabel= "Habitats";
     statusLabel="Statut";
     nameLabel= "Nom";
+    firstNameLabel="Prénom";
     latitudeLabel= "Latitude";
     longitudeLabel= "Longitude";
     btnRecordLabel= "Enregistrer";
@@ -26,4 +27,18 @@ export class Labels {
     datePublicationReport="Date de publication du rapport";
     investigatorLabel="Enquêteur / Enquêtrice";
     modify="Modifier";
+    modifyActor="Modifier un acteur";
+    createActor="Créer un acteur";
+    economicActor="Acteur économique";
+    chooseProfile = "Choisir un profil";
+    chooseCategories = "Choisir les catégories";
+    chosenActors = "Acteurs impliqués";
+    addInterview = "Saisir l'entretien";
+    modifyInterview = "Modifier l'entretien";
+    chooseInterviewState = "Choisissez l'état de l'entretien";
+    modifyStateInterview = "Modifier l'état de l'entretien";
+    goToInterview = "Accéder à l'entretien";
+    showMoreInfo = "Informations complémentaires";
+    exportPNG = "Exporter en PNG";
+    exportCSV = "Exporter en CSV";
 }

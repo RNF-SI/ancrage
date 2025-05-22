@@ -5,5 +5,5 @@ bp = Blueprint('main', __name__)
 now = datetime.now()
 date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
 # Importe toutes les routes ici (elles s’enregistreront sur ce blueprint)
-from . import diagnostics, sites, nomenclatures,regions, departements,acteurs
+from . import diagnostics, sites, nomenclatures,regions, departements,acteurs,communes,questions
 

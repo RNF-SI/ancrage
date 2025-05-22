@@ -7,7 +7,7 @@
       </button>
     </div>
     <div class="col-3">
-      <button mat-icon-button [matTooltip]="infobulleCreaDiagFromScratch" aria-label="Info création" color="primary">
+      <button mat-icon-button [matTooltip]="infobulleCreaDiagFromScratch" aria-label="Info création" color="accent">
         <fa-icon [icon]="['fas', 'question']"></fa-icon>
       </button>
     </div>
@@ -56,7 +56,10 @@
 
   <div class="row">
     <div class="col-6">
-      <app-map [sites]="filteredSiteList"></app-map>
+      <app-map 
+        [sites]="filteredSiteList"
+        [attr.key]="mapInstanceKey"
+      ></app-map>
     </div>
 
     <div class="col-6">
@@ -87,10 +90,10 @@
           
                 <mat-card *ngFor="let diag of site.diagnostics" class="diagnostic-card my-2 white-shadow">
                   <mat-card-subtitle>
-                    {{ diag.nom }} du {{ diag.date_debut_str }}
+                    {{ diag.nom }} du {{ diag.created_at_str }}
                   </mat-card-subtitle>
           
-                  <mat-card-actions class="text-end" *ngIf="!diag.is_read_only; else readOnlyBlock">
+                  <mat-card-actions class="text-end" *ngIf="diag.is_read_only; else readOnlyBlock">
                     <button mat-raised-button color="accent"
                             (click)="navigate('/diagnostic-visualisation/' + diag.id_diagnostic, diagnostic)">
                       Voir

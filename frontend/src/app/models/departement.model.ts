@@ -26,7 +26,9 @@ export class Departement implements IDepartement {
 
     /** Création depuis un JSON brut (avec reconversion des objets internes et dates) */
     static fromJson(data: IDepartement): Departement {
+        
         const departement = new Departement();
+        if(!data) return departement;
         departement.id_departement = data.id_departement;
         departement.id_dep = data.id_dep;
         departement.nom_dep = data.nom_dep;

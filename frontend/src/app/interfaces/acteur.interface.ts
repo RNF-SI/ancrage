@@ -1,6 +1,7 @@
 import { Commune } from "@app/models/commune.model";
 import { Diagnostic } from "@app/models/diagnostic.model";
 import { Nomenclature } from "@app/models/nomenclature.model";
+import { Reponse } from "@app/models/reponse.model";
 
 export interface IActeur {
     id_acteur:number;
@@ -11,10 +12,11 @@ export interface IActeur {
     mail:string;
     commune:Commune;
     profil?:Nomenclature;
-    isActeurEconomique:boolean;
+    is_acteur_economique:boolean;
     structure:string;
     diagnostic?:Diagnostic;
     categories?: Nomenclature[];
+    reponses?:Reponse[];
     statut_entretien?:Nomenclature;
     created_at:Date | undefined;
     modified_at:Date | undefined;
