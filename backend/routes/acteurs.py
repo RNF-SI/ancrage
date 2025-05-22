@@ -2,7 +2,7 @@ from models.models import db
 from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
-from routes import bp,date_time
+from routes import bp,now
 
 @bp.route('/acteur/<id_acteur>', methods=['GET','PUT','DELETE'])
 def acteurMethods(id_acteur):
@@ -17,7 +17,7 @@ def acteurMethods(id_acteur):
     elif request.method == 'PUT':
         data = request.get_json()
         acteur = changeValuesActeur(acteur,data)
-        acteur.modified_at = date_time
+        acteur.modified_at = now
         acteur.modified_by = data['modified_by']
 
         db.session.commit()
@@ -37,7 +37,7 @@ def postActeur():
     
         acteur=Acteur()
         acteur = changeValuesActeur(acteur,data)
-        acteur.created_at = date_time
+        acteur.created_at = now
         acteur.created_by = data['created_by']
         db.session.add(acteur)
         db.session.commit()
