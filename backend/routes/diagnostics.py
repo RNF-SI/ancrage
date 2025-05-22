@@ -4,6 +4,8 @@ from models.models import *
 from schemas.metier import *
 from routes import bp,now
 
+
+
 @bp.route('/diagnostic/<int:id_diagnostic>', methods=['GET','PUT','DELETE'])
 def diagnosticMethods(id_diagnostic):
     diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
