@@ -1,5 +1,5 @@
 from app import create_app
-from models.models import db,Acteur, Commune, Departement, Diagnostic, MotCle, Nomenclature, Region, Reponse, Site,site_departement,site_diagnostic,site_habitat,acteur_categorie,acteur_profil,acteur_question
+from models.models import db,Acteur,Diagnostic,Nomenclature,Site,site_departement,site_diagnostic,acteur_categorie
 from datetime import datetime, timedelta
 import random
 import string
@@ -25,8 +25,7 @@ with app.app_context():
         "cor_site_departement",
         "cor_sites_diagnostics",
         "cor_site_habitat",
-        "cor_categorie_acteur",
-        "cor_question_acteur"
+        "cor_categorie_acteur"
     ]
 
     for table in tables_to_truncate:
@@ -37,17 +36,8 @@ with app.app_context():
     # Nomenclatures
     # ---------------------
     nomenclatures = []
-    for i in range(10):
-        n = Nomenclature(
-            libelle=f"Nomenclature {i}",
-            value=i,
-            mnemonique=random_string(5)
-        )
-        db.session.add(n)
-        nomenclatures.append(n)
-    db.session.commit()
 
-        # Ajout de 3 habitats (mnemonique = 'habitats')
+    # Ajout de 3 habitats (mnemonique = 'habitats')
     habitats = []
     for nom in ['Forêt feuillue', 'Prairie humide', 'Landes atlantiques']:
         h = Nomenclature(
@@ -61,7 +51,7 @@ with app.app_context():
     # Ajout de 3 types de site (mnemonique = 'statut')
     types_sites = []
     types_labels = [
-        "Réserves naturelles",
+        "Réserve naturelle",
         "Parc Naturel National",
         "Parc Naturel Régional",
         "Espace CEN",
@@ -157,13 +147,23 @@ with app.app_context():
         "Membres du CCG"
     ]
 
+    cat_short_labels = [
+        "Animation",
+        "Partenaires",
+        "Riverains",
+        "Economie",
+        "CCG"
+    ]
+
     profils_labels = [
         "Fédérateur",
         "Territorial désintéressé",
         "Territorial intéressé",
-        "Territorial désintéressé",
-        "Contraint"
+        "Contraint",
+        "Environnemental amateur",
+        "Environnemental spécialiste"
     ]
+    
 
     etats_labels = [
         "Réalisé",
@@ -173,11 +173,12 @@ with app.app_context():
         "Programmé"
     ]
 
-    for i, lib in enumerate(categorie_labels):
+    for i, (lib, lib2) in enumerate(zip(categorie_labels, cat_short_labels)):
         c = Nomenclature(
             libelle=lib,
             value=i,
-            mnemonique="categorie"
+            mnemonique="categorie",
+            libelle_court=lib2
         )
         db.session.add(c)
         categories.append(c)
@@ -221,7 +222,6 @@ with app.app_context():
             is_acteur_economique=bool(random.getrandbits(1)),
             structure=f"Structure {i}",
             diagnostic_id=diagnostic.id_diagnostic,
-            statut_entretien_id=random.choice(statuts_entretien).id_nomenclature,
             commune_id=random.randint(69931, 100000), 
             created_at=datetime.now(),
             modified_at=datetime.now(),
@@ -240,8 +240,6 @@ with app.app_context():
                     categorie_id=cat.id_nomenclature
                 )
             )
-
-      
 
     db.session.commit()
 

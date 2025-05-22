@@ -19,7 +19,9 @@ import { SiteComponent } from './components/site/site.component';
 import { ChoixActeursComponent } from './components/parts/choix-acteurs/choix-acteurs.component';
 import { SiteLsComponent } from './components/site-ls/site-ls.component';
 import { DiagnosticComponent } from './components/diagnostic/diagnostic.component';
-import { DiagnosticVisualisationComponent } from './diagnostic-visualisation/diagnostic-visualisation.component';
+import { ActeurComponent } from './components/acteur/acteur.component';
+import { EntretienComponent } from './components/entretien/entretien.component';
+import { DiagnosticVisualisationComponent } from './components/diagnostic-visualisation/diagnostic-visualisation.component';
 
 const routes: Routes = [ { 
   path: '', 
@@ -96,6 +98,21 @@ const routes: Routes = [ {
     {
       path: 'diagnostic-visualisation/:id_diagnostic',
       component: DiagnosticVisualisationComponent,
+      canActivate: [AuthGuardService]
+    },
+    {
+      path: 'acteur',
+      component: ActeurComponent,
+      canActivate: [AuthGuardService]
+    },
+    {
+      path: 'acteur/:id_acteur',
+      component: ActeurComponent,
+      canActivate: [AuthGuardService]
+    },
+    {
+      path: 'entretien/:id_acteur',
+      component: EntretienComponent,
       canActivate: [AuthGuardService]
     }
   ]},

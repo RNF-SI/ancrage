@@ -1,5 +1,6 @@
 <h2 mat-dialog-title>{{ data.title }}</h2>
 <mat-dialog-content>
+    <div><b>{{data.labels.category}}</b> : <span *ngFor="let cat of data.actor.categories">{{ cat.libelle }} </span></div>
     <div><b>{{data.labels.town}}</b> : <span>{{ data.actor.commune.nom_com}}</span></div>
     <div><b>{{data.labels.status}}</b> : <span>{{ data.actor.fonction }}</span></div>
     <div><b>{{data.labels.profile}}</b> : <span>{{ data.actor.profil?.libelle }} </span></div>

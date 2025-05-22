@@ -1,0 +1,72 @@
+
+<div class="container">
+    <div class="row">
+        <div class="col-3">
+          <app-menu-lateral class="invisible" id="menu"
+            [themes]="themes"
+          ></app-menu-lateral>
+        </div>
+        <div class="col-9">
+            <mat-tab-group (selectedTabChange)="onTabChange($event)">
+                <mat-tab label="Infos générales">
+                    <div class="p-3">
+                        <h2>{{diagnostic.nom}}</h2>
+                        <div><b>{{labels.dateBegLabel}}</b> : <span>{{ diagnostic.date_debut_str }}</span></div>
+                        <div><b>{{labels.dateEndLabel}}</b> : <span>{{ diagnostic.date_fin_str }}</span></div>
+                        <div><b>{{labels.datePublicationReport}}</b> : <span>{{ diagnostic.date_rapport_str }}</span></div>
+                        <div><b>{{labels.investigatorLabel}}</b> : <span>{{ diagnostic.identite_createur }}</span></div>
+                        <h3>{{labels.chosenSites}}</h3>
+                        <p *ngFor="let site of diagnostic.sites">{{ site.nom }}, {{site.type.libelle}} </p>
+                        <div *ngIf="!diagnostic.is_read_only">
+                          <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic,diagnostic)">Modifier</button>
+                        </div>
+                        
+                    </div>
+                </mat-tab>
+                <div *ngIf="!diagnostic.is_read_only else structures">
+                  <mat-tab label="Acteurs">
+                    <div class="p-3">
+                    
+                      <h3>Acteurs</h3>
+                    
+                        <app-choix-acteurs
+                                [actors]="actors"
+                                [uniqueDiagnostics]="uniqueDiagnostics"
+                                [diagnostic]="diagnostic"
+                                [selectedDiagnostic]="selectedDiagnostic"
+                                [uniqueCategories]="uniqueCategories"
+                                [uniqueDepartments]="uniqueDepartments"
+                                [selectedCategory]="selectedCategory"
+                                [selectedDepartment]="selectedDepartment"
+                                [actorsSelected]="actorsSelected"
+                                [actorsOriginal]="uniqueActors"
+                                [formGroup]="formGroup"
+                                [hideFilters]="hideFilters"
+                                [navigate]="navigate"
+                        ></app-choix-acteurs>
+                        <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic,diagnostic)">Modifier</button>
+                        <button mat-raised-button type="button" (click)="exportCSV()">{{labels.exportCSV}}</button>
+                      
+                    </div>
+                  </mat-tab>
+                </div>
+                <ng-template #structures>
+                  <mat-tab label="Structures">
+                  <app-tableau-structures
+                    [diagnostic]="diagnostic"
+                  ></app-tableau-structures>
+                  </mat-tab>
+                </ng-template>
+                
+                <mat-tab label="Graphiques">
+                  <div class="p-3">
+                    <app-graphiques
+                        [route]="route"
+                        [diagnostic]="diagnostic"
+                    ></app-graphiques>
+                  </div>
+                </mat-tab>
+            </mat-tab-group>
+        </div>
+    </div>
+</div>

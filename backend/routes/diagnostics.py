@@ -3,6 +3,10 @@ from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
 from routes import bp,now
+from sqlalchemy import func
+from sqlalchemy.orm import aliased
+from routes import bp,date_time
+from datetime import date, datetime
 
 @bp.route('/diagnostic/<int:id_diagnostic>', methods=['GET','PUT','DELETE'])
 def diagnosticMethods(id_diagnostic):
@@ -23,8 +27,16 @@ def diagnosticMethods(id_diagnostic):
         
         diagnostic = changeValuesDiagnostic(diagnostic,data)
 
-        diagnostic.modified_at = now
 
+        diagnostic.modified_at = now
+        diagnostic.modified_at = date_time
+        raw_date = data.get('date_rapport')
+        print(raw_date)
+        if raw_date != None :
+     
+            date_rapport = datetime.strptime(raw_date, '%d/%m/%Y')
+            diagnostic.is_read_only = True
+            diagnostic.date_rapport = date_rapport
         db.session.commit()
         return getDiagnostic(diagnostic)
 
@@ -34,6 +46,18 @@ def diagnosticMethods(id_diagnostic):
         db.session.commit()
         return {"success": "Suppression terminée"}
     
+def print_diagnostic(diagnostic):
+    print("🔍 Diagnostic :")
+    print(f"  ID              : {diagnostic.id_diagnostic}")
+    print(f"  Nom             : {diagnostic.nom}")
+    print(f"  Date début      : {diagnostic.date_debut}")
+    print(f"  Date fin        : {diagnostic.date_fin}")
+    print(f"  Date rapport    : {diagnostic.date_rapport}")
+    print(f"  Créé par        : {diagnostic.created_by}")
+    print(f"  Est en lecture seule : {diagnostic.is_read_only}")
+    print(f"  Sites associés  : {[site.id_site for site in diagnostic.sites]}")
+    print(f"  Acteurs associés: {[acteur.id_acteur for acteur in diagnostic.acteurs]}")
+
 @bp.route('/diagnostic',methods=['POST'])
 def postDiagnostic():
     data = request.get_json()
@@ -83,6 +107,156 @@ def getAllDiagnosticsBySites():
     schema = DiagnosticSchema(many=True)
     return jsonify(schema.dump(filtered_diagnostics))
 
+@bp.route('/diagnostics/charts/average/<id_diagnostic>')
+def getAveragebyQuestion(id_diagnostic):
+    # Aliases pour les différentes utilisations de Nomenclature
+    ValeurReponse = aliased(Nomenclature)     # tn
+    Categorie = aliased(Nomenclature)         # tn3
+    Theme = aliased(Nomenclature)             # tn4
+
+    
+    query = (
+        db.session.query(
+            Theme.libelle.label("theme"),
+            Question.id_question.label("id_question"),
+            Question.libelle_graphique.label("question"),
+            Categorie.libelle_court.label("categorie_acteur"),
+            func.avg(ValeurReponse.value).label("moyenne_score")
+        )
+        .select_from(Diagnostic)  
+        .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
+        .join(Reponse, Acteur.id_acteur == Reponse.acteur_id)
+        .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
+        .join(Question, Reponse.question_id == Question.id_question)
+        .join(Theme, Question.theme_id == Theme.id_nomenclature)
+        .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
+        .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
+        .filter(Diagnostic.id_diagnostic==id_diagnostic)
+        .group_by(
+            Theme.id_nomenclature,
+            Question.id_question,
+            Categorie.id_nomenclature
+        )
+        .order_by(Question.id_question)
+    )
+
+    results = query.all()
+    data = [
+        {
+            "theme": r.theme,
+            "question": r.question,
+            "categorie": r.categorie_acteur,
+            "moyenne": float(r.moyenne_score),
+            "id_question":r.id_question
+        }
+        for r in results
+    ]
+    return jsonify(data)
+
+@bp.route("/diagnostics/charts/repartition/<id_diagnostic>", methods=["GET"])
+def get_reponses_par_theme(id_diagnostic):
+    ValeurReponse = aliased(Nomenclature)
+    Categorie = aliased(Nomenclature)
+    Theme = aliased(Nomenclature)
+
+    results = (
+        db.session.query(
+            Theme.libelle.label("theme"),
+            Question.libelle_graphique.label("question"),
+            Question.id_question.label("id_question"),
+            ValeurReponse.libelle.label("reponse"),
+            func.count(Reponse.id_reponse).label("nombre"),
+            ValeurReponse.value.label("valeur")
+        )
+        .select_from(Diagnostic)  
+        .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
+        .join(Reponse, Acteur.id_acteur == Reponse.acteur_id)
+        .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
+        .join(Question, Reponse.question_id == Question.id_question)
+        .join(Theme, Question.theme_id == Theme.id_nomenclature)
+        .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
+        .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
+        .filter(Diagnostic.id_diagnostic==id_diagnostic)
+        .group_by(Theme.id_nomenclature, Question.id_question, ValeurReponse.value, ValeurReponse.libelle)
+        .order_by(Question.id_question, ValeurReponse.value)
+        .filter(Diagnostic.id_diagnostic==id_diagnostic)
+        .all()
+    )
+
+    # transformer en liste de dicts
+    output = [
+        {
+            "theme": r.theme,
+            "question": r.question,
+            "reponse": r.reponse,
+            "nombre": r.nombre,
+            "valeur": r.valeur,
+            "id_question":r.id_question
+        }
+        for r in results
+    ]
+
+    return jsonify(output)
+
+@bp.route('/diagnostic/structures/<int:id_diagnostic>', methods=['GET'])
+def get_structures_by_diagnostic(id_diagnostic):
+
+    structures = (
+        db.session.query(Acteur.structure)
+        .filter(Acteur.diagnostic_id == id_diagnostic)
+        .filter(Acteur.structure.isnot(None))
+        .distinct()
+        .all()
+    )
+
+    structure_list = [s[0] for s in structures]
+
+    return jsonify({'structures': structure_list})
+
+@bp.route("/diagnostics/charts/radars/<int:id_diagnostic>", methods=["GET"])
+def get_scores(id_diagnostic):
+
+    ValeurReponse = aliased(Nomenclature)
+    Categorie = aliased(Nomenclature)
+    Theme = aliased(Nomenclature)
+
+    # Jointure ORM
+    results = (
+        db.session.query(
+            func.avg(ValeurReponse.value).label("score"),
+            Question.libelle_graphique.label("libelle_graphique"),
+            Categorie.libelle.label("categorie"),
+            Theme.libelle.label("theme"),
+            Question.id_question.label("id_question")
+        )
+        .select_from(Diagnostic)  
+        .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
+        .join(Reponse, Acteur.id_acteur == Reponse.acteur_id)
+        .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
+        .join(Question, Reponse.question_id == Question.id_question)
+        .join(Theme, Question.theme_id == Theme.id_nomenclature)
+        .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
+        .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
+        .filter(Diagnostic.id_diagnostic==id_diagnostic)
+        .group_by(Question.id_question, Question.libelle_graphique,
+                  Categorie.libelle, Theme.libelle)
+        .order_by(Question.libelle_graphique)
+        .all()
+    )
+
+    # Formatage JSON
+    data = [
+        {
+            "score": round(r.score, 2) if r.score is not None else None,
+            "libelle_graphique": r.libelle_graphique,
+            "categorie": r.categorie,
+            "theme": r.theme,
+            "id_question": r.id_question
+        }
+        for r in results
+    ]
+
+    return jsonify(data)
     
 def changeValuesDiagnostic(diagnostic,data):
     
@@ -113,37 +287,44 @@ def changeValuesDiagnostic(diagnostic,data):
         
         new_actors_ids = {a['id_acteur'] for a in data['acteurs']}
         acteurs_orig = Acteur.query.filter(Acteur.id_acteur.in_(new_actors_ids)).all()
-
+        
         deleteActors(diagnostic.id_diagnostic)
 
         copied_acteurs = []
-        for a in acteurs_orig:
-            new_acteur = Acteur(
-                nom=a.nom,
-                prenom=a.prenom,
-                fonction=a.fonction,
-                telephone=a.telephone,
-                mail=a.mail,
-                commune_id=a.commune_id,
-                is_acteur_economique=a.is_acteur_economique,
-                structure=a.structure,
-                created_at=now,
-                created_by=data['created_by'],
-                diagnostic_id=diagnostic.id_diagnostic,
-                categories=a.categories,
-                questions=a.questions,
-                statut_entretien=a.statut_entretien,
-                acteur_origine_id = a.id_acteur
-            )
-            db.session.add(new_acteur)
-            copied_acteurs.append(new_acteur)
 
-        diagnostic.acteurs = copied_acteurs
+        with db.session.no_autoflush:
+            for a in acteurs_orig:
+                new_acteur = Acteur(
+                    nom=a.nom,
+                    prenom=a.prenom,
+                    fonction=a.fonction,
+                    telephone=a.telephone,
+                    mail=a.mail,
+                    commune_id=a.commune_id,
+                    is_acteur_economique=a.is_acteur_economique,
+                    structure=a.structure,
+                    created_at=date_time,
+                    created_by=data['created_by'],
+                    diagnostic_id=diagnostic.id_diagnostic,
+                    categories=a.categories,
+                    reponses=a.reponses,
+                    statut_entretien=a.statut_entretien,
+                    acteur_origine_id = a.acteur_origine_id if a.acteur_origine_id else a.id_acteur,
+                    is_copy=True
+                )
+                db.session.add(new_acteur)
+                copied_acteurs.append(new_acteur)
+
+            diagnostic.acteurs = copied_acteurs
 
     return diagnostic
 
 def deleteActors(diagnostic_id):
-     Acteur.query.filter(Acteur.diagnostic_id== diagnostic_id).delete()
+     
+    Acteur.query.filter(
+        Acteur.diagnostic_id == diagnostic_id,
+        Acteur.is_copy == True
+    ).delete()
 
 def getDiagnostic(diagnostic):
     schema = DiagnosticSchema(many=False)

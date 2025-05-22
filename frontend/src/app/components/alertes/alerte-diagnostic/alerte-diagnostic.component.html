@@ -1,0 +1,14 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+<mat-dialog-content>
+    <div><span>{{ data.message }}</span></div>
+    <div><b>{{data.labels.nameLabel}}</b> : <span>{{ data.diagnostic.nom }}</span></div>  
+    <div><b>{{data.labels.chosenSites}}</b> : <span *ngFor="let site of data.diagnostic.sites">{{ site.nom }} </span></div>
+    <div><b>{{data.labels.chosenActors}}</b> : <span *ngFor="let acteur of data.diagnostic.acteurs">{{ acteur.nom }} {{ acteur.prenom }}, </span></div>
+    <div><b>{{data.labels.datePublicationReport}}</b> : <span>{{ data.diagnostic.date_rapport_str }}</span></div>  
+</mat-dialog-content>
+
+<mat-dialog-actions>
+    <button mat-raised-button color="accent" type="button" (click)="navigate(data.previousPage,data.diagnostic)">{{data.labels.btnPreviousStepLabel}}</button>
+    <button mat-raised-button mat-dialog-close (click)="close()" color="accent">Rajouter des informations à ce diagnostic</button>
+    <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic-visualisation/'+data.diagnostic.id_diagnostic,data.diagnostic)">Afficher résumé diagnostic</button>
+</mat-dialog-actions>
