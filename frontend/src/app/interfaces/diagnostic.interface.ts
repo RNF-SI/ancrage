@@ -1,3 +1,4 @@
+import { Document } from "@app/models/document.model";
 import { IActeur } from "./acteur.interface";
 import { ISite } from "./site.interface";
 
@@ -18,4 +19,5 @@ export interface IDiagnostic {
     modified_at: Date | undefined;
     created_by: number;
     slug:string;
+    documents?:Document[];
 }

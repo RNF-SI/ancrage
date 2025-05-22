@@ -1,11 +1,12 @@
-from models.models import db
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 from models.models import *
 from schemas.metier import *
 from sqlalchemy import func
 from sqlalchemy.orm import aliased
-from routes import bp,date_time, slugify, uuid
+from routes import bp,date_time, slugify, uuid, now
 from datetime import datetime
+import os,json
+from werkzeug.utils import secure_filename
 
 @bp.route('/diagnostic/<int:id_diagnostic>/<slug>', methods=['GET','PUT'])
 def diagnosticMethods(id_diagnostic,slug):
@@ -27,7 +28,7 @@ def diagnosticMethods(id_diagnostic,slug):
             
             diagnostic = changeValuesDiagnostic(diagnostic,data)
 
-            diagnostic.modified_at = date_time
+            diagnostic.modified_at = now
             raw_date = data.get('date_rapport')
             if raw_date != None :
         
@@ -55,7 +56,7 @@ def postDiagnostic():
 
     diagnostic = Diagnostic()
     
-    diagnostic.created_at = date_time
+    diagnostic.created_at = now
     diagnostic.created_by = data['created_by']
     diagnostic.identite_createur = data['identite_createur']
     myuuid = uuid.uuid4()
@@ -250,6 +251,42 @@ def get_scores(id_diagnostic):
     ]
 
     return jsonify(data)
+
+@bp.route('/diagnostic/upload', methods=['POST'])
+def create_documents():
+    documents = json.loads(request.form['documents'])
+    files = request.files.getlist("files")
+
+    upload_folder = current_app.config.get("UPLOAD_FOLDER", "uploads")
+
+    # Créer le répertoire avec permissions 755 s’il n’existe pas
+    if not os.path.exists(upload_folder):
+        os.makedirs(upload_folder, mode=0o755, exist_ok=True)
+
+    for doc in documents:
+        nom = doc.get("nom")
+        id_diagnostic = doc.get("diagnostic", {}).get("id_diagnostic")
+
+        document = Document(
+            nom=nom,
+            diagnostic_id=id_diagnostic  
+        )
+        db.session.add(document)
+
+        # Cherche le fichier correspondant par nom
+        file = next((f for f in files if f.filename == nom), None)
+
+        # Sauvegarder le fichier si trouvé
+        if file:
+            os.makedirs(upload_folder, exist_ok=True)
+            file_path = os.path.join(upload_folder, secure_filename(file.filename))
+            file.save(file_path)
+
+    db.session.commit()
+
+    # Retourner le diagnostic lié au dernier document inséré
+    diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
+    return getDiagnostic(diagnostic)
     
 def changeValuesDiagnostic(diagnostic,data):
     
@@ -292,13 +329,14 @@ def changeValuesDiagnostic(diagnostic,data):
                     telephone=a.telephone,
                     mail=a.mail,
                     commune_id=a.commune_id,
-                    is_acteur_economique=a.is_acteur_economique,
                     structure=a.structure,
                     created_at=date_time,
                     created_by=data['created_by'],
                     diagnostic_id=diagnostic.id_diagnostic,
                     categories=a.categories,
                     reponses=a.reponses,
+                    slug=a.slug,
+                    profil_cognitif_id=a.profil_cognitif_id,
                     statut_entretien=a.statut_entretien,
                     acteur_origine_id = a.acteur_origine_id if a.acteur_origine_id else a.id_acteur,
                     is_copy=True

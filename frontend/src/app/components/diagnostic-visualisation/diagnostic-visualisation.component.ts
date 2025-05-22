@@ -19,6 +19,7 @@ import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import { NomenclatureService } from '@app/services/nomenclature.service';
 import { MenuLateralComponent } from "../parts/menu-lateral/menu-lateral.component";
 import { TableauStructuresComponent } from "../parts/tableau-structures/tableau-structures.component";
+import { Document } from '@app/models/document.model';
 
 @Component({
   selector: 'app-diagnostic-visualisation',
@@ -52,6 +53,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   id_diagnostic:number = 0;
   labels = new Labels();
   themes:Nomenclature[] = [];
+  private docsSubscription?:Subscription;
 
   formGroup = this.fb.group({
       id_diagnostic: [0, [Validators.required]],
@@ -63,6 +65,8 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
       modified_by: [0, [Validators.required]],
   });
   slug="";
+  files: File[] = [];
+  dragOver = false;
 
   ngOnInit(): void {
     this.previousPage = localStorage.getItem("previousPage")!;
@@ -101,7 +105,55 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
       }
     }
   }
+  
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    this.dragOver = true;
+  }
 
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    this.dragOver = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    this.dragOver = false;
+    if (event.dataTransfer?.files) {
+      this.files.push(...Array.from(event.dataTransfer.files));
+    }
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files) {
+      this.files.push(...Array.from(input.files));
+    }
+  }
+
+  uploadFiles() {
+    const documents: Document[] = this.files.map(file => {
+      const doc = new Document();
+      doc.nom = file.name;
+      doc.diagnostic = this.diagnostic;
+      return doc;
+    });
+  
+    const formData = new FormData();
+  
+    // Ajout des fichiers
+    this.files.forEach(file => {
+      formData.append('files', file);
+    });
+  
+    // Ajout du JSON des documents
+    formData.append('documents', JSON.stringify(documents.map(d => d.toJson())));
+
+    this.docsSubscription = this.diagnosticService.sendFiles(formData).subscribe();
+
+    
+  }
+  
   navigate= (path:string,diagnostic:Diagnostic):void =>{
     localStorage.setItem("previousPage",this.router.url);
     this.siteService.navigateAndReload(path,diagnostic);
@@ -119,7 +171,6 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
       'mail',
       'telephone',
       'profil',
-      'is_acteur_economique',
       'commune',
       'categories'
     ];
@@ -135,7 +186,6 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
         a.mail,
         a.telephone,
         a.profil?.libelle|| '',
-        a.is_acteur_economique,
         a.commune?.nom_com || '',
         (a.categories || []).map(c => c.libelle).join(', ')
       ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(separator))

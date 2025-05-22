@@ -40,7 +40,6 @@ def postActeur():
         - Commune ID : {acteur.commune_id}
         - Structure  : {acteur.structure}
         - Profil ID  : {acteur.profil_cognitif_id}
-        - is_acteur  : {acteur.is_acteur_economique}
         """)
         acteur.created_at = now
         myuuid = uuid.uuid4()
@@ -90,7 +89,6 @@ def changeValuesActeur(acteur,data):
     acteur.commune_id = data['commune']['id_commune']
     acteur.structure = data['structure'] 
     acteur.profil_cognitif_id = data['profil']['id_nomenclature']
-    acteur.is_acteur_economique = data['is_acteur_economique']
     new_cat_ids = {c['id_nomenclature'] for c in data['categories']}
     current_cats = {c.id_nomenclature for c in acteur.categories}
 

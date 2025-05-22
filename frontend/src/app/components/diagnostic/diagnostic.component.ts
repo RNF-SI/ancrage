@@ -135,7 +135,6 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   slug="";
   
   ngOnInit(): void {
-    console.log('init');
     let diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
     this.dateAdapter.setLocale('fr-FR');
     this.titleDiagnostic = this.titleCreateDiag;
@@ -176,7 +175,6 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       } else {
         
         this.diagnostic = diagnostic;
-        console.log(this.diagnostic);
         this.chosenSites = this.diagnostic.sites;
         this.user_id = this.user?.id_role;
         this.id_organisme = this.user.id_organisme;

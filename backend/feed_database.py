@@ -150,7 +150,7 @@ with app.app_context():
         "Animation, pédagogie, tourisme et sensibilisation",
         "Partenaires, gestionnaires et techniciens",
         "Riverains, élus et usagers locaux",
-        "Exploitants professionnels des ressources naturelles",
+        "Acteurs économiques",
         "Membres du CCG"
     ]
 
@@ -228,7 +228,6 @@ with app.app_context():
             telephone="0600000000",
             mail=f"user{i}@example.com",
             profil_cognitif_id=random.choice(profils).id_nomenclature,
-            is_acteur_economique=bool(random.getrandbits(1)),
             structure=f"Structure {i}",
             diagnostic_id=diagnostic.id_diagnostic,
             commune_id=random.randint(69931, 100000), 

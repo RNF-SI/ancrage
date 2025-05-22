@@ -2,6 +2,7 @@ import { IDiagnostic } from "@app/interfaces/diagnostic.interface";
 import { Site } from "./site.model";
 import * as moment from 'moment';
 import { Acteur } from "./acteur.model";
+import { Document } from "./document.model";
 
 export class Diagnostic implements IDiagnostic {
 
@@ -23,6 +24,7 @@ export class Diagnostic implements IDiagnostic {
 	created_by: number = 0;
 	acteurs:Acteur[]=[]
 	slug="";
+	documents?:Document[];
 
 	copy(): Diagnostic {
 		const copy = new Diagnostic();
@@ -41,6 +43,8 @@ export class Diagnostic implements IDiagnostic {
 		copy.is_read_only = this.is_read_only;
 		copy.id_organisme = this.id_organisme;
 		copy.slug = this.slug;
+		copy.documents = this.documents?.map(d => d.copy());
+
 
 		return copy;
 	}
@@ -66,6 +70,7 @@ export class Diagnostic implements IDiagnostic {
 		diag.modified_at = data.modified_at ? new Date(data.modified_at) : undefined;
 		diag.created_by = data.created_by;
 		diag.slug = data.slug;
+		diag.documents = (data.documents || []).map(d => Document.fromJson(d));
 
 		return diag;
 	}
@@ -79,6 +84,7 @@ export class Diagnostic implements IDiagnostic {
 			date_rapport: this.date_rapport ? this.date_rapport : undefined,
 			sites: this.sites.map(s => s.toJson()),
 			acteurs: this.acteurs.map(a => a.toJson()),
+			documents: this.documents ? this.documents.map(d => d.toJson()): [],
 			created_at: this.created_at ? this.created_at.toISOString() : undefined,
 			modified_at: this.modified_at ? this.modified_at.toISOString() : undefined,
 		};

@@ -8,7 +8,6 @@
     <div><b>{{data.labels.mail}}</b> : <span>{{ data.acteur.mail }}</span></div>
     <div><b>{{data.labels.town}}</b> : <span>{{ data.acteur.commune.nom_com }}</span></div>
     <div><b>{{data.labels.profile}}</b> : <span>{{ data.acteur.profil?.libelle }}</span></div>
-    <div><b>{{data.labels.economicActor}}</b> : <span *ngIf="data.acteur.is_acteur_economique" else no_content>Oui</span><ng-template #no_content>Non</ng-template></div>
     <div><b>{{data.labels.structure}}</b> : <span>{{ data.acteur.structure }}</span></div>    
     <div><b>{{data.labels.category}}</b> : <span *ngFor="let cat of data.acteur.categories">{{ cat.libelle }} </span></div>
 </mat-dialog-content>

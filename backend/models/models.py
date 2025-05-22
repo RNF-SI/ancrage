@@ -122,7 +122,6 @@ class Acteur(db.Model):
     telephone = db.Column(db.String)
     mail = db.Column(db.String)
     commune_id = db.Column(db.Integer, db.ForeignKey('t_communes.id_commune'))
-    is_acteur_economique = db.Column(db.Boolean, nullable=False)
     structure = db.Column(db.String)
     diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
     diagnostic = db.relationship('Diagnostic', back_populates='acteurs')

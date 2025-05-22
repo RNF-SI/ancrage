@@ -21,7 +21,27 @@
                           <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic + '/' + diagnostic.slug,diagnostic)">Modifier</button>
                         </div>
                         
-                    </div>
+                        <div
+                          class="upload-zone"
+                          matRipple
+                          [class.dragover]="dragOver"
+                          (dragover)="onDragOver($event)"
+                          (dragleave)="onDragLeave($event)"
+                          (drop)="onDrop($event)"
+                          >
+                          <p>Glissez vos fichiers ici ou cliquez pour sélectionner</p>
+                          <input type="file" multiple (change)="onFileSelected($event)" hidden #fileInput />
+                          <button mat-raised-button (click)="fileInput.click()">Choisir des fichiers</button>
+                          </div>
+
+                          <ul *ngIf="files.length">
+                          <li *ngFor="let file of files">{{ file.name }}</li>
+                          </ul>
+
+                          <button mat-raised-button color="primary" (click)="uploadFiles()" [disabled]="!files.length">
+                            Envoyer
+                          </button>
+                        </div>
                 </mat-tab>
                 <div *ngIf="!diagnostic.is_read_only else structures">
                   <mat-tab label="Acteurs">

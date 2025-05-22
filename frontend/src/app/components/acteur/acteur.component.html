@@ -48,13 +48,6 @@
                     <input matInput placeholder="Entrez un mail" formControlName="mail" >
                     <mat-error *ngIf="formGroup.get('mail')?.hasError('pattern')">Le format est incorrect.</mat-error>
                 </mat-form-field>
-                <mat-form-field appearance="fill">
-                    <mat-label>{{ labels.economicActor }}</mat-label>
-                    <mat-select formControlName="is_acteur_economique_txt">
-                        <mat-option *ngFor="let opt of options" [value]="opt">{{ opt }}</mat-option>
-                    </mat-select>
-                    <mat-error *ngIf="formGroup.get('is_acteur_economique_txt')?.hasError('required')">La structure est requise.</mat-error>
-                </mat-form-field>
                 <mat-form-field appearance="fill" id="fieldName" >
                     <mat-label>{{labels.structure}}</mat-label>
                     <input matInput placeholder="Entrez une structure" formControlName="structure" required >

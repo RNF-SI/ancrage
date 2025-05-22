@@ -48,8 +48,6 @@ export class ActeurComponent implements OnInit,OnDestroy{
         commune: this.fb.control<Commune | null>(null, [Validators.required]),
         profil: this.fb.control<Nomenclature | null>(null, [Validators.required]),
         categories: this.fb.control<Nomenclature[] | null>(null, [Validators.required]),
-        is_acteur_economique: [false],
-        is_acteur_economique_txt: ['', [Validators.required]],
         structure: ['', [Validators.required]],
         modified_by: [0],
         slug: ['']
@@ -92,11 +90,6 @@ export class ActeurComponent implements OnInit,OnDestroy{
 
             forkJoin([actor$, communes$, profils$,categories$]).subscribe(([actor,communes, profils,categories]) => {
               
-              if (this.formGroup.get('is_acteur_economique')?.value == true){
-                this.formGroup.get('is_acteur_economique_txt')!.setValue('oui');
-              }else if (this.formGroup.get('is_acteur_economique')?.value == false){
-                this.formGroup.get('is_acteur_economique_txt')!.setValue('non');
-              }
               this.actor = actor;
               
               
@@ -117,7 +110,6 @@ export class ActeurComponent implements OnInit,OnDestroy{
                 commune: this.actor.commune,
                 profil: this.actor.profil?.id_nomenclature! > 0 ? this.actor.profil : null,
                 categories: this.actor.categories,
-                is_acteur_economique: this.actor.is_acteur_economique,
                 structure: this.actor.structure,
                 slug: this.actor.slug
               });
@@ -161,11 +153,6 @@ export class ActeurComponent implements OnInit,OnDestroy{
   recordActor(event: Event) {
     event.preventDefault();
    
-    if (this.formGroup.get('is_acteur_economique_txt')?.value == 'oui'){
-      this.formGroup.get('is_acteur_economique')!.setValue(true);
-    }else if (this.formGroup.get('is_acteur_economique_txt')?.value == 'non'){
-      this.formGroup.get('is_acteur_economique')!.setValue(false);
-    }
     if (this.id_actor == undefined){
       this.formGroup.get('created_by')!.setValue(this.user_id);
       if (!this.formGroup.invalid){

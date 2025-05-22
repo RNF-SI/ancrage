@@ -3,7 +3,7 @@ from flask import request, jsonify
 from sqlalchemy.orm import contains_eager
 from models.models import *
 from schemas.metier import *
-from routes import bp,date_time,slugify,uuid
+from routes import bp,now,slugify,uuid
 
 
 @bp.route('/site/<id_site>/<slug>', methods=['GET','PUT','DELETE'])
@@ -20,7 +20,7 @@ def siteMethods(id_site,slug):
         if site.slug == slug:
             data = request.get_json()
             site = changeValuesSite(site,data)
-            site.modified_at = date_time
+            site.modified_at = now
             site.modified_by = data['modified_by']
 
             db.session.commit()
@@ -36,7 +36,7 @@ def postSite():
         site = changeValuesSite(site,data)
         myuuid = uuid.uuid4()
         site.slug = slugify(site.nom) + '-' + str(myuuid)
-        site.created_at = date_time
+        site.created_at = now
         site.created_by = data['created_by']
         db.session.add(site)
         db.session.commit()

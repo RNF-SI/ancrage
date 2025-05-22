@@ -14,7 +14,7 @@ import { Labels } from '@app/utils/labels';
   imports:[MatDialogModule,MatButtonModule,CommonModule]
 })
 export class AlerteSiteComponent {
- 
+  
   constructor(
     public dialogRef: MatDialogRef<AlerteSiteComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { 

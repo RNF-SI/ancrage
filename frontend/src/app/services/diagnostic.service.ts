@@ -1,10 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { IDiagnostic } from '@app/interfaces/diagnostic.interface';
+import { IDocument } from '@app/interfaces/document.interface';
 import { IGraphMoy } from '@app/interfaces/graph-moy.interface';
 import { IGraphRadar } from '@app/interfaces/graphradar.interface';
 import { IGraphRepartition } from '@app/interfaces/igraph-repartition';
 import { Diagnostic } from '@app/models/diagnostic.model';
+import { Document } from '@app/models/document.model';
 import { GraphMoy } from '@app/models/graph-moy.model';
 import { GraphRadar } from '@app/models/graph-radar.model';
 import { GraphRepartition } from '@app/models/graph-repartition.model';
@@ -91,9 +93,11 @@ export class DiagnosticService {
         map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
       );
     }
-  
-    delete(id: number): Observable<void> {
-      return this.http.delete<void>(this.BASE_URL + id);
+    
+    sendFiles(formData:FormData){
+      return this.http.post<IDiagnostic>(this.BASE_URL + '/upload' ,formData).pipe(
+        map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
+      );
     }
     
 }
