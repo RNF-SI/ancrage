@@ -95,7 +95,7 @@
                                 <fa-icon [icon]="['fas', 'pen']"></fa-icon>
                               </button>
 
-                              <button mat-icon-button type="button" (click)="navigate('/entretien/' + actor.id_acteur,diagnostic)"  title = "{{labels.goToInterview}}">
+                              <button mat-icon-button type="button" (click)="navigate('/entretien/' + actor.id_acteur + '/'+actor.slug,diagnostic)"  title = "{{labels.goToInterview}}">
                                 <fa-icon [icon]="['fas', 'chart-pie']"></fa-icon>
                               </button>
                               <span *ngIf="actor.statut_entretien?.libelle != 'Réalisé' && actor.statut_entretien?.libelle != 'En cours'">

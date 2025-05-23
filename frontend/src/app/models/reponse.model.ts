@@ -10,6 +10,7 @@ export class Reponse {
     mots_cles?:MotCle[];
     question?:Question;
     acteur:Acteur = new Acteur();
+    commentaires="";
 
     /** Copie profonde de l'objet */
         copy(): Reponse {
@@ -19,6 +20,7 @@ export class Reponse {
             copy.mots_cles = this.mots_cles?.map(mc => mc.copy()) || [];
             copy.question = this.question?.copy();
             copy.acteur = this.acteur.copy();
+            copy.commentaires = this.commentaires;
     
             return copy;
         }
@@ -32,6 +34,7 @@ export class Reponse {
             reponse.mots_cles = (data.mots_cles || []).map(mc => MotCle.fromJson(mc));
             reponse.question = data.question ? Question.fromJson(data.question) : undefined;
             reponse.acteur = data.acteur ? Acteur.fromJson(data.acteur) : new Acteur();
+            reponse.commentaires = data.commentaires;
     
             return reponse;
         }

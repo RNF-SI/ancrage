@@ -17,13 +17,16 @@
               <h4 class="question_d_{{q.id_question}}">{{ q.libelle }} <fa-icon class="warn warn_{{q.id_question}}"[icon]="['fas', 'triangle-exclamation']"></fa-icon></h4>
               <p><b>Réponses attendues : </b>{{q.indications}}</p>
               <mat-radio-group [formControlName]="'question_' + q.id_question">
-                <mat-radio-button *ngFor="let rep of q.choixReponses" [value]="rep.value" (click)="createReponse(rep,q.id_question)">
-                  {{ rep.libelle }}
+                <mat-radio-button *ngFor="let cr of q.choixReponses" [value]="cr.value" (click)="createReponse(q.id_question,cr)">
+                  {{ cr.libelle }}
                 </mat-radio-button>
               </mat-radio-group>
+              <div *ngFor="let rep of getReponsesParQuestion(q.id_question)">
+                <textarea [formControlName]="'reponse_' + q.id_question" (focusout)="createReponse(q.id_question)"></textarea>
+              </div>
             </div>
           </div>
-  
+          
           <button mat-raised-button color="accent" type="button" (click)="navigate(this.previousPage,this.diagnostic)">{{labels.btnPreviousStepLabel}}</button>
         </div>
   

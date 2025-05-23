@@ -60,20 +60,23 @@ export class EntretienComponent implements OnInit,OnDestroy{
             this.themes = themes;
             this.etats = etats;
             const controls: { [key: string]: any } = {};
+            console.log(this.themes);
             this.themes.forEach(theme => {
               
               theme.questions!.forEach(q => {
                 controls[`question_${q.id_question}`] = this.fb.control(null);
+                controls[`reponse_${q.id_question}`] = this.fb.control(null);
                 if (this.id_acteur){
                     let reponse:Reponse = new Reponse();
                       
                     reponse.question = q;
                     reponse.acteur.id_acteur = this.id_acteur;
-
                     
+                  console.log(q.reponses);  
                   q.reponses?.forEach(rep => {
                     if (rep.acteur.id_acteur==this.id_acteur){
                       reponse = rep;
+                      console.log(reponse);
                     }
                   });
                   this.reponses.push(reponse);
@@ -94,14 +97,11 @@ export class EntretienComponent implements OnInit,OnDestroy{
         });
   }
 
-  ngAfterViewInit(){
-    
-  }
-
   patchForm(reponses:Reponse[]){
-
+    console.log(reponses);
     for(let i = 0;i<reponses.length;i++){
       this.formGroup.get(`question_${reponses[i].question?.id_question}`)?.setValue(reponses[i].valeur_reponse.value);
+      this.formGroup.get(`reponse_${reponses[i].question?.id_question}`)?.setValue(reponses[i].commentaires);
       if (reponses[i].valeur_reponse.id_nomenclature > 0){
         const classe = ".warn_"+reponses[i].question?.id_question;
         const element = document.querySelector(classe);
@@ -111,13 +111,40 @@ export class EntretienComponent implements OnInit,OnDestroy{
     }
   }
 
-  createReponse(typeReponse:Nomenclature,id_question:number){
+  createReponse(id_question:number,cr?:Nomenclature){
+    let checkout = true;
+    for(let i = 0;i<this.reponses.length;i++){
+      if(this.reponses[i].question?.id_question === id_question){
+        if (cr != undefined){
+          this.reponses[i].valeur_reponse = cr!;
+          
+        }
+        console.log(this.reponses[i].valeur_reponse.id_nomenclature);
+        this.reponses[i].commentaires = this.formGroup.get(`reponse_${id_question}`)?.value;
+        console.log(this.reponses[i].commentaires);
+        if (this.reponses[i].commentaires != '' && this.reponses[i].valeur_reponse.id_nomenclature ==0){
+          checkout = false;
+          break;
+        }
+        const element = document.querySelector(".warn_"+id_question);
+        element?.classList.add("invisible");
+        break;
+      }
+      
+    }
+    if(checkout){
+      this.submit();
+    }else{
+      console.log('ko');
+    }
+    
+  }
+
+  addComment(id_question:number){
     
     for(let i = 0;i<this.reponses.length;i++){
       if(this.reponses[i].question?.id_question === id_question){
-        this.reponses[i].valeur_reponse = typeReponse;
-        const element = document.querySelector(".warn_"+id_question);
-        element?.classList.add("invisible");
+        this.reponses[i].commentaires = this.formGroup.get(`reponse_${id_question}`)?.value;
         break;
       }
       
@@ -151,7 +178,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
         }
       }
     }
-    
+    console.log(this.reponses);
     if (this.reponses.length>0){
       this.reponsesSubscription = this.reponseService.update(this.reponses).subscribe(acteur => {
 
@@ -160,6 +187,11 @@ export class EntretienComponent implements OnInit,OnDestroy{
       })
     }
     
+  }
+
+  getReponsesParQuestion(id_question: number) {
+  
+    return this.reponses.filter(r => r.question?.id_question === id_question);
   }
 
   ngOnDestroy(): void {

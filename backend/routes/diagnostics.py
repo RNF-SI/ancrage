@@ -261,7 +261,7 @@ def create_documents():
 
     # Créer le répertoire avec permissions 755 s’il n’existe pas
     if not os.path.exists(upload_folder):
-        os.makedirs(upload_folder, exist_ok=True)
+        os.makedirs(upload_folder, mode=0o755, exist_ok=True)
 
     for doc in documents:
         nom = doc.get("nom")

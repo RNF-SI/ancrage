@@ -34,11 +34,18 @@ def getAllNomenclaturesByType(mnemonique,id_acteur):
 
             nomenclatures = (
                 db.session.query(Nomenclature)
-                .join(Nomenclature.questions)
-                .join(Question.reponses)
-                .join(ValeurNomenclature, Reponse.valeur_reponse)
                 .filter(Nomenclature.mnemonique == "thème")
-                .filter(Reponse.acteur_id == int(id_acteur))
+                .outerjoin(Nomenclature.questions)
+                .outerjoin(Question.reponses)
+                .outerjoin(ValeurNomenclature, Reponse.valeur_reponse)
+                .options(
+                    joinedload(Nomenclature.questions)
+                    .joinedload(Question.reponses)
+                    .joinedload(Reponse.valeur_reponse),
+                    joinedload(Nomenclature.questions)
+                    .joinedload(Question.reponses)
+                    .joinedload(Reponse.acteur)
+                )
                 .all()
             )
         else:
@@ -85,6 +92,7 @@ def getAllNomenclaturesByType(mnemonique,id_acteur):
                         if r.acteur_id:
                             reponses_choisies.append({
                                "id_reponse": r.id_reponse,
+                               "commentaires":r.commentaires,
                                 "acteur": {
                                     "id_acteur": r.acteur.id_acteur,
                                     "nom": r.acteur.nom,

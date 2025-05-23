@@ -51,6 +51,7 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
         try:
             question_id = item['question']['id_question']
             valeur_reponse_id = item['valeur_reponse']['id_nomenclature']
+            commentaires = item['commentaires']
         except (KeyError, TypeError):
             continue  # Entrée mal formée
 
@@ -66,11 +67,13 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
 
         if reponse:
             reponse.valeur_reponse_id = valeur_reponse_id
+            reponse.commentaires = commentaires
         else:
             nouvelle_reponse = Reponse(
                 acteur_id=acteur_id,
                 question_id=question_id,
-                valeur_reponse_id=valeur_reponse_id
+                valeur_reponse_id=valeur_reponse_id,
+                commentaires=commentaires
             )
             db.session.add(nouvelle_reponse)
 

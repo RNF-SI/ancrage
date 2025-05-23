@@ -9,4 +9,5 @@ export interface IReponse {
     question?:Question;
     mots_cles?:MotCle[];
     acteur:Acteur;
+    commentaires:string;
 }

@@ -177,6 +177,7 @@ class Reponse(db.Model):
     mots_cles = db.relationship('MotCle', secondary='cor_reponses_mots_cles', back_populates='reponses')
     acteur_id = db.Column(db.Integer, db.ForeignKey('t_acteurs.id_acteur'))
     acteur = db.relationship('Acteur', foreign_keys=[acteur_id])
+    commentaires = db.Column(db.String)
 
 reponse_mot_cle = db.Table(
     'cor_reponses_mots_cles',
