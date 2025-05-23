@@ -42,4 +42,5 @@ export class Labels {
     exportPNG = "Exporter en PNG";
     exportCSV = "Exporter en CSV";
     slug="Slug";
+    files="Fichiers joints";
 }

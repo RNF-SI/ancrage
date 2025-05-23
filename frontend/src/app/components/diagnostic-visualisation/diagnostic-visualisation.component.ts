@@ -20,6 +20,7 @@ import { NomenclatureService } from '@app/services/nomenclature.service';
 import { MenuLateralComponent } from "../parts/menu-lateral/menu-lateral.component";
 import { TableauStructuresComponent } from "../parts/tableau-structures/tableau-structures.component";
 import { Document } from '@app/models/document.model';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-diagnostic-visualisation',
@@ -54,6 +55,9 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   labels = new Labels();
   themes:Nomenclature[] = [];
   private docsSubscription?:Subscription;
+  private docReadSub?:Subscription;
+  environment = environment.flask_server + 'fichiers/';
+  file?:Blob;
 
   formGroup = this.fb.group({
       id_diagnostic: [0, [Validators.required]],
@@ -131,6 +135,16 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
     }
   }
 
+  getFile(filename:string){
+    this.docReadSub = this.diagnosticService.downloadFile(filename).subscribe(file =>{
+      this.file=file;
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(this.file);
+      link.download = filename;
+      link.click();
+    });
+  }
+
   uploadFiles() {
     const documents: Document[] = this.files.map(file => {
       const doc = new Document();
@@ -149,7 +163,10 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
     // Ajout du JSON des documents
     formData.append('documents', JSON.stringify(documents.map(d => d.toJson())));
 
-    this.docsSubscription = this.diagnosticService.sendFiles(formData).subscribe();
+    this.docsSubscription = this.diagnosticService.sendFiles(formData).subscribe(diag =>{
+      this.diagnostic = diag;
+      console.log(diag);
+    });
 
     
   }
@@ -204,6 +221,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   ngOnDestroy(): void {
     this.routeSubscription?.unsubscribe();
     this.diagSubscription?.unsubscribe();
+    this.docsSubscription?.unsubscribe();
   }
 
 }

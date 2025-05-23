@@ -20,7 +20,10 @@
                         <div *ngIf="!diagnostic.is_read_only">
                           <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic + '/' + diagnostic.slug,diagnostic)">Modifier</button>
                         </div>
-                        
+                        <h3>{{labels.files}}</h3>
+                        <ul *ngFor="let doc of diagnostic.documents">
+                          <div>{{doc.nom}} <button mat-raised-button type="button" (click)="getFile(doc.nom)">Lire</button></div>
+                        </ul>
                         <div
                           class="upload-zone"
                           matRipple
@@ -35,7 +38,7 @@
                           </div>
 
                           <ul *ngIf="files.length">
-                          <li *ngFor="let file of files">{{ file.name }}</li>
+                          <li *ngFor="let file of files">{{ file.name }} </li>
                           </ul>
 
                           <button mat-raised-button color="primary" (click)="uploadFiles()" [disabled]="!files.length">

@@ -1,9 +1,9 @@
-from flask import request, jsonify, current_app
+from flask import request, jsonify, current_app, send_from_directory
 from models.models import *
 from schemas.metier import *
 from sqlalchemy import func
 from sqlalchemy.orm import aliased
-from routes import bp,date_time, slugify, uuid, now
+from routes import bp,now, slugify, uuid
 from datetime import datetime
 import os,json
 from werkzeug.utils import secure_filename
@@ -261,7 +261,7 @@ def create_documents():
 
     # Créer le répertoire avec permissions 755 s’il n’existe pas
     if not os.path.exists(upload_folder):
-        os.makedirs(upload_folder, mode=0o755, exist_ok=True)
+        os.makedirs(upload_folder, exist_ok=True)
 
     for doc in documents:
         nom = doc.get("nom")
@@ -278,7 +278,6 @@ def create_documents():
 
         # Sauvegarder le fichier si trouvé
         if file:
-            os.makedirs(upload_folder, exist_ok=True)
             file_path = os.path.join(upload_folder, secure_filename(file.filename))
             file.save(file_path)
 
@@ -287,6 +286,19 @@ def create_documents():
     # Retourner le diagnostic lié au dernier document inséré
     diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
     return getDiagnostic(diagnostic)
+
+@bp.route('/diagnostic/uploads/<path:filename>')
+def uploaded_file(filename):
+    filename = secure_filename(filename)
+    upload_folder = current_app.config['UPLOAD_FOLDER']
+    full_path = os.path.join(upload_folder, filename)
+
+    print("Recherche fichier :", full_path)
+
+    if not os.path.exists(full_path):
+        return f"Fichier non trouvé : {filename}", 404
+
+    return send_from_directory(upload_folder, filename)
     
 def changeValuesDiagnostic(diagnostic,data):
     
@@ -317,7 +329,7 @@ def changeValuesDiagnostic(diagnostic,data):
         new_actors_ids = {a['id_acteur'] for a in data['acteurs']}
         acteurs_orig = Acteur.query.filter(Acteur.id_acteur.in_(new_actors_ids)).all()
         
-        deleteActors(diagnostic.id_diagnostic)
+        """ deleteActors(diagnostic.id_diagnostic) """
 
         copied_acteurs = []
         with db.session.no_autoflush:
@@ -330,7 +342,7 @@ def changeValuesDiagnostic(diagnostic,data):
                     mail=a.mail,
                     commune_id=a.commune_id,
                     structure=a.structure,
-                    created_at=date_time,
+                    created_at=now,
                     created_by=data['created_by'],
                     diagnostic_id=diagnostic.id_diagnostic,
                     categories=a.categories,
