@@ -2,7 +2,7 @@ from models.models import db
 from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
-from routes import bp,date_time
+from routes import bp,now
 from routes.acteurs import getActeur
     
 @bp.route('/reponses/objets', methods=['POST'])
@@ -92,8 +92,8 @@ def verifDatesEntretien(diagnostic):
                 listeTermines.append(actor)
     print(len(listeTermines))
     if len(listeTermines) == 1:
-        diagnostic.date_debut = date_time
+        diagnostic.date_debut = now
     if len(listeTermines) == len(diagnostic.acteurs):
-        diagnostic.date_fin = date_time
+        diagnostic.date_fin = now
     db.session.add(diagnostic)
     db.session.commit()

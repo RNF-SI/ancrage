@@ -121,7 +121,7 @@ class Acteur(db.Model):
     telephone = db.Column(db.String)
     mail = db.Column(db.String)
     commune_id = db.Column(db.Integer, db.ForeignKey('t_communes.id_commune'))
-    is_acteur_economique = db.Column(db.Boolean, default=False)
+    is_acteur_economique = db.Column(db.Boolean, nullable=False)
     structure = db.Column(db.String)
     diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
     diagnostic = db.relationship('Diagnostic', back_populates='acteurs')
@@ -131,7 +131,7 @@ class Acteur(db.Model):
     modified_by = db.Column(db.Integer)
     commune = db.relationship("Commune", backref="acteurs")
     categories = db.relationship('Nomenclature', secondary='cor_categorie_acteur', back_populates='acteurs_c')
-    reponses = db.relationship('Reponse', back_populates='acteur')
+    questions = db.relationship('Question', secondary='cor_question_acteur', back_populates='acteurs')
     statut_entretien_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     profil_cognitif_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     profil = db.relationship('Nomenclature', foreign_keys=[profil_cognitif_id], back_populates='acteurs_p')
@@ -157,25 +157,29 @@ class Question(db.Model):
 
     id_question = db.Column(db.Integer, primary_key=True)
     libelle = db.Column(db.String)
-    indications = db.Column(db.String)
+    acteurs = db.relationship('Acteur', secondary='cor_question_acteur', back_populates='questions')
     reponses = db.relationship(
         'Reponse',
         back_populates='question'
     )
     theme_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     theme = db.relationship('Nomenclature', foreign_keys=[theme_id])
-    libelle_graphique = db.Column(db.String)
+    
+acteur_question = db.Table(
+    'cor_question_acteur',
+    db.Column('acteur_id', db.Integer, db.ForeignKey('t_acteurs.id_acteur', ondelete="CASCADE")),
+    db.Column('question_id', db.Integer, db.ForeignKey('t_questions.id_question', ondelete="CASCADE"))
+)
 
 class Reponse(db.Model):
     __tablename__ = 't_reponses'
     id_reponse = db.Column(db.Integer, primary_key=True)
+    mot_cle_id = db.Column(db.Integer)
     valeur_reponse_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     valeur_reponse = db.relationship('Nomenclature', foreign_keys=[valeur_reponse_id])
     question_id = db.Column(db.Integer, db.ForeignKey('t_questions.id_question'))
     question = db.relationship('Question', foreign_keys=[question_id])
     mots_cles = db.relationship('MotCle', secondary='cor_reponses_mots_cles', back_populates='reponses')
-    acteur_id = db.Column(db.Integer, db.ForeignKey('t_acteurs.id_acteur'))
-    acteur = db.relationship('Acteur', foreign_keys=[acteur_id])
 
 reponse_mot_cle = db.Table(
     'cor_reponses_mots_cles',
@@ -186,7 +190,7 @@ reponse_mot_cle = db.Table(
 class MotCle(db.Model):
     __tablename__ = 't_mots_cles'
     id_mot_cle = db.Column(db.Integer, primary_key=True)
-    nom = db.Column(db.String)  
+    nom = db.Column(db.String)  # probablement String au lieu d'Integer
     reponses = db.relationship('Reponse', secondary='cor_reponses_mots_cles', back_populates='mots_cles')
 
 class Nomenclature(db.Model):
@@ -200,4 +204,3 @@ class Nomenclature(db.Model):
     acteurs_p = db.relationship('Acteur', back_populates='profil', foreign_keys='Acteur.profil_cognitif_id')
     acteurs_se = db.relationship('Acteur', back_populates='statut_entretien', foreign_keys='Acteur.statut_entretien_id')
     questions = db.relationship('Question',  back_populates='theme')
-    libelle_court = db.Column(db.String)

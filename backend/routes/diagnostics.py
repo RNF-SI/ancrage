@@ -5,8 +5,8 @@ from schemas.metier import *
 from routes import bp,now
 from sqlalchemy import func
 from sqlalchemy.orm import aliased
-from routes import bp,date_time
-from datetime import date, datetime
+from routes import bp,now
+from datetime import datetime
 
 
 
@@ -31,7 +31,7 @@ def diagnosticMethods(id_diagnostic):
 
 
         diagnostic.modified_at = now
-        diagnostic.modified_at = date_time
+        diagnostic.modified_at = now
         raw_date = data.get('date_rapport')
         print(raw_date)
         if raw_date != None :
@@ -290,7 +290,7 @@ def changeValuesDiagnostic(diagnostic,data):
         new_actors_ids = {a['id_acteur'] for a in data['acteurs']}
         acteurs_orig = Acteur.query.filter(Acteur.id_acteur.in_(new_actors_ids)).all()
         
-        deleteActors(diagnostic.id_diagnostic)
+        """ deleteActors(diagnostic.id_diagnostic) """
 
         copied_acteurs = []
 
@@ -303,13 +303,14 @@ def changeValuesDiagnostic(diagnostic,data):
                     telephone=a.telephone,
                     mail=a.mail,
                     commune_id=a.commune_id,
-                    is_acteur_economique=a.is_acteur_economique,
                     structure=a.structure,
-                    created_at=date_time,
+                    created_at=now,
                     created_by=data['created_by'],
                     diagnostic_id=diagnostic.id_diagnostic,
                     categories=a.categories,
                     reponses=a.reponses,
+                    is_acteur_economique=a.is_acteur_economique,
+                    profil_cognitif_id=a.profil_cognitif_id,
                     statut_entretien=a.statut_entretien,
                     acteur_origine_id = a.acteur_origine_id if a.acteur_origine_id else a.id_acteur,
                     is_copy=True

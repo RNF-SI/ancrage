@@ -1,0 +1,5 @@
+﻿id_acteur;nom;prenom;fonction;structure;mail;telephone;profil;is_acteur_economique;commune;categories
+"38";"Nom 0";"Prénom 0";"3";"Structure 0";"user0@example.com";"0600000000";"";"false";"Gelucourt";""
+"39";"Nom 1";"Prénom 1";"1";"Structure 1";"user1@example.com";"0600000000";"";"true";"Saint-Georges-sur-Moulon";""
+"40";"Nom 10";"Prénom 10";"1";"Structure 10";"user10@example.com";"0600000000";"";"true";"Adinfer";""
+"41";"fdfddf";"dfdffdfd";"fefefe";"ddd";"mel@mel.com";"06 02 03 06 04";"";"true";"Toulenne";"Partenaires, gestionnaires et techniciens"

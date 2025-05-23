@@ -3,8 +3,6 @@ from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
 from routes import bp,now
-from datetime import datetime,timezone
-
 
 @bp.route('/acteur/<id_acteur>', methods=['GET','PUT','DELETE'])
 def acteurMethods(id_acteur):
