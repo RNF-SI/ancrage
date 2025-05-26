@@ -63,6 +63,8 @@ class Commune(db.Model):
     departement = db.relationship('Departement', back_populates='communes')
     insee_reg = db.Column(VARCHAR(2))
     code_epci = db.Column(VARCHAR(20))
+    latitude = db.Column(db.String)
+    longitude = db.Column(db.String)
 
 class Site(db.Model):
     __tablename__ = 't_sites'

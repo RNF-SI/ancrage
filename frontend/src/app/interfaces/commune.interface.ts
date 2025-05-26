@@ -10,4 +10,6 @@ export interface ICommune {
     insee_reg:string;
     region:Region;
     departement:Departement;
+    latitude?:string;
+    longitude?:string;
 }

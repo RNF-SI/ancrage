@@ -11,7 +11,8 @@ export class Commune implements ICommune{
     insee_reg="";
     region = new Region();
     departement:Departement = new Departement();
-
+    latitude?:string;
+    longitude?:string;
 
       /** Copie profonde de l'objet */
       copy(): Commune {
@@ -25,6 +26,8 @@ export class Commune implements ICommune{
         copy.insee_reg = this.insee_reg;
         copy.region = this.region.copy();
         copy.departement = this.departement.copy();
+        copy.latitude = this.latitude;
+        copy.longitude = this.longitude;
 
         return copy;
     }
@@ -41,7 +44,8 @@ export class Commune implements ICommune{
         commune.insee_reg = data.insee_reg;
         commune.region = Region.fromJson(data.region);
         commune.departement = Departement.fromJson(data.departement);
-
+        commune.latitude = data.latitude;
+        commune.longitude = data.longitude;
 
         return commune;
     }
@@ -50,12 +54,6 @@ export class Commune implements ICommune{
     toJson(): ICommune {
         const json: ICommune = {
             ...this,
-            id_commune: this.id_commune,
-            id: this.id,
-            nom_com: this.nom_com,
-            insee_com: this.insee_com,
-            insee_dep: this.insee_dep,
-            insee_reg: this.insee_reg,
             region: this.region.copy(),
             departement: this.departement.copy()
         };

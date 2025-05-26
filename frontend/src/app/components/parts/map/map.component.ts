@@ -4,10 +4,15 @@ import {
   Input,
   OnChanges,
   OnDestroy,
-  SimpleChanges
+  SimpleChanges,
+  ElementRef,
+  ViewChild,
+  AfterViewChecked
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
+import { Acteur } from '@app/models/acteur.model';
 import { Site } from '@app/models/site.model';
+import { Labels } from '@app/utils/labels';
 import * as L from 'leaflet';
 import 'leaflet.markercluster';
 
@@ -27,7 +32,7 @@ L.Marker.prototype.options.icon = L.icon({
   standalone: true,
   styleUrls: ['./map.component.css'],
 })
-export class MapComponent implements AfterViewInit, OnChanges, OnDestroy {
+export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterViewChecked {
 
   private map: L.Map | undefined;
   @Input() sites: Site[] = [];
@@ -37,21 +42,57 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy {
   markerClusterGroup: L.MarkerClusterGroup = L.markerClusterGroup();
   marker: any;
   private mapClickListener: any;
- 
-  
-  ngAfterViewInit(): void {
-    setTimeout(() => {this.initMap();
-    if (this.changePosition) {
-      this.moveMarker();
-    }}, 100);
-    
-    
+  labels = new Labels();
+  private actorsRendered = false;
+  @ViewChild('mapContainer') mapContainer!: ElementRef;
+  private _actors: Acteur[] = [];
+
+  @Input()
+  set actors(value: Acteur[]) {
+    this._actors = value;
+    if (this.map && !this.changePosition) {
+      this.addMarkersActors();
+    }
   }
 
+  get actors(): Acteur[] {
+    return this._actors;
+  }
+  
+  ngAfterViewInit(): void {
+    const waitForContainer = () => {
+      const el = this.mapContainer?.nativeElement;
+      const hasSize = el?.offsetHeight > 0 && el?.offsetWidth > 0;
+  
+      if (hasSize) {
+        this.initMap();
+        if (this.changePosition) {
+          this.moveMarker();
+        }
+  
+        setTimeout(() => {
+          this.map?.invalidateSize();
+        }, 100);
+      } else {
+        // Re-tente dans 100ms jusqu'à ce que le conteneur soit visible
+        setTimeout(waitForContainer, 100);
+      }
+    };
+  
+    waitForContainer();
+  }
+
+  ngAfterViewChecked(): void {
+    if (this.map && this.actors.length > 0 && !this.changePosition && !this.actorsRendered) {
+      this.addMarkersActors();
+      this.actorsRendered = true;
+    }
+  }
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['sites'] && this.map && !this.changePosition) {
       this.addMarkers();
     }
+    
     if (changes['formGroup'] && this.map) {
       const latitude = +this.formGroup?.get('position_y')?.value;
       const longitude = +this.formGroup?.get('position_x')?.value;
@@ -63,19 +104,13 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   private initMap(): void {
-    const mapContainer = document.getElementById('map');
+    const mapContainer = this.mapContainer?.nativeElement;
     if (mapContainer) {
       console.log('Map container found');
       
     }
 
-    // Vérifie si la carte est déjà initialisée (Leaflet lève une erreur sinon)
-    if ((mapContainer as any)._leaflet_id) {
-      // Leaflet croit que la carte est encore initialisée => on reset
-      (mapContainer as any)._leaflet_id = null;
-    }
-
-    this.map = L.map(this.mapId, {
+    this.map = L.map(mapContainer, {
       center: [48.8566, 2.3522],
       zoom: 13
     });
@@ -83,7 +118,9 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
-    this.map.invalidateSize();
+    /* setTimeout(() => {
+      this.map?.invalidateSize();
+    }, 200); */
     if (this.formGroup) {
       this.formGroup.valueChanges.subscribe(values => {
         const latitude = +values.position_y;
@@ -133,6 +170,43 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy {
     }
   }
 
+  addMarkersActors() {
+    console.log(this.actors);
+    const bounds = L.latLngBounds([]);
+    this.markerClusterGroup.clearLayers();
+    
+    for (let i = 0; i < this.actors.length; i++) {
+      const lat = parseFloat(this.actors[i].commune.latitude!);
+      const lng = parseFloat(this.actors[i].commune.longitude!);
+      const marker = L.marker([lat, lng]).addTo(this.markerClusterGroup);
+
+      let categories = this.actors[i].categories?.map(c => c.libelle).join(", ") ?? "";
+
+      marker.bindPopup(`
+        <strong>${this.actors[i].nom + ' '+ this.actors[i].prenom}</strong><br>
+        ${this.labels.statusLabel} : ${this.actors[i].fonction}<br>
+        ${this.labels.category} : ${categories}<br>
+        ${this.labels.telephone} : ${this.actors[i].telephone}<br>
+        ${this.labels.mail} : ${this.actors[i].mail}<br>
+        ${this.labels.town} : ${this.actors[i].commune.nom_com}<br>
+        ${this.labels.profile} : ${this.actors[i].profil?.libelle}<br>
+        ${this.labels.structure} : ${this.actors[i].structure}<br>
+      `);
+
+      bounds.extend([lat, lng]);
+    }
+
+    this.markerClusterGroup.addTo(this.map!);
+
+    if (this.actors.length > 1) {
+      this.map!.fitBounds(bounds, { padding: [30, 30] });
+    } else if (this.actors.length === 1) {
+      const lat = parseFloat(this.actors[0].commune.latitude!);
+      const lng = parseFloat(this.actors[0].commune.longitude!);
+      this.map!.setView([lat, lng], 13);
+    }
+  }
+
   moveMarker() {
     if (this.changePosition) {
       
@@ -174,7 +248,7 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.map = undefined;
     }
     this.markerClusterGroup.clearLayers();
-
+    this.actorsRendered = false;
     const mapContainer = document.getElementById('map');
     console.log(mapContainer);
     if (mapContainer) {

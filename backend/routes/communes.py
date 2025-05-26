@@ -44,7 +44,7 @@ def getAllCommunes():
     if request.method == 'GET': 
         
         communes = Commune.query.filter_by().all()
-        schema = CommuneSchema(many=True,exclude= ('geom','code_epci','insee_arr','insee_can','insee_reg','population','statut','departement'))
+        schema = CommuneSchema(many=True,exclude= ('geom','code_epci','insee_arr','insee_can','insee_reg','population','statut','departement','latitude','longitude'))
         usersObj = schema.dump(communes)
         return jsonify(usersObj)
     

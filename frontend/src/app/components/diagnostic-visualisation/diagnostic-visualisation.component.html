@@ -51,7 +51,11 @@
                     <div class="p-3">
                     
                       <h3>Acteurs</h3>
-                    
+                        <app-map
+                          [actors]="actors"
+                        >
+
+                        </app-map>
                         <app-choix-acteurs
                                 [actors]="actors"
                                 [uniqueDiagnostics]="uniqueDiagnostics"

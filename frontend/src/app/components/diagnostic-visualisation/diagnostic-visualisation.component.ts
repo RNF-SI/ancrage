@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatTableDataSource, MatTableDataSourcePaginator } from '@angular/material/table';
 import { Acteur } from '@app/models/acteur.model';
@@ -21,13 +21,14 @@ import { MenuLateralComponent } from "../parts/menu-lateral/menu-lateral.compone
 import { TableauStructuresComponent } from "../parts/tableau-structures/tableau-structures.component";
 import { Document } from '@app/models/document.model';
 import { environment } from 'src/environments/environment';
+import { MapComponent } from '../parts/map/map.component';
 
 @Component({
   selector: 'app-diagnostic-visualisation',
   templateUrl: './diagnostic-visualisation.component.html',
   styleUrls: ['./diagnostic-visualisation.component.css'],
   standalone:true,
-  imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent, MenuLateralComponent, TableauStructuresComponent,TableauStructuresComponent]
+  imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent, MenuLateralComponent, TableauStructuresComponent,TableauStructuresComponent,MapComponent]
 })
 export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
 
@@ -59,6 +60,8 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   environment = environment.flask_server + 'fichiers/';
   file?:Blob;
 
+  @ViewChild(MapComponent) mapComponent!: MapComponent;
+
   formGroup = this.fb.group({
       id_diagnostic: [0, [Validators.required]],
       nom: ['', [Validators.required]],
@@ -84,6 +87,12 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
               this.diagnostic = diag;
               this.actors = diag.acteurs;
               this.themes = themes;
+               // Attends que le composant soit prêt
+              /* setTimeout(() => {
+                if (this.mapComponent && this.mapComponent.addMarkersActors) {
+                  this.mapComponent.addMarkersActors();
+                }
+              }, 0); */
             });
             
             
@@ -222,6 +231,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
     this.routeSubscription?.unsubscribe();
     this.diagSubscription?.unsubscribe();
     this.docsSubscription?.unsubscribe();
+    this.docReadSub?.unsubscribe();
   }
 
 }
