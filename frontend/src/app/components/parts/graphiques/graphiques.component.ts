@@ -8,7 +8,7 @@ import { AvgPerQuestion } from '@app/interfaces/avg-per-question.interface';
 import { CommonModule } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { ActivatedRoute } from '@angular/router';
-import { ChartData, ChartOptions } from 'chart.js';
+import { ChartData, ChartOptions, RadialLinearScaleOptions } from 'chart.js';
 import { GraphRepartition } from '@app/models/graph-repartition.model';
 import { MatButtonModule } from '@angular/material/button';
 import { Labels } from '@app/utils/labels';
@@ -54,9 +54,19 @@ export class GraphiquesComponent implements OnDestroy{
     },
     scales: {
       r: {
-        beginAtZero: true,
-        max: 5
-      }
+        min: 1,
+        max: 5,
+        beginAtZero: false,
+        ticks: {
+          stepSize: 1,
+          callback: (val: string | number) => val.toString()
+        },
+        pointLabels: {
+          font: {
+            size: 14
+          }
+        }
+      } as unknown as RadialLinearScaleOptions
     }
   };
 
@@ -109,7 +119,7 @@ export class GraphiquesComponent implements OnDestroy{
             scales: {
               y: {
                 beginAtZero: true,
-                min: 0,
+                min: 1,
                 max: 5,
                 ticks: {
                   stepSize: 1
@@ -158,6 +168,7 @@ export class GraphiquesComponent implements OnDestroy{
             labels,
             datasets
           }
+          
         };
       });
                     
