@@ -11,10 +11,19 @@ def createQuestionsByTheme(THEME_MNEMONIQUE,THEME_LIBELLE,question_labels,questi
         db.session.commit()
        
 
+        sans_reponse_key = ("Sans réponse", 0)
         existing_nomenclatures = {
             (n.libelle.strip(), n.value): n
             for n in Nomenclature.query.filter_by(mnemonique="reponse_score").all()
         }
+
+        if sans_reponse_key not in existing_nomenclatures:
+            sans_reponse_nomenclature = Nomenclature(libelle="Sans réponse", value=0, mnemonique="reponse_score")
+            db.session.add(sans_reponse_nomenclature)
+            db.session.flush()
+            existing_nomenclatures[sans_reponse_key] = sans_reponse_nomenclature
+        else:
+            sans_reponse_nomenclature = existing_nomenclatures[sans_reponse_key]
 
         for col_idx, (label, sht) in enumerate(zip(question_labels, question_labels_short)):
             # Les indications proviennent de la première ligne (score_texts[0])
@@ -155,6 +164,7 @@ with app.app_context():
         "",
         "Expression d'un avis"
         ],
+
         ["Jamais", "Aucun avis", "Aucun avis", "Pas du tout d'accord", "Pas du tout efficace",
         "Forte critique", "Plus-value nulle", "Contrainte très forte",
         "Evolution négative des avis"],
@@ -204,6 +214,7 @@ with app.app_context():
         "Echelle de ressenti",
         "Echelle de ressenti",
         ],
+
         ["Liens contraints / subis = 'RN nous impose un dialogue / une attitude'", "Aucun lien", "Jamais", "Pas du tout", "Conflit",
         "Evolution négative"],
         
@@ -218,6 +229,85 @@ with app.app_context():
         
         ["Liens forts, guidés par le partage d'une vocation environnementale (recherché par l'acteur)", "Liens d'importance prioritaire", "1fois/mois", "Tout à fait", "Echanges positifs",
         "Evolution positive"]
+    ]
+
+    createQuestionsByTheme(THEME_MNEMONIQUE,THEME_LIBELLE,question_labels,question_labels_short,score_texts)
+
+    THEME_MNEMONIQUE = "thème"
+    THEME_LIBELLE = "CCG"
+    question_labels = [
+        "En tant que membre du CCG, avez-vous l'impression d'être impliqué dans la vie de la RN ?",
+        "Que pensez-vous du CCG, en tant qu’instance de discussion ?",
+        "Lors du CCG, faites-vous des interventions régulièrement (questions, prises de positions) ?",
+        "Quelle est la fréquence de votre participation au CCG ?"
+    ]
+
+    question_labels_short = [
+        "Sentiment d'implication",
+        "Ressenti d'intérêt",
+        "Fréquence d'interventions",
+        "Fréquence de participation"
+    ]
+
+    score_texts = [
+        ["Echelle de ressenti",
+        "Echelle de ressenti",
+        "Echelle de ressenti",
+        "Echelle de ressenti"
+        ],
+
+        ["Pas du tout", "Non intérêt", "Jamais", "Jamais"],
+        
+        ["Plutôt non", "Criticable", "Rarement", "1x sur les 5 dernières années"],
+        
+        ["Mitigé", "Pas d'avis", "De temps en temps", "2x sur les 5 dernières années"],
+        
+        ["Plutôt oui", "Correct", "La plupart du temps", "3x sur les 5 dernières années"],
+        
+        ["Tout à fait", "Efficace et légitime", "Toujours", "4x ou > sur les 5 dernières années"]
+    ]
+
+    createQuestionsByTheme(THEME_MNEMONIQUE,THEME_LIBELLE,question_labels,question_labels_short,score_texts)
+
+    THEME_MNEMONIQUE = "thème"
+    THEME_LIBELLE = "Climat"
+    question_labels = [
+        "Que connaissez-vous des impacts du changement climatique sur le territoire ? ",
+        "Êtes vous concernés par ces changements, si oui à quels degrès ? Comment y réagissez vous ?",
+        "Pensez-vous que la réserve s'adapte à ces changements, si oui comment ? ",
+        "Que pensez-vous de ces choix d'adaptation ? Pourquoi ?"
+    ]
+
+    question_labels_short = [
+        "Impacts",
+        "Sentiment d'être concerné",
+        "Adaptation",
+        "Avis"
+    ]
+
+    score_texts = [
+         
+        ["Champs à identifier",
+         "Sans indicateur",
+         "Champs à identifier",
+         "Echelle de ressenti"
+        ],
+
+        ["Aucune connaissance",
+        "x",
+        "Aucune connaissance",
+        "Pas du tout"
+        ],
+        ["x", "x", "x", "Plutôt non"],
+        
+        ["Approximatif", "x", "Approximatif", "Mitigé"],
+        
+        ["x", "x", "x", "Plutôt oui"],
+        
+        ["Solide", "x", "Solide", "Tout à fait"],
+
+        
+        
     ]
 
     createQuestionsByTheme(THEME_MNEMONIQUE,THEME_LIBELLE,question_labels,question_labels_short,score_texts)

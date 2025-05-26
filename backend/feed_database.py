@@ -177,7 +177,8 @@ with app.app_context():
         "Reporté",
         "En cours",
         "Annulé",
-        "Programmé"
+        "Programmé",
+        "Rétracté"
     ]
 
     for i, (lib, lib2) in enumerate(zip(categorie_labels, cat_short_labels)):

@@ -18,14 +18,14 @@ import { AlerteShowActorDetailsComponent } from '../../alertes/alerte-show-actor
 import { MatCardModule } from '@angular/material/card';
 import { Labels } from '@app/utils/labels';
 import { AlerteStatutEntretienComponent } from '@app/components/alertes/alerte-statut-entretien/alerte-statut-entretien.component';
-import { SiteService } from '@app/services/sites.service';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-choix-acteurs',
   templateUrl: './choix-acteurs.component.html',
   styleUrls: ['./choix-acteurs.component.css'],
   standalone:true,
-  imports:[CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule,RouterModule,ReactiveFormsModule,FontAwesomeModule,MatListModule,MatCardModule]
+  imports:[CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule,RouterModule,ReactiveFormsModule,FontAwesomeModule,MatListModule,MatCardModule,MatTooltipModule]
 })
 export class ChoixActeursComponent {
   @Input() actors: Acteur[]=[];
@@ -56,7 +56,6 @@ export class ChoixActeursComponent {
   private dialog = inject(MatDialog);
   is_creation = false;
   private router = inject(Router);
-  private siteService = inject(SiteService);
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['actors'] && this.actors && this.actors.length > 0) {

@@ -87,19 +87,19 @@
                             </div>
                       
                             <div class="actor-actions">
-                              <button mat-icon-button type="button" (click)="showOtherInfos(actor)"  title = "{{labels.showMoreInfo}}">
+                              <button mat-icon-button type="button" (click)="showOtherInfos(actor)"  [matTooltip]="labels.showMoreInfo">
                                 <fa-icon [icon]="['fas', 'info']"></fa-icon>
                               </button>
                               
-                              <button mat-icon-button type="button" (click)="navigateToActor('/acteur/' + actor.id_acteur + '/' + actor.slug,diagnostic)"  title = "{{labels.modifyActor}}">
+                              <button mat-icon-button type="button" (click)="navigateToActor('/acteur/' + actor.id_acteur + '/' + actor.slug,diagnostic)"  [matTooltip]="labels.modifyActor">
                                 <fa-icon [icon]="['fas', 'pen']"></fa-icon>
                               </button>
 
-                              <button mat-icon-button type="button" (click)="navigate('/entretien/' + actor.id_acteur + '/'+actor.slug,diagnostic)"  title = "{{labels.goToInterview}}">
+                              <button mat-icon-button type="button" (click)="navigate('/entretien/' + actor.id_acteur + '/'+actor.slug,diagnostic)"  [matTooltip]="labels.goToInterview">
                                 <fa-icon [icon]="['fas', 'chart-pie']"></fa-icon>
                               </button>
                               <span *ngIf="actor.statut_entretien?.libelle != 'Réalisé' && actor.statut_entretien?.libelle != 'En cours'">
-                                <button mat-icon-button type="button" (click)="openAlert(actor)" title = "{{labels.modifyStateInterview}}">
+                                <button mat-icon-button type="button" (click)="openAlert(actor)" [matTooltip]="labels.modifyStateInterview">
                                   <fa-icon [icon]="['fas', 's']"></fa-icon>
                                 </button>
                               </span>

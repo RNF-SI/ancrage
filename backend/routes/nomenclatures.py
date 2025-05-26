@@ -5,9 +5,18 @@ from schemas.metier import *
 from sqlalchemy.orm import joinedload,aliased
 from routes import bp
 
-@bp.route('/nomenclature/<id_nomenclature>', methods=['GET','PUT','DELETE'])
+@bp.route('/nomenclature/<int:id_nomenclature>', methods=['GET','PUT','DELETE'])
 def nomenclatureMethods(id_nomenclature):
     nomenclature = Nomenclature.query.filter_by(id_nomenclature=id_nomenclature).first()
+    
+    print(nomenclature)
+    if request.method == 'GET':
+
+       return getNomenclature(nomenclature)
+    
+@bp.route('/nomenclature/<string:valeur>', methods=['GET','PUT','DELETE'])
+def nomenclatureNoResponse(valeur):
+    nomenclature = Nomenclature.query.filter_by(libelle=valeur).first()
     
     print(nomenclature)
     if request.method == 'GET':

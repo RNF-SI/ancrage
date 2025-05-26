@@ -1,3 +1,6 @@
 .warn{
     color: red;
 }
+.warn-partial{
+    color:orange;
+}

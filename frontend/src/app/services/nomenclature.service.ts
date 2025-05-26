@@ -10,6 +10,7 @@ import { environment } from 'src/environments/environment';
 })
 export class NomenclatureService {
 
+    private BASE_URL = environment.flask_server+'nomenclature/';
     private GET_ALL_URL = environment.flask_server+'nomenclatures';
     private http = inject(HttpClient);
   
@@ -32,6 +33,13 @@ export class NomenclatureService {
         );
       }
      
+    }
+
+    getNoResponse(valeur:string): Observable<Nomenclature> {
+        valeur = "Sans%20réponse";
+        return this.http.get<INomenclature>(this.BASE_URL + valeur).pipe(
+          map(nomJson => Nomenclature.fromJson(nomJson))
+        );
     }
   
     sortByName(objArray:Nomenclature[]){

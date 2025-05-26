@@ -44,6 +44,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
   etats:Nomenclature[]=[];
   siteService = inject(SiteService);
   slug="";
+  noResponse:Nomenclature = new Nomenclature();
 
   ngOnInit(): void {
     this.previousPage = localStorage.getItem("previousPage")!;
@@ -55,10 +56,12 @@ export class EntretienComponent implements OnInit,OnDestroy{
         if (this.id_acteur && this.slug){
           const themes$ = this.nomenclatureService.getAllByType("thème",this.id_acteur);
           const etats$ = this.nomenclatureService.getAllByType("statut_entretien");
+          const noResponse$ = this.nomenclatureService.getNoResponse("");
 
-          forkJoin([themes$,etats$]).subscribe(([themes,etats]) => {
+          forkJoin([themes$,etats$,noResponse$]).subscribe(([themes,etats,noResponse]) => {
             this.themes = themes;
             this.etats = etats;
+            this.noResponse = noResponse;
             const controls: { [key: string]: any } = {};
             console.log(this.themes);
             this.themes.forEach(theme => {
@@ -72,11 +75,10 @@ export class EntretienComponent implements OnInit,OnDestroy{
                     reponse.question = q;
                     reponse.acteur.id_acteur = this.id_acteur;
                     
-                  console.log(q.reponses);  
+                
                   q.reponses?.forEach(rep => {
                     if (rep.acteur.id_acteur==this.id_acteur){
                       reponse = rep;
-                      console.log(reponse);
                     }
                   });
                   this.reponses.push(reponse);
@@ -98,45 +100,54 @@ export class EntretienComponent implements OnInit,OnDestroy{
   }
 
   patchForm(reponses:Reponse[]){
-    console.log(reponses);
+    
     for(let i = 0;i<reponses.length;i++){
       this.formGroup.get(`question_${reponses[i].question?.id_question}`)?.setValue(reponses[i].valeur_reponse.value);
       this.formGroup.get(`reponse_${reponses[i].question?.id_question}`)?.setValue(reponses[i].commentaires);
       if (reponses[i].valeur_reponse.id_nomenclature > 0){
         const classe = ".warn_"+reponses[i].question?.id_question;
         const element = document.querySelector(classe);
-        element?.classList.add("invisible");
+        if (reponses[i].valeur_reponse.id_nomenclature == this.noResponse.id_nomenclature){
+          element?.classList.replace("warn","warn-partial")
+        }else{
+          element?.classList.add("invisible");
+        }
+        
       }
       
     }
   }
 
   createReponse(id_question:number,cr?:Nomenclature){
-    let checkout = true;
+   
     for(let i = 0;i<this.reponses.length;i++){
       if(this.reponses[i].question?.id_question === id_question){
         if (cr != undefined){
           this.reponses[i].valeur_reponse = cr!;
           
         }
-        console.log(this.reponses[i].valeur_reponse.id_nomenclature);
+    
         this.reponses[i].commentaires = this.formGroup.get(`reponse_${id_question}`)?.value;
-        console.log(this.reponses[i].commentaires);
+        
         if (this.reponses[i].commentaires != '' && this.reponses[i].valeur_reponse.id_nomenclature ==0){
-          checkout = false;
+          this.reponses[i].valeur_reponse=this.noResponse;
+          const element = document.querySelector(".warn_"+id_question);
+          element?.classList.replace("warn","warn-partial")
+
           break;
         }
-        const element = document.querySelector(".warn_"+id_question);
-        element?.classList.add("invisible");
-        break;
+        if (this.reponses[i].valeur_reponse.id_nomenclature != this.noResponse.id_nomenclature && this.reponses[i].valeur_reponse.id_nomenclature > 0){
+          const element = document.querySelector(".warn_"+id_question);
+          element?.classList.add("invisible");
+          break;
+        }
+      
       }
       
     }
-    if(checkout){
-      this.submit();
-    }else{
-      console.log('ko');
-    }
+   
+    this.submit();
+    
     
   }
 
