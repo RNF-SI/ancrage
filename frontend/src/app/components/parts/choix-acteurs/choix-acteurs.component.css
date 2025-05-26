@@ -23,20 +23,21 @@
 
 .realized{
     color:green;
+    border: 5px solid green;
+    border-radius: 25%;
+    padding:1%;
 }
 
-.postponed{
+.postponed,.inprogress,.planified{
     color:orange;
+    border: 5px solid orange;
+    border-radius: 25%;
+    padding:1%;
 }
-.inprogress{
-    color:orange;
-}
-.canceled{
+
+.todo,.canceled,.retracted{
     color:red;
-}
-.planified{
-    color:orange;
-}
-.todo{
-    color:red;
+    border: 5px solid red;
+    border-radius: 25%;
+    padding:1%;
 }

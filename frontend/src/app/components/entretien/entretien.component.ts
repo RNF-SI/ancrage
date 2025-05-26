@@ -166,7 +166,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
   submit(){
     let cpt = 0;
     for(let i = 0;i<this.reponses.length;i++){
-      if(this.reponses[i].valeur_reponse.id_nomenclature > 0 ){
+      if((this.reponses[i].valeur_reponse.id_nomenclature != this.noResponse.id_nomenclature &&  this.reponses[i].valeur_reponse.id_nomenclature >0) || this.reponses[i].question?.indications=="Sans indicateur"){
         cpt ++;
         
       }
@@ -189,7 +189,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
         }
       }
     }
-    console.log(this.reponses);
+    
     if (this.reponses.length>0){
       this.reponsesSubscription = this.reponseService.update(this.reponses).subscribe(acteur => {
 

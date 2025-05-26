@@ -49,7 +49,7 @@ def postActeur():
         db.session.commit()
         return getActeur(acteur)
     
-@bp.route('/acteur/<id_acteur>/<id_statut>',methods=['PUT'])
+@bp.route('/acteur/state/<id_acteur>/<id_statut>',methods=['PUT'])
 def changeStateInterview(id_acteur,id_statut):
     if request.method == 'PUT': 
         data = request.get_json()

@@ -60,10 +60,10 @@
                                 {{ actor.structure }}
                               </div>
                               <div class="actor-structure">
-                                {{ actor.statut_entretien?.libelle }}
+                                
                                 <ng-container [ngSwitch]="actor.statut_entretien?.libelle">
 
-                                  <span *ngSwitchCase="'Réalisé'"><fa-icon class="realized" [icon]="['fas', 'check']"></fa-icon></span>
+                                  <span class="realized" *ngSwitchCase="'Réalisé'">{{ actor.statut_entretien?.libelle }} <fa-icon  [icon]="['fas', 'check']"></fa-icon></span>
                                   <ng-template [ngSwitchCase]="'Reporté'">
                                     <ng-container *ngTemplateOutlet="postponed"></ng-container>
                                   </ng-template>
@@ -76,13 +76,17 @@
                                   <ng-template [ngSwitchCase]="'Programmé'">
                                     <ng-container *ngTemplateOutlet="planified"></ng-container>
                                   </ng-template>
-                                  <span *ngSwitchDefault>A faire <fa-icon class="todo" [icon]="['fas', 'triangle-exclamation']"></fa-icon></span>
+                                  <ng-template [ngSwitchCase]="'Rétracté'">
+                                    <ng-container *ngTemplateOutlet="retracted"></ng-container>
+                                  </ng-template>
+                                  <span *ngSwitchDefault class="todo">A faire <fa-icon  [icon]="['fas', 'triangle-exclamation']"></fa-icon></span>
                                 
                                 </ng-container>
-                                <ng-template #postponed><span><fa-icon class="postponed" [icon]="['fas', 'clock']"></fa-icon></span></ng-template>
-                                <ng-template #inprogress><span><fa-icon class="inprogress" [icon]="['fas', 'triangle-exclamation']"></fa-icon></span></ng-template>
-                                <ng-template #cancel><span><fa-icon class = "canceled" [icon]="['fas', 'circle-xmark']"></fa-icon></span></ng-template>
-                                <ng-template #planified><span><fa-icon class= "planified" [icon]="['fas', 'calendar-check']"></fa-icon></span></ng-template>
+                                <ng-template #postponed><span class="postponed">{{ actor.statut_entretien?.libelle }} <fa-icon  [icon]="['fas', 'clock']"></fa-icon></span></ng-template>
+                                <ng-template #inprogress><span class="inprogress">{{ actor.statut_entretien?.libelle }} <fa-icon  [icon]="['fas', 'triangle-exclamation']"></fa-icon></span></ng-template>
+                                <ng-template #cancel><span class = "canceled">{{ actor.statut_entretien?.libelle }} <fa-icon  [icon]="['fas', 'circle-xmark']"></fa-icon></span></ng-template>
+                                <ng-template #planified><span class= "planified">{{ actor.statut_entretien?.libelle }} <fa-icon  [icon]="['fas', 'calendar-check']"></fa-icon></span></ng-template>
+                                <ng-template #retracted><span class= "retracted">{{ actor.statut_entretien?.libelle }} <fa-icon  [icon]="['fas', 'square-xmark']"></fa-icon></span></ng-template>
                               </div>
                             </div>
                       
