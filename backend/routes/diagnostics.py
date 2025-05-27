@@ -55,7 +55,7 @@ def postDiagnostic():
     data = request.get_json()
 
     diagnostic = Diagnostic()
-    
+    diagnostic.nom=data['nom']
     diagnostic.created_at = now
     diagnostic.created_by = data['created_by']
     diagnostic.identite_createur = data['identite_createur']

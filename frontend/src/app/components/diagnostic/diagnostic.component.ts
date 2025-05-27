@@ -140,6 +140,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   ngOnInit(): void {
     
     let diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
+    
     this.dateAdapter.setLocale('fr-FR');
     this.titleDiagnostic = this.titleCreateDiag;
     this.previousPage = localStorage.getItem("previousPage")!;
@@ -179,12 +180,18 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       } else {
         
         this.diagnostic = diagnostic;
-        this.chosenSites = this.diagnostic.sites;
+        console.log(diagnostic);
         this.user_id = this.user?.id_role;
         this.id_organisme = this.user.id_organisme;
 
         forkJoin([sites$]).subscribe(([sites]) => {
           this.uniqueSites = sites;
+
+          const remappedSites = (this.diagnostic.sites || []).map(site =>
+            this.uniqueSites.find(s => s.id_site === site.id_site) || site
+          );
+          this.chosenSites = remappedSites;
+          console.log(remappedSites);
           this.getActors(this.chosenSites,diagnostic);
           this.initialize = false;
         });
@@ -193,10 +200,23 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     
   }
 
-  setActors(diag:Diagnostic){
-    const remappedActeurs = (diag.acteurs || []).map(act =>
+  setActors(diag: Diagnostic) {
+    // Ajoute les acteurs manquants à uniqueActors
+    const acteursFromDiag = diag.acteurs || [];
+  
+    for (const acteur of acteursFromDiag) {
+      const alreadyExists = this.uniqueActors.some(a => a.id_acteur === acteur.id_acteur);
+      if (!alreadyExists) {
+        this.uniqueActors.push(acteur);
+      }
+    }
+  
+    // Remappage avec mise à jour des références
+    const remappedActeurs = acteursFromDiag.map(act =>
       this.uniqueActors.find(a => a.id_acteur === act.id_acteur) || act
     );
+  
+    // Mise à jour du formulaire
     this.formGroup.patchValue({
       id_diagnostic: diag.id_diagnostic,
       nom: diag.nom,
@@ -204,14 +224,19 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       acteurs: remappedActeurs,
       slug: diag.slug
     });
+  
+    // Marquer les acteurs sélectionnés
     const selectedIds = new Set(remappedActeurs.map(a => a.id_acteur));
-    
     this.uniqueActors.forEach(actor => {
       actor.selected = selectedIds.has(actor.id_acteur);
-      
     });
-    this.actors= this.uniqueActors;
+  
+    this.actors = this.uniqueActors;
     this.actorsService.sortByNameAndSelected(this.actors);
+  
+    // Logs de débogage
+    console.log('Acteurs uniques après ajout:', this.uniqueActors);
+    console.log('Acteurs sélectionnés (remapped):', remappedActeurs);
   }
 
   checkSite(){
@@ -254,37 +279,6 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
    
   }
 
-  /* getDiagnostics(sites:any){
-    
-    if (sites.length > 0){
-      let nom ="";
-      
-      for (let i =0;i<sites.length;i++){
-        nom += sites[i].nom + " ";
-        
-      }
-      nom = "Diagnostic - "+ nom + "- " + new Date().getFullYear();
-      this.diagnostic.nom = nom;
-      this.formGroup.get('nom')?.setValue(nom);
-     
-      let array:number[]=[];
-      for (let i = 0;i<sites.length;i++){
-        array.push(sites[i].id_site);
-      }
-      let json = {
-        site_ids:array
-      }
-
-
-      
-      this.diagnosticSubscription = this.diagnosticsService.getAllBySites(json).subscribe(diagnostics =>{
-        this.uniqueDiagnostics = diagnostics;
-        
-      });
-    }
-   
-  } */
-
   navigate= (path:string,diagnostic:Diagnostic):void =>{
     
     localStorage.setItem("previousPage",this.router.url);
@@ -300,7 +294,8 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       this.formGroup.get("identite_createur")?.setValue(nom + " "+ prenom);
       this.formGroup.get("created_by")?.setValue(this.user_id);
       this.formGroup.get("id_organisme")?.setValue(this.id_organisme);
-     
+
+      
       if (this.formGroup.valid) {
           this.convertDateReport();    
           this.diagnosticSubscription = this.diagnosticsService.add(this.diagnostic).subscribe(diagnostic=>{
@@ -347,11 +342,15 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     const rawValue = this.formGroup.getRawValue(); // ou .value si pas désactivé
     const payload = {
       ...rawValue,
+      nom: rawValue.nom,
       date_rapport: moment.isMoment(rawValue.date_rapport)
-        ? rawValue.date_rapport.format('DD/MM/YYYY')
-        : null
+      ? rawValue.date_rapport.toDate()
+      : undefined,
+      sites: (rawValue.sites || []).map((s: any) => Site.fromJson(s)),
+      acteurs: (rawValue.acteurs || []).map((a: any) => Acteur.fromJson(a)),
     };
     this.diagnostic = Object.assign(new Diagnostic(),payload);
+    console.log(this.diagnostic);
   }
 
   ngOnDestroy(): void {
