@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, inject, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { Site } from '@app/models/site.model';
 import { SiteService } from '@app/services/sites.service';
-import { forkJoin, Subscription, throwError } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { ChoixActeursComponent } from '../parts/choix-acteurs/choix-acteurs.component';
 import { Acteur } from '@app/models/acteur.model';
 import { Departement } from '@app/models/departement.model';
@@ -34,11 +34,10 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import * as moment from 'moment';
 import { Moment } from 'moment';
-import { throwToolbarMixedModesError } from '@angular/material/toolbar';
-
 
 registerLocaleData(localeFr);
 
+//Pour création ou modification d'un diagnostic
 @Component({
   selector: 'app-diagnostic',
   templateUrl: './diagnostic.component.html',
@@ -104,7 +103,6 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   private actorsService = inject(ActeurService);
   private diagnosticsService = inject(DiagnosticService);
   private siteService = inject(SiteService);
-  private router = inject(Router)
   private departementService = inject(DepartementService);
   private nomenclatureService = inject(NomenclatureService);
   private authService = inject(AuthService);
@@ -149,8 +147,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       this.id_diagnostic = params['id_diagnostic'];  
       this.slug = params['slug'];
       const sites$ = this.siteService.getAll();
-      
-  
+      //Modification
       if (this.id_diagnostic && this.slug) {
         this.titleDiagnostic = this.titleModifyDiag;
         const diag$ = this.diagnosticsService.get(this.id_diagnostic,this.slug);
@@ -178,9 +175,8 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       
         });
       } else {
-        
+        //Création
         this.diagnostic = diagnostic;
-        console.log(diagnostic);
         this.user_id = this.user?.id_role;
         this.id_organisme = this.user.id_organisme;
 
@@ -191,7 +187,6 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
             this.uniqueSites.find(s => s.id_site === site.id_site) || site
           );
           this.chosenSites = remappedSites;
-          console.log(remappedSites);
           this.getActors(this.chosenSites,diagnostic);
           this.initialize = false;
         });
@@ -200,6 +195,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     
   }
 
+  //Sélectionne les acteurs dans l'interface
   setActors(diag: Diagnostic) {
     // Ajoute les acteurs manquants à uniqueActors
     const acteursFromDiag = diag.acteurs || [];
@@ -233,24 +229,22 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   
     this.actors = this.uniqueActors;
     this.actorsService.sortByNameAndSelected(this.actors);
-  
-    // Logs de débogage
-    console.log('Acteurs uniques après ajout:', this.uniqueActors);
-    console.log('Acteurs sélectionnés (remapped):', remappedActeurs);
+
   }
 
+  //Met à jour la liste this.chosenSites
   checkSite(){
     if (this.chosenSites?.length) {
       const chosenIds = this.chosenSites.map(site => site.id_site);
       this.chosenSites = this.uniqueSites.filter(site => chosenIds.includes(site.id_site));
       this.formGroup?.get('sites')?.setValue(this.chosenSites);
-      console.log(this.chosenSites);
+      
     }
   }
 
-
+  //Donne des valeurs à uniqueActors, uniqueDepartements et uniqueCategories
   instructionswithResults(acteurs:Acteur[]){
-    /* this.uniqueSites = sites; */
+    
     this.uniqueActors = acteurs;
     
     for (let i=0;i<acteurs.length;i++){
@@ -279,12 +273,13 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
    
   }
 
+  //Navigation et mise en cache
   navigate= (path:string,diagnostic:Diagnostic):void =>{
     
-    localStorage.setItem("previousPage",this.router.url);
-    this.siteService.navigateAndReload(path,diagnostic);
+    this.siteService.navigateAndCache(path,diagnostic);
   }
   
+  //Enregistre le diagnostic
   recordDiagnostic(event: Event){
     event.preventDefault();
     
@@ -295,7 +290,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       this.formGroup.get("created_by")?.setValue(this.user_id);
       this.formGroup.get("id_organisme")?.setValue(this.id_organisme);
 
-      
+      //Ajout
       if (this.formGroup.valid) {
           this.convertDateReport();    
           this.diagnosticSubscription = this.diagnosticsService.add(this.diagnostic).subscribe(diagnostic=>{
@@ -306,6 +301,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       }
       
     }else{
+      //Modification
       this.formGroup.get("modified_by")?.setValue(this.user_id);
       this.convertDateReport();
       if (this.formGroup.valid) {
@@ -320,6 +316,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     }
   }
 
+  //Message de confirmation
   getConfirmation(message:string,diag:Diagnostic){
       this.previousPage = localStorage.getItem("previousPage")!;
       this.diagnostic=diag;
@@ -338,6 +335,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       
   }
 
+  //Convertie la date pour le back et parse le diagnostic
   convertDateReport(){
     const rawValue = this.formGroup.getRawValue(); // ou .value si pas désactivé
     const payload = {
@@ -362,6 +360,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
 
   compareSites = (s1: Site, s2: Site) => s1 && s2 && s1.id_site === s2.id_site;
 
+  //Récupère les acteurs des sites sélectionnés et crée le nom en fonction des sites
   getActors(sites:any,diag:Diagnostic){
     
     if(sites.length > 0){

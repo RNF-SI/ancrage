@@ -21,6 +21,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { Labels } from "@app/utils/labels";
 import { MatExpansionModule } from '@angular/material/expansion';
 
+//Composant qui récupère les sites/diagnostics
 @Component({
   selector: 'app-sites-diagnostics-view',
   templateUrl: './sites-diagnostics-view.component.html',
@@ -78,6 +79,7 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy,On
     }
   }
 
+  //Injecte les données aux contenants
   handleNewSites() {
     this.siteService.sortByName(this.sites);
     this.sitesOriginal = this.sites;
@@ -86,6 +88,7 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy,On
     this.onSearchChange();
   }
 
+  //Sites filtrés
   filteredSites(sites?:Site[]):Site[] {
     if (sites) return this.sites = sites;
     if (!this.searchSiteName) {
@@ -96,6 +99,7 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy,On
 
   }
 
+  //Recherche du site 
   onSearchChange() {
     
     if (!this.searchSiteName) {
@@ -134,17 +138,19 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy,On
     this.id_organisme = user.id_organisme;
   }
 
-  async navigate(path:string,diagnostic:Diagnostic,site?:Site){
+  navigate(path:string,diagnostic:Diagnostic,site?:Site){
     const diagToStore = {
       ...diagnostic,
       created_by: diagnostic.id_diagnostic > 0 ? diagnostic.created_by : this.user_id,
       id_organisme: diagnostic.id_diagnostic > 0 ? diagnostic.id_organisme : this.id_organisme
     };
   
-    this.siteService.navigateAndReload(path, diagToStore as Diagnostic, site);
+    this.siteService.navigateAndCache(path, diagToStore as Diagnostic, site);
     
     
   }
+
+  //Affiche les départements, régions et types et sélectionne les objets enregistrés
   extractUniqueFilters() {
     this.uniqueDepartements = Array.from(new Set(this.sites.flatMap(site =>
       site.departements.map(dep => dep.nom_dep))));
@@ -160,6 +166,7 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy,On
       site.habitats.map(hab => hab.libelle)))); */
   }
   
+  //Filtres
   applyFilters() {
   
     this.sitesSelected.data = this.sitesOriginal.filter(site => {
@@ -174,6 +181,7 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy,On
     
   }
 
+  //Réinitialise les filtres
   resetFilters() {
     this.selectedDepartement = "";
     this.selectedRegion = "";
@@ -189,6 +197,7 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy,On
     this.sitesSub?.unsubscribe();
   }
 
+  //Affiche les détails d'un site
   showSiteDetails(site:Site){
    
     this.dialog.open(AlerteVisualisationSiteComponent, {

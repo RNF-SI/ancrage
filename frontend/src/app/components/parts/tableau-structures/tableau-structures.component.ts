@@ -5,6 +5,7 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { Subscription } from 'rxjs';
 
+//Affiche la liste des structures sur la page diagnostic-visualisation en lecture seule
 @Component({
   selector: 'app-tableau-structures',
   templateUrl: './tableau-structures.component.html',

@@ -26,6 +26,7 @@ L.Marker.prototype.options.icon = L.icon({
   shadowSize: [41, 41]
 });
 
+//Carte
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
@@ -103,24 +104,19 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
     }
   }
 
+  //initialise la carte
   private initMap(): void {
     const mapContainer = this.mapContainer?.nativeElement;
-    if (mapContainer) {
-      console.log('Map container found');
-      
-    }
 
     this.map = L.map(mapContainer, {
       center: [48.8566, 2.3522],
       zoom: 13
     });
-    console.log(this.map);
+    
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
-    /* setTimeout(() => {
-      this.map?.invalidateSize();
-    }, 200); */
+   
     if (this.formGroup) {
       this.formGroup.valueChanges.subscribe(values => {
         const latitude = +values.position_y;
@@ -133,6 +129,7 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
     }
   }
 
+  //Ajoute les marqueurs site
   addMarkers() {
     const bounds = L.latLngBounds([]);
     this.markerClusterGroup.clearLayers();
@@ -170,6 +167,7 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
     }
   }
 
+  //Ajoute les marqueurs acteurs
   addMarkersActors() {
     console.log(this.actors);
     const bounds = L.latLngBounds([]);
@@ -207,6 +205,7 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
     }
   }
 
+  //Permet de bouger le marqueur
   moveMarker() {
     if (this.changePosition) {
       

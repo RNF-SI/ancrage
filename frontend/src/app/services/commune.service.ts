@@ -14,7 +14,7 @@ export class CommuneService {
     private BASE_URL = environment.flask_server+'commune/';
     private http = inject(HttpClient);
     
-  
+    //Récupère toutes les communes
     getAll(): Observable<Commune[]> {
       return this.http.get<ICommune[]>(this.GET_ALL_URL).pipe(
         map(communeJsonArray => {
@@ -25,30 +25,7 @@ export class CommuneService {
       );
     }
   
-    get(id: number): Observable<Commune> {
-      return this.http.get<ICommune>(this.BASE_URL + id).pipe(
-        map(communeJson => Commune.fromJson(communeJson))
-      );
-    }
-  
-    add(commune: Commune): Observable<Commune> {
-      return this.http.post<ICommune>(this.BASE_URL, commune.toJson()).pipe(
-        map(communeJson => Commune.fromJson(communeJson))
-      );
-    }
-  
-    update(commune: Commune): Observable<Commune> {
-      const route = this.BASE_URL + commune.id_commune;
-      
-      return this.http.put<ICommune>(route, commune.toJson()).pipe(
-        map(communeJson => Commune.fromJson(communeJson))
-      );
-    }
-  
-    delete(id: number): Observable<void> {
-      return this.http.delete<void>(this.BASE_URL + id + '/');
-    }
-  
+    //Trie la liste par ordre alpha
     sortByName(objArray:Commune[]){
       objArray.sort(function(a, b) {
         var textA = a.nom_com.toUpperCase();

@@ -21,6 +21,7 @@ import { AlerteSiteComponent } from '../alertes/alerte-site/alerte-site.componen
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { Labels } from '@app/utils/labels';
 
+//Modifie ou crée un site
 @Component({
   selector: 'app-site',
   templateUrl: './site.component.html',
@@ -33,8 +34,6 @@ export class SiteComponent implements OnInit,OnDestroy{
   sites:Site[]=[];
   titleSite="Nouveau site";
   titleModif="Modification du site";
-
-  
   labels = new Labels();
   uniqueHabitats:Nomenclature[]=[];
   uniqueStatuts:Nomenclature[]=[];
@@ -83,7 +82,7 @@ export class SiteComponent implements OnInit,OnDestroy{
       const habitats$ = this.nomenclatureService.getAllByType(this.mnemoHabitats);
       const statuts$ = this.nomenclatureService.getAllByType(this.mnemoStatuts);
       const departements$ = this.departementService.getAll();
-
+      //Modification
       if (this.id_site && this.slug) {
         const site$ = this.siteService.get(this.id_site,this.slug);
   
@@ -114,7 +113,7 @@ export class SiteComponent implements OnInit,OnDestroy{
           this.titleSite = this.titleModif;
         });
       } else {
-
+        //Création
         forkJoin([/* habitats$, */ statuts$,departements$]).subscribe(([/* habitats, */ statuts,departements]) => {
           /* this.uniqueHabitats = habitats; */
           this.uniqueStatuts = statuts;
@@ -133,18 +132,21 @@ export class SiteComponent implements OnInit,OnDestroy{
     return o1 && o2 ? o1.id_departement === o2.id_departement: o1 === o2;
   }
 
+  //Enregistre le site
   recordSite(event: Event){
     
     event.preventDefault();
     
     this.site = Object.assign(new Site(),this.formGroup.value);
     if(this.formGroup.valid){
+      //Ajout
       if (this.site.id_site == 0){
         this.site.created_by=this.user_id;
         this.siteSubscription = this.siteService.add(this.site).subscribe(site=>{
           this.getConfirmation("Le site suivant vient d'être créé dans la base de données et a été ajouté au diagnostic :",site);
         });
       }else{
+        //Modification
         this.site.modified_by=this.user_id;
         this.siteSubscription = this.siteService.update(this.site).subscribe(site=>{
           this.getConfirmation("Le site suivant vient d'être modifié dans la base de données et a été ajouté au diagnostic :",site);
@@ -153,9 +155,9 @@ export class SiteComponent implements OnInit,OnDestroy{
     }
   }
 
-  async getConfirmation(message:string,site:Site){
+  //Affiche le message de confirmation
+  getConfirmation(message:string,site:Site){
     this.diagnostic.sites.push(site);
-    console.log(this.diagnostic);
     this.previousPage = localStorage.getItem("previousPage")!;
     this.dialog.open(AlerteSiteComponent, {
       data: {
@@ -169,7 +171,7 @@ export class SiteComponent implements OnInit,OnDestroy{
     });
   }
   navigate(path:string,diagnostic:Diagnostic){
-    this.siteService.navigateAndReload(path,diagnostic);
+    this.siteService.navigateAndCache(path,diagnostic);
   }
   ngOnDestroy(): void {
     this.nomenclatureSubscription?.unsubscribe();

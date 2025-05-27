@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { Acteur } from '@app/models/acteur.model';
 import { Labels } from '@app/utils/labels';
 
+//Alerte pour visualiser les infos supplémentaires : Bouton i sur ligne acteur
 @Component({
   selector: 'app-alerte-show-actor-details',
   templateUrl: './alerte-show-actor-details.component.html',

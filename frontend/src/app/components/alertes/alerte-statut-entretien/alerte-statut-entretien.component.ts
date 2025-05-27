@@ -13,7 +13,7 @@ import { NomenclatureService } from '@app/services/nomenclature.service';
 import { Labels } from '@app/utils/labels';
 import { Subscription } from 'rxjs';
 
-
+//Alerte pour la modification d'un statut d'entretien
 @Component({
   selector: 'app-alerte-statut-entretien',
   templateUrl: './alerte-statut-entretien.component.html',

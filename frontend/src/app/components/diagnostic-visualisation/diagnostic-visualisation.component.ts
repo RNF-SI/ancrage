@@ -79,7 +79,8 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
     this.previousPage = localStorage.getItem("previousPage")!;
     this.routeSubscription = this.route.params.subscribe((params: any) => {
           this.id_diagnostic = params['id_diagnostic'];   
-          this.slug = params['slug'];       
+          this.slug = params['slug'];
+          //Récupération des données     
           if (this.id_diagnostic && this.slug) {
             const diag$ = this.diagnosticService.get(this.id_diagnostic,this.slug);
             const themes$ = this.nomenclatureService.getAllByType("thème");
@@ -87,20 +88,13 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
               this.diagnostic = diag;
               this.actors = diag.acteurs;
               this.themes = themes;
-               // Attends que le composant soit prêt
-              /* setTimeout(() => {
-                if (this.mapComponent && this.mapComponent.addMarkersActors) {
-                  this.mapComponent.addMarkersActors();
-                }
-              }, 0); */
+              
             });
-            
-            
           }
     });
 
   }
-
+  //Cache ou affiche le menu en fonction de l'onglet choisi
   onTabChange(event: MatTabChangeEvent) {
     let menu = document.getElementById("menu");
     if (event.index === 2) { 
@@ -119,16 +113,15 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
     }
   }
   
+  //Fonctions pour le drag & drop
   onDragOver(event: DragEvent) {
     event.preventDefault();
     this.dragOver = true;
   }
-
   onDragLeave(event: DragEvent) {
     event.preventDefault();
     this.dragOver = false;
   }
-
   onDrop(event: DragEvent) {
     event.preventDefault();
     this.dragOver = false;
@@ -136,7 +129,6 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
       this.files.push(...Array.from(event.dataTransfer.files));
     }
   }
-
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files) {
@@ -144,6 +136,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
     }
   }
 
+  //Télecharge le fichier
   getFile(filename:string){
     this.docReadSub = this.diagnosticService.downloadFile(filename).subscribe(file =>{
       this.file=file;
@@ -154,6 +147,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
     });
   }
 
+  //Envoie les fichiers au serveur
   uploadFiles() {
     const documents: Document[] = this.files.map(file => {
       const doc = new Document();
@@ -180,11 +174,12 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
     
   }
   
+  //Navigation et mise en cache
   navigate= (path:string,diagnostic:Diagnostic):void =>{
-    localStorage.setItem("previousPage",this.router.url);
-    this.siteService.navigateAndReload(path,diagnostic);
+    this.siteService.navigateAndCache(path,diagnostic);
   }
 
+  //Exporte le tableau d'acteurs en fichier csv
   exportCSV(){
     let acteurs:Acteur[] = this.diagnostic.acteurs;
     const separator = ';';

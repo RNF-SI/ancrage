@@ -18,6 +18,7 @@ export class SiteService {
 	private http = inject(HttpClient);
 	private router = inject(Router);
 	
+	//Récupère tous les sites
 	getAll(): Observable<Site[]> {
 		return this.http.get<ISite[]>(this.GET_ALL_URL).pipe(
 			map(siteJsonArray => {
@@ -28,6 +29,7 @@ export class SiteService {
 		);
 	}
 
+	//Récupère tous les sites en fonction du créateur du diag
 	getAllByUser(user_id:number): Observable<Site[]> {
 		return this.http.get<ISite[]>(this.GET_ALL_URL+'/'+user_id).pipe(
 			map(siteJsonArray => {
@@ -38,24 +40,28 @@ export class SiteService {
 		);
 	}
 
+	//Récupère un site
 	get(id:number,slug: string): Observable<Site> {
 		return this.http.get<ISite>(this.BASE_URL + id + '/' + slug).pipe(
 			map(siteJson => Site.fromJson(siteJson))
 		);
 	}
 
+	//Ajout
 	add(site: Site): Observable<Site> {
 		return this.http.post<ISite>(this.BASE_URL, site.toJson()).pipe(
 			map(siteJson => Site.fromJson(siteJson))
 		);
 	}
 
+	//Mise à jour
 	update(site: Site): Observable<Site> {
 		const route = this.BASE_URL + site.id_site + '/' + site.slug;
 		return this.http.put<ISite>(route, site.toJson()).pipe(
 			map(siteJson => Site.fromJson(siteJson))
 		);
 	}
+
 
 	sortByName(objArray:Site[]){
 		objArray.sort(function(a, b) {
@@ -65,8 +71,8 @@ export class SiteService {
 		})
 	}
 
-	navigateAndReload(path: string,diagnostic: Diagnostic,site?: Site) {
-		// Ajouter le site si non déjà présent
+	navigateAndCache(path: string,diagnostic: Diagnostic,site?: Site) {
+		
 		if (site && !diagnostic.sites.some(s => s.id_site === site.id_site)) {
 		  diagnostic.sites.push(site);
 		}

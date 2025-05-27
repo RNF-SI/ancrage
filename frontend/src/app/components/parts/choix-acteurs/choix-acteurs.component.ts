@@ -20,6 +20,7 @@ import { Labels } from '@app/utils/labels';
 import { AlerteStatutEntretienComponent } from '@app/components/alertes/alerte-statut-entretien/alerte-statut-entretien.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
+//Tableau des acteurs
 @Component({
   selector: 'app-choix-acteurs',
   templateUrl: './choix-acteurs.component.html',
@@ -64,6 +65,7 @@ export class ChoixActeursComponent {
     }
   }
 
+  //Récupértation des données
   processActors(): void {
     
     if (this.diagnostic.id_diagnostic > 0) {
@@ -74,6 +76,7 @@ export class ChoixActeursComponent {
     } 
   }
 
+  //Filtres
   applyFilters() {
     let selectedCat = true;
     let selectedDep = true;
@@ -104,6 +107,7 @@ export class ChoixActeursComponent {
     this.processActors();
   }
 
+  //Réinitialise les filtres
   resetFilters() {
     this.selectedDepartment = new Departement();
     this.selectedCategory = new Nomenclature();
@@ -112,6 +116,7 @@ export class ChoixActeursComponent {
     this.processActors();
   }
 
+  //Modifie la liste des acteurs choisis
   addOrRemoveActor(actor:Acteur,is_creation?:boolean){
       if(is_creation){
         actor.selected = !actor.selected;
@@ -157,6 +162,7 @@ export class ChoixActeursComponent {
     this.router.navigate([path]);
   }
 
+  //Alerte de confirmation
   openAlert(actor:Acteur){
     this.dialog.open(AlerteStatutEntretienComponent, {
       data: {
@@ -168,6 +174,7 @@ export class ChoixActeursComponent {
     });
   }
   
+  //Affiche l'alerte avec les infos supplémentaires
   showOtherInfos(actor:Acteur){
     this.dialog.open(AlerteShowActorDetailsComponent, {
               data: {

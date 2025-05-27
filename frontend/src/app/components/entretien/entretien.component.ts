@@ -16,6 +16,7 @@ import { MenuLateralComponent } from "../parts/menu-lateral/menu-lateral.compone
 import { SiteService } from '@app/services/sites.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
+//Page de la saisie de l'entretien
 @Component({
   selector: 'app-entretien',
   templateUrl: './entretien.component.html',
@@ -53,6 +54,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
         this.id_acteur = parseInt(params['id_acteur']); 
         this.slug = params['slug'];  
         this.title = this.labels.addInterview;
+        //Modification
         if (this.id_acteur && this.slug){
           const themes$ = this.nomenclatureService.getAllByType("thème",this.id_acteur);
           const etats$ = this.nomenclatureService.getAllByType("statut_entretien");
@@ -63,7 +65,6 @@ export class EntretienComponent implements OnInit,OnDestroy{
             this.etats = etats;
             this.noResponse = noResponse;
             const controls: { [key: string]: any } = {};
-            console.log(this.themes);
             this.themes.forEach(theme => {
               
               theme.questions!.forEach(q => {
@@ -99,6 +100,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
         });
   }
 
+  //Envoie les données récupérées au formulaire
   patchForm(reponses:Reponse[]){
     
     for(let i = 0;i<reponses.length;i++){
@@ -118,6 +120,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
     }
   }
 
+  //Met la liste de réponses à jour 
   createReponse(id_question:number,cr?:Nomenclature){
    
     for(let i = 0;i<this.reponses.length;i++){
@@ -151,18 +154,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
     
   }
 
-  addComment(id_question:number){
-    
-    for(let i = 0;i<this.reponses.length;i++){
-      if(this.reponses[i].question?.id_question === id_question){
-        this.reponses[i].commentaires = this.formGroup.get(`reponse_${id_question}`)?.value;
-        break;
-      }
-      
-    }
-    this.submit();
-  }
-
+  //Soumission du formulaire et attribution de l'état Réalisé ou En cours
   submit(){
     let cpt = 0;
     for(let i = 0;i<this.reponses.length;i++){
@@ -200,6 +192,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
     
   }
 
+  
   getReponsesParQuestion(id_question: number) {
   
     return this.reponses.filter(r => r.question?.id_question === id_question);
@@ -213,7 +206,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
 
   navigate(path:string,diagnostic:Diagnostic){
     
-    this.siteService.navigateAndReload(path,diagnostic);
+    this.siteService.navigateAndCache(path,diagnostic);
     
   }
 }

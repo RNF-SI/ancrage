@@ -7,6 +7,7 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 import { SiteService } from '@app/services/sites.service';
 import { Labels } from '@app/utils/labels';
 
+//Alerte de confirmation à la modification ou à la création d'un acteur
 @Component({
   selector: 'app-alerte-acteur',
   templateUrl: './alerte-acteur.component.html',
@@ -33,7 +34,7 @@ export class AlerteActeurComponent {
     navigate(path:string,diagnostic:Diagnostic){
       
       this.dialogRef.close();
-      this.siteService.navigateAndReload(path,diagnostic);
+      this.siteService.navigateAndCache(path,diagnostic);
     }
     close(){
       this.dialogRef.close();

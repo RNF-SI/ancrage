@@ -14,6 +14,7 @@ export class NomenclatureService {
     private GET_ALL_URL = environment.flask_server+'nomenclatures';
     private http = inject(HttpClient);
   
+    //Récupère les nomenclatures par mnemonique
     getAllByType(mnemonique:string,id_acteur?:number): Observable<Nomenclature[]> {
       if (id_acteur){
         return this.http.get<INomenclature[]>(this.GET_ALL_URL+'/'+mnemonique + '/'+id_acteur).pipe(
@@ -35,6 +36,7 @@ export class NomenclatureService {
      
     }
 
+    //Récupère la nomenclature "Sans réponse"
     getNoResponse(valeur:string): Observable<Nomenclature> {
         valeur = "Sans%20réponse";
         return this.http.get<INomenclature>(this.BASE_URL + valeur).pipe(

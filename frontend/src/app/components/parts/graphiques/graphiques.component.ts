@@ -14,6 +14,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { Labels } from '@app/utils/labels';
 import { GraphRadar } from '@app/models/graph-radar.model';
 
+//COmposant pour visualiser les graphiques
 interface ReponseRep {
   theme: string;
   question: string;
@@ -82,6 +83,7 @@ export class GraphiquesComponent implements OnDestroy{
       }
   }
 
+  //Récupère les données
   getCharts(){
     let id_diagnostic = this.diagnostic.id_diagnostic;
     const moyennes$ = this.diagnosticService.getAverageByQuestion(id_diagnostic);
@@ -203,6 +205,8 @@ export class GraphiquesComponent implements OnDestroy{
                     
     });
   }
+
+  //Groupe les résultats par question
   groupByQuestion(data: ReponseRep[]): { [question: string]: ReponseRep[] } {
     const grouped: { [question: string]: ReponseRep[] } = {};
     for (const item of data) {
@@ -214,6 +218,7 @@ export class GraphiquesComponent implements OnDestroy{
     return grouped;
   }
 
+
   getChartData(question: string): ChartData<'pie'> {
     return this.chartDataRepartition[question];
   }
@@ -223,6 +228,7 @@ export class GraphiquesComponent implements OnDestroy{
     this.routeSubscription?.unsubscribe();
   }
  
+  //Exporte le graphique en png
   exportChart(classe:string,titre:string) {
     const canvas = document.querySelector("."+classe) as HTMLCanvasElement;
     const image = canvas.toDataURL('image/png');

@@ -13,7 +13,7 @@ export class ReponseService {
   private GET_ALL_URL = environment.flask_server+'reponses';
   private http = inject(HttpClient);
 
-
+  //Enregistre la réponse
   update(array:Reponse[]): Observable<Acteur> {
        return this.http.post<Acteur>(this.GET_ALL_URL+"/objets",array).pipe(
         map(acteurJson => Acteur.fromJson(acteurJson))

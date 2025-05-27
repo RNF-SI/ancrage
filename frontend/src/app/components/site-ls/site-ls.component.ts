@@ -10,6 +10,7 @@ import { SiteService } from '@app/services/sites.service';
 import { Labels } from '@app/utils/labels';
 import { Subscription } from 'rxjs';
 
+//Affiche les détails d'un site
 @Component({
   selector: 'app-site-ls',
   templateUrl: './site-ls.component.html',
@@ -49,7 +50,7 @@ export class SiteLsComponent implements OnInit, OnDestroy{
   }
 
   navigate(path:string,diagnostic:Diagnostic){
-    this.siteService.navigateAndReload(path,diagnostic);
+    this.siteService.navigateAndCache(path,diagnostic);
     this.dialogRef.close();
   }
   ngOnDestroy(): void {

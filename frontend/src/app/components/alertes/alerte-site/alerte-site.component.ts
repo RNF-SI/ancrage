@@ -6,6 +6,8 @@ import { CommonModule } from '@angular/common';
 import { SiteService } from '@app/services/sites.service';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { Labels } from '@app/utils/labels';
+
+//Alerte à la création ou modification d'un site
 @Component({
   selector: 'app-alerte-site',
   templateUrl: './alerte-site.component.html',
@@ -32,7 +34,7 @@ export class AlerteSiteComponent {
   navigate(path:string,diagnostic:Diagnostic){
     this.dialogRef.close();
     console.log(diagnostic);
-    this.siteService.navigateAndReload(path,diagnostic);
+    this.siteService.navigateAndCache(path,diagnostic);
   }
 
   close(){

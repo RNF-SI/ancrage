@@ -10,6 +10,7 @@ import { Subscription } from 'rxjs';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { SitesDiagnosticsViewComponent } from "../parts/sites-diagnostics-view/sites-diagnostics-view.component";
 
+//Affiche la liste des sites/diagnostics.
 @Component({
   selector: 'app-diagostics-liste',
   templateUrl: './diagnostics-liste.component.html',
@@ -35,6 +36,7 @@ export class DiagosticsListeComponent implements OnInit, OnDestroy{
   ngOnInit(): void {
 		this.title="Diagnostics";
     localStorage.removeItem("diagnostic");
+    //Récupération des données
 		this.sitesSub = this.siteService.getAll().subscribe(sites => {
       this.siteService.sortByName(sites);
 			return this.sites = sites;

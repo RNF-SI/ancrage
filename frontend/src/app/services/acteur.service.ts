@@ -14,16 +14,7 @@ export class ActeurService {
   private BASE_URL = environment.flask_server+'acteur/';
   private http = inject(HttpClient);
 
-  getAll(): Observable<Acteur[]> {
-    return this.http.get<IActeur[]>(this.GET_ALL_URL).pipe(
-      map(acteurJsonArray => {
-        return acteurJsonArray.map<Acteur>(
-          acteurJson => Acteur.fromJson(acteurJson)
-        )
-      })
-    );
-  }
-
+  //Récupère les acteurs en fonction des sites
   getAllBySItes(json:any): Observable<Acteur[]> {
     return this.http.post<IActeur[]>(this.GET_ALL_URL+'/sites',json).pipe(
       map(acteurJsonArray => {
@@ -34,16 +25,7 @@ export class ActeurService {
     );
   }
 
-  getAllByUser(user_id:number): Observable<Acteur[]> {
-    return this.http.get<IActeur[]>(this.GET_ALL_URL+'/'+user_id).pipe(
-      map(acteurJsonArray => {
-        return acteurJsonArray.map<Acteur>(
-          acteurJson => Acteur.fromJson(acteurJson)
-        )
-      })
-    );
-  }
-
+  //Modifie l'état de l'entretien
   modifiyInterviewState(json:any,id_acteur: number,id_state:number): Observable<Acteur> {
     const route = this.BASE_URL + 'state/'+ id_acteur + '/' + id_state;
     return this.http.put<IActeur>(route, json).pipe(
@@ -51,18 +33,21 @@ export class ActeurService {
     );
   }
 
+  //Récupère un acteur
   get(id: number,slug:string): Observable<Acteur> {
     return this.http.get<IActeur>(this.BASE_URL + id + '/'+ slug).pipe(
       map(acteurJson => Acteur.fromJson(acteurJson))
     );
   }
 
+  //Ajoute un acteur
   add(acteur: Acteur): Observable<Acteur> {
     return this.http.post<IActeur>(this.BASE_URL, acteur.toJson()).pipe(
       map(acteurJson => Acteur.fromJson(acteurJson))
     );
   }
 
+  //Met à jour un acteur
   update(acteur: Acteur): Observable<Acteur> {
     const route = this.BASE_URL + acteur.id_acteur + '/' + acteur.slug;
    
@@ -71,10 +56,7 @@ export class ActeurService {
     );
   }
 
-  delete(id: number): Observable<void> {
-    return this.http.delete<void>(this.BASE_URL + id + '/');
-  }
-
+  //Trie la liste par ordre alpha
   sortByNameAndSelected(objArray:Acteur[]){
     objArray.sort((a, b) => {
       

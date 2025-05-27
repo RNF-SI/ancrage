@@ -11,10 +11,9 @@ import { environment } from 'src/environments/environment';
 export class DepartementService {
 
   private GET_ALL_URL = environment.flask_server+'departements';
-  private BASE_URL = environment.flask_server+'departement/';
   private http = inject(HttpClient);
   
-
+  //Récupère tous les départements
   getAll(): Observable<Departement[]> {
     return this.http.get<IDepartement[]>(this.GET_ALL_URL).pipe(
       map(departementJsonArray => {
@@ -25,6 +24,7 @@ export class DepartementService {
     );
   }
 
+  //Trie la liste par odre alpha
   sortByName(objArray:Departement[]){
     objArray.sort(function(a, b) {
       var textA = a.nom_dep.toUpperCase();

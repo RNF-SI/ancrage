@@ -6,6 +6,7 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 import { SiteService } from '@app/services/sites.service';
 import { Labels } from '@app/utils/labels';
 
+//Alerte à la création ou modification d'un diagnostic
 @Component({
   selector: 'app-alerte-diagnostic',
   templateUrl: './alerte-diagnostic.component.html',
@@ -31,7 +32,7 @@ export class AlerteDiagnosticComponent {
       navigate(path:string,diagnostic:Diagnostic){
         
         this.dialogRef.close();
-        this.siteService.navigateAndReload(path,diagnostic);
+        this.siteService.navigateAndCache(path,diagnostic);
       }
       close(){
         this.dialogRef.close();

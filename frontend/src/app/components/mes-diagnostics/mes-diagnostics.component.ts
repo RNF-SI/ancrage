@@ -11,6 +11,7 @@ import { SitesDiagnosticsViewComponent } from '../parts/sites-diagnostics-view/s
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { Subscription } from 'rxjs';
 
+//Affiche les diagnostics de l'utilisateur
 @Component({
   selector: 'app-mes-diagnostics',
   templateUrl: './mes-diagnostics.component.html',

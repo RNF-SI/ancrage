@@ -22,6 +22,7 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 import { SiteService } from '@app/services/sites.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
+//Composant pour crééer ou modifier un acteur
 @Component({
   selector: 'app-acteur',
   templateUrl: './acteur.component.html',
@@ -84,6 +85,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
           const profils$ = this.nomenclatureService.getAllByType("profil");
           const categories$ = this.nomenclatureService.getAllByType("categorie");
           this.user_id = this.authService.getCurrentUser().id_role;
+          /* Modification */
           if (this.id_actor && this.slug) {
             this.title = this.labels.modifyActor;
             const actor$ = this.actorService.get(this.id_actor,this.slug);
@@ -116,7 +118,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
               this.isLoading = false; 
             });
           } else {
-            
+            /* Création */
             this.title = this.labels.createActor;
             forkJoin([communes$, profils$,categories$]).subscribe(([communes, profils,categories]) => {
               
@@ -126,7 +128,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
           }
         });
   }
-
+  //Réception des données
   instructionsWithResults(communes:Commune[],profils:Nomenclature[],categories:Nomenclature[]){
     this.uniqueProfiles = profils;
     this.uniqueTowns = communes;
@@ -138,7 +140,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
       this.filteredTowns = this._filter(filterValue);
     });
   }
-
+  //Filtre sur communes
   private _filter(filterValue: string): Commune[] {
     const lower = filterValue.toLowerCase();
     return this.uniqueTowns
@@ -146,13 +148,15 @@ export class ActeurComponent implements OnInit,OnDestroy{
       .slice(0, 30); // optionnel : limiter le nombre affiché
   }
 
+  //Autocomplétion
   displayFn(commune: Commune): string {
     return commune?.nom_com || '';
   }
 
+  //Enregistrement du formulaire
   recordActor(event: Event) {
     event.preventDefault();
-   
+    //Ajout
     if (this.id_actor == undefined){
       this.formGroup.get('created_by')!.setValue(this.user_id);
       if (!this.formGroup.invalid){
@@ -165,6 +169,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
       }
       
     }else{
+      //Modification
       this.formGroup.get('modified_by')!.setValue(this.user_id);
       this.actor = Object.assign(new Acteur(),this.formGroup.value);
       if (!this.formGroup.invalid){
@@ -177,8 +182,8 @@ export class ActeurComponent implements OnInit,OnDestroy{
     }
     
   }
-  
-  async getConfirmation(message:string,actor:Acteur){
+  //Alerte de confirmation
+  getConfirmation(message:string,actor:Acteur){
     this.previousPage = localStorage.getItem("previousPage")!;
     this.diagnostic.acteurs.push(actor);
     
@@ -197,10 +202,10 @@ export class ActeurComponent implements OnInit,OnDestroy{
     }
     
   }
-
+  //Navigation et mise en cache du diagnostic
   navigate(path:string,diagnostic:Diagnostic){
     
-    this.siteService.navigateAndReload(path,diagnostic);
+    this.siteService.navigateAndCache(path,diagnostic);
   }
 
   ngOnDestroy(): void {

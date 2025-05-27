@@ -4,6 +4,7 @@ import { Site } from '@app/models/site.model';
 import { SiteLsComponent } from '@app/components/site-ls/site-ls.component';
 import { Labels } from '@app/utils/labels';
 
+//Affiche les détails d'un site
 @Component({
   selector: 'app-alerte-visualisation-site',
   templateUrl: './alerte-visualisation-site.component.html',

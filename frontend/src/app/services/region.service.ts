@@ -11,7 +11,6 @@ import { environment } from 'src/environments/environment';
 export class RegionService {
 
   private GET_ALL_URL = environment.flask_server+'regions';
-  private BASE_URL = environment.flask_server+'region/';
   private http = inject(HttpClient);
   
 
@@ -23,38 +22,6 @@ export class RegionService {
         )
       })
     );
-  }
-
-  getAllByUser(user_id:number): Observable<Region[]> {
-    return this.http.get<IRegion[]>(this.GET_ALL_URL+'/'+user_id).pipe(
-      map(regionJsonArray => {
-        return regionJsonArray.map<Region>(
-          regionJson => Region.fromJson(regionJson)
-        )
-      })
-    );
-  }
-
-  get(id: number): Observable<Region> {
-    return this.http.get<IRegion>(this.BASE_URL + id).pipe(
-      map(regionJson => Region.fromJson(regionJson))
-    );
-  }
-
-  add(region: Region): Observable<Region> {
-    return this.http.post<IRegion>(this.BASE_URL, region.toJson()).pipe(
-      map(regionJson => Region.fromJson(regionJson))
-    );
-  }
-
-  update(region: Region): Observable<Region> {
-    return this.http.put<IRegion>(this.BASE_URL + region.id_region + '/', region.toJson()).pipe(
-      map(regionJson => Region.fromJson(regionJson))
-    );
-  }
-
-  delete(id: number): Observable<void> {
-    return this.http.delete<void>(this.BASE_URL + id + '/');
   }
 
   sortByName(objArray:Region[]){
