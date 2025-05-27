@@ -17,7 +17,7 @@
                     
                     <mat-form-field appearance="fill" class="fieldName">
                         <mat-label>{{ labels.chosenSites }}</mat-label>
-                        <mat-select formControlName="sites" multiple (selectionChange)="getDiagnostics(formGroup.value.sites)">
+                        <mat-select formControlName="sites" multiple (selectionChange)="getActors(formGroup.value.sites,this.diagnostic)" [compareWith]="compareSites">
                             <mat-option *ngFor="let site of uniqueSites" [value]="site">{{ site.nom }}</mat-option>
                         </mat-select>
                         <mat-error *ngIf="formGroup.get('sites')?.hasError('required')">Au moins un site est requis.</mat-error>
@@ -30,7 +30,7 @@
                     </mat-form-field>
                     <button mat-icon-button [matTooltip]="infobulleSaisieDateRapport" aria-label="Info création" color="warn">
                         <fa-icon [icon]="['fas', 'exclamation-triangle']"></fa-icon>
-                      </button>
+                    </button>
                     <h4 >{{chosenSitesTitle}}</h4>
                     <div *ngFor="let site of chosenSites">
                         <p>{{ site.nom }}, {{site.type.libelle}}</p>

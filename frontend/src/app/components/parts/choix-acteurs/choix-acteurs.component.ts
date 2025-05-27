@@ -56,6 +56,7 @@ export class ChoixActeursComponent {
   private dialog = inject(MatDialog);
   is_creation = false;
   private router = inject(Router);
+  @Input() getActors(){}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['actors'] && this.actors && this.actors.length > 0) {

@@ -34,6 +34,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import * as moment from 'moment';
 import { Moment } from 'moment';
+import { throwToolbarMixedModesError } from '@angular/material/toolbar';
 
 
 registerLocaleData(localeFr);
@@ -133,8 +134,11 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   user:any;
   infobulleSaisieDateRapport = "Attention ! Ne saisissez ce champ uniquement si vous avez publié votre rapport. Après la saisie de cette date, vous ne pourrez plus modifier le diagnostic.";
   slug="";
+  private actorsSub?:Subscription;
+  initialize=true;
   
   ngOnInit(): void {
+    
     let diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
     this.dateAdapter.setLocale('fr-FR');
     this.titleDiagnostic = this.titleCreateDiag;
@@ -144,33 +148,33 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       this.id_diagnostic = params['id_diagnostic'];  
       this.slug = params['slug'];
       const sites$ = this.siteService.getAll();
-      const actors$ = this.actorsService.getAll();
+      
   
       if (this.id_diagnostic && this.slug) {
         this.titleDiagnostic = this.titleModifyDiag;
         const diag$ = this.diagnosticsService.get(this.id_diagnostic,this.slug);
         this.formGroup.get('id_diagnostic')?.setValue(this.id_diagnostic);
   
-        forkJoin([diag$,sites$, actors$]).subscribe(([diag,sites, acteurs]) => {
-          
+        forkJoin([diag$,sites$]).subscribe(([diag,sites]) => {
+          this.uniqueSites = sites;
           if(diagnostic.sites.length > diag.sites.length || diagnostic.acteurs.length > diag.acteurs.length){
             this.diagnostic = diagnostic;
           }else{
             this.diagnostic = diag;
           }
-
-          this.instructionswithResults(sites,acteurs);
-         
           this.can_edit = diag.created_by == this.user_id;
           this.id_organisme = diag.id_organisme;
           this.user_id = diag.created_by;
+          if (!this.initialize){
+
+          }
           const remappedSites = (this.diagnostic.sites || []).map(site =>
             this.uniqueSites.find(s => s.id_site === site.id_site) || site
           );
           this.chosenSites = remappedSites;
-          
-          this.setActors(diag);
-          
+          this.getActors(this.chosenSites,diag);    
+          this.initialize = false;
+      
         });
       } else {
         
@@ -178,10 +182,11 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
         this.chosenSites = this.diagnostic.sites;
         this.user_id = this.user?.id_role;
         this.id_organisme = this.user.id_organisme;
-        forkJoin([sites$, actors$]).subscribe(([sites, acteurs]) => {
-         
-          this.instructionswithResults(sites,acteurs);
-          this.setActors(this.diagnostic);
+
+        forkJoin([sites$]).subscribe(([sites]) => {
+          this.uniqueSites = sites;
+          this.getActors(this.chosenSites,diagnostic);
+          this.initialize = false;
         });
       }
     });
@@ -189,10 +194,9 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   }
 
   setActors(diag:Diagnostic){
-    const remappedActeurs = (this.diagnostic.acteurs || []).map(act =>
+    const remappedActeurs = (diag.acteurs || []).map(act =>
       this.uniqueActors.find(a => a.id_acteur === act.id_acteur) || act
     );
-    
     this.formGroup.patchValue({
       id_diagnostic: diag.id_diagnostic,
       nom: diag.nom,
@@ -200,7 +204,6 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       acteurs: remappedActeurs,
       slug: diag.slug
     });
-
     const selectedIds = new Set(remappedActeurs.map(a => a.id_acteur));
     
     this.uniqueActors.forEach(actor => {
@@ -216,11 +219,13 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       const chosenIds = this.chosenSites.map(site => site.id_site);
       this.chosenSites = this.uniqueSites.filter(site => chosenIds.includes(site.id_site));
       this.formGroup?.get('sites')?.setValue(this.chosenSites);
+      console.log(this.chosenSites);
     }
   }
 
-  instructionswithResults(sites:Site[],acteurs:Acteur[]){
-    this.uniqueSites = sites;
+
+  instructionswithResults(acteurs:Acteur[]){
+    /* this.uniqueSites = sites; */
     this.uniqueActors = acteurs;
     
     for (let i=0;i<acteurs.length;i++){
@@ -247,11 +252,10 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     
     this.checkSite();
    
-    this.getDiagnostics(this.chosenSites);
   }
 
-  getDiagnostics(sites:any){
-   
+  /* getDiagnostics(sites:any){
+    
     if (sites.length > 0){
       let nom ="";
       
@@ -270,14 +274,16 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       let json = {
         site_ids:array
       }
+
+
       
       this.diagnosticSubscription = this.diagnosticsService.getAllBySites(json).subscribe(diagnostics =>{
         this.uniqueDiagnostics = diagnostics;
-       
+        
       });
     }
    
-  }
+  } */
 
   navigate= (path:string,diagnostic:Diagnostic):void =>{
     
@@ -319,7 +325,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     }
   }
 
-  async getConfirmation(message:string,diag:Diagnostic){
+  getConfirmation(message:string,diag:Diagnostic){
       this.previousPage = localStorage.getItem("previousPage")!;
       this.diagnostic=diag;
       if(diag.id_diagnostic > 0){
@@ -352,8 +358,42 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     this.routeSubscription?.unsubscribe();
     this.diagnosticSubscription?.unsubscribe();
     this.diagnosticStoreSubscription?.unsubscribe();
+    this.actorsSub?.unsubscribe();
   }
 
+  compareSites = (s1: Site, s2: Site) => s1 && s2 && s1.id_site === s2.id_site;
 
+  getActors(sites:any,diag:Diagnostic){
+    
+    if(sites.length > 0){
+      this.chosenSites= sites;
+      let array:number[]=[];
+      for(let i=0;i<sites.length;i++){
+        array.push(sites[i].id_site);
+      }
+      let json={
+        id_sites:array
+      }
+      let nom ="";
+        
+      for (let i =0;i<sites.length;i++){
+        nom += sites[i].nom + " ";
+        
+      }
+      nom = "Diagnostic - "+ nom + "- " + new Date().getFullYear();
+      this.diagnostic.nom = nom;
+      this.formGroup.get('nom')?.setValue(nom);
+      const diagnostics$ = this.diagnosticsService.getAllBySites(json);
+      const acteurs$ = this.actorsService.getAllBySItes(json);
+      forkJoin([diagnostics$,acteurs$]).subscribe(([diagnostics,acteurs]) => {
+        this.instructionswithResults(acteurs);
+        
+        this.setActors(diag);
+        this.uniqueDiagnostics = diagnostics;
+      });
+    }
+   
+   
+  }
 
 }

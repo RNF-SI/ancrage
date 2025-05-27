@@ -24,6 +24,16 @@ export class ActeurService {
     );
   }
 
+  getAllBySItes(json:any): Observable<Acteur[]> {
+    return this.http.post<IActeur[]>(this.GET_ALL_URL+'/sites',json).pipe(
+      map(acteurJsonArray => {
+        return acteurJsonArray.map<Acteur>(
+          acteurJson => Acteur.fromJson(acteurJson)
+        )
+      })
+    );
+  }
+
   getAllByUser(user_id:number): Observable<Acteur[]> {
     return this.http.get<IActeur[]>(this.GET_ALL_URL+'/'+user_id).pipe(
       map(acteurJsonArray => {

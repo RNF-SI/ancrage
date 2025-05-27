@@ -83,10 +83,10 @@ def getAllDiagnostics():
 def getAllDiagnosticsBySites():
     data = request.get_json()
 
-    if not data or 'site_ids' not in data:
+    if not data or 'id_sites' not in data:
         return jsonify({'message': 'Aucun ID de site fourni.'}), 400
 
-    sites_ids = data['site_ids']
+    sites_ids = data['id_sites']
 
     filtered_diagnostics = (
         Diagnostic.query

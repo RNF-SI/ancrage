@@ -61,14 +61,28 @@ def changeStateInterview(id_acteur,id_statut):
         db.session.commit()
         return getActeur(acteur)
 
-@bp.route('/acteurs',methods=['GET'])
-def getAllActeurs():
-    if request.method == 'GET': 
-        
-        acteurs = Acteur.query.filter_by().all()
-        schema = ActeurSchema(many=True)
-        usersObj = schema.dump(acteurs)
-        return jsonify(usersObj)
+@bp.route('/acteurs/sites',methods=['POST'])
+def getAllActeursBySites():
+    if request.method == 'POST': 
+        data = request.get_json()
+        if(data['id_sites']):
+            liste=data['id_sites']
+            # Récupère les diagnostics liés aux sites
+            diagnostics = db.session.query(Diagnostic.id_diagnostic).\
+                join(Diagnostic.sites).\
+                filter(Site.id_site.in_(liste)).\
+                distinct().all()
+
+            ids_diagnostics = [d.id_diagnostic for d in diagnostics]
+
+            if not ids_diagnostics:
+                return jsonify([]), 200
+
+            # Récupère les acteurs liés à ces diagnostics
+            acteurs = Acteur.query.filter(Acteur.diagnostic_id.in_(ids_diagnostics)).all()
+
+            schema = ActeurSchema(many=True)
+            return jsonify(schema.dump(acteurs)), 200
     
 @bp.route('/acteurs/<created_by>',methods=['GET'])
 def getAllActeursByUSer(created_by):
