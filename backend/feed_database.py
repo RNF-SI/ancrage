@@ -181,6 +181,13 @@ with app.app_context():
         "Rétracté"
     ]
 
+    categories_AFOM = [
+        "Atouts",
+        "Faiblesses",
+        "Opportunités",
+        "Menaces"
+    ]
+
     for i, (lib, lib2) in enumerate(zip(categorie_labels, cat_short_labels)):
         c = Nomenclature(
             libelle=lib,
@@ -190,6 +197,15 @@ with app.app_context():
         )
         db.session.add(c)
         categories.append(c)
+
+    for i, lib in enumerate(categories_AFOM):
+        ca = Nomenclature(
+            libelle=lib,
+            value=i,
+            mnemonique="AFOM"
+        )
+        db.session.add(ca)
+        profils.append(ca)    
 
     for i, lib in enumerate(profils_labels):
         p = Nomenclature(

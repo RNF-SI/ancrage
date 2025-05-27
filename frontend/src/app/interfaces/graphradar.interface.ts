@@ -4,4 +4,5 @@ export interface IGraphRadar {
     categorie:string;
     score:number;
     id_question:number;
+    theme_id:number;
 }

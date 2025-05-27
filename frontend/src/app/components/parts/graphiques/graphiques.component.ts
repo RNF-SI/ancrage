@@ -39,13 +39,13 @@ export class GraphiquesComponent implements OnDestroy{
   private diagnosticSubscription?:Subscription;
   private routeSubscription?:Subscription;
   groupedData: { [question: string]: GraphRepartition[] } = {};
-  chartDataByTheme: { [theme: string]: AvgPerQuestion[] } = {};
+  chartDataByTheme: { [theme_id: number]: AvgPerQuestion[] } = {};
   labels = new Labels();
   radarCharts: {
     theme: string;
     data: ChartData<'radar'>;
   }[] = [];
-
+  chartDataRepartition: { [question: string]: ChartData<'pie'> } = {};
   radarChartOptions: ChartOptions<'radar'> = {
     responsive: true,
     plugins: {
@@ -69,6 +69,12 @@ export class GraphiquesComponent implements OnDestroy{
       } as unknown as RadialLinearScaleOptions
     }
   };
+  themeIdToName: { [theme_id: number]: string } = {};
+  chartDataByThemeSorted: {
+    theme_id: number;
+    theme: string;
+    charts: AvgPerQuestion[];
+  }[] = [];
 
   ngOnChanges(changes: SimpleChanges): void {
       if (changes['diagnostic']) {
@@ -98,14 +104,27 @@ export class GraphiquesComponent implements OnDestroy{
         groupedRepartition[rep.question].push(rep);
       }
       this.groupedData = groupedRepartition;
+      this.chartDataRepartition = {}; // reset
+      for (const question in this.groupedData) {
+        const responses = this.groupedData[question];
+        this.chartDataRepartition[question] = {
+          labels: responses.map(r => r.reponse),
+          datasets: [{
+            data: responses.map(r => r.nombre),
+          }]
+        };
+      }
       this.chartDataByQuestion = Array.from(grouped.entries()).map(([question, data]) => {
         const sorted = [...data].sort((a, b) => a.categorie.localeCompare(b.categorie));
         const id_question = sorted[0]?.id_question;
-        const theme = sorted[0]?.theme || "Autres"; // On récupère le thème depuis GraphMoy
+        const theme = sorted[0]?.theme || "Autres";
+        const theme_id = sorted[0]?.theme_id || 0;
       
+        this.themeIdToName[theme_id] = theme;
         const chartData: AvgPerQuestion = {
           id_question,
           question,
+          theme_id,
           chart: {
             labels: sorted.map(d => d.categorie),
             datasets: [{
@@ -121,23 +140,33 @@ export class GraphiquesComponent implements OnDestroy{
                 beginAtZero: true,
                 min: 1,
                 max: 5,
-                ticks: {
-                  stepSize: 1
-                }
+                ticks: { stepSize: 1 }
               }
             }
           }
         };
       
-        if (!this.chartDataByTheme[theme]) {
-          this.chartDataByTheme[theme] = [];
+        if (!this.chartDataByTheme[theme_id]) {
+          this.chartDataByTheme[theme_id] = [];
         }
-        this.chartDataByTheme[theme].push(chartData);
+        this.chartDataByTheme[theme_id].push(chartData);
       
         return chartData;
-
-        
       });
+      
+      // ✅ Déplacer ici le tri une fois `chartDataByTheme` entièrement rempli
+      this.chartDataByThemeSorted = Object.entries(this.chartDataByTheme)
+        .map(([theme_id_str, charts]) => {
+          const theme_id = parseInt(theme_id_str, 10);
+          return {
+            theme_id,
+            theme: this.themeIdToName[theme_id] || `Thème ${theme_id}`,
+            charts
+          };
+        })
+        .sort((a, b) => a.theme_id - b.theme_id);
+      
+      // Trie global
       const dataByTheme = new Map<string, GraphRadar[]>();
 
       radars.forEach(entry => {
@@ -186,21 +215,8 @@ export class GraphiquesComponent implements OnDestroy{
   }
 
   getChartData(question: string): ChartData<'pie'> {
-    const responses = this.groupedData[question];
-    return {
-      labels: responses.map(r => r.reponse),
-      datasets: [{
-        data: responses.map(r => r.nombre),
-      }]
-    };
+    return this.chartDataRepartition[question];
   }
-
-  chartOptions: ChartOptions<'pie'> = {
-    responsive: true,
-    plugins: {
-      legend: { position: 'bottom' }
-    }
-  };
 
   ngOnDestroy(): void {
     this.diagnosticSubscription?.unsubscribe();

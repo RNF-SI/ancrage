@@ -112,6 +112,7 @@ def getAveragebyQuestion(id_diagnostic):
     query = (
         db.session.query(
             Theme.libelle.label("theme"),
+            Theme.id_nomenclature.label("theme_id"),
             Question.id_question.label("id_question"),
             Question.libelle_graphique.label("question"),
             Categorie.libelle_court.label("categorie_acteur"),
@@ -131,7 +132,7 @@ def getAveragebyQuestion(id_diagnostic):
             Question.id_question,
             Categorie.id_nomenclature
         )
-        .order_by(Question.id_question)
+        .order_by(Theme.id_nomenclature,Question.id_question)
     )
 
     results = query.all()
@@ -141,7 +142,8 @@ def getAveragebyQuestion(id_diagnostic):
             "question": r.question,
             "categorie": r.categorie_acteur,
             "moyenne": float(r.moyenne_score),
-            "id_question":r.id_question
+            "id_question":r.id_question,
+            "theme_id":r.theme_id
         }
         for r in results
     ]
@@ -156,6 +158,7 @@ def get_reponses_par_theme(id_diagnostic):
     results = (
         db.session.query(
             Theme.libelle.label("theme"),
+            Theme.id_nomenclature.label("theme_id"),
             Question.libelle_graphique.label("question"),
             Question.id_question.label("id_question"),
             ValeurReponse.libelle.label("reponse"),
@@ -172,8 +175,7 @@ def get_reponses_par_theme(id_diagnostic):
         .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
         .filter(Diagnostic.id_diagnostic==id_diagnostic)
         .group_by(Theme.id_nomenclature, Question.id_question, ValeurReponse.value, ValeurReponse.libelle)
-        .order_by(Question.id_question, ValeurReponse.value)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic)
+        .order_by(Theme.id_nomenclature,Question.id_question, ValeurReponse.value)
         .all()
     )
 
@@ -185,7 +187,8 @@ def get_reponses_par_theme(id_diagnostic):
             "reponse": r.reponse,
             "nombre": r.nombre,
             "valeur": r.valeur,
-            "id_question":r.id_question
+            "id_question":r.id_question,
+            "theme_id":r.theme_id
         }
         for r in results
     ]
@@ -221,7 +224,9 @@ def get_scores(id_diagnostic):
             Question.libelle_graphique.label("libelle_graphique"),
             Categorie.libelle.label("categorie"),
             Theme.libelle.label("theme"),
-            Question.id_question.label("id_question")
+            Theme.id_nomenclature.label("theme_id"),
+            Question.id_question.label("id_question"),
+
         )
         .select_from(Diagnostic)  
         .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
@@ -232,9 +237,8 @@ def get_scores(id_diagnostic):
         .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
         .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
         .filter(Diagnostic.id_diagnostic==id_diagnostic)
-        .group_by(Question.id_question, Question.libelle_graphique,
-                  Categorie.libelle, Theme.libelle)
-        .order_by(Question.libelle_graphique)
+        .group_by(Theme.id_nomenclature,Question.id_question,Question.libelle_graphique,Categorie.libelle,Theme.libelle)
+        .order_by(Theme.id_nomenclature,Question.id_question)
         .all()
     )
 
@@ -245,7 +249,8 @@ def get_scores(id_diagnostic):
             "libelle_graphique": r.libelle_graphique,
             "categorie": r.categorie,
             "theme": r.theme,
-            "id_question": r.id_question
+            "id_question": r.id_question,
+            "theme_id":r.theme_id
         }
         for r in results
     ]

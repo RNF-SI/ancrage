@@ -4,4 +4,5 @@ export interface IGraphMoy {
     categorie:string;
     moyenne:number;
     id_question:number;
+    theme_id:number;
 }

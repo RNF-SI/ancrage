@@ -311,3 +311,40 @@ with app.app_context():
     ]
 
     createQuestionsByTheme(THEME_MNEMONIQUE,THEME_LIBELLE,question_labels,question_labels_short,score_texts)
+
+    THEME_MNEMONIQUE = "thème"
+    THEME_LIBELLE = "Conclusion"
+    question_labels = [
+        "Avez-vous des attentes particulières par rapport à la RN ? ",
+        "Pour faire la synthèse de tous les points abordés précédemment, la RN apporte-t-elle dans l’ensemble plutôt des bénéfices ou des inconvénients sur ce territoire ?",
+        "Selon vous, la réserve est-elle bien enracinée sur le territoire ? Pourquoi ? "
+    ]
+
+    question_labels_short = [
+        "Attentes",
+        "Synthèse",
+        "Enracinement"
+    ]
+
+    score_texts = [
+         
+        ["Sans indicateur",
+         "",
+         ""
+        ],
+
+        ["x",
+        "Seulement des inconvénients",
+        "Pas du tout"
+        ],
+        ["x", "Plus d'inconvénients", "Plutôt non"],
+        
+        ["x", "Equilibré ou ne sait pas", "Mitigé"],
+        
+        ["x", "Plus de bénéfices", "Plutôt oui"],
+        
+        ["x", "Seulement des bénéfices", "Tout à fait"],
+
+    ]
+
+    createQuestionsByTheme(THEME_MNEMONIQUE,THEME_LIBELLE,question_labels,question_labels_short,score_texts)

@@ -5,4 +5,5 @@ export interface AvgPerQuestion {
     id_question:number;
     chart: ChartData<'bar'>;
     chartOptions: ChartOptions<'bar'>;
+    theme_id:number;
 }
