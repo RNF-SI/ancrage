@@ -1,0 +1,55 @@
+<div class="row">
+  <div class="col-6">
+
+  
+    <div class="grid" cdkDropListGroup>
+      <div class="column" *ngFor="let cat of categories">
+        <h3>{{ cat.libelle }}</h3>
+        <div
+          cdkDropList
+          [cdkDropListData]="cat.mots_cles"
+          [cdkDropListConnectedTo]="connectedDropListsIds"
+          class="dropzone"
+          (cdkDropListDropped)="drop($event, cat)">
+          <mat-chip *ngFor="let keyword of cat.mots_cles" cdkDrag [removable]="true" (removed)="removeKeyword(cat, keyword)">
+            {{ keyword.nom }}
+            <button matChipRemove>
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6">
+    <mat-form-field appearance="outline">
+      <mat-chip-set>
+        <mat-chip
+          *ngFor="let keyword of keywords"
+          [removable]="true"
+          (removed)="remove(keyword)">
+          {{ keyword }}
+          <button matChipRemove>
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      </mat-chip-set>
+    
+      <input
+        matInput
+        [formControl]="inputCtrl"
+        [matAutocomplete]="auto"
+        (keydown)="handleKeydown($event)"
+        placeholder="Ajouter un mot-clé"
+      />
+      
+      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
+        <mat-option *ngFor="let option of filteredKeywords | async" [value]="option">
+          {{ option }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+    
+  </div>
+  <button mat-raised-button type="button" color="warn" (click)="sendResponse()">Envoyer réponse</button>
+</div>

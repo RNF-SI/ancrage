@@ -3,6 +3,7 @@ from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
 from sqlalchemy.orm import joinedload,aliased
+from sqlalchemy import or_
 from routes import bp
 
 @bp.route('/nomenclature/<int:id_nomenclature>', methods=['GET','PUT','DELETE'])
@@ -72,6 +73,7 @@ def getAllNomenclaturesByType(mnemonique,id_acteur):
              nomenclatures = (
                 db.session.query(Nomenclature)
                 .filter(Nomenclature.mnemonique == "thème")
+                .filter(Reponse.acteur.id_acteur == id_acteur)
                 .options(
                     joinedload(Nomenclature.questions)
                     .joinedload(Question.reponses)
@@ -79,8 +81,63 @@ def getAllNomenclaturesByType(mnemonique,id_acteur):
                 .all()
             )
 
-        result = []
-        for nom in nomenclatures:
+        return traitementThemeQuestions(nomenclatures,id_acteur)
+        
+    else:
+        nomenclatures = Nomenclature.query.filter_by(mnemonique=mnemonique).all()
+        schema = NomenclatureSchema(many=True)
+        nomenclatures_data = schema.dump(nomenclatures)
+        return jsonify(nomenclatures_data)
+    
+@bp.route('/nomenclatures/theme/<libelle>/<int:id_acteur>', methods=['GET'])
+def getTheme(libelle,id_acteur):
+    
+    ValeurNomenclature = aliased(Nomenclature)
+
+    nomenclatures = (
+        db.session.query(Nomenclature)
+        .filter(Nomenclature.libelle == libelle)
+        .order_by(Nomenclature.id_nomenclature)
+        .outerjoin(Nomenclature.questions)
+        .outerjoin(Question.reponses)
+        .filter(
+            or_(
+                Reponse.acteur_id == id_acteur,
+                Reponse.acteur_id == None  # pour conserver les choix possibles sans acteur
+            )
+        )
+        .outerjoin(ValeurNomenclature, Reponse.valeur_reponse)
+        .options(
+            joinedload(Nomenclature.questions)
+            .joinedload(Question.reponses)
+            .joinedload(Reponse.valeur_reponse),
+            joinedload(Nomenclature.questions)
+            .joinedload(Question.reponses)
+            .joinedload(Reponse.acteur)
+        )
+        .all()
+    )
+    if id_acteur and nomenclatures == []:
+             nomenclatures = (
+                db.session.query(Nomenclature)
+                .filter(Nomenclature.libelle == libelle)
+                .options(
+                    joinedload(Nomenclature.questions)
+                    .joinedload(Question.reponses)
+                )
+                .all()
+            )
+    
+    return traitementThemeQuestions(nomenclatures,id_acteur)
+    
+def getNomenclature(nomenclature):
+    schema = NomenclatureSchema(many=False)
+    nomenclatureObj = schema.dump(nomenclature)
+    return jsonify(nomenclatureObj)
+
+def traitementThemeQuestions(nomenclatures,id_acteur):
+    result = []
+    for nom in nomenclatures:
             # Tri des questions par ID
             questions_sorted = sorted(nom.questions, key=lambda q: q.id_question)
 
@@ -90,7 +147,7 @@ def getAllNomenclaturesByType(mnemonique,id_acteur):
                 reponses_choisies = []
 
                 for r in q.reponses:
-                    if r.valeur_reponse:
+                    if r.valeur_reponse and (r.acteur_id == id_acteur or r.acteur_id is None):
                         rep_obj = {
                             "id_nomenclature": r.valeur_reponse.id_nomenclature,
                             "libelle": r.valeur_reponse.libelle,
@@ -121,7 +178,22 @@ def getAllNomenclaturesByType(mnemonique,id_acteur):
                                     "value": r.valeur_reponse.value if r.valeur_reponse else 1,
                                     "mnemonique": r.valeur_reponse.mnemonique if r.valeur_reponse else ''
                                 },
-                                "mots_cles": []  # à remplir si besoin
+
+                                "mots_cles": [
+                                    {
+                                        "id_mot_cle": mc.id_mot_cle,
+                                        "nom": mc.nom,
+                                        "categorie": {
+                                            "id_nomenclature": mc.categorie.id_nomenclature,
+                                            "libelle": mc.categorie.libelle if mc.categorie else None
+                                        },
+                                        "diagnostic": {
+                                            "id_diagnostic": mc.diagnostic.id_diagnostic,
+                                            "nom": mc.diagnostic.nom
+                                        } if mc.diagnostic else None
+                                    }
+                                    for mc in r.mots_cles
+                                ] 
                             })
                         else:
                             reponses_possibles.append(rep_obj)
@@ -141,18 +213,4 @@ def getAllNomenclaturesByType(mnemonique,id_acteur):
                 "questions": questions_data
             })
 
-        return jsonify(result)
-
-    else:
-        nomenclatures = Nomenclature.query.filter_by(mnemonique=mnemonique).all()
-        schema = NomenclatureSchema(many=True)
-        nomenclatures_data = schema.dump(nomenclatures)
-        return jsonify(nomenclatures_data)
-    
-def getNomenclature(nomenclature):
-    schema = NomenclatureSchema(many=False)
-    nomenclatureObj = schema.dump(nomenclature)
-    return jsonify(nomenclatureObj)
-
-
-    
+    return jsonify(result)

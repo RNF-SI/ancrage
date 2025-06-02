@@ -19,7 +19,6 @@ def enregistrer_reponses_depuis_objets():
     return getActeur(acteur)
 
 def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
-    
     if not reponses_objets:
         return
 
@@ -35,7 +34,7 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
         print(f"[ERREUR] Acteur avec id {acteur_id} introuvable.")
         return
 
-    # 🔄 Mise à jour du statut_entretien si fourni
+    # 🔄 Mise à jour du statut_entretien
     statut_data = acteur_data.get("statut_entretien")
     if statut_data:
         try:
@@ -51,12 +50,39 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
         try:
             question_id = item['question']['id_question']
             valeur_reponse_id = item['valeur_reponse']['id_nomenclature']
-            commentaires = item['commentaires']
+            commentaires = item.get('commentaires', "")
+            mots_cles = item.get('mots_cles', [])
         except (KeyError, TypeError):
             continue  # Entrée mal formée
 
         if not valeur_reponse_id or valeur_reponse_id <= 0:
             continue
+        
+        mots_cles_bdd = []
+        for mc in mots_cles:
+            nom = mc['nom']
+            categorie_id = mc['categorie']['id_nomenclature']
+            diagnostic_id = mc['diagnostic']['id_diagnostic']
+
+            # 🔍 Recherche par nom + diagnostic uniquement
+            mc_existant = MotCle.query.filter_by(
+                nom=nom,
+                diagnostic_id=diagnostic_id
+            ).first()
+
+            if mc_existant:
+                # 🔁 Mise à jour de la catégorie si différente
+                if mc_existant.categorie_id != categorie_id:
+                    mc_existant.categorie_id = categorie_id
+                mots_cles_bdd.append(mc_existant)
+            else:
+                mc_nouveau = MotCle(
+                    nom=nom,
+                    categorie_id=categorie_id,
+                    diagnostic_id=diagnostic_id
+                )
+                db.session.add(mc_nouveau)
+                mots_cles_bdd.append(mc_nouveau)
 
         questions_ids_envoyees.add(question_id)
 
@@ -68,21 +94,26 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
         if reponse:
             reponse.valeur_reponse_id = valeur_reponse_id
             reponse.commentaires = commentaires
+            reponse.mots_cles = mots_cles_bdd  # MàJ des mots-clés
         else:
             nouvelle_reponse = Reponse(
                 acteur_id=acteur_id,
                 question_id=question_id,
                 valeur_reponse_id=valeur_reponse_id,
-                commentaires=commentaires
+                commentaires=commentaires,
+                mots_cles=mots_cles_bdd
             )
             db.session.add(nouvelle_reponse)
 
+    # 🔥 Suppression des anciennes réponses
     reponses_existantes = Reponse.query.filter_by(acteur_id=acteur_id).all()
     for r in reponses_existantes:
         if r.question_id not in questions_ids_envoyees:
             db.session.delete(r)
 
     db.session.commit()
+
+    # ✅ Post-traitement
     verifDatesEntretien(acteur.diagnostic)
 
 def verifDatesEntretien(diagnostic):
@@ -100,3 +131,4 @@ def verifDatesEntretien(diagnostic):
         diagnostic.date_fin = now
     db.session.add(diagnostic)
     db.session.commit()
+

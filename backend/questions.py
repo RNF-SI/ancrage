@@ -348,3 +348,21 @@ with app.app_context():
     ]
 
     createQuestionsByTheme(THEME_MNEMONIQUE,THEME_LIBELLE,question_labels,question_labels_short,score_texts)
+
+    THEME_MNEMONIQUE = "thème"
+    THEME_LIBELLE = "AFOM"
+    question_labels = [
+        "Atouts - Faiblesses - Opportunités - Menaces"
+
+    ]
+
+    question_labels_short = [
+        
+    ]
+
+    score_texts = [
+         
+
+    ]
+
+    createQuestionsByTheme(THEME_MNEMONIQUE,THEME_LIBELLE,question_labels,question_labels_short,score_texts)

@@ -15,6 +15,8 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 import { MenuLateralComponent } from "../parts/menu-lateral/menu-lateral.component";
 import { SiteService } from '@app/services/sites.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { MotsClesZoneComponent } from "../parts/mots-cles-zone/mots-cles-zone.component";
+import { MatTabsModule } from '@angular/material/tabs';
 
 //Page de la saisie de l'entretien
 @Component({
@@ -22,7 +24,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
   templateUrl: './entretien.component.html',
   styleUrls: ['./entretien.component.css'],
   standalone:true,
-  imports: [CommonModule, MatRadioModule, ReactiveFormsModule, MatRadioModule, MatButtonModule, MenuLateralComponent,FontAwesomeModule]
+  imports: [CommonModule, MatRadioModule, ReactiveFormsModule, MatRadioModule, MatButtonModule, MenuLateralComponent, FontAwesomeModule, MotsClesZoneComponent,MatTabsModule]
 
 })
 export class EntretienComponent implements OnInit,OnDestroy{
@@ -46,7 +48,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
   siteService = inject(SiteService);
   slug="";
   noResponse:Nomenclature = new Nomenclature();
-
+  afom = new Nomenclature();
   ngOnInit(): void {
     this.previousPage = localStorage.getItem("previousPage")!;
     this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
@@ -65,6 +67,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
             this.etats = etats;
             this.noResponse = noResponse;
             const controls: { [key: string]: any } = {};
+            
             this.themes.forEach(theme => {
               
               theme.questions!.forEach(q => {
@@ -96,8 +99,8 @@ export class EntretienComponent implements OnInit,OnDestroy{
             }          
             
           });
-          }
-        });
+        }
+    });
   }
 
   //Envoie les données récupérées au formulaire
@@ -109,9 +112,13 @@ export class EntretienComponent implements OnInit,OnDestroy{
       if (reponses[i].valeur_reponse.id_nomenclature > 0){
         const classe = ".warn_"+reponses[i].question?.id_question;
         const element = document.querySelector(classe);
+        console.log(reponses[i].question?.indications,reponses[i].valeur_reponse.id_nomenclature);
         if (reponses[i].valeur_reponse.id_nomenclature == this.noResponse.id_nomenclature){
-          element?.classList.replace("warn","warn-partial")
-        }else{
+          element?.classList.replace("warn","warn-partial");
+          if(reponses[i].question?.indications == "Sans indicateur"){
+            element?.classList.add("invisible");
+          }
+        }else {
           element?.classList.add("invisible");
         }
         
@@ -121,75 +128,69 @@ export class EntretienComponent implements OnInit,OnDestroy{
   }
 
   //Met la liste de réponses à jour 
-  createReponse(id_question:number,cr?:Nomenclature){
-   
-    for(let i = 0;i<this.reponses.length;i++){
-      if(this.reponses[i].question?.id_question === id_question){
-        if (cr != undefined){
-          this.reponses[i].valeur_reponse = cr!;
-          
-        }
-    
-        this.reponses[i].commentaires = this.formGroup.get(`reponse_${id_question}`)?.value;
-        
-        if (this.reponses[i].commentaires != '' && this.reponses[i].valeur_reponse.id_nomenclature ==0){
-          this.reponses[i].valeur_reponse=this.noResponse;
-          const element = document.querySelector(".warn_"+id_question);
-          element?.classList.replace("warn","warn-partial")
-
-          break;
-        }
-        if (this.reponses[i].valeur_reponse.id_nomenclature != this.noResponse.id_nomenclature && this.reponses[i].valeur_reponse.id_nomenclature > 0){
-          const element = document.querySelector(".warn_"+id_question);
-          element?.classList.add("invisible");
-          break;
-        }
-      
-      }
-      
+  createReponse = (id_question: number, cr?: Nomenclature) => {
+    const reponse = this.reponses.find(r => r.question?.id_question === id_question);
+    if (!reponse) {
+      console.warn(`Aucune réponse trouvée pour la question ${id_question}`);
+      return;
     }
-   
+  
+    // Met à jour la valeur si une nouvelle est fournie
+    if (cr !== undefined) {
+      reponse.valeur_reponse = cr;
+    }
+  
+    // Met à jour le commentaire
+    const commentaire = this.formGroup.get(`reponse_${id_question}`)?.value ?? '';
+    reponse.commentaires = commentaire;
+  
+    // Récupère l'élément HTML d'avertissement
+    const warnElement = document.querySelector(`.warn_${id_question}`);
+  
+    const valeurId = reponse.valeur_reponse?.id_nomenclature ?? 0;
+  
+    // Cas : commentaire non vide mais valeur absente → réponse partielle
+    if (commentaire !== '' && valeurId === 0) {
+      reponse.valeur_reponse = this.noResponse;
+      warnElement?.classList.replace('warn', 'warn-partial');
+    }
+    // Cas : réponse valide → cache l’avertissement
+    else if (valeurId !== this.noResponse.id_nomenclature && valeurId > 0 || reponse.question?.indications === "Sans indicateur") {
+      warnElement?.classList.add('invisible');
+    }
+  
     this.submit();
-    
-    
   }
 
   //Soumission du formulaire et attribution de l'état Réalisé ou En cours
-  submit(){
-    let cpt = 0;
-    for(let i = 0;i<this.reponses.length;i++){
-      if((this.reponses[i].valeur_reponse.id_nomenclature != this.noResponse.id_nomenclature &&  this.reponses[i].valeur_reponse.id_nomenclature >0) || this.reponses[i].question?.indications=="Sans indicateur"){
-        cpt ++;
-        
-      }
-      
-    }
-    if(cpt == this.reponses.length){
-      for(let i = 0;i<this.reponses.length;i++){
-        for (let j = 0;j<this.etats.length;j++){
-          if (this.etats[j].libelle=="Réalisé"){
-            this.reponses[i].acteur.statut_entretien! = this.etats[j];
-          }
-        }
-      }
-    }else if(cpt<this.reponses.length){
-      for(let i = 0;i<this.reponses.length;i++){
-        for (let j = 0;j<this.etats.length;j++){
-          if (this.etats[j].libelle=="En cours"){
-            this.reponses[i].acteur.statut_entretien! = this.etats[j];
-          }
-        }
+  submit(): void {
+    const totalReponses = this.reponses.length;
+    let reponsesCompletes = 0;
+  
+    for (const reponse of this.reponses) {
+      const valeurId = reponse.valeur_reponse?.id_nomenclature ?? 0;
+      const isSansIndicateur = reponse.question?.indications === "Sans indicateur";
+      if ((valeurId !== this.noResponse.id_nomenclature && valeurId > 0) || isSansIndicateur) {
+  
+        reponsesCompletes++;
       }
     }
-    
-    if (this.reponses.length>0){
-      this.reponsesSubscription = this.reponseService.update(this.reponses).subscribe(acteur => {
-
-        this.patchForm(acteur.reponses!);
-        
-      })
+  
+    const statutLabel = (reponsesCompletes === totalReponses) ? "Réalisé" : "En cours";
+    const statut = this.etats.find(e => e.libelle === statutLabel);
+  
+    if (statut) {
+      for (const reponse of this.reponses) {
+        reponse.acteur.statut_entretien = statut;
+      }
     }
-    
+ 
+    if (totalReponses > 0) {
+      this.reponsesSubscription = this.reponseService.update(this.reponses).subscribe({
+        next: acteur => this.patchForm(acteur.reponses!),
+        error: err => console.error("[ERREUR submit]", err)
+      });
+    }
   }
 
   

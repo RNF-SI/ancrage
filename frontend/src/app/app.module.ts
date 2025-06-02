@@ -48,6 +48,8 @@ import { GraphiquesComponent } from './components/parts/graphiques/graphiques.co
 import { MenuLateralComponent } from './components/parts/menu-lateral/menu-lateral.component';
 import { AlerteStatutEntretienComponent } from './components/alertes/alerte-statut-entretien/alerte-statut-entretien.component';
 import { TableauStructuresComponent } from './components/parts/tableau-structures/tableau-structures.component';
+import { MotsClesZoneComponent } from './components/parts/mots-cles-zone/mots-cles-zone.component';
+import { CommonModule } from '@angular/common';
 
 
 @NgModule({
@@ -59,11 +61,13 @@ import { TableauStructuresComponent } from './components/parts/tableau-structure
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
+    
    
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
+    CommonModule,
     BrowserAnimationsModule,
     MatToolbarModule,
     MatIconModule,
@@ -94,8 +98,12 @@ import { TableauStructuresComponent } from './components/parts/tableau-structure
     MenuLateralComponent,
     AlerteStatutEntretienComponent,
     TableauStructuresComponent,
+    MotsClesZoneComponent,
     ToastrModule.forRoot({
-      timeOut: 15000
+      timeOut: 15000,
+      closeButton: true,
+      positionClass: 'toast-bottom-right',
+      progressBar: true
     }),
   
   ],

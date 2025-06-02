@@ -12,7 +12,6 @@ def siteMethods(id_site,slug):
     
     if request.method == 'GET':
         if site.slug == slug:
-            print('ok')
             return getSite(site)
     
     

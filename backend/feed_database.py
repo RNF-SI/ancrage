@@ -185,7 +185,8 @@ with app.app_context():
         "Atouts",
         "Faiblesses",
         "Opportunités",
-        "Menaces"
+        "Menaces",
+        "Non classés"
     ]
 
     for i, (lib, lib2) in enumerate(zip(categorie_labels, cat_short_labels)):

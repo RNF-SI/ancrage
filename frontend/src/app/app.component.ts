@@ -24,7 +24,6 @@ export class AppComponent implements OnInit{
 
   loading = true;
   routerSubscription: any;
-  
 
   constructor(
     private router: Router,
@@ -32,6 +31,7 @@ export class AppComponent implements OnInit{
     ) {
 
     }
+
 
   ngOnInit(): void {
     this.recallJsFuntions();

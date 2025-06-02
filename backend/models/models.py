@@ -192,6 +192,12 @@ class MotCle(db.Model):
     id_mot_cle = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String)  
     reponses = db.relationship('Reponse', secondary='cor_reponses_mots_cles', back_populates='mots_cles')
+    categorie_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
+    categorie = db.relationship('Nomenclature', foreign_keys=[categorie_id])
+    mots_cles_groupe_id = db.Column(db.Integer, db.ForeignKey('t_mots_cles.id_mot_cle'))
+    mots_cles_groupe = db.relationship('MotCle', remote_side=[id_mot_cle], backref='mots_cles_issus')
+    diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
+    diagnostic = db.relationship('Diagnostic', foreign_keys=[diagnostic_id])
 
 class Nomenclature(db.Model):
     __tablename__ = 't_nomenclatures'

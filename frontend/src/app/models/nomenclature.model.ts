@@ -1,6 +1,7 @@
 import { INomenclature } from "@app/interfaces/nomenclature.interface";
 import { Question } from "./question.model";
 import { IQuestion } from "@app/interfaces/question.interface";
+import { MotCle } from "./mot-cle.model";
 
 
 export class Nomenclature {
@@ -9,7 +10,7 @@ export class Nomenclature {
 	value: number = 0;
 	mnemonique: string = "";
 	questions?:Question[];
-
+	mots_cles?:MotCle[];
 
 	/** Copie profonde */
 	copy(): Nomenclature {
@@ -20,7 +21,7 @@ export class Nomenclature {
 		copy.value = this.value;
 		copy.mnemonique = this.mnemonique;
 		copy.questions = this.questions?.map(q => q.copy()) || [];
-
+		copy.mots_cles = this.mots_cles?.map(mc => mc.copy()) || [];
 		return copy;
 	}
 
@@ -35,6 +36,7 @@ export class Nomenclature {
 		nom.value = data.value;
 		nom.mnemonique = data.mnemonique;
 		nom.questions = (data.questions || []).map(q => Question.fromJson(q));
+		nom.mots_cles = (data.mots_cles || []).map(mc => MotCle.fromJson(mc));
 		return nom;
 	}
 
@@ -43,6 +45,7 @@ export class Nomenclature {
 		return {
 			...this,
 			questions: this.questions?.map(q => q.toJson()) ?? undefined,
+			mots_cles: this.mots_cles?.map(mc => mc.toJson()) ?? undefined,
 		};
 	}
 }

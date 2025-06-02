@@ -36,6 +36,16 @@ export class NomenclatureService {
      
     }
 
+    getTheme(libelle:string,id_acteur:number): Observable<Nomenclature[]>{
+      return this.http.get<INomenclature[]>(this.GET_ALL_URL+'/theme/'+libelle+'/'+id_acteur).pipe(
+        map(nomenclatureJsonArray => {
+          return nomenclatureJsonArray.map<Nomenclature>(
+            nomenclatureJson => Nomenclature.fromJson(nomenclatureJson)
+          )
+        })
+      );
+    }
+
     //Récupère la nomenclature "Sans réponse"
     getNoResponse(valeur:string): Observable<Nomenclature> {
         valeur = "Sans%20réponse";
