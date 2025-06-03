@@ -1,6 +1,5 @@
 from app import create_app, db
 from models.models import Question, Reponse, Nomenclature
-from sqlalchemy.orm import load_only
 
 app = create_app()
 
@@ -26,9 +25,10 @@ def createQuestionsByTheme(THEME_MNEMONIQUE,THEME_LIBELLE,question_labels,questi
             sans_reponse_nomenclature = existing_nomenclatures[sans_reponse_key]
 
         for col_idx, (label, sht) in enumerate(zip(question_labels, question_labels_short)):
-            # Les indications proviennent de la première ligne (score_texts[0])
-            indications = score_texts[0][col_idx]
+            # Les indications proviennent de la première ligne si elle existe
+            indications = score_texts[0][col_idx] if score_texts and len(score_texts[0]) > col_idx else ""
 
+            # Création de la question
             question = Question(
                 libelle=label,
                 theme=theme,
@@ -36,11 +36,17 @@ def createQuestionsByTheme(THEME_MNEMONIQUE,THEME_LIBELLE,question_labels,questi
                 libelle_graphique=sht
             )
             db.session.add(question)
-            db.session.flush()
+            db.session.flush()  # Pour obtenir l'ID immédiatement
 
+        # Vérifie que des textes de score sont disponibles
+        if score_texts:
             # Parcourir uniquement les lignes 1 à 5, correspondant aux scores 1 à 5
-            for score_offset, score in enumerate(range(1, 6)):  # scores 1 à 5
-                text = score_texts[score_offset + 1][col_idx].strip()
+            for score_offset, score in enumerate(range(1, 6)):
+                try:
+                    text = score_texts[score_offset + 1][col_idx].strip()
+                except IndexError:
+                    continue  # Ligne ou colonne manquante
+
                 if text.lower() == 'x' or not text:
                     continue
 
@@ -356,13 +362,7 @@ with app.app_context():
 
     ]
 
-    question_labels_short = [
-        
-    ]
+    question_labels_short = ["afom"]
 
-    score_texts = [
-         
-
-    ]
-
-    createQuestionsByTheme(THEME_MNEMONIQUE,THEME_LIBELLE,question_labels,question_labels_short,score_texts)
+    
+    createQuestionsByTheme(THEME_MNEMONIQUE,THEME_LIBELLE,question_labels,question_labels_short,None)

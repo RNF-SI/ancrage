@@ -257,6 +257,34 @@ def get_scores(id_diagnostic):
 
     return jsonify(data)
 
+@bp.route('/diagnostic/mots-cles/<int:id_diagnostic>',methods=['GET'])
+def getRepartitionMotsCles(id_diagnostic):
+    results = (
+        db.session.query(
+            MotCle.nom.label('nom'),
+            func.count(MotCle.id_mot_cle).label("nombre"),
+            MotCle.categorie_id.label("cat")
+        )
+        .join(reponse_mot_cle, reponse_mot_cle.c.mot_cle_id == MotCle.id_mot_cle)
+        .join(Reponse, reponse_mot_cle.c.reponse_id == Reponse.id_reponse)
+        .filter(MotCle.diagnostic_id == id_diagnostic)
+        .group_by(MotCle.nom, MotCle.categorie_id)
+        .all()
+    )
+
+    data = [
+            {
+                "nombre": r.nombre,
+                "nom": r.nom,
+                "categorie": r.cat,
+                
+            }
+            for r in results
+        ]
+    
+    return jsonify(data)
+
+
 @bp.route('/diagnostic/upload', methods=['POST'])
 def create_documents():
     documents = json.loads(request.form['documents'])

@@ -18,7 +18,7 @@ def enregistrer_reponses_depuis_objets():
     
     return getActeur(acteur)
 
-def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
+def enregistrer_reponses_acteur_depuis_objets(reponses_objets): 
     if not reponses_objets:
         return
 
@@ -53,35 +53,46 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
             commentaires = item.get('commentaires', "")
             mots_cles = item.get('mots_cles', [])
         except (KeyError, TypeError):
-            continue  # Entrée mal formée
+            continue
 
         if not valeur_reponse_id or valeur_reponse_id <= 0:
             continue
-        
+
         mots_cles_bdd = []
         for mc in mots_cles:
             nom = mc['nom']
-            categorie_id = mc['categorie']['id_nomenclature']
             diagnostic_id = mc['diagnostic']['id_diagnostic']
+            categories_data = mc.get('categories', [])  # ✅ Liste de catégories
 
-            # 🔍 Recherche par nom + diagnostic uniquement
+            # 🔍 Recherche du mot-clé existant
             mc_existant = MotCle.query.filter_by(
                 nom=nom,
                 diagnostic_id=diagnostic_id
             ).first()
 
             if mc_existant:
-                # 🔁 Mise à jour de la catégorie si différente
-                if mc_existant.categorie_id != categorie_id:
-                    mc_existant.categorie_id = categorie_id
+                # 🔁 Ajout des catégories si elles ne sont pas déjà liées
+                for cat_data in categories_data:
+                    categorie_id = cat_data['id_nomenclature']
+                    cat = Nomenclature.query.get(categorie_id)
+                    if cat and cat not in mc_existant.categories:
+                        mc_existant.categories.append(cat)
                 mots_cles_bdd.append(mc_existant)
             else:
+                # ➕ Création du nouveau mot-clé
                 mc_nouveau = MotCle(
                     nom=nom,
-                    categorie_id=categorie_id,
                     diagnostic_id=diagnostic_id
                 )
+               
                 db.session.add(mc_nouveau)
+                db.session.flush()
+                for cat_data in categories_data:
+                    categorie_id = cat_data['id_nomenclature']
+                    print(categorie_id)
+                    cat = Nomenclature.query.get(categorie_id)
+                    if cat and categorie_id>0:
+                        mc_nouveau.categories.append(cat)
                 mots_cles_bdd.append(mc_nouveau)
 
         questions_ids_envoyees.add(question_id)
@@ -94,7 +105,7 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
         if reponse:
             reponse.valeur_reponse_id = valeur_reponse_id
             reponse.commentaires = commentaires
-            reponse.mots_cles = mots_cles_bdd  # MàJ des mots-clés
+            reponse.mots_cles = mots_cles_bdd
         else:
             nouvelle_reponse = Reponse(
                 acteur_id=acteur_id,
@@ -105,7 +116,7 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
             )
             db.session.add(nouvelle_reponse)
 
-    # 🔥 Suppression des anciennes réponses
+    # 🔥 Supprime les anciennes réponses non renvoyées
     reponses_existantes = Reponse.query.filter_by(acteur_id=acteur_id).all()
     for r in reponses_existantes:
         if r.question_id not in questions_ids_envoyees:

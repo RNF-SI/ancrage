@@ -192,12 +192,17 @@ class MotCle(db.Model):
     id_mot_cle = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String)  
     reponses = db.relationship('Reponse', secondary='cor_reponses_mots_cles', back_populates='mots_cles')
-    categorie_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
-    categorie = db.relationship('Nomenclature', foreign_keys=[categorie_id])
+    categories = db.relationship('Nomenclature', secondary='cor_categories_mots_cles', back_populates='mots_cles')
     mots_cles_groupe_id = db.Column(db.Integer, db.ForeignKey('t_mots_cles.id_mot_cle'))
     mots_cles_groupe = db.relationship('MotCle', remote_side=[id_mot_cle], backref='mots_cles_issus')
     diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
     diagnostic = db.relationship('Diagnostic', foreign_keys=[diagnostic_id])
+
+categorie_mot_cle = db.Table(
+    'cor_categories_mots_cles',
+    db.Column('nomenclature_id', db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature', ondelete="CASCADE")),
+    db.Column('mot_cle_id', db.Integer, db.ForeignKey('t_mots_cles.id_mot_cle', ondelete="CASCADE"))
+)
 
 class Nomenclature(db.Model):
     __tablename__ = 't_nomenclatures'
@@ -210,4 +215,5 @@ class Nomenclature(db.Model):
     acteurs_p = db.relationship('Acteur', back_populates='profil', foreign_keys='Acteur.profil_cognitif_id')
     acteurs_se = db.relationship('Acteur', back_populates='statut_entretien', foreign_keys='Acteur.statut_entretien_id')
     questions = db.relationship('Question',  back_populates='theme')
+    mots_cles = db.relationship('MotCle', secondary='cor_categories_mots_cles', back_populates='categories')
     libelle_court = db.Column(db.String)

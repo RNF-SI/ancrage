@@ -144,8 +144,10 @@ class MotCleSchema(SQLAlchemyAutoSchema):
         model = MotCle
         include_relationships = True
         load_instance = True
+        exclude = ('reponses',)
 
     reponses = fields.Nested(lambda: ReponseSchema, many=True, exclude=("mots_cles",))
+    categories = fields.Nested(lambda: NomenclatureLightSchema, many=True, exclude=("mots_cles",))
 
 
 class NomenclatureSchema(SQLAlchemyAutoSchema):
@@ -158,3 +160,11 @@ class NomenclatureSchema(SQLAlchemyAutoSchema):
     acteurs_p = fields.Nested(lambda: ActeurSchema, many=True, exclude=("categories", "diagnostic",))
     sites = fields.Nested(lambda: SiteSchema, many=True, exclude=("habitats",))
     questions = fields.Nested(lambda: QuestionSchema, many=True, exclude=("theme",))
+    mots_cles = fields.Nested(lambda: MotCleSchema, many=True, exclude=("categories",))
+
+class NomenclatureLightSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Nomenclature
+        include_fk = True
+        load_instance = True
+        exclude = ("mots_cles",)
