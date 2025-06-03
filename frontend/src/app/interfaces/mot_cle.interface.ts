@@ -7,7 +7,7 @@ export interface IMotCle {
     id_mot_cle:number;
     nom:string;
     reponses?:Reponse[];
-    categorie:Nomenclature;
+    categories:Nomenclature[];
     mots_cles?:MotCle[];
     diagnostic:Diagnostic;
 }

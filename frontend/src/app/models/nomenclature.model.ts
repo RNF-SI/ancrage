@@ -45,7 +45,7 @@ export class Nomenclature {
 		return {
 			...this,
 			questions: this.questions?.map(q => q.toJson()) ?? undefined,
-			mots_cles: this.mots_cles?.map(mc => mc.toJson()) ?? undefined,
+			/* mots_cles: this.mots_cles?.map(mc => mc.toJson()) ?? undefined, */
 		};
 	}
 }

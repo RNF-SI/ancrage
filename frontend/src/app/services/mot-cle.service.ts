@@ -25,6 +25,16 @@ export class MotCleService {
 		);
 	}
 
+	getKeywordsByActor(id_acteur:number): Observable<MotCle[]>{
+		  return this.http.get<IMotCle[]>(this.GET_ALL_URL+'/theme/'+id_acteur).pipe(
+			map(nomenclatureJsonArray => {
+			  return nomenclatureJsonArray.map<MotCle>(
+				nomenclatureJson => MotCle.fromJson(nomenclatureJson)
+			  )
+			})
+		  );
+	}
+
 	sortByName(objArray:MotCle[]){
 		objArray.sort(function(a, b) {
 		  var textA = a.nom.toUpperCase();

@@ -4,10 +4,10 @@ import { Nomenclature } from "./nomenclature.model";
 import { Diagnostic } from "./diagnostic.model";
 
 export class MotCle {
-    id_mot_cle=1;
+    id_mot_cle=0;
     nom="";
     reponses?:Reponse[];
-    categorie:Nomenclature = new Nomenclature();
+    categories:Nomenclature[] = [];
     mots_cles?:MotCle[];
     diagnostic:Diagnostic = new Diagnostic();
 
@@ -19,7 +19,7 @@ export class MotCle {
         copy.nom = this.nom;
         copy.reponses = this.reponses?.map(r => r.copy()) || [];
         copy.mots_cles = this.mots_cles?.map(r => r.copy()) || [];
-        copy.categorie = this.categorie?.copy();
+        copy.categories = this.categories?.map(c => c.copy()) || [];
         copy.diagnostic = this.diagnostic.copy();
         return copy;
     }
@@ -32,7 +32,7 @@ export class MotCle {
         mot_cle.nom = data.nom;
         mot_cle.reponses = (data.reponses || []).map(r => Reponse.fromJson(r));
         mot_cle.mots_cles = (data.mots_cles || []).map(mc => MotCle.fromJson(mc));
-        mot_cle.categorie = Nomenclature.fromJson(data.categorie!);
+        mot_cle.categories = (data.categories || []).map(c => Nomenclature.fromJson(c));
         mot_cle.diagnostic = Diagnostic.fromJson(data.diagnostic);
 
         return mot_cle;
@@ -43,7 +43,7 @@ export class MotCle {
             ...this,
             reponses: this.reponses ? this.reponses.map(r => r.toJson()) : [],
             mots_cles: this.mots_cles ? this.mots_cles.map(r => r.toJson()) : [],
-            categorie: this.categorie!.toJson(),
+            categories: this.categories ? this.categories.map(c => c.toJson()) : [],
             diagnostic: this.diagnostic!.toJson(),
         };
     }

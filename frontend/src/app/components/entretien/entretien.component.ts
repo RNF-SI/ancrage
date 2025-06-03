@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { NomenclatureService } from '@app/services/nomenclature.service';
@@ -17,6 +17,8 @@ import { SiteService } from '@app/services/sites.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MotsClesZoneComponent } from "../parts/mots-cles-zone/mots-cles-zone.component";
 import { MatTabsModule } from '@angular/material/tabs';
+import { ThemeService } from 'ng2-charts';
+import { MotCle } from '@app/models/mot-cle.model';
 
 //Page de la saisie de l'entretien
 @Component({
@@ -49,6 +51,8 @@ export class EntretienComponent implements OnInit,OnDestroy{
   slug="";
   noResponse:Nomenclature = new Nomenclature();
   afom = new Nomenclature();
+  @ViewChild('afom') afomComponent!: MotsClesZoneComponent;
+
   ngOnInit(): void {
     this.previousPage = localStorage.getItem("previousPage")!;
     this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
@@ -67,7 +71,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
             this.etats = etats;
             this.noResponse = noResponse;
             const controls: { [key: string]: any } = {};
-            
+            this.afom = themes[themes.length-1];
             this.themes.forEach(theme => {
               
               theme.questions!.forEach(q => {
@@ -105,14 +109,14 @@ export class EntretienComponent implements OnInit,OnDestroy{
 
   //Envoie les données récupérées au formulaire
   patchForm(reponses:Reponse[]){
-    
+    console.log(reponses);
     for(let i = 0;i<reponses.length;i++){
       this.formGroup.get(`question_${reponses[i].question?.id_question}`)?.setValue(reponses[i].valeur_reponse.value);
       this.formGroup.get(`reponse_${reponses[i].question?.id_question}`)?.setValue(reponses[i].commentaires);
       if (reponses[i].valeur_reponse.id_nomenclature > 0){
         const classe = ".warn_"+reponses[i].question?.id_question;
         const element = document.querySelector(classe);
-        console.log(reponses[i].question?.indications,reponses[i].valeur_reponse.id_nomenclature);
+       
         if (reponses[i].valeur_reponse.id_nomenclature == this.noResponse.id_nomenclature){
           element?.classList.replace("warn","warn-partial");
           if(reponses[i].question?.indications == "Sans indicateur"){
@@ -125,37 +129,43 @@ export class EntretienComponent implements OnInit,OnDestroy{
       }
       
     }
+
+    let lastReponse = reponses[reponses.length - 1];
+    let mots_cles: MotCle[] = [];
+    
+    if (
+      lastReponse.question &&
+      Array.isArray(lastReponse.question.reponses) &&
+      lastReponse.question.reponses.length > 0 &&
+      Array.isArray(lastReponse.question.reponses[0].mots_cles)
+    ) {
+      mots_cles = lastReponse.question.reponses[0].mots_cles;
+    } else if (Array.isArray(lastReponse.mots_cles)) {
+      mots_cles = lastReponse.mots_cles;
+    }
+    this.afomComponent.setKeywords(mots_cles);
   }
 
+  
   //Met la liste de réponses à jour 
   createReponse = (id_question: number, cr?: Nomenclature) => {
     const reponse = this.reponses.find(r => r.question?.id_question === id_question);
-    if (!reponse) {
-      console.warn(`Aucune réponse trouvée pour la question ${id_question}`);
-      return;
-    }
-  
-    // Met à jour la valeur si une nouvelle est fournie
+    
     if (cr !== undefined) {
-      reponse.valeur_reponse = cr;
+      reponse!.valeur_reponse = cr;
     }
   
-    // Met à jour le commentaire
     const commentaire = this.formGroup.get(`reponse_${id_question}`)?.value ?? '';
-    reponse.commentaires = commentaire;
+    reponse!.commentaires = commentaire;
   
-    // Récupère l'élément HTML d'avertissement
     const warnElement = document.querySelector(`.warn_${id_question}`);
   
-    const valeurId = reponse.valeur_reponse?.id_nomenclature ?? 0;
+    const valeurId = reponse!.valeur_reponse?.id_nomenclature ?? 0;
   
-    // Cas : commentaire non vide mais valeur absente → réponse partielle
     if (commentaire !== '' && valeurId === 0) {
-      reponse.valeur_reponse = this.noResponse;
+      reponse!.valeur_reponse = this.noResponse;
       warnElement?.classList.replace('warn', 'warn-partial');
-    }
-    // Cas : réponse valide → cache l’avertissement
-    else if (valeurId !== this.noResponse.id_nomenclature && valeurId > 0 || reponse.question?.indications === "Sans indicateur") {
+    }else if (valeurId !== this.noResponse.id_nomenclature && valeurId > 0 || reponse!.question?.indications === "Sans indicateur") {
       warnElement?.classList.add('invisible');
     }
   
@@ -186,10 +196,12 @@ export class EntretienComponent implements OnInit,OnDestroy{
     }
  
     if (totalReponses > 0) {
-      this.reponsesSubscription = this.reponseService.update(this.reponses).subscribe({
-        next: acteur => this.patchForm(acteur.reponses!),
-        error: err => console.error("[ERREUR submit]", err)
-      });
+      this.reponsesSubscription = this.reponseService.update(this.reponses).subscribe(
+        acteur => {
+          this.patchForm(acteur.reponses!);
+
+        }
+      );
     }
   }
 
