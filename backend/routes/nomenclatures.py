@@ -90,9 +90,8 @@ def traitementThemeQuestions(nomenclatures, id_acteur):
             reponses_choisies = []
 
             for r in q.reponses:
-                print(f"Réponse {r.id_reponse}, acteur={r.acteur_id}, mots_cles={r.mots_cles}, valeur={r.valeur_reponse},")
+              
                 if r.valeur_reponse and (r.acteur_id == id_acteur or r.acteur_id is None):
-                    print(f"Réponse {r.id_reponse}, acteur={r.acteur_id}, mots_cles={r.mots_cles}, valeur={r.valeur_reponse},")
                     
                     mots_cles_reponse = r.mots_cles
                     reponses_choisies.append({

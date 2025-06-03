@@ -50,6 +50,8 @@ import { AlerteStatutEntretienComponent } from './components/alertes/alerte-stat
 import { TableauStructuresComponent } from './components/parts/tableau-structures/tableau-structures.component';
 import { MotsClesZoneComponent } from './components/parts/mots-cles-zone/mots-cles-zone.component';
 import { CommonModule } from '@angular/common';
+import { AlerteGroupeMotsClesComponent } from './components/alertes/alerte-groupe-mots-cles/alerte-groupe-mots-cles.component';
+import { AlerteMotsClesComponent } from './components/alertes/alerte-mots-cles/alerte-mots-cles.component';
 
 
 @NgModule({
@@ -61,8 +63,6 @@ import { CommonModule } from '@angular/common';
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
-    
-   
   ],
   imports: [
     BrowserModule,
@@ -99,6 +99,8 @@ import { CommonModule } from '@angular/common';
     AlerteStatutEntretienComponent,
     TableauStructuresComponent,
     MotsClesZoneComponent,
+    AlerteGroupeMotsClesComponent,
+    AlerteMotsClesComponent,
     ToastrModule.forRoot({
       timeOut: 15000,
       closeButton: true,

@@ -11,8 +11,8 @@
           [cdkDropListConnectedTo]="connectedDropListsIds"
           class="dropzone"
           (cdkDropListDropped)="drop($event, cat)">
-          <mat-chip *ngFor="let keyword of cat.mots_cles" cdkDrag [removable]="true" (removed)="removeKeyword(cat, keyword)">
-            {{ keyword.nom }}
+          <mat-chip *ngFor="let keyword of cat.mots_cles" cdkDrag [removable]="true" (removed)="removeKeyword(cat, keyword)" (dblclick)="checkKeywords(keyword)">
+            {{ keyword.nom }} <span *ngIf="keyword.mots_cles!.length > 0"><fa-icon [icon]="['far', 'folder-open']"></fa-icon></span>
             <button matChipRemove>
               <mat-icon>cancel</mat-icon>
             </button>
