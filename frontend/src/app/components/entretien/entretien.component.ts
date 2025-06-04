@@ -196,6 +196,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
     }
  
     if (totalReponses > 0) {
+      console.log(this.reponses);
       this.reponsesSubscription = this.reponseService.update(this.reponses).subscribe(
         acteur => {
           this.patchForm(acteur.reponses!);

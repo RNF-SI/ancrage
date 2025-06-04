@@ -189,7 +189,7 @@ reponse_mot_cle = db.Table(
 
 class MotCle(db.Model):
     __tablename__ = 't_mots_cles'
-    id_mot_cle = db.Column(db.Integer, primary_key=True)
+    id_mot_cle = db.Column(db.Integer, primary_key=True,autoincrement=True)
     nom = db.Column(db.String)  
     reponses = db.relationship('Reponse', secondary='cor_reponses_mots_cles', back_populates='mots_cles')
     categories = db.relationship('Nomenclature', secondary='cor_categories_mots_cles', back_populates='mots_cles')

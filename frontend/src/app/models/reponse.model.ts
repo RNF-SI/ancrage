@@ -5,7 +5,7 @@ import { Nomenclature } from "./nomenclature.model";
 import { Question } from "./question.model";
 
 export class Reponse {
-    id_reponse=1;
+    id_reponse=0;
     valeur_reponse = new Nomenclature();
     mots_cles?:MotCle[];
     question?:Question;

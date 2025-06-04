@@ -35,14 +35,26 @@ export class AlerteGroupeMotsClesComponent{
     a && b ? a.id_nomenclature === b.id_nomenclature : a === b;
 
   createGroup(){
-    if (this.keyword.nom && this.keyword.categories) {
-      
-      this.keyword.mots_cles = [this.data.source, this.data.target],
-      this.keyword.diagnostic= new Diagnostic();
+    if (this.keyword.nom && this.keyword.categories.length > 0) {
+      this.keyword.diagnostic = new Diagnostic();
       this.keyword.diagnostic.id_diagnostic = this.data.diagnostic.id_diagnostic;
+  
+      this.keyword.mots_cles_issus = [this.data.source, this.data.target];
+  
+      // Supprimer les enfants de la réponse
+      this.data.motsClesReponse = this.data.motsClesReponse.filter(mc =>
+        mc.id_mot_cle !== this.data.source.id_mot_cle &&
+        mc.id_mot_cle !== this.data.target.id_mot_cle
+      );
+  
+      // Ajouter le groupe
       this.data.motsClesReponse.push(this.keyword);
+  
       this.dialogRef.close(this.data.motsClesReponse);
-    };
+      console.log(this.data.motsClesReponse);
+    }else{
+      alert('ko');
+    }
   }
 
   close(){

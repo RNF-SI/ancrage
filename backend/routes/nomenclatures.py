@@ -36,36 +36,48 @@ def getAllNomenclatures():
 def getAllNomenclaturesByType(mnemonique,id_acteur):
     
     if mnemonique == "thème":
-        if id_acteur != None:
-            ValeurNomenclature = aliased(Nomenclature)
-            Categorie = aliased(Nomenclature)
-
-            nomenclatures = (
-                db.session.query(Nomenclature)
-                .filter(Nomenclature.mnemonique == "thème")
-                .join(Nomenclature.questions)
-                .outerjoin(Reponse, and_(Reponse.question_id == Question.id_question, Reponse.acteur_id == id_acteur))
-                .outerjoin(ValeurNomenclature, Reponse.valeur_reponse_id == ValeurNomenclature.id_nomenclature)
-                .outerjoin(Reponse.mots_cles)
-                .outerjoin(Categorie, MotCle.categories)
-                .options(
-                    joinedload(Nomenclature.questions)
-                        .joinedload(Question.reponses)
-                        .joinedload(Reponse.valeur_reponse),
-
-                    joinedload(Nomenclature.questions)
-                        .joinedload(Question.reponses)
-                        .joinedload(Reponse.acteur),
-
-                    joinedload(Nomenclature.questions)
-                        .joinedload(Question.reponses)
-                        .joinedload(Reponse.mots_cles)
-                        .joinedload(MotCle.categories)
-                )
-                .order_by(Nomenclature.id_nomenclature)
-                .all()
-            )
         
+        ValeurNomenclature = aliased(Nomenclature)
+        Categorie = aliased(Nomenclature)
+        MotCleAlias = aliased(MotCle)
+
+        nomenclatures = (
+            db.session.query(Nomenclature)
+            .filter(Nomenclature.mnemonique == "thème")
+            .join(Nomenclature.questions)
+            .outerjoin(Reponse, and_(
+                Reponse.question_id == Question.id_question,
+                Reponse.acteur_id == id_acteur
+            ))
+            .outerjoin(ValeurNomenclature, Reponse.valeur_reponse_id == ValeurNomenclature.id_nomenclature)
+            .outerjoin(Reponse.mots_cles)
+            .outerjoin(Categorie, MotCle.categories)
+            # 🔁 Jointure vers les sous-mots-clés (issus du backref 'mots_cles_issus')
+            .outerjoin(MotCleAlias, MotCle.mots_cles_groupe)
+            .options(
+                joinedload(Nomenclature.questions)
+                    .joinedload(Question.reponses)
+                    .joinedload(Reponse.valeur_reponse),
+
+                joinedload(Nomenclature.questions)
+                    .joinedload(Question.reponses)
+                    .joinedload(Reponse.acteur),
+
+                joinedload(Nomenclature.questions)
+                    .joinedload(Question.reponses)
+                    .joinedload(Reponse.mots_cles)
+                    .joinedload(MotCle.categories),
+
+                # ⚡ Chargement des sous-mots-clés
+                joinedload(Nomenclature.questions)
+                    .joinedload(Question.reponses)
+                    .joinedload(Reponse.mots_cles)
+                    .joinedload(MotCle.mots_cles_groupe)  # ou .joinedload(MotCle.mots_cles_issus)
+            )
+            .order_by(Nomenclature.id_nomenclature)
+            .all()
+        )
+                
         return traitementThemeQuestions(nomenclatures,id_acteur)
         
     else:
@@ -122,7 +134,26 @@ def traitementThemeQuestions(nomenclatures, id_acteur):
                                 "diagnostic": {
                                     "id_diagnostic": mc.diagnostic.id_diagnostic,
                                     "nom": mc.diagnostic.nom
-                                } if mc.diagnostic else None
+                                } if mc.diagnostic else None,
+                          
+                                "mots_cles": [
+                                    {
+                                        "id_mot_cle": mc_issu.id_mot_cle,
+                                        "nom": mc_issu.nom,
+                                        "categories": [
+                                            {
+                                                "id_nomenclature": cat.id_nomenclature,
+                                                "libelle": cat.libelle
+                                            }
+                                            for cat in mc_issu.categories
+                                        ],
+                                        "diagnostic": {
+                                            "id_diagnostic": mc_issu.diagnostic.id_diagnostic,
+                                            "nom": mc_issu.diagnostic.nom
+                                        } if mc_issu.diagnostic else None
+                                    }
+                                    for mc_issu in mc.mots_cles_issus
+                                ]
                             }
                             for mc in mots_cles_reponse
                         ]

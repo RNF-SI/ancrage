@@ -1,18 +1,25 @@
 <div class="row">
   <div class="col-6">
-
-  
     <div class="grid" cdkDropListGroup>
-      <div class="column" *ngFor="let cat of categories">
+      <div class="column" *ngFor="let cat of categories; let i = index">
         <h3>{{ cat.libelle }}</h3>
         <div
           cdkDropList
+          [id]="'dropList-' + cat.id_nomenclature"
           [cdkDropListData]="cat.mots_cles"
           [cdkDropListConnectedTo]="connectedDropListsIds"
           class="dropzone"
           (cdkDropListDropped)="drop($event, cat)">
-          <mat-chip *ngFor="let keyword of cat.mots_cles" cdkDrag [removable]="true" (removed)="removeKeyword(cat, keyword)" (dblclick)="checkKeywords(keyword)">
-            {{ keyword.nom }} <span *ngIf="keyword.mots_cles!.length > 0"><fa-icon [icon]="['far', 'folder-open']"></fa-icon></span>
+          
+          <mat-chip *ngFor="let keyword of getVisibleKeywords(cat); trackBy: trackByMotCleId"
+                    cdkDrag
+                    [removable]="true"
+                    (removed)="removeKeyword(cat, keyword)"
+                    (dblclick)="checkKeywords(keyword)">
+            {{ keyword.nom }}
+            <span *ngIf="keyword.mots_cles_issus!.length > 0">
+              <fa-icon [icon]="['far', 'folder-open']"></fa-icon>
+            </span>
             <button matChipRemove>
               <mat-icon>cancel</mat-icon>
             </button>

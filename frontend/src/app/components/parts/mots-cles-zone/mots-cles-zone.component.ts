@@ -17,7 +17,7 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 import { MatButtonModule } from '@angular/material/button';
 import { Reponse } from '@app/models/reponse.model';
 import { Acteur } from '@app/models/acteur.model';
-import { ToastrService } from 'ngx-toastr';
+import { ToastrComponentlessModule, ToastrService } from 'ngx-toastr';
 import { MatDialog } from '@angular/material/dialog';
 import { AlerteGroupeMotsClesComponent } from '@app/components/alertes/alerte-groupe-mots-cles/alerte-groupe-mots-cles.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -67,29 +67,32 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
   showUnclassifiedError = false;
   private toastr = inject(ToastrService);
   dialog = inject(MatDialog);
+  private tempIdCounter = -1;
 
   ngAfterViewInit(): void {
-    
-    this.connectedDropListsIds = this.categories.map(c => c.libelle);
     const keywordsDiag$ = this.motCleService.getAllByDiag(this.diagnostic.id_diagnostic);
     const sections$ = this.nomenclatureService.getAllByType('AFOM'); 
     const keywordsActor$ = this.motCleService.getKeywordsByActor(this.id_acteur);
-    this.forkSub = forkJoin([keywordsDiag$,sections$,keywordsActor$]).subscribe(([keywords,sections,keywordsActor]) => {
-      if (keywords.length>0){
-        for (let i = 0;i<keywords.length;i++){
-          this.allKeywords.push(keywords[i].nom);
-        }
-      }
-      this.categories=sections;
-      this.motsClesReponse = [];
+  
+    this.forkSub = forkJoin([keywordsDiag$, sections$, keywordsActor$]).subscribe(([keywords, sections, keywordsActor]) => {
+      this.categories = sections;
+      this.connectedDropListsIds = this.categories.map(c => `dropList-${c.id_nomenclature}`);
+      console.log(this.connectedDropListsIds);
+      // ⚠️ Important : vider les mots_cles de chaque catégorie proprement
       for (const cat of this.categories) {
         cat.mots_cles = [];
       }
-      
+  
+      this.motsClesReponse = [];
+      if (keywords.length > 0) {
+        for (const k of keywords) {
+          this.allKeywords.push(k.nom);
+        }
+      }
+  
       this.setKeywords(keywordsActor);
-      
     });
-  } 
+  }
 
   hasUnclassifiedKeywords(): boolean {
     const nonClasse = this.categories.find(c => c.libelle === "Non classés");
@@ -132,14 +135,24 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
     );
   
     if (!exists) {
-      let mot_cle:MotCle = new MotCle();
-      mot_cle.nom = value;
+      const mot_cle: MotCle = new MotCle();
+      mot_cle.nom = kw;
+      mot_cle.categories = [nonClasse];
+      mot_cle.diagnostic = this.diagnostic;
+  
+      // ✅ ID temporaire négatif (évite collision avec des IDs réels positifs)
+      mot_cle.id_mot_cle = this.generateTempId();
+  
       nonClasse.mots_cles?.push(mot_cle);
+      this.motsClesReponse.push(mot_cle);
       this.allKeywords.push(mot_cle.nom);
-    
     }
   
     this.inputCtrl.setValue('');
+  }
+
+  private generateTempId(): number {
+    return this.tempIdCounter--;
   }
 
   private _filter(value: string): string[] {
@@ -151,65 +164,50 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
   }
 
   drop(event: CdkDragDrop<MotCle[] | undefined>, targetCategory: Nomenclature): void {
-    const draggedKeyword: MotCle = event?.previousContainer.data![event.previousIndex];
+    const draggedKeyword: MotCle = event.previousContainer.data?.[event.previousIndex]!;
     if (!draggedKeyword) return;
   
     const isShiftPressed = (event.event as MouseEvent | PointerEvent)?.shiftKey;
     const isCtrlPressed = (event.event as MouseEvent | PointerEvent)?.ctrlKey;
-    const prevCategory = this.categories.find(cat =>
-      cat.mots_cles?.some(k => k.id_mot_cle === draggedKeyword.id_mot_cle)
-    );
   
-    // Si on n'est pas en mode shift (multi-catégories), on retire le mot-clé des autres catégories
-    if (!isShiftPressed && !isCtrlPressed) {
-      for (const cat of this.categories) {
-        if (cat.mots_cles) {
-          cat.mots_cles = cat.mots_cles.filter(mc => mc.id_mot_cle !== draggedKeyword.id_mot_cle);
-        }
-      }
-      draggedKeyword.categories = [targetCategory];
-    } else if (isCtrlPressed){
+    if (isCtrlPressed) {
       const targetKeyword = event.container.data?.[event.currentIndex];
-      console.log(targetKeyword);
       if (targetKeyword && targetKeyword.id_mot_cle !== draggedKeyword.id_mot_cle) {
         this.mergeKeywords(draggedKeyword, targetKeyword);
-        return; // on ne poursuit pas le déplacement normal
+        return;
       }
-    }else if(isShiftPressed){
-      // Ajout dans la catégorie uniquement si pas déjà présent
-      const inTargetCat = draggedKeyword.categories.some(c => c.id_nomenclature === targetCategory.id_nomenclature);
-      if (!inTargetCat) {
+    }
+  
+    if (!isShiftPressed) {
+
+      for (const cat of this.categories) {
+        if (cat.mots_cles) {
+          cat.mots_cles = cat.mots_cles.filter(k => k.id_mot_cle !== draggedKeyword.id_mot_cle);
+        }
+      }
+
+      draggedKeyword.categories = [targetCategory];
+    } else {
+
+      const alreadyIn = draggedKeyword.categories.some(c => c.id_nomenclature === targetCategory.id_nomenclature);
+      if (!alreadyIn) {
         draggedKeyword.categories.push(targetCategory);
       }
     }
   
-    // MAJ du diagnostic
-    draggedKeyword.diagnostic.id_diagnostic = this.diagnostic.id_diagnostic;
- 
-    // MAJ dans la liste temporaire
-    const index = this.motsClesReponse.findIndex(mc => mc.id_mot_cle === draggedKeyword.id_mot_cle);
-    if (index >= 0) {
-      this.motsClesReponse[index] = draggedKeyword;
-    } else {
-      this.motsClesReponse.push(draggedKeyword);
-    }
-
-    console.log("prev container", event.previousContainer.id);
-    console.log("current container", event.container.id);
-  
-  
-    // Ajout visuel dans la catégorie cible
     targetCategory.mots_cles = targetCategory.mots_cles || [];
     const alreadyThere = targetCategory.mots_cles.some(mc => mc.id_mot_cle === draggedKeyword.id_mot_cle);
     if (!alreadyThere) {
-      targetCategory.mots_cles.splice(event.currentIndex, 0, draggedKeyword);
+      targetCategory.mots_cles.push(draggedKeyword);
     }
-
-    
+  
+    if (!this.motsClesReponse.some(mc => mc.id_mot_cle === draggedKeyword.id_mot_cle)) {
+      this.motsClesReponse.push(draggedKeyword);
+    }
   }
 
   checkKeywords(keyword:MotCle){
-    if(keyword.mots_cles!.length > 0){
+    if(keyword.mots_cles_issus!.length > 0){
       this.dialog.open(AlerteMotsClesComponent, {
         data: {
           keyword:keyword
@@ -217,6 +215,11 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
       });
     }
   }
+
+  trackByMotCleId(index: number, item: MotCle): number {
+    return item.id_mot_cle;
+  }
+
   sendResponse(){
     if (this.hasUnclassifiedKeywords()) {
       this.toastr.warning("Merci de classer tous les mots-clés avant d'envoyer votre réponse.", "Mots-clés non classés");
@@ -233,6 +236,7 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
       for (let j=0;j<reponse.mots_cles[i].categories.length;j++){
         reponse.mots_cles[i].categories[j].mots_cles=[];
       }
+    
     }
    
     this.reponses[this.reponses.length-1]=reponse;
@@ -242,7 +246,17 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
   }
 
   setKeywords(keywordsActor: MotCle[]): void {
+    for (const cat of this.categories) {
+      cat.mots_cles = [];
+    }
+  
+    this.motsClesReponse = [];
     for (const mc of keywordsActor) {
+
+      if (mc.mot_cle_id_groupe !== null && mc.mot_cle_id_groupe !== undefined) {
+        continue;
+      }
+  
       mc.diagnostic = new Diagnostic();
       mc.diagnostic.id_diagnostic = this.diagnostic.id_diagnostic;
   
@@ -251,47 +265,63 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
         if (matchingCat) {
           matchingCat.mots_cles = matchingCat.mots_cles || [];
   
-          // Évite les doublons visuels
           if (!matchingCat.mots_cles.some(k => k.id_mot_cle === mc.id_mot_cle)) {
             matchingCat.mots_cles.push(mc);
           }
         }
       }
   
-      // Ajout dans la liste des mots-clés liés à la réponse
-      const dejaDansReponse = this.motsClesReponse.some(k => k.id_mot_cle === mc.id_mot_cle);
-      if (!dejaDansReponse) {
+      if (!this.motsClesReponse.some(k => k.id_mot_cle === mc.id_mot_cle)) {
         this.motsClesReponse.push(mc);
       }
     }
   }
 
+  getVisibleKeywords(cat: Nomenclature): MotCle[] {
+    return (cat.mots_cles || []).filter(k => !k.mot_cle_id_groupe);
+  }
+
   mergeKeywords(source: MotCle, target: MotCle): void {
+
     if (!this.isGroup(source) && !this.isGroup(target)) {
       const dialogRef = this.dialog.open(AlerteGroupeMotsClesComponent, {
         data: {
           source: source,
           target: target,
-          diagnostic:this.diagnostic,
-          motsClesReponse:this.motsClesReponse,
-          categories:this.categories
-        }
-      });
-      dialogRef.afterClosed().subscribe(motsClesReponse => {
-        if (motsClesReponse) {
-          this.setKeywords(motsClesReponse);
+          diagnostic: this.diagnostic,
+          motsClesReponse: this.motsClesReponse,
+          categories: this.categories
         }
       });
   
-      
+      dialogRef.afterClosed().subscribe(updatedMotsCles => {
+        if (updatedMotsCles) {
+          this.setKeywords(updatedMotsCles);
+        }
+      });
+  
+    // Cas 2 : target est un groupe, on ajoute source dedans
     } else if (!this.isGroup(source) && this.isGroup(target)) {
       
-      target.mots_cles!.push(source);
+
+      const alreadyInGroup = target.mots_cles_issus?.some(mc => mc.id_mot_cle === source.id_mot_cle);
+      if (!alreadyInGroup) {
+        source.mot_cle_id_groupe = target.id_mot_cle;
+        target.mots_cles_issus!.push(source);
+
+        this.motsClesReponse = this.motsClesReponse.filter(mc =>
+          mc.id_mot_cle !== source.id_mot_cle 
+        );
+        
+        this.setKeywords(this.motsClesReponse);
+ 
+        source.mot_cle_id_groupe = target.id_mot_cle;
+      }
     }
   }
   
   isGroup(motCle: MotCle): boolean {
-    return motCle.mots_cles?.length! > 0;
+    return motCle.mots_cles_issus?.length! > 0;
   }
 
   ngOnDestroy(): void {

@@ -2,7 +2,7 @@ from models.models import db
 from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
-from routes import bp,now
+from routes import bp,now,joinedload
 from routes.acteurs import getActeur
     
 @bp.route('/reponses/objets', methods=['POST'])
@@ -34,7 +34,6 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
         print(f"[ERREUR] Acteur avec id {acteur_id} introuvable.")
         return
 
-    # 🔄 Mise à jour du statut_entretien
     statut_data = acteur_data.get("statut_entretien")
     if statut_data:
         try:
@@ -51,7 +50,7 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
             question_id = item['question']['id_question']
             valeur_reponse_id = item['valeur_reponse']['id_nomenclature']
             commentaires = item.get('commentaires', "")
-            mots_cles = item.get('mots_cles', [])
+            mots_cles_front = item.get('mots_cles', [])
         except (KeyError, TypeError):
             continue
 
@@ -59,48 +58,54 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
             continue
 
         mots_cles_bdd = []
-        for mc in mots_cles:
+        groupes_attendus = []
+
+        # Étape 1 : Création ou MAJ de tous les mots-clés
+        for mc in mots_cles_front:
             nom = mc['nom']
             diagnostic_id = mc['diagnostic']['id_diagnostic']
-            categories_data = mc.get('categories', [])  # ✅ Liste de catégories
+            categories_data = mc.get('categories', [])
+            enfants = mc.get('mots_cles_issus', [])
 
-            # 🔍 Recherche du mot-clé existant
-            mc_existant = MotCle.query.filter_by(
-                nom=nom,
-                diagnostic_id=diagnostic_id
-            ).first()
-
-            if mc_existant:
-                # 🔁 Ajout des catégories si elles ne sont pas déjà liées
-                for cat_data in categories_data:
-                    categorie_id = cat_data['id_nomenclature']
-                    cat = Nomenclature.query.get(categorie_id)
-                    if cat and cat not in mc_existant.categories:
-                        mc_existant.categories.append(cat)
-                mots_cles_bdd.append(mc_existant)
-            else:
-                # ➕ Création du nouveau mot-clé
-                mc_nouveau = MotCle(
-                    nom=nom,
-                    diagnostic_id=diagnostic_id
-                )
-               
-                db.session.add(mc_nouveau)
+            mc_existant = MotCle.query.filter_by(nom=nom, diagnostic_id=diagnostic_id).first()
+            if not mc_existant:
+                mc_existant = MotCle(nom=nom, diagnostic_id=diagnostic_id)
+                db.session.add(mc_existant)
                 db.session.flush()
-                for cat_data in categories_data:
-                    categorie_id = cat_data['id_nomenclature']
-                    print(categorie_id)
-                    cat = Nomenclature.query.get(categorie_id)
-                    if cat and categorie_id>0:
-                        mc_nouveau.categories.append(cat)
-                mots_cles_bdd.append(mc_nouveau)
 
+            for cat in categories_data:
+                cat_id = cat.get('id_nomenclature')
+                if cat_id:
+                    cat_obj = Nomenclature.query.get(cat_id)
+                    if cat_obj and cat_obj not in mc_existant.categories:
+                        mc_existant.categories.append(cat_obj)
+
+            mots_cles_bdd.append(mc_existant)
+
+            # On prépare l'association avec les enfants (s'ils existent)
+            if enfants:
+                groupes_attendus.append((mc_existant, enfants))
+
+        # Étape 2 : Pour chaque groupe, on crée ses enfants s’ils n'existent pas et on les relie
+        for parent_mc, enfants in groupes_attendus:
+            for enfant_data in enfants:
+                nom_enfant = enfant_data.get('nom')
+                diag_id_enfant = enfant_data.get('diagnostic', {}).get('id_diagnostic')
+
+                if not nom_enfant or not diag_id_enfant:
+                    continue
+
+                enfant = MotCle.query.filter_by(nom=nom_enfant, diagnostic_id=diag_id_enfant).first()
+                if not enfant:
+                    enfant = MotCle(nom=nom_enfant, diagnostic_id=diag_id_enfant)
+                    db.session.add(enfant)
+                    db.session.flush()
+
+                enfant.mots_cles_groupe_id = parent_mc.id_mot_cle
+
+        # Étape 3 : Réponse
         questions_ids_envoyees.add(question_id)
-
-        reponse = Reponse.query.filter_by(
-            acteur_id=acteur_id,
-            question_id=question_id
-        ).first()
+        reponse = Reponse.query.filter_by(acteur_id=acteur_id, question_id=question_id).first()
 
         if reponse:
             reponse.valeur_reponse_id = valeur_reponse_id
@@ -116,15 +121,13 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
             )
             db.session.add(nouvelle_reponse)
 
-    # 🔥 Supprime les anciennes réponses non renvoyées
+    # Nettoyage : suppression des réponses non envoyées
     reponses_existantes = Reponse.query.filter_by(acteur_id=acteur_id).all()
     for r in reponses_existantes:
         if r.question_id not in questions_ids_envoyees:
             db.session.delete(r)
 
     db.session.commit()
-
-    # ✅ Post-traitement
     verifDatesEntretien(acteur.diagnostic)
 
 def verifDatesEntretien(diagnostic):
