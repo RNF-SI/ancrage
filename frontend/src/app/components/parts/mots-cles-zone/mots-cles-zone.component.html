@@ -56,7 +56,13 @@
         </mat-option>
       </mat-autocomplete>
     </mat-form-field>
-    
+    <h3>Instructions</h3>
+    <ul>
+      <li>Ajouter un mot-clé : tapez le mot que vous voulez dans la zone de saisie. S'il existe déjà sur le diagnostic, vous pourrez le sélectionner. S'il n'existe pas, tapez Entrée pour créer le mot.</li>
+      <li>Fusionner deux mot-clés : déplacez un mot sur un autre en maintenant la touche CTRL. Vous pourrez alors saisir le nom d'un groupe qui absorbera les deux mots-clés. Les groupes sont marqués par une icône Répertoire. Vous pouvez afficher ce qu'il contient en double-cliquant dessus.</li>
+      <li>Ajouter un mot-clé à un groupe existant : déplacez un mot sur un groupe existant en maintenant la touche CTRL. Il sera alors absorbé par le groupe.</li>
+      <li>Dupliquer un mot-clé : si vous avez besoin qu'un mot-clé apparaisse dans deux catégories à la fois, déplacez-le d'une catégorie à une autre en maintenant la touche MAJ. Il apparaîtra alors à la fois dans la catégorie d'origine et la catégorie ciblée.</li>
+    </ul>
   </div>
   <button mat-raised-button type="button" color="warn" (click)="sendResponse()">Envoyer réponse</button>
 </div>

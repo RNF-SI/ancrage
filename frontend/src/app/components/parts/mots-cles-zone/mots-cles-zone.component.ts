@@ -23,6 +23,7 @@ import { AlerteGroupeMotsClesComponent } from '@app/components/alertes/alerte-gr
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { AlerteMotsClesComponent } from '@app/components/alertes/alerte-mots-cles/alerte-mots-cles.component';
 import { faTurkishLiraSign } from '@fortawesome/free-solid-svg-icons';
+import { DiagnosticService } from '@app/services/diagnostic.service';
 
 @Component({
   selector: 'app-mots-cles-zone',
@@ -68,30 +69,55 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
   private toastr = inject(ToastrService);
   dialog = inject(MatDialog);
   private tempIdCounter = -1;
+  @Input() modeAnalyse=false;
+  private diagnosticService = inject(DiagnosticService);
 
   ngAfterViewInit(): void {
-    const keywordsDiag$ = this.motCleService.getAllByDiag(this.diagnostic.id_diagnostic);
     const sections$ = this.nomenclatureService.getAllByType('AFOM'); 
-    const keywordsActor$ = this.motCleService.getKeywordsByActor(this.id_acteur);
-  
-    this.forkSub = forkJoin([keywordsDiag$, sections$, keywordsActor$]).subscribe(([keywords, sections, keywordsActor]) => {
-      this.categories = sections;
-      this.connectedDropListsIds = this.categories.map(c => `dropList-${c.id_nomenclature}`);
-      console.log(this.connectedDropListsIds);
-      // ⚠️ Important : vider les mots_cles de chaque catégorie proprement
-      for (const cat of this.categories) {
-        cat.mots_cles = [];
-      }
-  
-      this.motsClesReponse = [];
-      if (keywords.length > 0) {
-        for (const k of keywords) {
-          this.allKeywords.push(k.nom);
+    if(!this.modeAnalyse){
+      const keywordsDiag$ = this.motCleService.getAllByDiag(this.diagnostic.id_diagnostic);
+      const keywordsActor$ = this.motCleService.getKeywordsByActor(this.id_acteur);
+    
+      this.forkSub = forkJoin([keywordsDiag$, sections$, keywordsActor$]).subscribe(([keywords, sections, keywordsActor]) => {
+        this.categories = sections;
+        this.connectedDropListsIds = this.categories.map(c => `dropList-${c.id_nomenclature}`);
+        console.log(this.connectedDropListsIds);
+        // ⚠️ Important : vider les mots_cles de chaque catégorie proprement
+        for (const cat of this.categories) {
+          cat.mots_cles = [];
         }
-      }
-  
-      this.setKeywords(keywordsActor);
-    });
+    
+        this.motsClesReponse = [];
+        if (keywords.length > 0) {
+          for (const k of keywords) {
+            this.allKeywords.push(k.nom);
+          }
+        }
+    
+        this.setKeywords(keywordsActor);
+      });
+    }else{
+      const results$ = this.diagnosticService.getOccurencesKeyWords(this.diagnostic.id_diagnostic);
+      this.forkSub = forkJoin([results$, sections$]).subscribe(([keywords, sections]) => {
+      /*   this.categories = sections;
+        this.connectedDropListsIds = this.categories.map(c => `dropList-${c.id_nomenclature}`);
+        console.log(this.connectedDropListsIds);
+        // ⚠️ Important : vider les mots_cles de chaque catégorie proprement
+        for (const cat of this.categories) {
+          cat.mots_cles = [];
+        }
+    
+        this.motsClesReponse = [];
+        if (keywords.length > 0) {
+          for (const k of keywords) {
+            this.allKeywords.push(k.nom);
+          }
+        }
+    
+        this.setKeywords(keywordsActor); */
+      });
+    }
+   
   }
 
   hasUnclassifiedKeywords(): boolean {

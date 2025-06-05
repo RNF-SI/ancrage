@@ -72,7 +72,9 @@ export class EntretienComponent implements OnInit,OnDestroy{
             this.noResponse = noResponse;
             const controls: { [key: string]: any } = {};
             this.afom = themes[themes.length-1];
+            console.log(themes);
             this.themes.forEach(theme => {
+
               
               theme.questions!.forEach(q => {
                 controls[`question_${q.id_question}`] = this.fb.control(null);
@@ -109,7 +111,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
 
   //Envoie les données récupérées au formulaire
   patchForm(reponses:Reponse[]){
-    console.log(reponses);
+
     for(let i = 0;i<reponses.length;i++){
       this.formGroup.get(`question_${reponses[i].question?.id_question}`)?.setValue(reponses[i].valeur_reponse.value);
       this.formGroup.get(`reponse_${reponses[i].question?.id_question}`)?.setValue(reponses[i].commentaires);

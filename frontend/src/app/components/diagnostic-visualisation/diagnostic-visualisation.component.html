@@ -77,6 +77,18 @@
                     </div>
                   </mat-tab>
                 </div>
+                <mat-tab label="AFOM">
+                  <div class="p-3">
+                    <app-mots-cles-zone #afom
+                      [diagnostic]="diagnostic"
+                      [modeAnalyse]=true
+                    >
+                  
+                    </app-mots-cles-zone>
+                    
+                    
+                  </div>
+                </mat-tab>
                 <ng-template #structures>
                   <mat-tab label="Structures">
                   <app-tableau-structures

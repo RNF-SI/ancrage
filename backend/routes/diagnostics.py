@@ -171,8 +171,6 @@ def get_reponses_par_theme(id_diagnostic):
         .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
         .join(Question, Reponse.question_id == Question.id_question)
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
-        .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
-        .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
         .filter(Diagnostic.id_diagnostic==id_diagnostic)
         .group_by(Theme.id_nomenclature, Question.id_question, ValeurReponse.value, ValeurReponse.libelle)
         .order_by(Theme.id_nomenclature,Question.id_question, ValeurReponse.value)
@@ -258,31 +256,51 @@ def get_scores(id_diagnostic):
     return jsonify(data)
 
 @bp.route('/diagnostic/mots-cles/<int:id_diagnostic>',methods=['GET'])
-def getRepartitionMotsCles(id_diagnostic):
-    results = (
+def getRepartitionMotsCles(id_diagnostic): 
+    # 1. Récupérer les mots-clés du diagnostic
+    mots_cles = (
+        db.session.query(MotCle)
+        .filter(MotCle.diagnostic_id == id_diagnostic)
+        .all()
+    )
+
+    # 2. Compter les réponses associées à chaque mot-clé
+    counts = dict(
         db.session.query(
-            MotCle.nom.label('nom'),
-            func.count(MotCle.id_mot_cle).label("nombre"),
-            MotCle.categorie_id.label("cat")
+            MotCle.id_mot_cle,
+            func.count(Reponse.id_reponse)
         )
         .join(reponse_mot_cle, reponse_mot_cle.c.mot_cle_id == MotCle.id_mot_cle)
         .join(Reponse, reponse_mot_cle.c.reponse_id == Reponse.id_reponse)
         .filter(MotCle.diagnostic_id == id_diagnostic)
-        .group_by(MotCle.nom, MotCle.categorie_id)
+        .group_by(MotCle.id_mot_cle)
         .all()
     )
 
-    data = [
-            {
-                "nombre": r.nombre,
-                "nom": r.nom,
-                "categorie": r.cat,
-                
-            }
-            for r in results
-        ]
-    
+    # 3. Formater la réponse
+    data = []
+    for mc in mots_cles:
+        data.append({
+            "id": mc.id_mot_cle,
+            "nom": mc.nom,
+            "nombre": counts.get(mc.id_mot_cle, 0),
+            "categories": [
+                {
+                    "id": cat.id_nomenclature,
+                    "libelle": cat.libelle,
+                    "value": cat.value
+                } for cat in mc.categories
+            ],
+            "mots_cles_issus": [
+                {
+                    "id": enfant.id_mot_cle,
+                    "nom": enfant.nom
+                } for enfant in mc.mots_cles_issus
+            ]
+        })
+
     return jsonify(data)
+
 
 
 @bp.route('/diagnostic/upload', methods=['POST'])

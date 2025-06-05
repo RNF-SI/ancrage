@@ -10,7 +10,7 @@ export class Question {
     reponses?:Reponse[];
     theme?:Nomenclature;
     indications:string="";
-    choixReponses:Nomenclature[]=[];
+    choixReponses?:Nomenclature[];
 
     /** Copie profonde de l'objet */
     copy(): Question {
@@ -36,7 +36,7 @@ export class Question {
         question.acteurs = (data.acteurs || []).map(a => Acteur.fromJson(a));
         question.reponses = (data.reponses || []).map(r => Reponse.fromJson(r));
         question.indications = data.indications;
-        question.choixReponses = (data.choixReponses || []).map(cr => Nomenclature.fromJson(cr));
+        question.choixReponses = Array.isArray(data.choixReponses) ? data.choixReponses.map(cr => Nomenclature.fromJson(cr)) : [];
         return question;
     }
 

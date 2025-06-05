@@ -2,7 +2,7 @@ from models.models import db
 from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
-from routes import bp,joinedload,aliased,and_
+from routes import bp,joinedload,aliased,and_,relationship
 
 @bp.route('/nomenclature/<int:id_nomenclature>', methods=['GET','PUT','DELETE'])
 def nomenclatureMethods(id_nomenclature):
@@ -36,7 +36,7 @@ def getAllNomenclatures():
 def getAllNomenclaturesByType(mnemonique,id_acteur):
     
     if mnemonique == "thème":
-        
+
         ValeurNomenclature = aliased(Nomenclature)
         Categorie = aliased(Nomenclature)
         MotCleAlias = aliased(MotCle)
@@ -52,7 +52,6 @@ def getAllNomenclaturesByType(mnemonique,id_acteur):
             .outerjoin(ValeurNomenclature, Reponse.valeur_reponse_id == ValeurNomenclature.id_nomenclature)
             .outerjoin(Reponse.mots_cles)
             .outerjoin(Categorie, MotCle.categories)
-            # 🔁 Jointure vers les sous-mots-clés (issus du backref 'mots_cles_issus')
             .outerjoin(MotCleAlias, MotCle.mots_cles_groupe)
             .options(
                 joinedload(Nomenclature.questions)
@@ -68,16 +67,19 @@ def getAllNomenclaturesByType(mnemonique,id_acteur):
                     .joinedload(Reponse.mots_cles)
                     .joinedload(MotCle.categories),
 
-                # ⚡ Chargement des sous-mots-clés
                 joinedload(Nomenclature.questions)
                     .joinedload(Question.reponses)
                     .joinedload(Reponse.mots_cles)
-                    .joinedload(MotCle.mots_cles_groupe)  # ou .joinedload(MotCle.mots_cles_issus)
+                    .joinedload(MotCle.mots_cles_groupe),
+
+                # 👇 Chargement des réponses possibles
+                joinedload(Nomenclature.questions)
+                    .joinedload(Question.choixReponses)
             )
             .order_by(Nomenclature.id_nomenclature)
             .all()
         )
-                
+                        
         return traitementThemeQuestions(nomenclatures,id_acteur)
         
     else:
@@ -91,34 +93,48 @@ def getNomenclature(nomenclature):
     nomenclatureObj = schema.dump(nomenclature)
     return jsonify(nomenclatureObj)
 
-def traitementThemeQuestions(nomenclatures, id_acteur):
+def traitementThemeQuestions(nomenclatures, id_acteur): 
     result = []
     for nom in nomenclatures:
         questions_sorted = sorted(nom.questions, key=lambda q: q.id_question)
-
         questions_data = []
+
         for q in questions_sorted:
             reponses_possibles = []
-            reponses_choisies = []
+            reponse_acteur = None  # Une seule réponse attendue
+
+            for val in q.choixReponses:
+                reponses_possibles.append({
+                    "id_nomenclature": val.id_nomenclature,
+                    "libelle": val.libelle,
+                    "value": val.value,
+                    "mnemonique": val.mnemonique
+                })
 
             for r in q.reponses:
-              
-                if r.valeur_reponse and (r.acteur_id == id_acteur or r.acteur_id is None):
-                    
+                if r.acteur_id == id_acteur:
                     mots_cles_reponse = r.mots_cles
-                    reponses_choisies.append({
+                    reponse_acteur = {
                         "id_reponse": r.id_reponse,
                         "commentaires": r.commentaires,
-                        "question": {
-                            "id_question": r.question.id_question,
-                            "libelle": r.question.libelle,
-                            "indications": r.question.indications
-                        } if r.question else None,
                         "valeur_reponse": {
-                            "id_nomenclature": r.valeur_reponse.id_nomenclature if r.valeur_reponse else 0,
-                            "libelle": r.valeur_reponse.libelle if r.valeur_reponse else '',
-                            "value": r.valeur_reponse.value if r.valeur_reponse else 1,
-                            "mnemonique": r.valeur_reponse.mnemonique if r.valeur_reponse else ''
+                            "id_nomenclature": r.valeur_reponse.id_nomenclature,
+                            "libelle": r.valeur_reponse.libelle,
+                            "value": r.valeur_reponse.value,
+                            "mnemonique": r.valeur_reponse.mnemonique
+                        } if r.valeur_reponse else None,
+                        "acteur": {
+                            "id_acteur": r.acteur.id_acteur,
+                            "nom": r.acteur.nom,
+                            "prenom": r.acteur.prenom,
+                            "fonction": r.acteur.fonction,
+                            "telephone": r.acteur.telephone,
+                        } if r.acteur else None,
+                        "question": {
+                            "id_question": q.id_question,
+                            "libelle": q.libelle,
+                            "indications": q.indications,
+                            
                         },
                         "mots_cles": [
                             {
@@ -135,7 +151,6 @@ def traitementThemeQuestions(nomenclatures, id_acteur):
                                     "id_diagnostic": mc.diagnostic.id_diagnostic,
                                     "nom": mc.diagnostic.nom
                                 } if mc.diagnostic else None,
-                          
                                 "mots_cles": [
                                     {
                                         "id_mot_cle": mc_issu.id_mot_cle,
@@ -157,17 +172,15 @@ def traitementThemeQuestions(nomenclatures, id_acteur):
                             }
                             for mc in mots_cles_reponse
                         ]
-                        
-                    })
-                        
-                    
+                    }
+                    break  # stop après la première réponse de l'acteur
 
             questions_data.append({
                 "id_question": q.id_question,
                 "libelle": q.libelle,
                 "indications": q.indications,
                 "choixReponses": sorted(reponses_possibles, key=lambda x: x["value"]),
-                "reponses": reponses_choisies
+                "reponses": [reponse_acteur] if reponse_acteur else []
             })
 
         result.append({
@@ -175,7 +188,6 @@ def traitementThemeQuestions(nomenclatures, id_acteur):
             "libelle": nom.libelle,
             "mnemonique": nom.mnemonique,
             "questions": questions_data,
-            
         })
 
-    return jsonify(result)
+    return result

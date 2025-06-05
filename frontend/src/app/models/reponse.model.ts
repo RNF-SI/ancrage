@@ -32,7 +32,7 @@ export class Reponse {
             reponse.id_reponse = data.id_reponse;
             reponse.valeur_reponse = data.valeur_reponse ? Nomenclature.fromJson(data.valeur_reponse) : new Nomenclature();
             reponse.mots_cles = (data.mots_cles || []).map(mc => MotCle.fromJson(mc));
-            reponse.question = data.question ? Question.fromJson(data.question) : undefined;
+            reponse.question = data.question ? Question.fromJson(data.question) : new Question();
             reponse.acteur = data.acteur ? Acteur.fromJson(data.acteur) : new Acteur();
             reponse.commentaires = data.commentaires;
     

@@ -22,13 +22,14 @@ import { TableauStructuresComponent } from "../parts/tableau-structures/tableau-
 import { Document } from '@app/models/document.model';
 import { environment } from 'src/environments/environment';
 import { MapComponent } from '../parts/map/map.component';
+import { MotsClesZoneComponent } from '../parts/mots-cles-zone/mots-cles-zone.component';
 
 @Component({
   selector: 'app-diagnostic-visualisation',
   templateUrl: './diagnostic-visualisation.component.html',
   styleUrls: ['./diagnostic-visualisation.component.css'],
   standalone:true,
-  imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent, MenuLateralComponent, TableauStructuresComponent,TableauStructuresComponent,MapComponent]
+  imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent, MenuLateralComponent, TableauStructuresComponent,TableauStructuresComponent,MapComponent,MotsClesZoneComponent]
 })
 export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
 

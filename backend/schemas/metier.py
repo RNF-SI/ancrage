@@ -116,7 +116,7 @@ class QuestionSchema(SQLAlchemyAutoSchema):
         include_relationships = True
         load_instance = True
 
-   
+    choixReponses = fields.Nested(lambda: NomenclatureSchema, exclude=("questions",))
     reponses = fields.Nested(lambda: ReponseSchema, exclude=("question",))
     theme = fields.Nested(lambda: NomenclatureSchema, exclude=("questions",))
 

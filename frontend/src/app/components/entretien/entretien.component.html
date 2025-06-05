@@ -14,21 +14,22 @@
                 <h2>{{ title }}</h2>
         
                 <div *ngFor="let theme of themes">
-                  
-                  <h3>{{ theme.libelle }}</h3>
+                  <div *ngIf="theme.libelle != 'AFOM'">
+                    <h3>{{ theme.libelle }}</h3>
         
-                  <div *ngFor="let q of theme.questions" [attr.id]="'question-' + q.id_question">
-                    <h4 class="question_d_{{q.id_question}}">{{ q.libelle }} <fa-icon class="warn warn_{{q.id_question}}"[icon]="['fas', 'triangle-exclamation']"></fa-icon></h4>
-                    <div *ngIf="theme.libelle != 'AFOM'">
-                      <p><b>Réponses attendues : </b>{{q.indications}}</p>
-                      <mat-radio-group [formControlName]="'question_' + q.id_question">
-                        <mat-radio-button *ngFor="let cr of q.choixReponses" [value]="cr.value" (click)="createReponse(q.id_question,cr)">
-                          {{ cr.libelle }}
-                        </mat-radio-button>
-                      </mat-radio-group>
-                      <div *ngFor="let rep of getReponsesParQuestion(q.id_question)">
-                        <textarea [formControlName]="'reponse_' + q.id_question" (focusout)="createReponse(q.id_question)"></textarea>
-                      </div>
+                    <div *ngFor="let q of theme.questions" [attr.id]="'question-' + q.id_question">
+                      <h4 class="question_d_{{q.id_question}}">{{ q.libelle }} <fa-icon class="warn warn_{{q.id_question}}"[icon]="['fas', 'triangle-exclamation']"></fa-icon></h4>
+                      
+                        <p><b>Réponses attendues : </b>{{q.indications}}</p>
+                        <mat-radio-group [formControlName]="'question_' + q.id_question">
+                          <mat-radio-button *ngFor="let cr of q.choixReponses" [value]="cr.value" (click)="createReponse(q.id_question,cr)">
+                            {{ cr.libelle }}
+                          </mat-radio-button>
+                        </mat-radio-group>
+                        <div *ngFor="let rep of getReponsesParQuestion(q.id_question)">
+                          <textarea [formControlName]="'reponse_' + q.id_question" (focusout)="createReponse(q.id_question)"></textarea>
+                        </div>
+                    
                     </div>
                   </div>
                 </div>
@@ -48,7 +49,7 @@
     <div class="p-3">
     
       <ng-container *ngIf="true">
-        <!-- <h3>{{afom.libelle}}</h3> -->
+        
         <app-mots-cles-zone #afom
           [diagnostic]="diagnostic"
           [id_acteur]="id_acteur"

@@ -3,49 +3,48 @@ from models.models import Question, Reponse, Nomenclature
 
 app = create_app()
 
-def createQuestionsByTheme(THEME_MNEMONIQUE,THEME_LIBELLE,question_labels,question_labels_short,score_texts):
-        
-        theme = Nomenclature(libelle=THEME_LIBELLE, mnemonique=THEME_MNEMONIQUE)
-        db.session.add(theme)
-        db.session.commit()
-       
+def createQuestionsByTheme(THEME_MNEMONIQUE, THEME_LIBELLE, question_labels, question_labels_short, score_texts):
+    theme = Nomenclature(libelle=THEME_LIBELLE, mnemonique=THEME_MNEMONIQUE)
+    db.session.add(theme)
+    db.session.commit()
 
-        sans_reponse_key = ("Sans réponse", 0)
-        existing_nomenclatures = {
-            (n.libelle.strip(), n.value): n
-            for n in Nomenclature.query.filter_by(mnemonique="reponse_score").all()
-        }
+    sans_reponse_key = ("Sans réponse", 0)
+    existing_nomenclatures = {
+        (n.libelle.strip(), n.value): n
+        for n in Nomenclature.query.filter_by(mnemonique="reponse_score").all()
+    }
 
-        if sans_reponse_key not in existing_nomenclatures:
-            sans_reponse_nomenclature = Nomenclature(libelle="Sans réponse", value=0, mnemonique="reponse_score")
-            db.session.add(sans_reponse_nomenclature)
-            db.session.flush()
-            existing_nomenclatures[sans_reponse_key] = sans_reponse_nomenclature
-        else:
-            sans_reponse_nomenclature = existing_nomenclatures[sans_reponse_key]
+    if sans_reponse_key not in existing_nomenclatures:
+        sans_reponse_nomenclature = Nomenclature(libelle="Sans réponse", value=0, mnemonique="reponse_score")
+        db.session.add(sans_reponse_nomenclature)
+        db.session.flush()
+        existing_nomenclatures[sans_reponse_key] = sans_reponse_nomenclature
+    else:
+        sans_reponse_nomenclature = existing_nomenclatures[sans_reponse_key]
 
-        for col_idx, (label, sht) in enumerate(zip(question_labels, question_labels_short)):
-            # Les indications proviennent de la première ligne si elle existe
-            indications = score_texts[0][col_idx] if score_texts and len(score_texts[0]) > col_idx else ""
+    for col_idx, (label, sht) in enumerate(zip(question_labels, question_labels_short)):
+        indications = score_texts[0][col_idx] if score_texts and len(score_texts[0]) > col_idx else ""
 
-            # Création de la question
-            question = Question(
-                libelle=label,
-                theme=theme,
-                indications=indications,
-                libelle_graphique=sht
-            )
-            db.session.add(question)
-            db.session.flush()  # Pour obtenir l'ID immédiatement
+        # Création de la question
+        question = Question(
+            libelle=label,
+            theme=theme,
+            indications=indications,
+            libelle_graphique=sht
+        )
+        db.session.add(question)
+        db.session.flush()
 
-        # Vérifie que des textes de score sont disponibles
+        # Ajout de "Sans réponse" à chaque question
+        question.choixReponses.append(sans_reponse_nomenclature)
+
+        # Ajout des réponses possibles (scores 1 à 5)
         if score_texts:
-            # Parcourir uniquement les lignes 1 à 5, correspondant aux scores 1 à 5
             for score_offset, score in enumerate(range(1, 6)):
                 try:
                     text = score_texts[score_offset + 1][col_idx].strip()
                 except IndexError:
-                    continue  # Ligne ou colonne manquante
+                    continue
 
                 if text.lower() == 'x' or not text:
                     continue
@@ -59,14 +58,18 @@ def createQuestionsByTheme(THEME_MNEMONIQUE,THEME_LIBELLE,question_labels,questi
                     db.session.flush()
                     existing_nomenclatures[key] = nom
 
+                # Ajoute la nomenclature comme choix possible pour la question
+                question.choixReponses.append(nom)
+
+                # Crée une entrée Reponse "vierge", sans acteur, pour initialiser
                 reponse = Reponse(
-                    valeur_reponse_id=nom.id_nomenclature,
-                    question_id=question.id_question
+                    question_id=question.id_question,
+                    valeur_reponse_id=nom.id_nomenclature
                 )
                 db.session.add(reponse)
 
-        db.session.commit()
-        print("✅ Questions avec indications et réponses enregistrées avec succès.")
+    db.session.commit()
+    print("✅ Questions, choix de réponses et liaisons enregistrés avec succès.")
 
 with app.app_context():
     THEME_MNEMONIQUE = "thème"

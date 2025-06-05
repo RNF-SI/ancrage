@@ -1,7 +1,7 @@
 from flask import Blueprint
 from datetime import datetime
 from slugify import slugify
-from sqlalchemy.orm import joinedload,aliased
+from sqlalchemy.orm import joinedload,aliased,relationship
 from sqlalchemy import and_
 import uuid
 bp = Blueprint('main', __name__)

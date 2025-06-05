@@ -154,6 +154,11 @@ acteur_profil = db.Table(
     db.Column('acteur_id', db.Integer, db.ForeignKey('t_acteurs.id_acteur', ondelete="CASCADE")),
     db.Column('profil_id', db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature', ondelete="CASCADE"))
 )
+choix_reponses = db.Table(
+    'choix_reponses',
+    db.Column('question_id', db.Integer, db.ForeignKey('t_questions.id_question'), primary_key=True),
+    db.Column('nomenclature_id', db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'), primary_key=True)
+)
 
 class Question(db.Model):
     __tablename__ = 't_questions'
@@ -161,13 +166,21 @@ class Question(db.Model):
     id_question = db.Column(db.Integer, primary_key=True)
     libelle = db.Column(db.String)
     indications = db.Column(db.String)
-    reponses = db.relationship(
-        'Reponse',
-        back_populates='question'
-    )
+    reponses = db.relationship('Reponse', back_populates='question')
     theme_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     theme = db.relationship('Nomenclature', foreign_keys=[theme_id])
     libelle_graphique = db.Column(db.String)
+
+    # 👇 Correction ici
+    choixReponses = db.relationship(
+        'Nomenclature',
+        secondary=choix_reponses,
+        primaryjoin=id_question == choix_reponses.c.question_id,
+        secondaryjoin=lambda: Nomenclature.id_nomenclature == choix_reponses.c.nomenclature_id,
+        backref='questions_ayant_cette_reponse'
+    )
+
+
 
 class Reponse(db.Model):
     __tablename__ = 't_reponses'

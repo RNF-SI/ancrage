@@ -3,8 +3,10 @@ import { inject, Injectable } from '@angular/core';
 import { IDiagnostic } from '@app/interfaces/diagnostic.interface';
 import { IGraphMoy } from '@app/interfaces/graph-moy.interface';
 import { IGraphRadar } from '@app/interfaces/graphradar.interface';
+import { IGraphMotsCles } from '@app/interfaces/igraph-mots-cles';
 import { IGraphRepartition } from '@app/interfaces/igraph-repartition';
 import { Diagnostic } from '@app/models/diagnostic.model';
+import { GraphMotsCles } from '@app/models/graph-mots-cles';
 import { GraphMoy } from '@app/models/graph-moy.model';
 import { GraphRadar } from '@app/models/graph-radar.model';
 import { GraphRepartition } from '@app/models/graph-repartition.model';
@@ -68,6 +70,16 @@ export class DiagnosticService {
     //Récupère les différentes structures des acteurs
     getStructures(id: number): Observable<any> {
       return this.http.get<any>(this.BASE_URL + '/structures/' + id ).pipe();
+    }
+
+    getOccurencesKeyWords(id_diagnostic:number): Observable<GraphMotsCles[]>{
+      return this.http.get<IGraphMotsCles[]>(this.GET_ALL_URL+"/charts/radars/"+id_diagnostic).pipe(
+        map(graphiquesJsonArray => {
+          return graphiquesJsonArray.map<GraphMotsCles>(
+            graphJson => GraphMotsCles.fromJson(graphJson)
+          )
+        })
+      );
     }
 
     //Récupère un diag

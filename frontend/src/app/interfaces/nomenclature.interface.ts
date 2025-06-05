@@ -1,4 +1,5 @@
 import { MotCle } from "@app/models/mot-cle.model";
+import { Nomenclature } from "@app/models/nomenclature.model";
 import { Question } from "@app/models/question.model";
 
 export interface INomenclature {
@@ -8,4 +9,5 @@ export interface INomenclature {
     mnemonique: string;
     questions?:Question[];
     mots_cles?:MotCle[];
+    
 }
