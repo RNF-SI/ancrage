@@ -11,6 +11,7 @@ export class MotCle {
     mots_cles_issus:MotCle[]=[];
     diagnostic:Diagnostic = new Diagnostic();
     mot_cle_id_groupe?:number;
+    nombre?:number;
 
     /** Copie profonde de l'objet */
     copy(): MotCle {

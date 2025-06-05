@@ -1,8 +1,8 @@
 from models.models import db
-from flask import request, jsonify
+from flask import request
 from models.models import *
 from schemas.metier import *
-from routes import bp,now,joinedload
+from routes import bp,now,func
 from routes.acteurs import getActeur
     
 @bp.route('/reponses/objets', methods=['POST'])
@@ -127,8 +127,39 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
         if r.question_id not in questions_ids_envoyees:
             db.session.delete(r)
 
-    db.session.commit()
+    
     verifDatesEntretien(acteur.diagnostic)
+
+    diagnostic_id = acteur.diagnostic_id
+    mot_cles_repartis = getRepartitionMotsCles(diagnostic_id)
+
+    afom_ids_to_delete = (
+        db.session.query(Afom.id_afom)
+        .join(Afom.mot_cle)
+        .filter(MotCle.diagnostic_id == diagnostic_id)
+        .all()
+    )
+
+    # Étape 2 : supprimer sans jointure
+    afom_ids_to_delete = [id_tuple[0] for id_tuple in afom_ids_to_delete]
+
+    if afom_ids_to_delete:
+        db.session.query(Afom).filter(Afom.id_afom.in_(afom_ids_to_delete)).delete(synchronize_session=False)
+
+    # Recréer les entrées AFOM une à une
+    for item in mot_cles_repartis:
+        mot_cle = item["mot_cle_obj"]
+        count = item["nombre"]  
+
+        for cat in item['categories']:
+            afom = Afom(
+                
+                mot_cle_id=mot_cle.id_mot_cle,
+                number=count
+            )
+            db.session.add(afom)
+
+    db.session.commit()
 
 def verifDatesEntretien(diagnostic):
    
@@ -145,4 +176,36 @@ def verifDatesEntretien(diagnostic):
         diagnostic.date_fin = now
     db.session.add(diagnostic)
     db.session.commit()
+
+def getRepartitionMotsCles(id_diagnostic): 
+    mots_cles = (
+        db.session.query(MotCle)
+        .filter(MotCle.diagnostic_id == id_diagnostic)
+        .all()
+    )
+
+    counts = dict(
+        db.session.query(
+            MotCle.id_mot_cle,
+            func.count(Reponse.id_reponse)
+        )
+        .join(reponse_mot_cle, reponse_mot_cle.c.mot_cle_id == MotCle.id_mot_cle)
+        .join(Reponse, reponse_mot_cle.c.reponse_id == Reponse.id_reponse)
+        .filter(MotCle.diagnostic_id == id_diagnostic)
+        .group_by(MotCle.id_mot_cle)
+        .all()
+    )
+
+    data = []
+    for mc in mots_cles:
+        data.append({
+            "mot_cle_obj": mc, 
+            "id": mc.id_mot_cle,
+            "nom": mc.nom,
+            "nombre": counts.get(mc.id_mot_cle, 0),
+            "categories": mc.categories,
+            "mots_cles_issus": mc.mots_cles_issus
+        })
+
+    return data
 

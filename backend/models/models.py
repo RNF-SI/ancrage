@@ -230,3 +230,11 @@ class Nomenclature(db.Model):
     questions = db.relationship('Question',  back_populates='theme')
     mots_cles = db.relationship('MotCle', secondary='cor_categories_mots_cles', back_populates='categories')
     libelle_court = db.Column(db.String)
+
+class Afom(db.Model):
+    __tablename__ = 't_afom'
+    id_afom = db.Column('id_afom', db.Integer, primary_key=True)
+    mot_cle_id = db.Column(db.Integer, db.ForeignKey('t_mots_cles.id_mot_cle'))
+    mot_cle = db.relationship('MotCle', foreign_keys=[mot_cle_id])
+    number = db.Column(db.Integer)
+

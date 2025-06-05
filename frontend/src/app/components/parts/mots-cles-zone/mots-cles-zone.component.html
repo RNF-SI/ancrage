@@ -16,7 +16,10 @@
                     [removable]="true"
                     (removed)="removeKeyword(cat, keyword)"
                     (dblclick)="checkKeywords(keyword)">
-            {{ keyword.nom }}
+            <span>
+              {{ keyword.nom }}
+              <ng-container *ngIf="keyword.nombre"> ({{ keyword.nombre }})</ng-container>
+            </span>
             <span *ngIf="keyword.mots_cles_issus!.length > 0">
               <fa-icon [icon]="['far', 'folder-open']"></fa-icon>
             </span>

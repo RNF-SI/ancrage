@@ -73,7 +73,7 @@ export class DiagnosticService {
     }
 
     getOccurencesKeyWords(id_diagnostic:number): Observable<GraphMotsCles[]>{
-      return this.http.get<IGraphMotsCles[]>(this.GET_ALL_URL+"/charts/radars/"+id_diagnostic).pipe(
+      return this.http.get<IGraphMotsCles[]>(this.BASE_URL+"/mots-cles/"+id_diagnostic).pipe(
         map(graphiquesJsonArray => {
           return graphiquesJsonArray.map<GraphMotsCles>(
             graphJson => GraphMotsCles.fromJson(graphJson)

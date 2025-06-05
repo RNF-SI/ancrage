@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { ReactiveFormsModule, FormsModule, FormControl } from '@angular/forms';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -17,13 +17,13 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 import { MatButtonModule } from '@angular/material/button';
 import { Reponse } from '@app/models/reponse.model';
 import { Acteur } from '@app/models/acteur.model';
-import { ToastrComponentlessModule, ToastrService } from 'ngx-toastr';
+import { ToastrService } from 'ngx-toastr';
 import { MatDialog } from '@angular/material/dialog';
 import { AlerteGroupeMotsClesComponent } from '@app/components/alertes/alerte-groupe-mots-cles/alerte-groupe-mots-cles.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { AlerteMotsClesComponent } from '@app/components/alertes/alerte-mots-cles/alerte-mots-cles.component';
-import { faTurkishLiraSign } from '@fortawesome/free-solid-svg-icons';
 import { DiagnosticService } from '@app/services/diagnostic.service';
+import { GraphMotsCles } from '@app/models/graph-mots-cles';
 
 @Component({
   selector: 'app-mots-cles-zone',
@@ -71,17 +71,21 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
   private tempIdCounter = -1;
   @Input() modeAnalyse=false;
   private diagnosticService = inject(DiagnosticService);
+  results:GraphMotsCles[]=[];
+  motsCleAnalyse:MotCle[]=[]
+  @Input() id_diagnostic=0;
 
   ngAfterViewInit(): void {
-    const sections$ = this.nomenclatureService.getAllByType('AFOM'); 
+    
     if(!this.modeAnalyse){
+      const sections$ = this.nomenclatureService.getAllByType('AFOM'); 
       const keywordsDiag$ = this.motCleService.getAllByDiag(this.diagnostic.id_diagnostic);
       const keywordsActor$ = this.motCleService.getKeywordsByActor(this.id_acteur);
     
       this.forkSub = forkJoin([keywordsDiag$, sections$, keywordsActor$]).subscribe(([keywords, sections, keywordsActor]) => {
         this.categories = sections;
         this.connectedDropListsIds = this.categories.map(c => `dropList-${c.id_nomenclature}`);
-        console.log(this.connectedDropListsIds);
+        
         // ⚠️ Important : vider les mots_cles de chaque catégorie proprement
         for (const cat of this.categories) {
           cat.mots_cles = [];
@@ -96,10 +100,15 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
     
         this.setKeywords(keywordsActor);
       });
-    }else{
-      const results$ = this.diagnosticService.getOccurencesKeyWords(this.diagnostic.id_diagnostic);
-      this.forkSub = forkJoin([results$, sections$]).subscribe(([keywords, sections]) => {
-      /*   this.categories = sections;
+    }
+   
+  }
+
+  getDataAnalysis(){
+    const sections$ = this.nomenclatureService.getAllByType('AFOM'); 
+    const results$ = this.diagnosticService.getOccurencesKeyWords(this.id_diagnostic);
+      this.forkSub = forkJoin([results$, sections$]).subscribe(([results, sections]) => {
+        this.categories = sections;
         this.connectedDropListsIds = this.categories.map(c => `dropList-${c.id_nomenclature}`);
         console.log(this.connectedDropListsIds);
         // ⚠️ Important : vider les mots_cles de chaque catégorie proprement
@@ -108,17 +117,15 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
         }
     
         this.motsClesReponse = [];
-        if (keywords.length > 0) {
-          for (const k of keywords) {
-            this.allKeywords.push(k.nom);
-          }
-        }
-    
-        this.setKeywords(keywordsActor); */
+        this.prepareResults(results);
       });
-    }
-   
   }
+  ngOnChanges(changes: SimpleChanges): void {
+      if (changes['id_diagnostic'] && this.id_diagnostic>0 && this.modeAnalyse) {
+        this.getDataAnalysis();
+      }
+      
+    }
 
   hasUnclassifiedKeywords(): boolean {
     const nonClasse = this.categories.find(c => c.libelle === "Non classés");
@@ -271,13 +278,56 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
 
   }
 
-  setKeywords(keywordsActor: MotCle[]): void {
+  prepareResults(results:GraphMotsCles[]){
+    console.log(results);
+    let cpt=0;
+    for (const res of results) {
+      const mot_cle = res.mot_cle;
+      mot_cle.nombre = res.nombre; 
+      this.motsCleAnalyse.push(res.mot_cle);
+      cpt++;
+    }
+    console.log(this.motsCleAnalyse);
+    this.setKeywords2(this.motsCleAnalyse);
+
+  }
+
+  setKeywords2(keywords: MotCle[]): void {
     for (const cat of this.categories) {
       cat.mots_cles = [];
     }
   
     this.motsClesReponse = [];
-    for (const mc of keywordsActor) {
+  
+    for (const mc of keywords) {
+      const baseMc = mc;
+  
+      for (const catRef of baseMc.categories || []) {
+        const matchingCat = this.categories.find(c => c.id_nomenclature === catRef.id_nomenclature);
+        console.log(matchingCat);
+        if (matchingCat) {
+          matchingCat.mots_cles = matchingCat.mots_cles || [];
+  
+          const alreadyThere = matchingCat.mots_cles.some(k => k.id_mot_cle === baseMc.id_mot_cle);
+          if (!alreadyThere) {
+            matchingCat.mots_cles.push(baseMc);
+          }
+        }
+      }
+  
+      if (!this.motsClesReponse.some(k => k.id_mot_cle === baseMc.id_mot_cle)) {
+        this.motsClesReponse.push(baseMc);
+      }
+    }
+  }
+
+  setKeywords(keywords:MotCle[]): void {
+    for (const cat of this.categories) {
+      cat.mots_cles = [];
+    }
+  
+    this.motsClesReponse = [];
+    for (const mc of keywords) {
 
       if (mc.mot_cle_id_groupe !== null && mc.mot_cle_id_groupe !== undefined) {
         continue;
@@ -287,7 +337,9 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
       mc.diagnostic.id_diagnostic = this.diagnostic.id_diagnostic;
   
       for (const catRef of mc.categories || []) {
+        
         const matchingCat = this.categories.find(c => c.id_nomenclature === catRef.id_nomenclature);
+        
         if (matchingCat) {
           matchingCat.mots_cles = matchingCat.mots_cles || [];
   

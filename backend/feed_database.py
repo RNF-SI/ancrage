@@ -39,7 +39,7 @@ with app.app_context():
     nomenclatures = []
 
     # Ajout de 3 habitats (mnemonique = 'habitats')
-    habitats = []
+    """   habitats = []
     for nom in ['Forêt feuillue', 'Prairie humide', 'Landes atlantiques']:
         h = Nomenclature(
             libelle=nom,
@@ -47,7 +47,7 @@ with app.app_context():
             mnemonique='habitats'
         )
         db.session.add(h)
-        habitats.append(h)
+        habitats.append(h) """
 
     # Ajout de 3 types de site (mnemonique = 'statut')
     types_sites = []

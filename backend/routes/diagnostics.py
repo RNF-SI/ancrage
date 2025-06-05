@@ -1,9 +1,8 @@
 from flask import request, jsonify, current_app, send_from_directory
 from models.models import *
 from schemas.metier import *
-from sqlalchemy import func
 from sqlalchemy.orm import aliased
-from routes import bp,now, slugify, uuid
+from routes import bp,now, slugify, uuid,func
 from datetime import datetime
 import os,json
 from werkzeug.utils import secure_filename
@@ -256,51 +255,43 @@ def get_scores(id_diagnostic):
     return jsonify(data)
 
 @bp.route('/diagnostic/mots-cles/<int:id_diagnostic>',methods=['GET'])
-def getRepartitionMotsCles(id_diagnostic): 
-    # 1. Récupérer les mots-clés du diagnostic
-    mots_cles = (
-        db.session.query(MotCle)
+def get_afoms_par_mot_cle_et_diagnostic(id_diagnostic):
+    afoms = (
+        db.session.query(Afom)
+        .join(MotCle)
         .filter(MotCle.diagnostic_id == id_diagnostic)
         .all()
     )
 
-    # 2. Compter les réponses associées à chaque mot-clé
-    counts = dict(
-        db.session.query(
-            MotCle.id_mot_cle,
-            func.count(Reponse.id_reponse)
-        )
-        .join(reponse_mot_cle, reponse_mot_cle.c.mot_cle_id == MotCle.id_mot_cle)
-        .join(Reponse, reponse_mot_cle.c.reponse_id == Reponse.id_reponse)
-        .filter(MotCle.diagnostic_id == id_diagnostic)
-        .group_by(MotCle.id_mot_cle)
-        .all()
-    )
-
-    # 3. Formater la réponse
     data = []
-    for mc in mots_cles:
+    for afom in afoms:
+        mot_cle = afom.mot_cle
+
         data.append({
-            "id": mc.id_mot_cle,
-            "nom": mc.nom,
-            "nombre": counts.get(mc.id_mot_cle, 0),
-            "categories": [
-                {
-                    "id": cat.id_nomenclature,
-                    "libelle": cat.libelle,
-                    "value": cat.value
-                } for cat in mc.categories
-            ],
-            "mots_cles_issus": [
-                {
-                    "id": enfant.id_mot_cle,
-                    "nom": enfant.nom
-                } for enfant in mc.mots_cles_issus
-            ]
+            "id_afom": afom.id_afom,
+            "nombre": afom.number,
+            "mot_cle": {
+                "id_mot_cle": mot_cle.id_mot_cle,
+                "nom": mot_cle.nom,
+                "mots_cles_issus": [
+                    {
+                        "id_mot_cle": enfant.id_mot_cle,
+                        "nom": enfant.nom
+                    }
+                    for enfant in mot_cle.mots_cles_issus
+                ],
+                "categories": [
+                    {
+                        "id_nomenclature": cat.id_nomenclature,
+                        "libelle": cat.libelle,
+                        "value": cat.value
+                    }
+                    for cat in mot_cle.categories
+                ],
+            }
         })
 
     return jsonify(data)
-
 
 
 @bp.route('/diagnostic/upload', methods=['POST'])

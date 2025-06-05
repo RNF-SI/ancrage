@@ -2,7 +2,7 @@ from flask import Blueprint
 from datetime import datetime
 from slugify import slugify
 from sqlalchemy.orm import joinedload,aliased,relationship
-from sqlalchemy import and_
+from sqlalchemy import and_,func
 import uuid
 bp = Blueprint('main', __name__)
 now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
