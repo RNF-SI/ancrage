@@ -24,6 +24,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { AlerteMotsClesComponent } from '@app/components/alertes/alerte-mots-cles/alerte-mots-cles.component';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { GraphMotsCles } from '@app/models/graph-mots-cles';
+import { ThisReceiver } from '@angular/compiler';
 
 @Component({
   selector: 'app-mots-cles-zone',
@@ -382,21 +383,27 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
   mergeKeywords(source: MotCle, target: MotCle): void {
 
     if (!this.isGroup(source) && !this.isGroup(target)) {
+      let listToSend:MotCle[]=[];
+
+      if(this.modeAnalyse){
+        listToSend = this.motsCleAnalyse;
+      }else{
+        listToSend = this.motsClesReponse;
+      }
       const dialogRef = this.dialog.open(AlerteGroupeMotsClesComponent, {
+        disableClose: true,
         data: {
           source: source,
           target: target,
           diagnostic: this.diagnostic,
-          motsClesReponse: this.motsClesReponse,
+          motsClesReponse: listToSend,
           categories: this.categories
         }
       });
   
       dialogRef.afterClosed().subscribe(updatedMotsCles => {
         if (updatedMotsCles) {
-          if (this.modeAnalyse){
-            this
-          }
+          console.log(updatedMotsCles);
           this.setKeywords(updatedMotsCles);
         }
       });

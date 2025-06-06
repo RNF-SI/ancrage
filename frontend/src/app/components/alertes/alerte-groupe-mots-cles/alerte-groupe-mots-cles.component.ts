@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject } from '@angular/core';
+import { Component, inject, Inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
@@ -9,6 +9,7 @@ import { Nomenclature } from '@app/models/nomenclature.model';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-alerte-groupe-mots-cles',
@@ -30,32 +31,36 @@ export class AlerteGroupeMotsClesComponent{
         ) {}
  
   keyword = new MotCle();
+  private toastr = inject(ToastrService);
   
   compareNomenclatures = (a: Nomenclature, b: Nomenclature): boolean =>
     a && b ? a.id_nomenclature === b.id_nomenclature : a === b;
 
-  createGroup(){
-    if (this.keyword.nom && this.keyword.categories.length > 0) {
+  createGroup() {
+    const nomOk = this.keyword.nom && this.keyword.nom.trim().length > 0;
+    const categoriesOk = Array.isArray(this.keyword.categories) && this.keyword.categories.length > 0;
+  
+    if (nomOk && categoriesOk) {
       this.keyword.diagnostic = new Diagnostic();
       this.keyword.diagnostic.id_diagnostic = this.data.diagnostic.id_diagnostic;
-  
       this.keyword.mots_cles_issus = [this.data.source, this.data.target];
   
-      // Supprimer les enfants de la réponse
       this.data.motsClesReponse = this.data.motsClesReponse.filter(mc =>
         mc.id_mot_cle !== this.data.source.id_mot_cle &&
         mc.id_mot_cle !== this.data.target.id_mot_cle
       );
-      if(this.data.source.nombre && this.data.target.nombre){
+  
+      if (this.data.source.nombre && this.data.target.nombre) {
         this.keyword.nombre = this.data.source.nombre + this.data.target.nombre;
       }
-      // Ajouter le groupe
-      this.data.motsClesReponse.push(this.keyword);
   
+      this.data.motsClesReponse.push(this.keyword);
       this.dialogRef.close(this.data.motsClesReponse);
-      
-    }else{
-      alert('ko');
+    } else {
+      let message = 'Il manque :';
+      if (!nomOk) message += '\n- le nom';
+      if (!categoriesOk) message += '\n- au moins une catégorie';
+      this.toastr.warning(message, 'Données manquantes');
     }
   }
 

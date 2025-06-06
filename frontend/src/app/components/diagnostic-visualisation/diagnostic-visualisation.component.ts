@@ -51,7 +51,6 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   private diagSubscription?:Subscription;
   route = inject(ActivatedRoute);
   private siteService = inject(SiteService);
-  private router = inject(Router)
   private nomenclatureService = inject(NomenclatureService)
   id_diagnostic:number = 0;
   labels = new Labels();
@@ -98,7 +97,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   //Cache ou affiche le menu en fonction de l'onglet choisi
   onTabChange(event: MatTabChangeEvent) {
     let menu = document.getElementById("menu");
-    if (event.index === 2) { 
+    if (event.index === 3) { 
     
       if (menu?.className == "invisible"){
         menu?.classList.remove("invisible");

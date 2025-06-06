@@ -148,7 +148,10 @@ class MotCleSchema(SQLAlchemyAutoSchema):
 
     reponses = fields.Nested(lambda: ReponseSchema, many=True, exclude=("mots_cles",))
     categories = fields.Nested(lambda: NomenclatureLightSchema, many=True, exclude=("mots_cles",))
-    mots_cles_issus = fields.Nested(lambda: MotCleSchema(many=True), dump_only=True)
+    mots_cles_issus = fields.Nested(
+        lambda: MotCleSchema(many=True, exclude=("mots_cles_issus",)),
+        dump_only=True
+    )
 
 class NomenclatureSchema(SQLAlchemyAutoSchema):
     class Meta:
