@@ -23,6 +23,7 @@ import { Document } from '@app/models/document.model';
 import { environment } from 'src/environments/environment';
 import { MapComponent } from '../parts/map/map.component';
 import { MotsClesZoneComponent } from '../parts/mots-cles-zone/mots-cles-zone.component';
+import { AuthService } from '@app/home-rnf/services/auth-service.service';
 
 @Component({
   selector: 'app-diagnostic-visualisation',
@@ -59,6 +60,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   private docReadSub?:Subscription;
   environment = environment.flask_server + 'fichiers/';
   file?:Blob;
+  authService = inject(AuthService);
 
   @ViewChild(MapComponent) mapComponent!: MapComponent;
 
@@ -74,6 +76,8 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   slug="";
   files: File[] = [];
   dragOver = false;
+  id_role:number=0
+  is_read_only=false;
 
   ngOnInit(): void {
     this.previousPage = localStorage.getItem("previousPage")!;
@@ -88,7 +92,16 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
               this.diagnostic = diag;
               this.actors = diag.acteurs;
               this.themes = themes;
-              
+              const user = this.authService.getCurrentUser();
+              this.id_role = user.id_role;
+        
+              if(this.id_role !== this.diagnostic.created_by){
+                this.is_read_only = true;
+              }else{
+                if(this.diagnostic.is_read_only){
+                  this.is_read_only = true;
+                }
+              }
             });
           }
     });

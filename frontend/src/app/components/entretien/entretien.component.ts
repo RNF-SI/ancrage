@@ -67,12 +67,20 @@ export class EntretienComponent implements OnInit,OnDestroy{
           const noResponse$ = this.nomenclatureService.getNoResponse("");
 
           forkJoin([themes$,etats$,noResponse$]).subscribe(([themes,etats,noResponse]) => {
-            this.themes = themes;
+            this.prepareResults(themes,etats,noResponse);
+            
+          });
+        }
+    });
+  }
+
+  prepareResults(themes:Nomenclature[],etats:Nomenclature[],noResponse:Nomenclature){
+    this.themes = themes;
             this.etats = etats;
             this.noResponse = noResponse;
             const controls: { [key: string]: any } = {};
             this.afom = themes[themes.length-1];
-            console.log(themes);
+            
             this.themes.forEach(theme => {
 
               
@@ -103,15 +111,10 @@ export class EntretienComponent implements OnInit,OnDestroy{
               }, 0);
               
             }          
-            
-          });
-        }
-    });
   }
-
   //Envoie les données récupérées au formulaire
   patchForm(reponses:Reponse[]){
-
+    console.log(reponses);
     for(let i = 0;i<reponses.length;i++){
       this.formGroup.get(`question_${reponses[i].question?.id_question}`)?.setValue(reponses[i].valeur_reponse.value);
       this.formGroup.get(`reponse_${reponses[i].question?.id_question}`)?.setValue(reponses[i].commentaires);
@@ -200,8 +203,8 @@ export class EntretienComponent implements OnInit,OnDestroy{
     if (totalReponses > 0) {
       console.log(this.reponses);
       this.reponsesSubscription = this.reponseService.update(this.reponses).subscribe(
-        acteur => {
-          this.patchForm(acteur.reponses!);
+        themes => {
+          this.prepareResults(themes,this.etats,this.noResponse);
 
         }
       );

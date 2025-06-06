@@ -3,7 +3,7 @@ from flask import request
 from models.models import *
 from schemas.metier import *
 from routes import bp,now,func
-from routes.acteurs import getActeur
+from routes.nomenclatures import getAllNomenclaturesByType
     
 @bp.route('/reponses/objets', methods=['POST'])
 def enregistrer_reponses_depuis_objets():
@@ -14,9 +14,9 @@ def enregistrer_reponses_depuis_objets():
 
     enregistrer_reponses_acteur_depuis_objets(data)
     acteur_id = data[0].get('acteur', {}).get('id_acteur')
-    acteur = Acteur.query.filter_by(id_acteur=acteur_id).first()
     
-    return getActeur(acteur)
+    return getAllNomenclaturesByType("thème",acteur_id)
+
 
 def enregistrer_reponses_acteur_depuis_objets(reponses_objets): 
     if not reponses_objets:
@@ -161,6 +161,7 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
 
     db.session.commit()
 
+    
 def verifDatesEntretien(diagnostic):
    
     listeTermines = []

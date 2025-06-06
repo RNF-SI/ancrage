@@ -17,7 +17,7 @@
                         <div><b>{{labels.investigatorLabel}}</b> : <span>{{ diagnostic.identite_createur }}</span></div>
                         <h3>{{labels.chosenSites}}</h3>
                         <p *ngFor="let site of diagnostic.sites">{{ site.nom }}, {{site.type.libelle}} </p>
-                        <div *ngIf="!diagnostic.is_read_only">
+                        <div *ngIf="!is_read_only">
                           <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic + '/' + diagnostic.slug,diagnostic)">Modifier</button>
                         </div>
                         <h3>{{labels.files}}</h3>
@@ -46,7 +46,7 @@
                           </button>
                         </div>
                 </mat-tab>
-                <div *ngIf="!diagnostic.is_read_only else structures">
+                <div *ngIf="diagnostic.created_by === id_role; else structures">
                   <mat-tab label="Acteurs">
                     <div class="p-3">
                     
@@ -70,6 +70,7 @@
                                 [formGroup]="formGroup"
                                 [hideFilters]="hideFilters"
                                 [navigate]="navigate"
+                                [previousPage]="previousPage"
                         ></app-choix-acteurs>
                         <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic + '/' + diagnostic.slug,diagnostic)">Modifier</button>
                         <button mat-raised-button type="button" (click)="exportCSV()">{{labels.exportCSV}}</button>

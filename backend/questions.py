@@ -85,7 +85,7 @@ with app.app_context():
         "Selon vous, quelles sont les espèces emblématiques du site ?",
         "Parmi les documents suivants, lesquels connaissez-vous ?",
         "Vers qui vous tournez-vous pour avoir des informations ?",
-        "Les informations sur ce site sont-elles accessibles ?"
+        "Les informations dont vous avez besoin sur ce site sont-elles accessibles ?"
     ]
  
     question_labels_short = [
@@ -116,22 +116,22 @@ with app.app_context():
         ],
        
         ["Faux ou non réponse", "Faux ou non réponse", "Non réponse", "Faux ou non réponse", "Méconnaissance",
-        "Non connue", "Faux ou Non connu", "Ne connaît aucun des documents qui lui sont destinés",
-        "FAUX ou non réponse", "Non"],
+        "Non connue", "Faux ou non connues", "Ne connaît aucun des documents qui lui sont destinés",
+        "Faux ou non réponse", "Non"],
   
         ["1 mission", "1", "x", "x", "Localisation peu assurée",
         "x", "x", "x", "x", "x"],
     
         ["//si 2 bonnes réponses et 1 réponse fausse//", "2", "moins de 50 %", "Incomplet", "Localisation globalement correcte",
-        "Connaissance floue", "Des espèces mais pas celles attendues", "Connaît approximativement la documentation",
-        "Structure gestionnaire ou propriétaire", "Peu accessible"],
+        "Connaissance floue", "Des espèces mais pas celles attendues / sans caractère patrimonial", "Connaît approximativement la documentation",
+        "Contact peu précis ou peu adéquat (réponse floue)", "Peu accessible"],
     
         ["2 missions claires", "3", "x", "x", "Bon tracé, quelques approximations peu problématiques",
         "x", "x", "x", "x", "x"],
 
         ["3 missions", "4 ou 5", "plus de 50% des animations connues", "Complet", "Périmètre exact",
-        "Principales réglementations", "Vrai (au moins 1 espèce emblématique)", "Connaît tous les documents qui lui sont destinés",
-        "Conservateur.trice ou membre équipe", "Facilement accessible"]
+        "Principales réglementations", "Espèce(s) avec un intérêt patrimonial ou mise(s) en avant par les gestionnaires", "Connaît tous les documents qui lui sont destinés",
+        "Nom précis d’une personne ressource compétente ou responsable du site ", "Facilement accessible"]
     ]
 
     createQuestionsByTheme(THEME_MNEMONIQUE,THEME_LIBELLE,question_labels,question_labels_short,score_texts)
@@ -224,16 +224,16 @@ with app.app_context():
         "Echelle de ressenti",
         ],
 
-        ["Liens contraints / subis = 'RN nous impose un dialogue / une attitude'", "Aucun lien", "Jamais", "Pas du tout", "Conflit",
+        ["Liens contraints / subis = 'le site nous impose un dialogue / une attitude'", "Aucun lien", "Jamais", "Pas du tout", "Conflit",
         "Evolution négative"],
         
-        ["x", "Avis négatif", "Liens faibles", "<1fois/an", "Plutôt non",
+        ["x", "Liens faibles", "<1fois/an", "Plutôt non",
         "Aucun échange", "x"],
         
         ["Liens passifs / opportunistes = échanges ou liens lors de visites ou de contrats", "Liens moyens", "1fois/an", "Mitigé", "Echanges à minima",
         "Pas d'évolution"],
         
-        ["x", "Liens forts", "1fois/trimestre", "Plutôt oui", "Echanges réguliers et amicaux",
+        ["x", " liens recherchés par l’acteur", "1fois/trimestre", "Plutôt oui", "Echanges réguliers et amicaux",
         "x"],
         
         ["Liens forts, guidés par le partage d'une vocation environnementale (recherché par l'acteur)", "Liens d'importance prioritaire", "1fois/mois", "Tout à fait", "Echanges positifs",

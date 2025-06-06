@@ -1,6 +1,7 @@
 from app import create_app
-from models.models import db,Nomenclature
+from models.models import db,Acteur,Diagnostic,Nomenclature,Site,site_departement,site_diagnostic,acteur_categorie
 from datetime import datetime, timedelta
+from routes import slugify,uuid
 import random
 import string
 
@@ -69,6 +70,78 @@ with app.app_context():
         )
         db.session.add(t)
         types_sites.append(t)
+
+    db.session.commit()
+
+    # ---------------------
+    # Diagnostics (créés avant les sites)
+    # ---------------------
+    diagnostics = []
+    for i in range(10):
+        nom = f"Diagnostic {i}"
+        myuuid = uuid.uuid4()
+
+        d = Diagnostic(
+            nom=nom,
+            slug=slugify(nom) + '-' + str(myuuid),
+            date_debut=random_date(),
+            date_fin=random_date(0, 50),
+            is_read_only=False,
+            created_at=datetime.now(),
+            modified_at=datetime.now(),
+            created_by=random.randint(1, 5),
+        )
+        db.session.add(d)
+        diagnostics.append(d)
+    db.session.commit()
+    # ---------------------
+    # Sites, régions, départements
+    # ---------------------
+    site_data = [
+        (48.8566, 2.3522),  # Paris
+        (45.7640, 4.8357),  # Lyon
+        (43.2965, 5.3698),  # Marseille
+        (44.8378, -0.5792), # Bordeaux
+        (50.6292, 3.0573),  # Lille
+        (48.5734, 7.7521),  # Strasbourg
+        (47.2184, -1.5536), # Nantes
+        (45.1885, 5.7245),  # Grenoble
+        (43.6047, 1.4442),  # Toulouse
+        (49.4431, 1.0993),  # Rouen
+    ]
+
+    for idx, (lat, lon) in enumerate(site_data):
+        myuuid = uuid.uuid4()
+        nom=f"Site {idx}"
+        # Création du site
+        site = Site(
+            nom=nom,
+            slug = slugify(nom) + '-' + str(myuuid),
+            position_x=str(lon),
+            position_y=str(lat),
+            type_id=random.choice(types_sites).id_nomenclature,  # type au hasard
+            created_at=datetime.now(),
+            modified_at=datetime.now(),
+            created_by=1,
+            modified_by=1
+        )
+        db.session.add(site)
+        db.session.flush()  # pour récupérer site.id_site
+
+    # Tirage aléatoire d'un département entre 1 et 13
+        departement_id = random.randint(1, 13)
+        db.session.execute(
+            site_departement.insert().values(site_id=site.id_site, departement_id=departement_id)
+        )
+
+        # Liaison 1 ou 2 diagnostics
+        diag_to_link = random.sample(diagnostics, k=random.randint(1, 2))
+        for diag in diag_to_link:
+            db.session.execute(
+                site_diagnostic.insert().values(site_id=site.id_site, diagnostic_id=diag.id_diagnostic)
+            )
+
+    db.session.commit()
 
     categories = []
     profils = []
@@ -154,5 +227,47 @@ with app.app_context():
 
 
     db.session.commit()
+
+    # ---------------------
+    # Acteurs
+    # ---------------------
+    acteurs = []
+    for i in range(20):
+        # Choisir un diagnostic existant au hasard
+        diagnostic = random.choice(diagnostics)
+        nom=f"Nom {i}"
+        myuuid = uuid.uuid4()
+        acteur = Acteur(
+            nom=nom,
+            slug = slugify(nom) + '-' + str(myuuid),
+            prenom=f"Prénom {i}",
+            fonction=random.randint(1, 3),
+            telephone="0600000000",
+            mail=f"user{i}@example.com",
+            profil_cognitif_id=random.choice(profils).id_nomenclature,
+            structure=f"Structure {i}",
+            diagnostic_id=diagnostic.id_diagnostic,
+            commune_id=random.randint(69931, 100000), 
+            created_at=datetime.now(),
+            modified_at=datetime.now(),
+            created_by=1,
+            modified_by=1
+        )
+        db.session.add(acteur)
+        db.session.flush()
+        acteurs.append(acteur)
+
+        # Lier 1 à 3 catégories
+        for cat in random.sample(categories, k=random.randint(1, 3)):
+            db.session.execute(
+                acteur_categorie.insert().values(
+                    acteur_id=acteur.id_acteur,
+                    categorie_id=cat.id_nomenclature
+                )
+            )
+
+    db.session.commit()
+
+
 
     print("✅ Données de test créées avec succès.")

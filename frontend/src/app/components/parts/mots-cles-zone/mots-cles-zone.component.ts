@@ -292,7 +292,7 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
         }
       
       }
-    
+      console.log(reponse);
       this.reponses[this.reponses.length-1]=reponse;
       this.createReponse(reponse.question!.id_question);
     }else{

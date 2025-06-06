@@ -3,7 +3,8 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Reponse } from '@app/models/reponse.model';
 import { environment } from 'src/environments/environment';
-import { Acteur } from '@app/models/acteur.model';
+import { Nomenclature } from '@app/models/nomenclature.model';
+import { INomenclature } from '@app/interfaces/nomenclature.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -14,10 +15,14 @@ export class ReponseService {
   private http = inject(HttpClient);
 
   //Enregistre la réponse
-  update(array:Reponse[]): Observable<Acteur> {
-       return this.http.post<Acteur>(this.GET_ALL_URL+"/objets",array).pipe(
-        map(acteurJson => Acteur.fromJson(acteurJson))
-       );
+  update(array:Reponse[]): Observable<Nomenclature[]> {
+       return this.http.post<INomenclature[]>(this.GET_ALL_URL+'/objets',array).pipe(
+                 map(nomenclatureJsonArray => {
+                   return nomenclatureJsonArray.map<Nomenclature>(
+                     nomenclatureJson => Nomenclature.fromJson(nomenclatureJson)
+                   )
+                 })
+               );
   }
 
 

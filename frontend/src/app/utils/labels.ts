@@ -43,4 +43,5 @@ export class Labels {
     exportCSV = "Exporter en CSV";
     slug="Slug";
     files="Fichiers joints";
+    interviewPrompt = "Saisir les entretiens";
 }
