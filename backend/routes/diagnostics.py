@@ -402,6 +402,94 @@ def changeValuesDiagnostic(diagnostic,data):
 
     return diagnostic
 
+@bp.route('/diagnostic/afom/update',methods=['POST'])
+def enregistrer_afoms():
+    graph_data = request.get_json()
+
+    try:
+        diagnostic_id = graph_data[0]['mot_cle']['diagnostic']['id_diagnostic']
+        print(diagnostic_id)
+    except (KeyError, IndexError, TypeError):
+        print("[ERREUR] Impossible d'extraire l'identifiant du diagnostic.")
+        return {"error": "Données invalides"}, 400
+
+    try:
+        # Suppression des AFOM existants liés au diagnostic
+        afom_ids_to_delete = (
+            db.session.query(Afom.id_afom)
+            .join(Afom.mot_cle)
+            .filter(MotCle.diagnostic_id == diagnostic_id)
+            .all()
+        )
+        ids = [id_tuple[0] for id_tuple in afom_ids_to_delete]
+        if ids:
+            db.session.query(Afom).filter(Afom.id_afom.in_(ids)).delete(synchronize_session=False)
+
+        mots_cles_bdd = []
+        groupes_attendus = []
+
+        # Étape 1 : Création ou récupération des mots-clés et groupes
+        for item in graph_data:
+            mot_cle_data = item['mot_cle']
+            nombre = item.get('nombre', 0)
+            nom = mot_cle_data.get('nom')
+            diagnostic_id = mot_cle_data.get('diagnostic', {}).get('id_diagnostic')
+            categories = mot_cle_data.get('categories', [])
+            enfants = mot_cle_data.get('mots_cles_issus', [])
+
+            if not nom or not diagnostic_id:
+                continue
+
+            mc_existant = MotCle.query.filter_by(nom=nom, diagnostic_id=diagnostic_id).first()
+            if not mc_existant:
+                mc_existant = MotCle(nom=nom, diagnostic_id=diagnostic_id)
+                db.session.add(mc_existant)
+                db.session.flush()
+
+            for cat in categories:
+                cat_id = cat.get('id_nomenclature')
+                if cat_id:
+                    cat_obj = Nomenclature.query.get(cat_id)
+                    if cat_obj and cat_obj not in mc_existant.categories:
+                        mc_existant.categories.append(cat_obj)
+
+            mots_cles_bdd.append((mc_existant, nombre))
+
+            if enfants:
+                groupes_attendus.append((mc_existant, enfants))
+
+        # Étape 2 : Création des enfants et liaison aux groupes
+        for parent_mc, enfants in groupes_attendus:
+            for enfant_data in enfants:
+                nom_enfant = enfant_data.get('nom')
+                diag_id_enfant = enfant_data.get('diagnostic', {}).get('id_diagnostic')
+                if not nom_enfant or not diag_id_enfant:
+                    continue
+
+                enfant = MotCle.query.filter_by(nom=nom_enfant, diagnostic_id=diag_id_enfant).first()
+                if not enfant:
+                    enfant = MotCle(nom=nom_enfant, diagnostic_id=diag_id_enfant)
+                    db.session.add(enfant)
+                    db.session.flush()
+
+                enfant.mots_cles_groupe_id = parent_mc.id_mot_cle
+
+        # Étape 3 : Création des AFOMs (mots_cles_bdd contient les couples (mot_clé, nombre))
+        for mot_cle, nombre in mots_cles_bdd:
+            afom = Afom(mot_cle_id=mot_cle.id_mot_cle, number=nombre)
+            db.session.add(afom)
+
+        db.session.commit()
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERREUR ENREGISTREMENT] {e}")
+        return {"error": "Erreur serveur lors de l’enregistrement"}, 500
+
+    return get_afoms_par_mot_cle_et_diagnostic(diagnostic_id)
+
+    
+
 def deleteActors(diagnostic_id):
      
     Acteur.query.filter(

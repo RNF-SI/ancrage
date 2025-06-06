@@ -116,5 +116,16 @@ export class DiagnosticService {
         responseType: 'blob'
       });
     }
+
+    updateAfom(listeAfoms:GraphMotsCles[]): Observable<GraphMotsCles[]> {
+      
+      return this.http.post<IGraphMotsCles[]>(this.BASE_URL + '/afom/update', listeAfoms).pipe(
+        map(graphiquesJsonArray => {
+          return graphiquesJsonArray.map<GraphMotsCles>(
+            graphJson => GraphMotsCles.fromJson(graphJson)
+          )
+        })
+      );
+    }
     
 }

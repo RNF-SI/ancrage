@@ -46,12 +46,14 @@ export class AlerteGroupeMotsClesComponent{
         mc.id_mot_cle !== this.data.source.id_mot_cle &&
         mc.id_mot_cle !== this.data.target.id_mot_cle
       );
-  
+      if(this.data.source.nombre && this.data.target.nombre){
+        this.keyword.nombre = this.data.source.nombre + this.data.target.nombre;
+      }
       // Ajouter le groupe
       this.data.motsClesReponse.push(this.keyword);
   
       this.dialogRef.close(this.data.motsClesReponse);
-      console.log(this.data.motsClesReponse);
+      
     }else{
       alert('ko');
     }
