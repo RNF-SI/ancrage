@@ -2,37 +2,43 @@ from models.models import db
 from flask import request
 from models.models import *
 from schemas.metier import *
-from routes import bp,now,func
+from routes import bp, now, func, logger
 from routes.nomenclatures import getAllNomenclaturesByType
-    
+
 @bp.route('/reponses/objets', methods=['POST'])
 def enregistrer_reponses_depuis_objets():
     data = request.get_json()
+    logger.info("Réception des données de réponses depuis objets")
 
     if not isinstance(data, list):
+        logger.warning("Format invalide : données non listées")
         return {"message": "Format invalide"}, 400
 
     enregistrer_reponses_acteur_depuis_objets(data)
     acteur_id = data[0].get('acteur', {}).get('id_acteur')
-    
-    return getAllNomenclaturesByType("thème",acteur_id)
+    logger.info(f"Retour des nomenclatures pour l'acteur ID {acteur_id}")
+
+    return getAllNomenclaturesByType("thème", acteur_id)
 
 
 def enregistrer_reponses_acteur_depuis_objets(reponses_objets): 
     if not reponses_objets:
+        logger.warning("Aucune réponse fournie")
         return
 
     try:
         acteur_data = reponses_objets[0]['acteur']
         acteur_id = acteur_data['id_acteur']
     except (KeyError, IndexError, TypeError):
-        print("[ERREUR] Impossible d'extraire l'identifiant de l'acteur.")
+        logger.error("Impossible d'extraire l'identifiant de l'acteur.")
         return
 
     acteur = Acteur.query.get(acteur_id)
     if not acteur:
-        print(f"[ERREUR] Acteur avec id {acteur_id} introuvable.")
+        logger.error(f"Acteur avec id {acteur_id} introuvable.")
         return
+
+    logger.info(f"Traitement des réponses pour l'acteur ID {acteur_id}")
 
     statut_data = acteur_data.get("statut_entretien")
     if statut_data:
@@ -41,7 +47,7 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
             if statut_id and isinstance(statut_id, int):
                 acteur.statut_entretien_id = statut_id
         except Exception as e:
-            print(f"[ERREUR statut_entretien] {e}")
+            logger.error(f"Erreur lors de l'enregistrement du statut entretien : {e}")
 
     questions_ids_envoyees = set()
 
@@ -52,6 +58,7 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
             commentaires = item.get('commentaires', "")
             mots_cles_front = item.get('mots_cles', [])
         except (KeyError, TypeError):
+            logger.warning("Réponse mal formée ignorée")
             continue
 
         if not valeur_reponse_id or valeur_reponse_id <= 0:
@@ -60,7 +67,6 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
         mots_cles_bdd = []
         groupes_attendus = []
 
-        # Étape 1 : Création ou MAJ de tous les mots-clés
         for mc in mots_cles_front:
             nom = mc['nom']
             diagnostic_id = mc['diagnostic']['id_diagnostic']
@@ -82,11 +88,9 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
 
             mots_cles_bdd.append(mc_existant)
 
-            # On prépare l'association avec les enfants (s'ils existent)
             if enfants:
                 groupes_attendus.append((mc_existant, enfants))
 
-        # Étape 2 : Pour chaque groupe, on crée ses enfants s’ils n'existent pas et on les relie
         for parent_mc, enfants in groupes_attendus:
             for enfant_data in enfants:
                 nom_enfant = enfant_data.get('nom')
@@ -103,7 +107,6 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
 
                 enfant.mots_cles_groupe_id = parent_mc.id_mot_cle
 
-        # Étape 3 : Réponse
         questions_ids_envoyees.add(question_id)
         reponse = Reponse.query.filter_by(acteur_id=acteur_id, question_id=question_id).first()
 
@@ -121,13 +124,12 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
             )
             db.session.add(nouvelle_reponse)
 
-    # Nettoyage : suppression des réponses non envoyées
     reponses_existantes = Reponse.query.filter_by(acteur_id=acteur_id).all()
     for r in reponses_existantes:
         if r.question_id not in questions_ids_envoyees:
             db.session.delete(r)
 
-    
+    logger.info(f"Réponses enregistrées pour l'acteur ID {acteur_id}. Vérification des dates entretien…")
     verifDatesEntretien(acteur.diagnostic)
 
     diagnostic_id = acteur.diagnostic_id
@@ -140,43 +142,42 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
         .all()
     )
 
-    # Étape 2 : supprimer sans jointure
     afom_ids_to_delete = [id_tuple[0] for id_tuple in afom_ids_to_delete]
 
     if afom_ids_to_delete:
         db.session.query(Afom).filter(Afom.id_afom.in_(afom_ids_to_delete)).delete(synchronize_session=False)
 
-    # Recréer les entrées AFOM une à une
     for item in mot_cles_repartis:
         mot_cle = item["mot_cle_obj"]
-        count = item["nombre"]  
+        count = item["nombre"]
 
         for cat in item['categories']:
             afom = Afom(
-                
                 mot_cle_id=mot_cle.id_mot_cle,
                 number=count
             )
             db.session.add(afom)
 
     db.session.commit()
+    logger.info(f"Réponses, mots-clés et AFOM enregistrés avec succès pour le diagnostic ID {diagnostic_id}")
 
-    
+
 def verifDatesEntretien(diagnostic):
-   
     listeTermines = []
     for actor in diagnostic.acteurs:
-       
-        if actor.statut_entretien:
-            if actor.statut_entretien.libelle == 'Réalisé':
-                listeTermines.append(actor)
-    print(len(listeTermines))
+        if actor.statut_entretien and actor.statut_entretien.libelle == 'Réalisé':
+            listeTermines.append(actor)
+
+    logger.info(f"Nombre d'acteurs avec entretien 'Réalisé' : {len(listeTermines)}")
+
     if len(listeTermines) == 1:
         diagnostic.date_debut = now
     if len(listeTermines) == len(diagnostic.acteurs):
         diagnostic.date_fin = now
+
     db.session.add(diagnostic)
     db.session.commit()
+
 
 def getRepartitionMotsCles(id_diagnostic): 
     mots_cles = (
@@ -209,4 +210,3 @@ def getRepartitionMotsCles(id_diagnostic):
         })
 
     return data
-
