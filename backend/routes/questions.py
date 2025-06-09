@@ -2,8 +2,9 @@ from models.models import db
 from flask import request
 from models.models import *
 from schemas.metier import *
-from routes import bp, now, func, logger
+from routes import bp, now, func
 from routes.nomenclatures import getAllNomenclaturesByType
+from routes.logger_config import logger
 
 @bp.route('/reponses/objets', methods=['POST'])
 def enregistrer_reponses_depuis_objets():
