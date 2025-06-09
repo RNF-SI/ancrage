@@ -4,8 +4,9 @@ from schemas.metier import *
 from sqlalchemy.orm import aliased
 from routes import bp,now, slugify, uuid,func
 from datetime import datetime
-import os,json
+import json
 from werkzeug.utils import secure_filename
+from routes.logger_config import os,logger
 
 @bp.route('/diagnostic/<int:id_diagnostic>/<slug>', methods=['GET','PUT'])
 def diagnosticMethods(id_diagnostic,slug):
@@ -21,9 +22,9 @@ def diagnosticMethods(id_diagnostic,slug):
             data = request.get_json()
             
             if 'acteurs' in data:
-                print(f"Acteurs reçus ({len(data['acteurs'])}) :")
+                logger.info(f"Acteurs reçus ({len(data['acteurs'])}) :")
                 for acteur in data['acteurs']:
-                    print(f" - ID: {acteur.get('id_acteur')}, Nom: {acteur.get('nom')}")
+                    logger.info(f" - ID: {acteur.get('id_acteur')}, Nom: {acteur.get('nom')}")
             
             diagnostic = changeValuesDiagnostic(diagnostic,data)
 
@@ -38,16 +39,16 @@ def diagnosticMethods(id_diagnostic,slug):
             return getDiagnostic(diagnostic)
     
 def print_diagnostic(diagnostic):
-    print("🔍 Diagnostic :")
-    print(f"  ID              : {diagnostic.id_diagnostic}")
-    print(f"  Nom             : {diagnostic.nom}")
-    print(f"  Date début      : {diagnostic.date_debut}")
-    print(f"  Date fin        : {diagnostic.date_fin}")
-    print(f"  Date rapport    : {diagnostic.date_rapport}")
-    print(f"  Créé par        : {diagnostic.created_by}")
-    print(f"  Est en lecture seule : {diagnostic.is_read_only}")
-    print(f"  Sites associés  : {[site.id_site for site in diagnostic.sites]}")
-    print(f"  Acteurs associés: {[acteur.id_acteur for acteur in diagnostic.acteurs]}")
+    logger.info("🔍 Diagnostic :")
+    logger.info(f"  ID              : {diagnostic.id_diagnostic}")
+    logger.info(f"  Nom             : {diagnostic.nom}")
+    logger.info(f"  Date début      : {diagnostic.date_debut}")
+    logger.info(f"  Date fin        : {diagnostic.date_fin}")
+    logger.info(f"  Date rapport    : {diagnostic.date_rapport}")
+    logger.info(f"  Créé par        : {diagnostic.created_by}")
+    logger.info(f"  Est en lecture seule : {diagnostic.is_read_only}")
+    logger.info(f"  Sites associés  : {[site.id_site for site in diagnostic.sites]}")
+    logger.info(f"  Acteurs associés: {[acteur.id_acteur for acteur in diagnostic.acteurs]}")
 
 @bp.route('/diagnostic',methods=['POST'])
 def postDiagnostic():
@@ -96,7 +97,7 @@ def getAllDiagnosticsBySites():
         .all()
     )
 
-    print("Diagnostics filtrés :", [f"id={d.id_diagnostic}, nom={d.nom}" for d in filtered_diagnostics])
+    logger.info("Diagnostics filtrés :", [f"id={d.id_diagnostic}, nom={d.nom}" for d in filtered_diagnostics])
     schema = DiagnosticSchema(many=True)
     return jsonify(schema.dump(filtered_diagnostics))
 
@@ -335,7 +336,7 @@ def uploaded_file(filename):
     upload_folder = current_app.config['UPLOAD_FOLDER']
     full_path = os.path.join(upload_folder, filename)
 
-    print("Recherche fichier :", full_path)
+    logger.info("Recherche fichier :", full_path)
 
     if not os.path.exists(full_path):
         return f"Fichier non trouvé : {filename}", 404
@@ -364,7 +365,7 @@ def changeValuesDiagnostic(diagnostic,data):
         if site:
             diagnostic.sites.append(site)
         else:
-            print(f"Site ID {site_id} not found in database.")
+            logger.info(f"Site ID {site_id} not found in database.")
 
     if 'acteurs' in data:
         
@@ -408,9 +409,9 @@ def enregistrer_afoms():
 
     try:
         diagnostic_id = graph_data[0]['mot_cle']['diagnostic']['id_diagnostic']
-        print(diagnostic_id)
+        logger.info(diagnostic_id)
     except (KeyError, IndexError, TypeError):
-        print("[ERREUR] Impossible d'extraire l'identifiant du diagnostic.")
+        logger.info("[ERREUR] Impossible d'extraire l'identifiant du diagnostic.")
         return {"error": "Données invalides"}, 400
 
     try:
@@ -483,7 +484,7 @@ def enregistrer_afoms():
 
     except Exception as e:
         db.session.rollback()
-        print(f"[ERREUR ENREGISTREMENT] {e}")
+        logger.info(f"[ERREUR ENREGISTREMENT] {e}")
         return {"error": "Erreur serveur lors de l’enregistrement"}, 500
 
     return get_afoms_par_mot_cle_et_diagnostic(diagnostic_id)

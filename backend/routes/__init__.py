@@ -4,6 +4,7 @@ from slugify import slugify
 from sqlalchemy.orm import joinedload,aliased,relationship
 from sqlalchemy import and_,func,text
 import uuid
+
 bp = Blueprint('main', __name__)
 now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 # Importe toutes les routes ici (elles s’enregistreront sur ce blueprint)
