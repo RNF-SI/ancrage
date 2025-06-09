@@ -13,6 +13,8 @@ si vous avez déjà les localités mais pas les latitudes, longitudes des commun
 9. Lancer python feed_database.py (ou feed_data_test.py pour données test) 
 10. Lancer python questions.py si les questions ont été modifiées
 Commandes à faire la première fois :
+11. Lancer le serveur flask
 11. Lancer ps aux | grep flask et notez le nom d'utilisateur qui s'affiche au début de chaque ligne (ex:user)
 12. Lancer sudo chown user:user /var/log/ancrage (remplacer user par votre nom d'utilisateur)
 13. Lancer sudo chmod 755 /var/log/ancrage
+14. Redémarrer le serveur flask
