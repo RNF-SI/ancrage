@@ -45,4 +45,15 @@
       </div>
     </div>
   </div>
+  
+</div>
+<div class="charts-container">
+  <h2>AFOM</h2>
+  <div *ngFor="let chart of groupedCharts" class="chart-wrapper">
+    <canvas baseChart
+      [data]="chart.chartData.data"
+      [type]="chart.chartData.type"
+      [options]="chart.chartData.options">
+    </canvas>
+  </div>
 </div>

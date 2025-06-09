@@ -8,11 +8,12 @@ import { AvgPerQuestion } from '@app/interfaces/avg-per-question.interface';
 import { CommonModule } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { ActivatedRoute } from '@angular/router';
-import { ChartData, ChartOptions, RadialLinearScaleOptions } from 'chart.js';
+import { Chart, ChartConfiguration, ChartData, ChartOptions, RadialLinearScaleOptions } from 'chart.js';
 import { GraphRepartition } from '@app/models/graph-repartition.model';
 import { MatButtonModule } from '@angular/material/button';
 import { Labels } from '@app/utils/labels';
 import { GraphRadar } from '@app/models/graph-radar.model';
+import { GraphMotsCles } from '@app/models/graph-mots-cles';
 
 //COmposant pour visualiser les graphiques
 interface ReponseRep {
@@ -76,6 +77,13 @@ export class GraphiquesComponent implements OnDestroy{
     theme: string;
     charts: AvgPerQuestion[];
   }[] = [];
+  @Input() data: GraphMotsCles[] = [];
+
+  groupedCharts: {
+    categorie: string;
+    chartData: ChartConfiguration<'bar'>;
+  }[] = [];
+
 
   ngOnChanges(changes: SimpleChanges): void {
       if (changes['diagnostic']) {
@@ -89,7 +97,8 @@ export class GraphiquesComponent implements OnDestroy{
     const moyennes$ = this.diagnosticService.getAverageByQuestion(id_diagnostic);
     const repartitions$ = this.diagnosticService.getRepartition(id_diagnostic);
     const radars$ = this.diagnosticService.getRadars(id_diagnostic);
-    this.diagnosticSubscription = forkJoin([moyennes$,repartitions$,radars$]).subscribe(([graphs,repartitions,radars]) => {
+    const motsCles$ = this.diagnosticService.getOccurencesKeyWords(id_diagnostic);
+    this.diagnosticSubscription = forkJoin([moyennes$,repartitions$,radars$,motsCles$]).subscribe(([graphs,repartitions,radars,motsCles]) => {
       const grouped = new Map<string, GraphMoy[]>();
       for (const entry of graphs) {
         if (!grouped.has(entry.question)) {
@@ -202,8 +211,72 @@ export class GraphiquesComponent implements OnDestroy{
           
         };
       });
-                    
+
+      this.data = motsCles;
+      this.groupByCategorie();
+                      
     });
+  }
+
+  private groupByCategorie(): void {
+    this.groupedCharts = [];
+    const grouped: Record<string, { nom: string; nombre: number }[]> = {};
+
+    for (const item of this.data) {
+      for (const cat of item.mot_cle.categories) {
+        if (!grouped[cat.libelle]) {
+          grouped[cat.libelle] = [];
+        }
+        grouped[cat.libelle].push({
+          nom: item.mot_cle.nom,
+          nombre: item.nombre
+        });
+      }
+    }
+
+    this.groupedCharts = Object.entries(grouped).map(([categorie, mots]) => ({
+      categorie,
+      chartData: {
+        type: 'bar',
+        data: {
+          labels: mots.map(m => m.nom),
+          datasets: [{
+            data: mots.map(m => m.nombre),
+            label: categorie
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Mot-clé'
+              }
+            },
+            y: {
+              beginAtZero: true,
+              min: 0,
+              max: 5,
+              ticks: { stepSize: 1 },
+              title: {
+                display: true,
+                text: 'Nombre d\'occurrences'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            title: {
+              display: true,
+              text: `Catégorie : ${categorie}`
+            }
+          }
+        }
+      }
+    }));
   }
 
   //Groupe les résultats par question

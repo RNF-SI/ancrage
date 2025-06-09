@@ -75,6 +75,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
   }
 
   prepareResults(themes:Nomenclature[],etats:Nomenclature[],noResponse:Nomenclature){
+    this.reponses = [];
     this.themes = themes;
             this.etats = etats;
             this.noResponse = noResponse;

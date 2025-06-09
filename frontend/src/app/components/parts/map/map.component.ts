@@ -15,6 +15,8 @@ import { Site } from '@app/models/site.model';
 import { Labels } from '@app/utils/labels';
 import * as L from 'leaflet';
 import 'leaflet.markercluster';
+import html2canvas from 'html2canvas';
+import { MatButtonModule } from '@angular/material/button';
 
 L.Marker.prototype.options.icon = L.icon({
   iconRetinaUrl: 'assets/data/marker-icon-2x.png',
@@ -32,6 +34,7 @@ L.Marker.prototype.options.icon = L.icon({
   templateUrl: './map.component.html',
   standalone: true,
   styleUrls: ['./map.component.css'],
+  imports:[MatButtonModule]
 })
 export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterViewChecked {
 
@@ -47,7 +50,6 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
   private actorsRendered = false;
   @ViewChild('mapContainer') mapContainer!: ElementRef;
   private _actors: Acteur[] = [];
-
   @Input()
   set actors(value: Acteur[]) {
     this._actors = value;
@@ -254,5 +256,18 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
       mapContainer.innerHTML = ''; // supprime tout contenu DOM résiduel
     }
     
+  }
+
+  exportMapAsPNG(): void {
+    const mapElement = document.getElementById('map'); // Assure-toi que ta carte a bien cet id
+
+    if (mapElement) {
+      html2canvas(mapElement, { useCORS: true }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'map.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
   }
 }
