@@ -1,11 +1,11 @@
 1. git fetch 
 2. git pull
-3. Exécuter la migration en tapant flask db migrate "Première migration" si les modèles ont modifiés ou première migration
+3. Exécuter la migration en tapant flask db migrate -m "Première migration" si les modèles ont modifiés ou première migration
 4. Mettre à jour la base de données en tapant flask db upgrade si les schémas ont été modifiés ou première migration
 5. Importer les scripts SQL (communes, départements, régions) (si première migration) ou taper 
-UPDATE t_communes SET
+`UPDATE t_communes SET
   latitude = ST_Y(ST_Centroid(geom)),
-  longitude = ST_X(ST_Centroid(geom));
+  longitude = ST_X(ST_Centroid(geom));`
 si vous avez déjà les localités mais pas les latitudes, longitudes des communes
 6. Installer uuid : pip install Flask-UUID si non installé
 7. Installer Slugify : pip install slugify si non installé
