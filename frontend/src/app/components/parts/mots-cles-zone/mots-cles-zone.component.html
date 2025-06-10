@@ -32,40 +32,47 @@
     </div>
   </div>
   <div class="col-6">
-    <mat-form-field appearance="outline">
-      <mat-chip-set>
-        <mat-chip
-          *ngFor="let keyword of keywords"
-          [removable]="true"
-          (removed)="remove(keyword)">
-          {{ keyword }}
-          <button matChipRemove>
-            <mat-icon>cancel</mat-icon>
-          </button>
-        </mat-chip>
-      </mat-chip-set>
-    
-      <input
-        matInput
-        [formControl]="inputCtrl"
-        [matAutocomplete]="auto"
-        (keydown)="handleKeydown($event)"
-        placeholder="Ajouter un mot-clé"
-      />
+    <div *ngIf="!modeAnalyse">
+      <mat-form-field appearance="outline">
+        <mat-chip-set>
+          <mat-chip
+            *ngFor="let keyword of keywords"
+            [removable]="true"
+            (removed)="remove(keyword)">
+            {{ keyword }}
+            <button matChipRemove>
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip>
+        </mat-chip-set>
       
-      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
-        <mat-option *ngFor="let option of filteredKeywords | async" [value]="option">
-          {{ option }}
-        </mat-option>
-      </mat-autocomplete>
-    </mat-form-field>
+        <input
+          matInput
+          [formControl]="inputCtrl"
+          [matAutocomplete]="auto"
+          (keydown)="handleKeydown($event)"
+          placeholder="Ajouter un mot-clé"
+        />
+        
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
+          <mat-option *ngFor="let option of filteredKeywords | async" [value]="option">
+            {{ option }}
+          </mat-option>
+        </mat-autocomplete>
+      
+      </mat-form-field>
+    </div>
     <h3>Instructions</h3>
     <ul>
-      <li>Ajouter un mot-clé : tapez le mot que vous voulez dans la zone de saisie. S'il existe déjà sur le diagnostic, vous pourrez le sélectionner. S'il n'existe pas, tapez Entrée pour créer le mot.</li>
+      <span *ngIf="!modeAnalyse">
+        <li>Ajouter un mot-clé : tapez le mot que vous voulez dans la zone de saisie. S'il existe déjà sur le diagnostic, vous pourrez le sélectionner. S'il n'existe pas, tapez Entrée pour créer le mot.</li>
+      </span>
       <li>Fusionner deux mot-clés : déplacez un mot sur un autre en maintenant la touche CTRL. Vous pourrez alors saisir le nom d'un groupe qui absorbera les deux mots-clés. Les groupes sont marqués par une icône Répertoire. Vous pouvez afficher ce qu'il contient en double-cliquant dessus.</li>
       <li>Ajouter un mot-clé à un groupe existant : déplacez un mot sur un groupe existant en maintenant la touche CTRL. Il sera alors absorbé par le groupe.</li>
       <li>Dupliquer un mot-clé : si vous avez besoin qu'un mot-clé apparaisse dans deux catégories à la fois, déplacez-le d'une catégorie à une autre en maintenant la touche MAJ. Il apparaîtra alors à la fois dans la catégorie d'origine et la catégorie ciblée.</li>
     </ul>
   </div>
-  <button mat-raised-button type="button" color="warn" (click)="sendResponse()">Envoyer réponse</button>
+  <div *ngIf="diagnostic.created_by == id_role && !diagnostic.is_read_only">
+    <button mat-raised-button type="button" color="warn" (click)="sendResponse()">Enregistrer</button>
+  </div>
 </div>

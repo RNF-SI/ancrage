@@ -44,25 +44,7 @@ registerLocaleData(localeFr);
   styleUrls: ['./diagnostic.component.css'],
   standalone:true,
   imports:[CommonModule,MatSelectModule, MatFormFieldModule,FormsModule,MatInputModule,ChoixActeursComponent,ReactiveFormsModule,MatButtonModule,MatDatepickerModule,MatMomentDateModule,FontAwesomeModule,MatTooltipModule],
-  providers: [
-    { provide: LOCALE_ID, useValue: 'fr-FR' },
-    { provide: MAT_DATE_LOCALE, useValue: 'fr-FR' },
-    { provide: MAT_MOMENT_DATE_ADAPTER_OPTIONS, useValue: { useUtc: true } },
-    {
-      provide: MAT_DATE_FORMATS,
-      useValue: {
-        parse: {
-          dateInput: 'DD/MM/YY', 
-        },
-        display: {
-          dateInput: 'DD/MM/YY',
-          monthYearLabel: 'MMMM YYYY',
-          dateA11yLabel: 'LL',
-          monthYearA11yLabel: 'MMMM YYYY',
-        },
-      },
-    },
-  ]
+  
 })
 export class DiagnosticComponent implements OnInit, OnDestroy{
 
@@ -100,16 +82,13 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   private routeSubscription?:Subscription;
   private diagnosticSubscription ?:Subscription;
   private route = inject(ActivatedRoute);
-  private actorsService = inject(ActeurService);
   private diagnosticsService = inject(DiagnosticService);
   private siteService = inject(SiteService);
-  private departementService = inject(DepartementService);
-  private nomenclatureService = inject(NomenclatureService);
   private authService = inject(AuthService);
   private dialog = inject(MatDialog);
   private diagnosticStoreSubscription ?:Subscription;
-  private dateAdapter = inject(DateAdapter);
-
+  
+  no_creation=true;
   user_id=0;
   id_organisme = 0;
   actorsSelected:MatTableDataSource<Acteur>= new MatTableDataSource();
@@ -120,7 +99,6 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       id_diagnostic: [0, [Validators.required]],
       nom: ['', [Validators.required]],
       sites: this.fb.control<Site[]>([], [Validators.required]),  
-      acteurs: this.fb.control<Acteur[]>([], [Validators.required]),
       date_rapport: this.fb.control<Moment | null>(null),
       created_by: [0, []],
       id_organisme: [0, []],
@@ -130,7 +108,6 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     });
   previousPage = "";
   user:any;
-  infobulleSaisieDateRapport = "Attention ! Ne saisissez ce champ uniquement si vous avez publié votre rapport. Après la saisie de cette date, vous ne pourrez plus modifier le diagnostic.";
   slug="";
   private actorsSub?:Subscription;
   initialize=true;
@@ -138,12 +115,10 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   ngOnInit(): void {
     
     let diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
-    
-    this.dateAdapter.setLocale('fr-FR');
     this.titleDiagnostic = this.titleCreateDiag;
     this.previousPage = localStorage.getItem("previousPage")!;
     this.user = this.authService.getCurrentUser();
-    this.routeSubscription = this.route.params.subscribe(async (params: any) => {
+    this.routeSubscription = this.route.params.subscribe((params: any) => {
       this.id_diagnostic = params['id_diagnostic'];  
       this.slug = params['slug'];
       const sites$ = this.siteService.getAll();
@@ -170,9 +145,9 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
             this.uniqueSites.find(s => s.id_site === site.id_site) || site
           );
           this.chosenSites = remappedSites;
-          this.getActors(this.chosenSites,diag);    
           this.initialize = false;
-      
+          this.checkSite();
+          this.getDiagName(this.chosenSites,diagnostic);
         });
       } else {
         //Création
@@ -187,90 +162,26 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
             this.uniqueSites.find(s => s.id_site === site.id_site) || site
           );
           this.chosenSites = remappedSites;
-          this.getActors(this.chosenSites,diagnostic);
           this.initialize = false;
+          this.checkSite();
+          this.getDiagName(this.chosenSites,diagnostic);
         });
       }
+      
     });
     
   }
 
-  //Sélectionne les acteurs dans l'interface
-  setActors(diag: Diagnostic) {
-    // Ajoute les acteurs manquants à uniqueActors
-    const acteursFromDiag = diag.acteurs || [];
-  
-    for (const acteur of acteursFromDiag) {
-      const alreadyExists = this.uniqueActors.some(a => a.id_acteur === acteur.id_acteur);
-      if (!alreadyExists) {
-        this.uniqueActors.push(acteur);
-      }
-    }
-  
-    // Remappage avec mise à jour des références
-    const remappedActeurs = acteursFromDiag.map(act =>
-      this.uniqueActors.find(a => a.id_acteur === act.id_acteur) || act
-    );
-  
-    // Mise à jour du formulaire
-    this.formGroup.patchValue({
-      id_diagnostic: diag.id_diagnostic,
-      nom: diag.nom,
-      sites: this.chosenSites,
-      acteurs: remappedActeurs,
-      slug: diag.slug
-    });
-  
-    // Marquer les acteurs sélectionnés
-    const selectedIds = new Set(remappedActeurs.map(a => a.id_acteur));
-    this.uniqueActors.forEach(actor => {
-      actor.selected = selectedIds.has(actor.id_acteur);
-    });
-  
-    this.actors = this.uniqueActors;
-    this.actorsService.sortByNameAndSelected(this.actors);
-
-  }
-
   //Met à jour la liste this.chosenSites
   checkSite(){
+    console.log(this.chosenSites);
     if (this.chosenSites?.length) {
+      
       const chosenIds = this.chosenSites.map(site => site.id_site);
       this.chosenSites = this.uniqueSites.filter(site => chosenIds.includes(site.id_site));
       this.formGroup?.get('sites')?.setValue(this.chosenSites);
       
     }
-  }
-
-  //Donne des valeurs à uniqueActors, uniqueDepartements et uniqueCategories
-  instructionswithResults(acteurs:Acteur[]){
-    
-    this.uniqueActors = acteurs;
-    
-    for (let i=0;i<acteurs.length;i++){
-      let dpt:Departement = acteurs[i].commune.departement;
-      let dptExiste = this.uniqueDepartments.some(d => d.id_dep === dpt.id_dep);
-      
-      if (!dptExiste){
-        this.uniqueDepartments.push(dpt);
-      }
-      for (let j=0;j<acteurs[i].categories!.length;j++){
-        let cat: Nomenclature = acteurs[i].categories![j];
-        let catExiste = this.uniqueCategories.some(c => c.id_nomenclature === cat.id_nomenclature);
-        
-        if (!catExiste) {
-          this.uniqueCategories.push(cat);
-        }
-      }
-
-    }
-    this.actorsService.sortByNameAndSelected(this.uniqueActors);
-    this.siteService.sortByName(this.uniqueSites);
-    this.departementService.sortByName(this.uniqueDepartments);
-    this.nomenclatureService.sortByName(this.uniqueCategories);
-    
-    this.checkSite();
-   
   }
 
   //Navigation et mise en cache
@@ -294,7 +205,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       if (this.formGroup.valid) {
           this.convertDateReport();    
           this.diagnosticSubscription = this.diagnosticsService.add(this.diagnostic).subscribe(diagnostic=>{
-            this.getConfirmation("Ce diagnostic vient d'être créé dans la base de données et contient ces informations : ",diagnostic);
+            this.getConfirmation("Ce diagnostic vient d'être créé dans la base de données et contient ces informations : ",diagnostic,true);
           });
       }else{
         this.formGroup.markAllAsTouched();
@@ -308,7 +219,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
         
         console.log(this.diagnostic);
         this.diagnosticSubscription = this.diagnosticsService.update(this.diagnostic).subscribe(diagnostic=>{
-          this.getConfirmation("Ce diagnostic vient d'être créé dans la base de données et contient ces informations : ",diagnostic);
+          this.getConfirmation("Ce diagnostic vient d'être créé dans la base de données et contient ces informations : ",diagnostic,true);
         });
       }else{
         this.formGroup.markAllAsTouched();
@@ -317,18 +228,19 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   }
 
   //Message de confirmation
-  getConfirmation(message:string,diag:Diagnostic){
+  getConfirmation(message:string,diag:Diagnostic,no_creation?:boolean){
       this.previousPage = localStorage.getItem("previousPage")!;
       this.diagnostic=diag;
       if(diag.id_diagnostic > 0){
-       
+        console.log(no_creation);
         this.dialog.open(AlerteDiagnosticComponent, {
           data: {
             title: this.titleDiagnostic,
             message: message,
             labels: this.labels,
             diagnostic:this.diagnostic,
-            previousPage:this.previousPage
+            previousPage:this.previousPage,
+            no_creation:no_creation
           }
         });
       }
@@ -344,8 +256,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       date_rapport: moment.isMoment(rawValue.date_rapport)
       ? rawValue.date_rapport.toDate()
       : undefined,
-      sites: (rawValue.sites || []).map((s: any) => Site.fromJson(s)),
-      acteurs: (rawValue.acteurs || []).map((a: any) => Acteur.fromJson(a)),
+      sites: (rawValue.sites || []).map((s: any) => Site.fromJson(s))
     };
     this.diagnostic = Object.assign(new Diagnostic(),payload);
     console.log(this.diagnostic);
@@ -360,8 +271,8 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
 
   compareSites = (s1: Site, s2: Site) => s1 && s2 && s1.id_site === s2.id_site;
 
-  //Récupère les acteurs des sites sélectionnés et crée le nom en fonction des sites
-  getActors(sites:any,diag:Diagnostic){
+   //Récupère les acteurs des sites sélectionnés et crée le nom en fonction des sites
+  getDiagName(sites:any,diag:Diagnostic){
     
     if(sites.length > 0){
       this.chosenSites= sites;
@@ -381,17 +292,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       nom = "Diagnostic - "+ nom + "- " + new Date().getFullYear();
       this.diagnostic.nom = nom;
       this.formGroup.get('nom')?.setValue(nom);
-      const diagnostics$ = this.diagnosticsService.getAllBySites(json);
-      const acteurs$ = this.actorsService.getAllBySItes(json);
-      forkJoin([diagnostics$,acteurs$]).subscribe(([diagnostics,acteurs]) => {
-        this.instructionswithResults(acteurs);
-        
-        this.setActors(diag);
-        this.uniqueDiagnostics = diagnostics;
-      });
     }
-   
-   
   }
 
 }

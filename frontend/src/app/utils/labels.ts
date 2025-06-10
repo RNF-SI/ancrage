@@ -44,4 +44,5 @@ export class Labels {
     slug="Slug";
     files="Fichiers joints";
     interviewPrompt = "Saisir les entretiens";
+    addActors = "Ajouter ou enlever acteurs";
 }

@@ -52,6 +52,7 @@ import { MotsClesZoneComponent } from './components/parts/mots-cles-zone/mots-cl
 import { CommonModule } from '@angular/common';
 import { AlerteGroupeMotsClesComponent } from './components/alertes/alerte-groupe-mots-cles/alerte-groupe-mots-cles.component';
 import { AlerteMotsClesComponent } from './components/alertes/alerte-mots-cles/alerte-mots-cles.component';
+import { AlerteDatePublicationComponent } from './components/alertes/alerte-date-publication/alerte-date-publication.component';
 
 
 @NgModule({
@@ -63,6 +64,7 @@ import { AlerteMotsClesComponent } from './components/alertes/alerte-mots-cles/a
     IntroConnectComponent,
     ContactComponent,
     MentionsComponent,
+    
   ],
   imports: [
     BrowserModule,
@@ -101,6 +103,7 @@ import { AlerteMotsClesComponent } from './components/alertes/alerte-mots-cles/a
     MotsClesZoneComponent,
     AlerteGroupeMotsClesComponent,
     AlerteMotsClesComponent,
+    AlerteDatePublicationComponent,
     ToastrModule.forRoot({
       timeOut: 15000,
       closeButton: true,

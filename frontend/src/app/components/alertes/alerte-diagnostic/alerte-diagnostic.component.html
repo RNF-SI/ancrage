@@ -7,8 +7,27 @@
     <div><b>{{data.labels.datePublicationReport}}</b> : <span>{{ data.diagnostic.date_rapport_str }}</span></div>  
 </mat-dialog-content>
 
-<mat-dialog-actions>
-    <button mat-raised-button color="accent" type="button" (click)="navigate(data.previousPage,data.diagnostic)">{{data.labels.btnPreviousStepLabel}}</button>
-    <button mat-raised-button mat-dialog-close (click)="close()" color="accent">Rajouter des informations à ce diagnostic</button>
-    <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic-visualisation/'+data.diagnostic.id_diagnostic+'/'+data.diagnostic.slug,data.diagnostic)">{{data.labels.interviewPrompt}}</button>
-</mat-dialog-actions>
+<ng-container *ngIf="data.no_creation; else creation">
+    <mat-dialog-actions>
+      <button mat-raised-button color="accent" type="button" (click)="navigate(data.previousPage, data.diagnostic)">
+        {{ data.labels.btnPreviousStepLabel }}
+      </button>
+      <button mat-raised-button mat-dialog-close (click)="close()" color="accent">
+        Rajouter des informations à ce diagnostic
+      </button>
+      <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic-visualisation/' + data.diagnostic.id_diagnostic + '/' + data.diagnostic.slug, data.diagnostic)">
+        {{ data.labels.interviewPrompt }}
+      </button>
+    </mat-dialog-actions>
+</ng-container>
+  
+<ng-template #creation>
+    <mat-dialog-actions>
+        <button mat-raised-button mat-dialog-close (click)="close()" color="accent">
+        {{ data.labels.addActors }}
+        </button>
+        <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic-visualisation/' + data.diagnostic.id_diagnostic + '/' + data.diagnostic.slug, data.diagnostic)">
+        {{ data.labels.interviewPrompt }}
+        </button>
+    </mat-dialog-actions>
+</ng-template>

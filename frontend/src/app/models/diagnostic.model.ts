@@ -58,7 +58,7 @@ export class Diagnostic implements IDiagnostic {
 		diag.date_debut_str = data.date_debut ? moment(new Date(data.date_debut!)).format("DD/MM/YYYY") : "";
 		diag.date_fin = data.date_fin ? new Date(data.date_fin) : undefined;
 		diag.date_fin_str = data.date_fin ? moment(new Date(data.date_fin!)).format("DD/MM/YYYY") : "";
-		diag.date_rapport = data.date_fin ? new Date(data.date_rapport!) : undefined;
+		diag.date_rapport = data.date_rapport ? new Date(data.date_rapport!) : undefined;
 		diag.date_rapport_str = data.date_rapport? moment(new Date(data.date_rapport!)).format("DD/MM/YYYY") : "";
 		diag.identite_createur = data.identite_createur;
 		diag.id_organisme = data.id_organisme;
@@ -81,7 +81,7 @@ export class Diagnostic implements IDiagnostic {
 			...this,
 			date_debut: this.date_debut ? this.date_debut : undefined,
 			date_fin: this.date_fin ? this.date_fin : undefined,
-			date_rapport: this.date_rapport ? this.date_rapport : undefined,
+			date_rapport: this.date_rapport ? moment(this.date_rapport).format("DD/MM/YYYY") : undefined,
 			sites: this.sites.map(s => s.toJson()),
 			acteurs: this.acteurs.map(a => a.toJson()),
 			documents: this.documents ? this.documents.map(d => d.toJson()): [],

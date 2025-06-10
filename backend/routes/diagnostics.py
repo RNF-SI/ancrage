@@ -9,34 +9,44 @@ from werkzeug.utils import secure_filename
 from routes.logger_config import os,logger
 
 @bp.route('/diagnostic/<int:id_diagnostic>/<slug>', methods=['GET','PUT'])
-def diagnosticMethods(id_diagnostic,slug):
+def diagnosticMethods(id_diagnostic, slug):
     diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
-    
+
+    if not diagnostic:
+        logger.warning(f"❌ Aucun diagnostic trouvé pour l'ID {id_diagnostic}")
+        return jsonify({'error': 'Diagnostic non trouvé'}), 404
+
     if request.method == 'GET':
         if diagnostic.slug == slug:
             return getDiagnostic(diagnostic)
-    
-    
+        else:
+            logger.warning(f"❌ Slug invalide pour diagnostic {id_diagnostic}")
+            return jsonify({'error': 'Slug invalide'}), 400
+
     elif request.method == 'PUT':
         if diagnostic.slug == slug:
             data = request.get_json()
-            
+
             if 'acteurs' in data:
                 logger.info(f"Acteurs reçus ({len(data['acteurs'])}) :")
                 for acteur in data['acteurs']:
                     logger.info(f" - ID: {acteur.get('id_acteur')}, Nom: {acteur.get('nom')}")
-            
-            diagnostic = changeValuesDiagnostic(diagnostic,data)
 
+            diagnostic = changeValuesDiagnostic(diagnostic, data)
             diagnostic.modified_at = now
             raw_date = data.get('date_rapport')
-            if raw_date != None :
-        
+            print(raw_date)
+            if raw_date is not None:
                 date_rapport = datetime.strptime(raw_date, '%d/%m/%Y')
+                print(date_rapport)
                 diagnostic.is_read_only = True
                 diagnostic.date_rapport = date_rapport
+
             db.session.commit()
             return getDiagnostic(diagnostic)
+        else:
+            logger.warning(f"❌ Slug invalide pour mise à jour du diagnostic {id_diagnostic}")
+            return jsonify({'error': 'Slug invalide'}), 400
     
 def print_diagnostic(diagnostic):
     logger.info("🔍 Diagnostic :")

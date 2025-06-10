@@ -13,13 +13,11 @@
                         <h2>{{diagnostic.nom}}</h2>
                         <div><b>{{labels.dateBegLabel}}</b> : <span>{{ diagnostic.date_debut_str }}</span></div>
                         <div><b>{{labels.dateEndLabel}}</b> : <span>{{ diagnostic.date_fin_str }}</span></div>
-                        <div><b>{{labels.datePublicationReport}}</b> : <span>{{ diagnostic.date_rapport_str }}</span></div>
+                        <div><b>{{labels.datePublicationReport}}</b> : <span>{{ diagnostic.date_rapport_str }}</span> <span *ngIf="!diagnostic.is_read_only"><button mat-raised-button (click)="openAlertDate()">Saisir date</button></span></div>
+
                         <div><b>{{labels.investigatorLabel}}</b> : <span>{{ diagnostic.identite_createur }}</span></div>
                         <h3>{{labels.chosenSites}}</h3>
                         <p *ngFor="let site of diagnostic.sites">{{ site.nom }}, {{site.type.libelle}} </p>
-                        <div *ngIf="!is_read_only">
-                          <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic + '/' + diagnostic.slug,diagnostic)">Modifier</button>
-                        </div>
                         <h3>{{labels.files}}</h3>
                         <ul *ngFor="let doc of diagnostic.documents">
                           <div>{{doc.nom}} <button mat-raised-button type="button" (click)="getFile(doc.nom)">Télécharger</button></div>
@@ -69,12 +67,12 @@
                                 [actorsOriginal]="uniqueActors"
                                 [formGroup]="formGroup"
                                 [hideFilters]="hideFilters"
-                                [navigate]="navigate"
                                 [previousPage]="previousPage"
+                                [no_creation]=true
                         ></app-choix-acteurs>
-                        <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic/'+diagnostic.id_diagnostic + '/' + diagnostic.slug,diagnostic)">Modifier</button>
+                        <button mat-raised-button color="accent" type="button" (click)="navigate('/choix-acteurs/'+diagnostic.id_diagnostic + '/' + diagnostic.slug,diagnostic)">Importer acteurs</button>
                         <button mat-raised-button type="button" (click)="exportCSV()">{{labels.exportCSV}}</button>
-                      
+                        <button mat-raised-button color="accent" type="button" (click)="navigate('/acteur',diagnostic)">Créer acteurs</button>
                     </div>
                   </mat-tab>
                 </div>
@@ -82,6 +80,7 @@
                   <div class="p-3">
                     <app-mots-cles-zone #afom
                       [id_diagnostic]="id_diagnostic"
+                      [diagnostic]="diagnostic"
                       [modeAnalyse]=true
                     >
                   

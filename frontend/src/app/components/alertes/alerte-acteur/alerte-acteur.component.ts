@@ -6,7 +6,6 @@ import { Acteur } from '@app/models/acteur.model';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { SiteService } from '@app/services/sites.service';
 import { Labels } from '@app/utils/labels';
-import { ToastrService } from 'ngx-toastr';
 
 //Alerte de confirmation à la modification ou à la création d'un acteur
 @Component({
@@ -30,7 +29,6 @@ export class AlerteActeurComponent {
     ) {}
   
     private siteService = inject(SiteService);
-    private toaster = inject(ToastrService);
   
     navigate(path:string,diagnostic:Diagnostic){
       

@@ -15,6 +15,7 @@ si vous avez déjà les localités mais pas les latitudes, longitudes des commun
 Commandes à faire la première fois :
 11. Lancer le serveur flask
 11. Lancer ps aux | grep flask et notez le nom d'utilisateur qui s'affiche au début de chaque ligne (ex:user)
-12. Lancer sudo chown user:user /var/log/ancrage (remplacer user par votre nom d'utilisateur)
-13. Lancer sudo chmod 755 /var/log/ancrage
-14. Redémarrer le serveur flask
+12. Lancer mkdir /var/log/ancrage
+13. Lancer sudo chown user:user /var/log/ancrage (remplacer user par votre nom d'utilisateur)
+14. Lancer sudo chmod 755 /var/log/ancrage
+15. Redémarrer le serveur flask

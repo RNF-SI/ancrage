@@ -81,7 +81,7 @@ const routes: Routes = [ {
       canActivate: [AuthGuardService]
     },
     {
-      path: 'choix-acteurs',
+      path: 'choix-acteurs/:id_diagnostic/:slug',
       component: ChoixActeursComponent,
       canActivate: [AuthGuardService]
     },
