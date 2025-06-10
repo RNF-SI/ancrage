@@ -72,7 +72,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
   diagnostic:Diagnostic = new Diagnostic();
   previousPage = "";
   isLoading=false;
-  
+  pageDiagnostic = "";
 
   ngOnInit(): void {
     
@@ -161,6 +161,8 @@ export class ActeurComponent implements OnInit,OnDestroy{
       this.formGroup.get('created_by')!.setValue(this.user_id);
       if (!this.formGroup.invalid){
         this.actor = Object.assign(new Acteur(),this.formGroup.value);
+        this.actor.diagnostic = new Diagnostic();
+        this.actor.diagnostic.id_diagnostic = this.diagnostic.id_diagnostic;
         this.actorSubscription = this.actorService.add(this.actor).subscribe(
           actor =>{
             this.getConfirmation("L'acteur suivant a été créé dans la base de données et a été ajouté au diagnostic : ",actor);
@@ -172,6 +174,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
       //Modification
       this.formGroup.get('modified_by')!.setValue(this.user_id);
       this.actor = Object.assign(new Acteur(),this.formGroup.value);
+     
       if (!this.formGroup.invalid){
         this.actorSubscription = this.actorService.update(this.actor).subscribe(
           actor =>{
@@ -184,6 +187,8 @@ export class ActeurComponent implements OnInit,OnDestroy{
   }
   //Alerte de confirmation
   getConfirmation(message:string,actor:Acteur){
+    this.pageDiagnostic = localStorage.getItem("pageDiagnostic")!;
+    console.log(this.pageDiagnostic);
     this.previousPage = localStorage.getItem("previousPage")!;
     this.diagnostic.acteurs.push(actor);
     
@@ -196,7 +201,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
           acteur: actor,
           labels: this.labels,
           diagnostic:this.diagnostic,
-          previousPage:this.previousPage
+          previousPage:this.pageDiagnostic
         }
       });
     }

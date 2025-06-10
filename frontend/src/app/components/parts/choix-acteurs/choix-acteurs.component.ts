@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, inject, Input, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, inject, Input, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -26,6 +26,7 @@ import { ActeurService } from '@app/services/acteur.service';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { Site } from '@app/models/site.model';
 import { DiagnosticComponent } from '@app/components/diagnostic/diagnostic.component';
+import { SiteService } from '@app/services/sites.service';
 
 //Tableau des acteurs
 @Component({
@@ -35,7 +36,7 @@ import { DiagnosticComponent } from '@app/components/diagnostic/diagnostic.compo
   standalone:true,
   imports:[CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule,RouterModule,ReactiveFormsModule,FontAwesomeModule,MatListModule,MatCardModule,MatTooltipModule]
 })
-export class ChoixActeursComponent implements OnInit{
+export class ChoixActeursComponent implements OnInit,OnDestroy{
   
   @Input() actors: Acteur[]=[];
   title: string="Choisir les acteurs";
@@ -54,7 +55,6 @@ export class ChoixActeursComponent implements OnInit{
   @Input() actorsOriginal: Acteur[]=[];
   @Input() formGroup!:FormGroup;
   @Input() hideFilters:boolean = false;
-  @Input() navigate!: (path:string,diagnostic:Diagnostic)=>void;
   @Input() previousPage="";
   reinitialisation = "Réinitialiser"
   btnToChooseLabel: string = "choisir";
@@ -76,11 +76,12 @@ export class ChoixActeursComponent implements OnInit{
   private diagnosticService = inject(DiagnosticService);
   uniqueActors:Acteur[] = [];
   slug:string ="";
-  diagComponent:DiagnosticComponent = new DiagnosticComponent()
+  diagComponent:DiagnosticComponent = new DiagnosticComponent();
+  private siteService = inject(SiteService);
 
   ngOnInit(): void {
     if (!this.no_creation){
-
+      this.previousPage = localStorage.getItem("previousPage")!;
       this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!) as Diagnostic;
       this.formGroup = this.fb.group({
       
@@ -327,6 +328,12 @@ export class ChoixActeursComponent implements OnInit{
     }
   }
 
+  navigate= (path:string,diagnostic:Diagnostic):void =>{
+    
+    this.siteService.navigateAndCache(path,diagnostic);
+  }
+  
+
   recordActors(){
     const selectedActors:Acteur[] = this.actors.filter(a => a.selected == true);
     if (selectedActors.length > 0){
@@ -340,5 +347,9 @@ export class ChoixActeursComponent implements OnInit{
     
   }
 
-  
+  ngOnDestroy(): void {
+    this.diagSub?.unsubscribe();
+    this.routeSub?.unsubscribe();
+    this.siteSub?.unsubscribe();
+  }
 }

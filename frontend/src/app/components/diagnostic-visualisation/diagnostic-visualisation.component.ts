@@ -66,6 +66,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   file?:Blob;
   authService = inject(AuthService);
   dialog = inject(MatDialog);
+  private router = inject(Router);
 
   @ViewChild(MapComponent) mapComponent!: MapComponent;
 
@@ -195,6 +196,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   
   //Navigation et mise en cache
   navigate= (path:string,diagnostic:Diagnostic):void =>{
+    localStorage.setItem("pageDiagnostic",this.router.url);
     this.siteService.navigateAndCache(path,diagnostic);
   }
 
