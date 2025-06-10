@@ -192,7 +192,10 @@ export class GraphiquesComponent implements OnDestroy{
       });
 
       this.radarCharts = Array.from(dataByTheme.entries()).map(([theme, entries]) => {
-        const labels = [...new Set(entries.map(e => e.libelle_graphique))];
+        const filteredEntries = entries.filter(
+          e => !LABELS_TO_EXCLUDE.includes(e.libelle_graphique?.toLowerCase())
+        );
+        const labels = [...new Set(filteredEntries.map(e => e.libelle_graphique))];
 
         const categories = [...new Set(entries.map(e => e.categorie || 'Sans catégorie'))];
         const datasets = categories.map(categorie => {

@@ -170,8 +170,8 @@ class Question(db.Model):
     theme_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
     theme = db.relationship('Nomenclature', foreign_keys=[theme_id])
     libelle_graphique = db.Column(db.String)
-
-    # 👇 Correction ici
+    ordre = db.Column(db.Integer)
+    metrique = db.Column(db.Integer)
     choixReponses = db.relationship(
         'Nomenclature',
         secondary=choix_reponses,
