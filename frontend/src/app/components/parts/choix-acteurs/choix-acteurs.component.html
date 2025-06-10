@@ -118,6 +118,10 @@
               <button mat-raised-button type="button" (click)="navigate('/acteur/',diagnostic)" color="accent">{{labels.createActor}}</button>
               
             </div>
+            <div *ngIf="!no_creation">
+              <button mat-raised-button type="button" (click)="recordActors()" color="warn">{{labels.addActors}}</button>
+              
+            </div>
             
         </div>
        

@@ -436,5 +436,6 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
 
   ngOnDestroy(): void {
     this.forkSub?.unsubscribe();
+    this.diagSub?.unsubscribe();
   }
 }

@@ -24,6 +24,9 @@ import { environment } from 'src/environments/environment';
 import { MapComponent } from '../parts/map/map.component';
 import { MotsClesZoneComponent } from '../parts/mots-cles-zone/mots-cles-zone.component';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
+import { ActeurService } from '@app/services/acteur.service';
+import { MatDialog } from '@angular/material/dialog';
+import { AlerteDatePublicationComponent } from '../alertes/alerte-date-publication/alerte-date-publication.component';
 
 @Component({
   selector: 'app-diagnostic-visualisation',
@@ -53,6 +56,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   route = inject(ActivatedRoute);
   private siteService = inject(SiteService);
   private nomenclatureService = inject(NomenclatureService)
+  private actorService = inject(ActeurService);
   id_diagnostic:number = 0;
   labels = new Labels();
   themes:Nomenclature[] = [];
@@ -61,6 +65,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   environment = environment.flask_server + 'fichiers/';
   file?:Blob;
   authService = inject(AuthService);
+  dialog = inject(MatDialog);
 
   @ViewChild(MapComponent) mapComponent!: MapComponent;
 
@@ -240,6 +245,17 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
     this.diagSubscription?.unsubscribe();
     this.docsSubscription?.unsubscribe();
     this.docReadSub?.unsubscribe();
+  }
+
+  openAlertDate(){
+    this.dialog.open(AlerteDatePublicationComponent, {
+              data: {
+                labels: this.labels,
+                diagnostic:this.diagnostic,
+                previousPage:this.previousPage,
+                
+              }
+            });
   }
 
 }
