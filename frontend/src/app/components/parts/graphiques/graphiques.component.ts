@@ -98,12 +98,15 @@ export class GraphiquesComponent implements OnDestroy{
     const repartitions$ = this.diagnosticService.getRepartition(id_diagnostic);
     const radars$ = this.diagnosticService.getRadars(id_diagnostic);
     const motsCles$ = this.diagnosticService.getOccurencesKeyWords(id_diagnostic);
+    const LABELS_TO_EXCLUDE = ['attentes', "Sentiment d'être concerné"];
     this.diagnosticSubscription = forkJoin([moyennes$,repartitions$,radars$,motsCles$]).subscribe(([graphs,repartitions,radars,motsCles]) => {
       const grouped = new Map<string, GraphMoy[]>();
       for (const entry of graphs) {
+        if (LABELS_TO_EXCLUDE.includes(entry.question?.toLowerCase())) continue;
         if (!grouped.has(entry.question)) {
           grouped.set(entry.question, []);
         }
+        
         grouped.get(entry.question)?.push(entry);
       }
      
@@ -117,7 +120,9 @@ export class GraphiquesComponent implements OnDestroy{
       this.groupedData = groupedRepartition;
       this.chartDataRepartition = {}; // reset
       for (const question in this.groupedData) {
-        const responses = this.groupedData[question];
+        const responses = this.groupedData[question].filter(
+          r => !LABELS_TO_EXCLUDE.includes(r.reponse?.toLowerCase())
+        );
         this.chartDataRepartition[question] = {
           labels: responses.map(r => r.reponse),
           datasets: [{
