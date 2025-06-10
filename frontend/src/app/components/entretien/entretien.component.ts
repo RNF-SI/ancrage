@@ -115,7 +115,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
   }
   //Envoie les données récupérées au formulaire
   patchForm(reponses:Reponse[]){
-    console.log(reponses);
+    
     for(let i = 0;i<reponses.length;i++){
       this.formGroup.get(`question_${reponses[i].question?.id_question}`)?.setValue(reponses[i].valeur_reponse.value);
       this.formGroup.get(`reponse_${reponses[i].question?.id_question}`)?.setValue(reponses[i].commentaires);
@@ -189,6 +189,8 @@ export class EntretienComponent implements OnInit,OnDestroy{
       if ((valeurId !== this.noResponse.id_nomenclature && valeurId > 0) || isSansIndicateur) {
   
         reponsesCompletes++;
+      }else{
+        console.log(reponse.question?.libelle);
       }
     }
   

@@ -220,28 +220,51 @@ export class GraphiquesComponent implements OnDestroy{
 
   private groupByCategorie(): void {
     this.groupedCharts = [];
-    const grouped: Record<string, { nom: string; nombre: number }[]> = {};
-
+  
+    const motCleData = new Map<number, GraphMotsCles>();
+  
+    // Indexation initiale
     for (const item of this.data) {
-      for (const cat of item.mot_cle.categories) {
-        if (!grouped[cat.libelle]) {
-          grouped[cat.libelle] = [];
+      motCleData.set(item.mot_cle.id_mot_cle, item);
+    }
+  
+    // Agrégation par racine
+    const aggregated: Record<string, Record<string, number>> = {}; // categorie -> nom parent -> total
+  
+    for (const item of this.data) {
+      const motCle = item.mot_cle;
+      const isChild = motCle.mot_cle_id_groupe !== undefined;
+  
+      // On récupère l'id du parent si enfant, sinon soi-même
+      const rootId = motCle.mot_cle_id_groupe ?? motCle.id_mot_cle;
+      const rootMotCle = motCleData.get(rootId)?.mot_cle ?? motCle;
+  
+      for (const cat of motCle.categories) {
+        const catLabel = cat.libelle;
+  
+        if (!aggregated[catLabel]) {
+          aggregated[catLabel] = {};
         }
-        grouped[cat.libelle].push({
-          nom: item.mot_cle.nom,
-          nombre: item.nombre
-        });
+  
+        const nom = rootMotCle.nom;
+  
+        if (!aggregated[catLabel][nom]) {
+          aggregated[catLabel][nom] = 0;
+        }
+  
+        aggregated[catLabel][nom] += item.nombre;
       }
     }
-
-    this.groupedCharts = Object.entries(grouped).map(([categorie, mots]) => ({
+  
+    // Création des graphiques
+    this.groupedCharts = Object.entries(aggregated).map(([categorie, mots]) => ({
       categorie,
       chartData: {
         type: 'bar',
         data: {
-          labels: mots.map(m => m.nom),
+          labels: Object.keys(mots),
           datasets: [{
-            data: mots.map(m => m.nombre),
+            data: Object.values(mots),
             label: categorie
           }]
         },
@@ -256,8 +279,6 @@ export class GraphiquesComponent implements OnDestroy{
             },
             y: {
               beginAtZero: true,
-              min: 0,
-              max: 5,
               ticks: { stepSize: 1 },
               title: {
                 display: true,

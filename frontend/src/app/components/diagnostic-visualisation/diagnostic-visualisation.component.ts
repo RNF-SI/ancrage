@@ -95,6 +95,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
             const themes$ = this.nomenclatureService.getAllByType("thème");
             forkJoin([diag$, themes$]).subscribe(([diag, themes]) => {
               this.diagnostic = diag;
+              console.log(diag);
               this.actors = diag.acteurs;
               this.themes = themes;
               const user = this.authService.getCurrentUser();
