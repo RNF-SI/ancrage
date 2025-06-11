@@ -179,7 +179,8 @@ class Question(db.Model):
         secondaryjoin=lambda: Nomenclature.id_nomenclature == choix_reponses.c.nomenclature_id,
         backref='questions_ayant_cette_reponse'
     )
-
+    theme_question_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
+    theme_question = db.relationship('Nomenclature', foreign_keys=[theme_question_id])
 
 
 class Reponse(db.Model):
@@ -227,7 +228,8 @@ class Nomenclature(db.Model):
     acteurs_c = db.relationship('Acteur', secondary='cor_categorie_acteur', back_populates='categories')
     acteurs_p = db.relationship('Acteur', back_populates='profil', foreign_keys='Acteur.profil_cognitif_id')
     acteurs_se = db.relationship('Acteur', back_populates='statut_entretien', foreign_keys='Acteur.statut_entretien_id')
-    questions = db.relationship('Question',  back_populates='theme')
+    questions = db.relationship('Question',  back_populates='theme',foreign_keys='Question.theme_id')
+    questions_th = db.relationship('Question',  back_populates='theme_question',foreign_keys='Question.theme_question_id')
     mots_cles = db.relationship('MotCle', secondary='cor_categories_mots_cles', back_populates='categories')
     libelle_court = db.Column(db.String)
 

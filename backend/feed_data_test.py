@@ -188,6 +188,29 @@ with app.app_context():
         "Non classés"
     ]
 
+    themes_questions = [
+        "La réserve",
+        "Les sources d'information",
+        "La fréquence de visite",
+        "Les actions mises en place",
+        "L'organisme gestionnaire de la réserve",
+        "Les effets liés à l'existence de la réserve",
+        "La nature des liens",
+        "Spécifique aux membres du Comité Consultatif de Gestion (CCG)",
+        "Changement climatique et biodiversité",
+        "Conclusion",
+
+    ]
+
+    for i, lib in enumerate(themes_questions):
+        ca = Nomenclature(
+            libelle=lib,
+            value=i,
+            mnemonique="thème_question"
+        )
+        db.session.add(ca)
+        profils.append(ca)    
+
     for i, (lib, lib2) in enumerate(zip(categorie_labels, cat_short_labels)):
         c = Nomenclature(
             libelle=lib,

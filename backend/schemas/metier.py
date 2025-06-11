@@ -109,6 +109,7 @@ class ActeurSchema(SQLAlchemyAutoSchema):
     reponses = fields.Nested(lambda: ReponseSchema, many=True,exclude=("acteur",))
     profil = fields.Nested(lambda: NomenclatureSchema)
     statut_entretien = fields.Nested(lambda: NomenclatureSchema)
+    
 
 class QuestionSchema(SQLAlchemyAutoSchema):
     class Meta:
