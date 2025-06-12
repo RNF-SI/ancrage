@@ -4,7 +4,10 @@ from models.models import *
 from schemas.metier import *
 from routes import bp, now, func
 from routes.nomenclatures import getAllNomenclaturesByType
+from routes.mot_cle import getKeywordsByActor
 from routes.logger_config import logger
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.exc import SQLAlchemyError
 
 @bp.route('/reponses/objets', methods=['POST'])
 def enregistrer_reponses_depuis_objets():
@@ -19,10 +22,21 @@ def enregistrer_reponses_depuis_objets():
     acteur_id = data[0].get('acteur', {}).get('id_acteur')
     logger.info(f"Retour des nomenclatures pour l'acteur ID {acteur_id}")
 
-    return getAllNomenclaturesByType("thème", acteur_id)
+    return getAllNomenclaturesByType("thème_question", acteur_id)
+
+@bp.route('/reponse/objet', methods=['POST'])
+def enregistrer_reponse_depuis_objet():
+    data = request.get_json()
+    logger.info("Réception des données de réponses depuis objets")
+
+    enregistrer_reponse_acteur(data)
+    acteur_id = data.get('acteur', {}).get('id_acteur')
+    logger.info(f"Retour des nomenclatures pour l'acteur ID {acteur_id}")
+
+    return getKeywordsByActor(acteur_id)
 
 
-def enregistrer_reponses_acteur_depuis_objets(reponses_objets): 
+def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
     if not reponses_objets:
         logger.warning("Aucune réponse fournie")
         return
@@ -41,6 +55,7 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
 
     logger.info(f"Traitement des réponses pour l'acteur ID {acteur_id}")
 
+    # Mise à jour du statut d’entretien
     statut_data = acteur_data.get("statut_entretien")
     if statut_data:
         try:
@@ -52,90 +67,158 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
 
     questions_ids_envoyees = set()
 
-    for item in reponses_objets:
-        try:
-            question_id = item['question']['id_question']
-            valeur_reponse_id = item['valeur_reponse']['id_nomenclature']
-            commentaires = item.get('commentaires', "")
-            mots_cles_front = item.get('mots_cles', [])
-        except (KeyError, TypeError):
-            logger.warning("Réponse mal formée ignorée")
-            continue
+    try:
+        for item in reponses_objets:
+            try:
+                question_id = item['question']['id_question']
+                valeur_reponse_id = item['valeur_reponse']['id_nomenclature']
+                commentaires = item.get('commentaires', "")
+            except (KeyError, TypeError):
+                logger.warning("Réponse mal formée ignorée")
+                continue
 
-        if not valeur_reponse_id or valeur_reponse_id <= 0:
-            continue
+            if not valeur_reponse_id or valeur_reponse_id <= 0:
+                continue
 
-        mots_cles_bdd = []
-        groupes_attendus = []
+            questions_ids_envoyees.add(question_id)
 
-        for mc in mots_cles_front:
-            nom = mc['nom']
-            diagnostic_id = mc['diagnostic']['id_diagnostic']
-            categories_data = mc.get('categories', [])
-            enfants = mc.get('mots_cles_issus', [])
-
-            mc_existant = MotCle.query.filter_by(nom=nom, diagnostic_id=diagnostic_id).first()
-            if not mc_existant:
-                mc_existant = MotCle(nom=nom, diagnostic_id=diagnostic_id)
-                db.session.add(mc_existant)
-                db.session.flush()
-
-            for cat in categories_data:
-                cat_id = cat.get('id_nomenclature')
-                if cat_id:
-                    cat_obj = Nomenclature.query.get(cat_id)
-                    if cat_obj and cat_obj not in mc_existant.categories:
-                        mc_existant.categories.append(cat_obj)
-
-            mots_cles_bdd.append(mc_existant)
-
-            if enfants:
-                groupes_attendus.append((mc_existant, enfants))
-
-        for parent_mc, enfants in groupes_attendus:
-            for enfant_data in enfants:
-                nom_enfant = enfant_data.get('nom')
-                diag_id_enfant = enfant_data.get('diagnostic', {}).get('id_diagnostic')
-
-                if not nom_enfant or not diag_id_enfant:
-                    continue
-
-                enfant = MotCle.query.filter_by(nom=nom_enfant, diagnostic_id=diag_id_enfant).first()
-                if not enfant:
-                    enfant = MotCle(nom=nom_enfant, diagnostic_id=diag_id_enfant)
-                    db.session.add(enfant)
-                    db.session.flush()
-
-                enfant.mots_cles_groupe_id = parent_mc.id_mot_cle
-
-        questions_ids_envoyees.add(question_id)
-        reponse = Reponse.query.filter_by(acteur_id=acteur_id, question_id=question_id).first()
-
-        if reponse:
-            reponse.valeur_reponse_id = valeur_reponse_id
-            reponse.commentaires = commentaires
-            reponse.mots_cles = mots_cles_bdd
-        else:
-            nouvelle_reponse = Reponse(
+            stmt = insert(Reponse).values(
                 acteur_id=acteur_id,
                 question_id=question_id,
                 valeur_reponse_id=valeur_reponse_id,
-                commentaires=commentaires,
-                mots_cles=mots_cles_bdd
+                commentaires=commentaires
+            ).on_conflict_do_update(
+                index_elements=['acteur_id', 'question_id'],
+                set_={
+                    'valeur_reponse_id': valeur_reponse_id,
+                    'commentaires': commentaires
+                }
             )
-            db.session.add(nouvelle_reponse)
+            db.session.execute(stmt)
 
-    reponses_existantes = Reponse.query.filter_by(acteur_id=acteur_id).all()
-    for r in reponses_existantes:
-        if r.question_id not in questions_ids_envoyees:
-            db.session.delete(r)
+        # Suppression des réponses non présentes dans l'objet reçu
+        reponses_existantes = Reponse.query.filter_by(acteur_id=acteur_id).all()
+        for r in reponses_existantes:
+            if r.question_id not in questions_ids_envoyees:
+                db.session.delete(r)
 
-    logger.info(f"Réponses enregistrées pour l'acteur ID {acteur_id}. Vérification des dates entretien…")
+        db.session.commit()
+        logger.info(f"Réponses enregistrées pour l'acteur ID {acteur_id}. Vérification des dates entretien…")
+        verifDatesEntretien(acteur.diagnostic)
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        logger.error(f"Erreur SQLAlchemy pendant l'enregistrement des réponses : {e}")
+
+def enregistrer_reponse_acteur(reponse_objet):
+    try:
+        acteur_data = reponse_objet['acteur']
+        acteur_id = acteur_data['id_acteur']
+    except (KeyError, TypeError):
+        logger.error("Impossible d'extraire l'identifiant de l'acteur.")
+        return
+
+    acteur = Acteur.query.get(acteur_id)
+    if not acteur:
+        logger.error(f"Acteur avec id {acteur_id} introuvable.")
+        return
+
+    logger.info(f"Traitement de la réponse pour l'acteur ID {acteur_id}")
+
+    # Mise à jour du statut entretien
+    statut_data = acteur_data.get("statut_entretien")
+    if statut_data:
+        try:
+            statut_id = statut_data.get("id_nomenclature")
+            if statut_id and isinstance(statut_id, int):
+                acteur.statut_entretien_id = statut_id
+        except Exception as e:
+            logger.error(f"Erreur lors de l'enregistrement du statut entretien : {e}")
+
+    try:
+        question_id = reponse_objet['question']['id_question']
+        valeur_reponse_id = reponse_objet['valeur_reponse']['id_nomenclature']
+        commentaires = reponse_objet.get('commentaires', "")
+        mots_cles_front = reponse_objet.get('mots_cles', [])
+    except (KeyError, TypeError):
+        logger.warning("Réponse mal formée ignorée")
+        return
+
+    if not valeur_reponse_id or valeur_reponse_id <= 0:
+        return
+
+    mots_cles_bdd = []
+    groupes_attendus = []
+
+    for mc in mots_cles_front:
+        nom = mc['nom']
+        diagnostic_id = mc['diagnostic']['id_diagnostic']
+        categorie_data = mc.get('categorie', {})
+        enfants = mc.get('mots_cles_issus', [])
+
+        categorie_id = None
+        if isinstance(categorie_data, dict):
+            cat_id = categorie_data.get('id_nomenclature')
+            if isinstance(cat_id, int):
+                categorie_id = cat_id
+        
+        nouveau_mc = MotCle(
+            nom=nom,
+            diagnostic_id=diagnostic_id,
+            categorie_id=categorie_id
+        )
+        db.session.add(nouveau_mc)
+        db.session.flush()
+
+        mots_cles_bdd.append(nouveau_mc)
+
+        if enfants:
+            groupes_attendus.append((nouveau_mc, enfants))
+
+    # Gestion des mots-clés enfants (groupés)
+    for parent_mc, enfants in groupes_attendus:
+        for enfant_data in enfants:
+            nom_enfant = enfant_data.get('nom')
+            diag_id_enfant = enfant_data.get('diagnostic', {}).get('id_diagnostic')
+
+            if not nom_enfant or not diag_id_enfant:
+                continue
+
+            nouvel_enfant = MotCle(
+                nom=nom_enfant,
+                diagnostic_id=diag_id_enfant,
+                mots_cles_groupe_id=parent_mc.id_mot_cle
+            )
+            db.session.add(nouvel_enfant)
+            db.session.flush()
+
+    # Mise à jour ou création de la réponse
+    reponse = Reponse.query.filter_by(acteur_id=acteur_id, question_id=question_id).first()
+    if reponse:
+        reponse.valeur_reponse_id = valeur_reponse_id
+        reponse.commentaires = commentaires
+        reponse.mots_cles = mots_cles_bdd
+    else:
+        nouvelle_reponse = Reponse(
+            acteur_id=acteur_id,
+            question_id=question_id,
+            valeur_reponse_id=valeur_reponse_id,
+            commentaires=commentaires,
+            mots_cles=mots_cles_bdd
+        )
+        db.session.add(nouvelle_reponse)
+
+    logger.info(f"Réponse enregistrée pour l'acteur ID {acteur_id}. Vérification des dates entretien…")
     verifDatesEntretien(acteur.diagnostic)
 
     diagnostic_id = acteur.diagnostic_id
-    mot_cles_repartis = getRepartitionMotsCles(diagnostic_id)
+    mots_cles_repartis = getRepartitionMotsCles(diagnostic_id)
 
+    record_afoms(diagnostic_id,mots_cles_repartis)
+
+
+def record_afoms(diagnostic_id,mots_cles_repartis):
+        # Suppression des AFOM précédents liés aux mots-clés de ce diagnostic
     afom_ids_to_delete = (
         db.session.query(Afom.id_afom)
         .join(Afom.mot_cle)
@@ -144,23 +227,21 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
     )
 
     afom_ids_to_delete = [id_tuple[0] for id_tuple in afom_ids_to_delete]
-
     if afom_ids_to_delete:
         db.session.query(Afom).filter(Afom.id_afom.in_(afom_ids_to_delete)).delete(synchronize_session=False)
 
-    for item in mot_cles_repartis:
+    # Ajout des nouveaux AFOM
+    for item in mots_cles_repartis:
         mot_cle = item["mot_cle_obj"]
         count = item["nombre"]
-
-        for cat in item['categories']:
-            afom = Afom(
-                mot_cle_id=mot_cle.id_mot_cle,
-                number=count
-            )
-            db.session.add(afom)
+        afom = Afom(
+            mot_cle_id=mot_cle.id_mot_cle,
+            number=count
+        )
+        db.session.add(afom)
 
     db.session.commit()
-    logger.info(f"Réponses, mots-clés et AFOM enregistrés avec succès pour le diagnostic ID {diagnostic_id}")
+    logger.info(f"Réponse et AFOM enregistrés pour le diagnostic ID {diagnostic_id}")
 
 
 def verifDatesEntretien(diagnostic):
@@ -206,7 +287,7 @@ def getRepartitionMotsCles(id_diagnostic):
             "id": mc.id_mot_cle,
             "nom": mc.nom,
             "nombre": counts.get(mc.id_mot_cle, 0),
-            "categories": mc.categories,
+            "categorie": mc.categorie,
             "mots_cles_issus": mc.mots_cles_issus
         })
 

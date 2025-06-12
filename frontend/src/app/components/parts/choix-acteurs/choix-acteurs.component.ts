@@ -340,7 +340,6 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
       this.diagnostic.acteurs = selectedActors;
       this.diagnostic = Diagnostic.fromJson(this.diagnostic);
       this.diagSub =  this.diagnosticService.update(this.diagnostic).subscribe(diag=>{
-        console.log()
         this.diagComponent.getConfirmation("Le diagnostic contient désormais ces informations :",diag,this.no_creation);
       })
     }

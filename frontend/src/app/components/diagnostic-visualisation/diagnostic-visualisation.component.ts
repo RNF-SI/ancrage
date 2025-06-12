@@ -24,7 +24,6 @@ import { environment } from 'src/environments/environment';
 import { MapComponent } from '../parts/map/map.component';
 import { MotsClesZoneComponent } from '../parts/mots-cles-zone/mots-cles-zone.component';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
-import { ActeurService } from '@app/services/acteur.service';
 import { MatDialog } from '@angular/material/dialog';
 import { AlerteDatePublicationComponent } from '../alertes/alerte-date-publication/alerte-date-publication.component';
 
@@ -56,7 +55,6 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   route = inject(ActivatedRoute);
   private siteService = inject(SiteService);
   private nomenclatureService = inject(NomenclatureService)
-  private actorService = inject(ActeurService);
   id_diagnostic:number = 0;
   labels = new Labels();
   themes:Nomenclature[] = [];
@@ -96,9 +94,10 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
             const themes$ = this.nomenclatureService.getAllByType("thème");
             forkJoin([diag$, themes$]).subscribe(([diag, themes]) => {
               this.diagnostic = diag;
-              console.log(diag);
+    
               this.actors = diag.acteurs;
               this.themes = themes;
+       
               const user = this.authService.getCurrentUser();
               this.id_role = user.id_role;
         
@@ -116,6 +115,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   }
   //Cache ou affiche le menu en fonction de l'onglet choisi
   onTabChange(event: MatTabChangeEvent) {
+    
     let menu = document.getElementById("menu");
     if (event.index === 3) { 
     
@@ -188,7 +188,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
 
     this.docsSubscription = this.diagnosticService.sendFiles(formData).subscribe(diag =>{
       this.diagnostic = diag;
-      console.log(diag);
+   
     });
 
     

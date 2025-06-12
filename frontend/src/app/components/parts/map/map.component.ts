@@ -171,7 +171,6 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
 
   //Ajoute les marqueurs acteurs
   addMarkersActors() {
-    console.log(this.actors);
     const bounds = L.latLngBounds([]);
     this.markerClusterGroup.clearLayers();
     
@@ -251,7 +250,6 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
     this.markerClusterGroup.clearLayers();
     this.actorsRendered = false;
     const mapContainer = document.getElementById('map');
-    console.log(mapContainer);
     if (mapContainer) {
       mapContainer.innerHTML = ''; // supprime tout contenu DOM résiduel
     }

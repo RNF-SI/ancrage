@@ -1,5 +1,5 @@
-import { Component, inject, Input, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
-import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
+import { Component, inject, Input, OnDestroy, SimpleChanges } from '@angular/core';
+import { MatTabsModule } from '@angular/material/tabs';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { GraphMoy } from '@app/models/graph-moy.model';
@@ -8,7 +8,7 @@ import { AvgPerQuestion } from '@app/interfaces/avg-per-question.interface';
 import { CommonModule } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { ActivatedRoute } from '@angular/router';
-import { Chart, ChartConfiguration, ChartData, ChartOptions, RadialLinearScaleOptions } from 'chart.js';
+import { ChartConfiguration, ChartData, ChartOptions, RadialLinearScaleOptions } from 'chart.js';
 import { GraphRepartition } from '@app/models/graph-repartition.model';
 import { MatButtonModule } from '@angular/material/button';
 import { Labels } from '@app/utils/labels';
@@ -98,11 +98,20 @@ export class GraphiquesComponent implements OnDestroy{
     const repartitions$ = this.diagnosticService.getRepartition(id_diagnostic);
     const radars$ = this.diagnosticService.getRadars(id_diagnostic);
     const motsCles$ = this.diagnosticService.getOccurencesKeyWords(id_diagnostic);
-    const LABELS_TO_EXCLUDE = ['attentes', "Sentiment d'être concerné"];
+    const normalize = (str: string) => str
+            .toLowerCase()
+            .normalize("NFD")              // décompose les caractères accentués
+            .replace(/[\u0300-\u036f]/g, '') // supprime les accents
+            .replace(/’/g, "'")              // remplace l’apostrophe typographique par l’apostrophe simple
+            .trim();
+    const LABELS_TO_EXCLUDE = ["attentes", "Sentiment d'être concerné"].map(normalize);
     this.diagnosticSubscription = forkJoin([moyennes$,repartitions$,radars$,motsCles$]).subscribe(([graphs,repartitions,radars,motsCles]) => {
       const grouped = new Map<string, GraphMoy[]>();
       for (const entry of graphs) {
-        if (LABELS_TO_EXCLUDE.includes(entry.question?.toLowerCase())) continue;
+        const original = entry.question ?? '';
+        const normalizedLabel = normalize(original);
+        if (LABELS_TO_EXCLUDE.includes(normalizedLabel)) continue;
+ 
         if (!grouped.has(entry.question)) {
           grouped.set(entry.question, []);
         }
@@ -231,40 +240,38 @@ export class GraphiquesComponent implements OnDestroy{
   
     const motCleData = new Map<number, GraphMotsCles>();
   
-    // Indexation initiale
+    // Indexation initiale des mots-clés par leur ID
     for (const item of this.data) {
       motCleData.set(item.mot_cle.id_mot_cle, item);
     }
   
-    // Agrégation par racine
-    const aggregated: Record<string, Record<string, number>> = {}; // categorie -> nom parent -> total
+    const aggregated: Record<string, Record<string, number>> = {}; // catégorie -> nom du mot-clé racine -> nombre
   
     for (const item of this.data) {
       const motCle = item.mot_cle;
       const isChild = motCle.mot_cle_id_groupe !== undefined;
   
-      // On récupère l'id du parent si enfant, sinon soi-même
+      // Récupère le mot-clé racine (lui-même ou son parent si enfant)
       const rootId = motCle.mot_cle_id_groupe ?? motCle.id_mot_cle;
       const rootMotCle = motCleData.get(rootId)?.mot_cle ?? motCle;
   
-      for (const cat of motCle.categories) {
-        const catLabel = cat.libelle;
+      // On utilise la catégorie du mot-clé racine
+      const catLabel = rootMotCle.categorie?.libelle ?? 'Sans catégorie';
   
-        if (!aggregated[catLabel]) {
-          aggregated[catLabel] = {};
-        }
-  
-        const nom = rootMotCle.nom;
-  
-        if (!aggregated[catLabel][nom]) {
-          aggregated[catLabel][nom] = 0;
-        }
-  
-        aggregated[catLabel][nom] += item.nombre;
+      if (!aggregated[catLabel]) {
+        aggregated[catLabel] = {};
       }
+  
+      const nom = rootMotCle.nom;
+  
+      if (!aggregated[catLabel][nom]) {
+        aggregated[catLabel][nom] = 0;
+      }
+  
+      aggregated[catLabel][nom] += item.nombre;
     }
   
-    // Création des graphiques
+    // Construction des objets pour les graphiques
     this.groupedCharts = Object.entries(aggregated).map(([categorie, mots]) => ({
       categorie,
       chartData: {
@@ -307,6 +314,7 @@ export class GraphiquesComponent implements OnDestroy{
       }
     }));
   }
+  
 
   //Groupe les résultats par question
   groupByQuestion(data: ReponseRep[]): { [question: string]: ReponseRep[] } {

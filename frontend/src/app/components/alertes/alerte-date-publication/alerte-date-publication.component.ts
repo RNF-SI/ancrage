@@ -59,7 +59,6 @@ export class AlerteDatePublicationComponent implements OnInit{
           
           const momentDate = moment(this.data.diagnostic.date_rapport_str, "DD/MM/YYYY", true); 
           this.data.diagnostic.date_rapport = momentDate.isValid() ? momentDate.toDate() : undefined;
-          console.log(this.data.diagnostic.date_rapport)
           let diagno:Diagnostic = Diagnostic.fromJson(this.data.diagnostic);
           this.diagSub =  this.diagnosticService.update(diagno).subscribe(diag=>{
             this.dialogRef.close();

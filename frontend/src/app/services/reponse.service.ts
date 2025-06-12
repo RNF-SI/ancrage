@@ -5,6 +5,9 @@ import { Reponse } from '@app/models/reponse.model';
 import { environment } from 'src/environments/environment';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { INomenclature } from '@app/interfaces/nomenclature.interface';
+import { MotCle } from '@app/models/mot-cle.model';
+import { IMotCle } from '@app/interfaces/mot_cle.interface';
+
 
 @Injectable({
   providedIn: 'root'
@@ -12,10 +15,11 @@ import { INomenclature } from '@app/interfaces/nomenclature.interface';
 export class ReponseService {
 
   private GET_ALL_URL = environment.flask_server+'reponses';
+  private BASE_URL = environment.flask_server+'reponse';
   private http = inject(HttpClient);
 
-  //Enregistre la réponse
-  update(array:Reponse[]): Observable<Nomenclature[]> {
+  //Enregistre les réponses sauf afom
+  updateAllButAfom(array:Reponse[]): Observable<Nomenclature[]> {
        return this.http.post<INomenclature[]>(this.GET_ALL_URL+'/objets',array).pipe(
                  map(nomenclatureJsonArray => {
                    return nomenclatureJsonArray.map<Nomenclature>(
@@ -25,5 +29,14 @@ export class ReponseService {
                );
   }
 
+  updateAfom(reponse:Reponse): Observable<MotCle[]> {
+    return this.http.post<IMotCle[]>(this.BASE_URL+'/objet',reponse).pipe(
+      map(kwJsonArray => {
+        return kwJsonArray.map<MotCle>(
+          kwJson => MotCle.fromJson(kwJson)
+        )
+      })
+    );
+  }
 
 }

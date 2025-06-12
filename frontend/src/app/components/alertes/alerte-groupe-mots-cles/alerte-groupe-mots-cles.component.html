@@ -6,7 +6,7 @@
     </mat-form-field>
     <mat-form-field appearance="fill">
         <mat-label>Catégories</mat-label>
-        <mat-select [(ngModel)]="keyword.categories" [compareWith]="compareNomenclatures" multiple>
+        <mat-select [(ngModel)]="keyword.categorie" [compareWith]="compareNomenclatures">
           <mat-option *ngFor="let cat of data.categories" [value]="cat">{{ cat.libelle }}</mat-option>
         </mat-select>
     </mat-form-field>

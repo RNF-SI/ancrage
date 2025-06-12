@@ -11,27 +11,17 @@ import { ChoixActeursComponent } from '../parts/choix-acteurs/choix-acteurs.comp
 import { Acteur } from '@app/models/acteur.model';
 import { Departement } from '@app/models/departement.model';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ActeurService } from '@app/services/acteur.service';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
-import { DepartementService } from '@app/services/departement.service';
-import { NomenclatureService } from '@app/services/nomenclature.service';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { Labels } from '@app/utils/labels';
 import { MatDialog } from '@angular/material/dialog';
 import { AlerteDiagnosticComponent } from '../alertes/alerte-diagnostic/alerte-diagnostic.component';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { DateAdapter } from '@angular/material/core';
-import { MatMomentDateModule, MAT_MOMENT_DATE_ADAPTER_OPTIONS } from '@angular/material-moment-adapter';
-import { MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
-import { LOCALE_ID } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
 import localeFr from '@angular/common/locales/fr';
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import * as moment from 'moment';
 import { Moment } from 'moment';
 
@@ -43,7 +33,7 @@ registerLocaleData(localeFr);
   templateUrl: './diagnostic.component.html',
   styleUrls: ['./diagnostic.component.css'],
   standalone:true,
-  imports:[CommonModule,MatSelectModule, MatFormFieldModule,FormsModule,MatInputModule,ChoixActeursComponent,ReactiveFormsModule,MatButtonModule,MatDatepickerModule,MatMomentDateModule,FontAwesomeModule,MatTooltipModule],
+  imports:[CommonModule,MatSelectModule, MatFormFieldModule,FormsModule,MatInputModule,ChoixActeursComponent,ReactiveFormsModule,MatButtonModule],
   
 })
 export class DiagnosticComponent implements OnInit, OnDestroy{
@@ -174,7 +164,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
 
   //Met à jour la liste this.chosenSites
   checkSite(){
-    console.log(this.chosenSites);
+
     if (this.chosenSites?.length) {
       
       const chosenIds = this.chosenSites.map(site => site.id_site);
@@ -216,8 +206,6 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       this.formGroup.get("modified_by")?.setValue(this.user_id);
       this.convertDateReport();
       if (this.formGroup.valid) {
-        
-        console.log(this.diagnostic);
         this.diagnosticSubscription = this.diagnosticsService.update(this.diagnostic).subscribe(diagnostic=>{
           this.getConfirmation("Ce diagnostic vient d'être créé dans la base de données et contient ces informations : ",diagnostic,true);
         });
@@ -232,7 +220,6 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       this.previousPage = localStorage.getItem("previousPage")!;
       this.diagnostic=diag;
       if(diag.id_diagnostic > 0){
-        console.log(no_creation);
         this.dialog.open(AlerteDiagnosticComponent, {
           data: {
             title: this.titleDiagnostic,
@@ -259,7 +246,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       sites: (rawValue.sites || []).map((s: any) => Site.fromJson(s))
     };
     this.diagnostic = Object.assign(new Diagnostic(),payload);
-    console.log(this.diagnostic);
+   
   }
 
   ngOnDestroy(): void {

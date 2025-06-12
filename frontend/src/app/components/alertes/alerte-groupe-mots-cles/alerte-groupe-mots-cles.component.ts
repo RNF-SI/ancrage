@@ -38,33 +38,42 @@ export class AlerteGroupeMotsClesComponent{
 
   createGroup() {
     const nomOk = this.keyword.nom && this.keyword.nom.trim().length > 0;
-    const categoriesOk = Array.isArray(this.keyword.categories) && this.keyword.categories.length > 0;
+    const categorieOk = this.keyword.categorie && this.keyword.categorie.id_nomenclature;
   
-    if (nomOk && categoriesOk) {
+    if (nomOk && categorieOk) {
+      // Attache le diagnostic
       this.keyword.diagnostic = new Diagnostic();
       this.keyword.diagnostic.id_diagnostic = this.data.diagnostic.id_diagnostic;
+  
+      // Regroupe les mots-clés enfants (source et target)
       this.keyword.mots_cles_issus = [this.data.source, this.data.target];
   
+      // Supprime les mots-clés enfants de la liste des réponses
       this.data.motsClesReponse = this.data.motsClesReponse.filter(mc =>
         mc.id_mot_cle !== this.data.source.id_mot_cle &&
         mc.id_mot_cle !== this.data.target.id_mot_cle
       );
   
+      // Calcule le total si les deux ont un "nombre"
       if (this.data.source.nombre && this.data.target.nombre) {
         this.keyword.nombre = this.data.source.nombre + this.data.target.nombre;
       }
   
+      // Ajoute le nouveau groupe
       this.data.motsClesReponse.push(this.keyword);
+  
+      // Ferme le dialogue en renvoyant la liste mise à jour
       this.dialogRef.close(this.data.motsClesReponse);
     } else {
       let message = 'Il manque :';
       if (!nomOk) message += '\n- le nom';
-      if (!categoriesOk) message += '\n- au moins une catégorie';
+      if (!categorieOk) message += '\n- une catégorie';
       this.toastr.warning(message, 'Données manquantes');
     }
   }
-
-  close(){
+  
+  close() {
     this.dialogRef.close();
   }
+  
 }

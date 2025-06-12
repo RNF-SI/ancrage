@@ -33,7 +33,6 @@ export class AlerteSiteComponent {
 
   navigate(path:string,diagnostic:Diagnostic){
     this.dialogRef.close();
-    console.log(diagnostic);
     this.siteService.navigateAndCache(path,diagnostic);
   }
 

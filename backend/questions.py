@@ -139,15 +139,15 @@ with app.app_context():
     THEME_MNEMONIQUE = "thème"
     THEME_LIBELLE = "Intérêt"
     question_labels = [
-        "A quelle fréquence venez-vous voir la réserve pour des raisons professionnelles ou de loisirs ?",
+        "A quelle fréquence venez-vous voir le site pour des raisons professionnelles ou de loisirs ?",
         "Quel est votre avis sur les animations ?",
         "Quel est votre avis sur la réglementation ?",
-        "Est-ce que vous êtes d’accord avec l’existence de la réserve ici ? ",
+        "Est-ce que vous êtes d’accord avec l’existence du site ici ? ",
         "Pensez-vous que ces actions soient globalement efficaces ?",
         "Quel est votre avis sur l’organisme gestionnaire ?",
-        "La réserve représente-elle une/des plus-values pour vous ? ",
-        "La réserve représente-t-elle des contraintes pour vous ? ",
-        "Avec le temps et globalement, est-ce que votre avis sur la réserve a évolué ? "
+        "Le site représente-il une/des plus-values pour vous ? ",
+        "Le site représente-t-il des contraintes pour vous ? ",
+        "Avec le temps et globalement, est-ce que votre avis sur le site a évolué ? "
     ]
 
     question_labels_short = [
@@ -198,10 +198,10 @@ with app.app_context():
     THEME_MNEMONIQUE = "thème"
     THEME_LIBELLE = "Implication"
     question_labels = [
-        "Pouvez-vous citer tous les liens qui existent entre vous et la réserve ? Et pouvez-vous nous en dire plus leur nature ?",
+        "Pouvez-vous citer tous les liens qui existent entre vous et le site ? Et pouvez-vous nous en dire plus leur nature ?",
         "Pouvez-vous qualifier globalement l’importance de ces liens ?",
-        "Avez-vous l'habitude de participer à des activités / événements / vernissages / animations / points d'observations… organisées par la RN ?",
-        "Vous sentez-vous consulté par la RN sur les sujets qui vous concernent ?",
+        "Avez-vous l'habitude de participer à des activités / événements / vernissages / animations / points d'observations… organisées par le site ?",
+        "Vous sentez-vous consulté par le site sur les sujets qui vous concernent ?",
         "Concernant l’équipe de gestion du site, comment se passent vos échanges ? ",
         "Ces échanges ont-ils évolués avec le temps ?"
     ]
@@ -261,7 +261,7 @@ with app.app_context():
     THEME_MNEMONIQUE = "thème"
     THEME_LIBELLE = "CCG"
     question_labels = [
-        "En tant que membre du CCG, avez-vous l'impression d'être impliqué dans la vie de la RN ?",
+        "En tant que membre du CCG, avez-vous l'impression d'être impliqué dans la vie du site ?",
         "Que pensez-vous du CCG, en tant qu’instance de discussion ?",
         "Lors du CCG, faites-vous des interventions régulièrement (questions, prises de positions) ?",
         "Quelle est la fréquence de votre participation au CCG ?"
@@ -299,7 +299,7 @@ with app.app_context():
     question_labels = [
         "Que connaissez-vous des impacts du changement climatique sur le territoire ? ",
         "Êtes vous concernés par ces changements, si oui à quels degrès ? Comment y réagissez vous ?",
-        "Pensez-vous que la réserve s'adapte à ces changements, si oui comment ? ",
+        "Pensez-vous que le site s'adapte à ces changements, si oui comment ? ",
         "Que pensez-vous de ces choix d'adaptation ? Pourquoi ?"
     ]
 
@@ -340,9 +340,9 @@ with app.app_context():
     THEME_MNEMONIQUE = "thème"
     THEME_LIBELLE = "Conclusion"
     question_labels = [
-        "Avez-vous des attentes particulières par rapport à la RN ? ",
-        "Pour faire la synthèse de tous les points abordés précédemment, la RN apporte-t-elle dans l’ensemble plutôt des bénéfices ou des inconvénients sur ce territoire ?",
-        "Selon vous, la réserve est-elle bien enracinée sur le territoire ? Pourquoi ? "
+        "Avez-vous des attentes particulières par rapport au site ? ",
+        "Pour faire la synthèse de tous les points abordés précédemment, le site apporte-t-il dans l’ensemble plutôt des bénéfices ou des inconvénients sur ce territoire ?",
+        "Selon vous, le site est-il bien enraciné sur le territoire ? Pourquoi ? "
     ]
 
     question_labels_short = [
@@ -385,3 +385,38 @@ with app.app_context():
 
     
     createQuestionsByTheme(THEME_MNEMONIQUE,THEME_LIBELLE,question_labels,question_labels_short,None)
+
+    
+    updates = [
+        # Bloc 1
+        (1, 1, 10), (2, 2, 10), (4, 3, 10), (5, 4, 10), (6, 5, 10), (7, 7, 10), (13, 6, 10),
+        # Bloc 2
+        (8, 8, 11), (9, 9, 11), (10, 10, 11),
+        # Bloc 3
+        (20, 20, 16),
+        # Bloc 4
+        (3, 12, 13), (12, 13, 13), (15, 14, 13),
+        # Bloc 5
+        (16, 15, 14),
+        # Bloc 6
+        (22, 22, 16), (23, 23, 16), (26, 26, 17), (32, 32, 18),
+        # Bloc 7
+        (34, 34, 19), (21, 21, 16), (36, 36, 19), (24, 24, 16), (25, 25, 16), (27, 27, 16),
+        # Bloc 8
+        (28, 28, 17), (29, 29, 17), (30, 30, 18), (31, 31, 18),
+        # Bloc 9
+        (33, 33, 18), (35, 35, 19), (11, 11, 12), (14, 16, 15),
+        # Bloc 10
+        (17, 17, 15), (18, 18, 15), (19, 19, 15)
+    ]
+
+    for id_question, ordre, theme_question_id in updates:
+        question = db.session.get(Question, id_question)
+        if question:
+            question.ordre = ordre
+            question.metrique = id_question  
+            question.theme_question_id = theme_question_id
+        else:
+            print(f"Question ID {id_question} non trouvée.")
+
+    db.session.commit()

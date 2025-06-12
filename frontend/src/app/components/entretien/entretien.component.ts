@@ -16,8 +16,7 @@ import { MenuLateralComponent } from "../parts/menu-lateral/menu-lateral.compone
 import { SiteService } from '@app/services/sites.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MotsClesZoneComponent } from "../parts/mots-cles-zone/mots-cles-zone.component";
-import { MatTabsModule } from '@angular/material/tabs';
-import { ThemeService } from 'ng2-charts';
+import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import { MotCle } from '@app/models/mot-cle.model';
 
 //Page de la saisie de l'entretien
@@ -62,7 +61,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
         this.title = this.labels.addInterview;
         //Modification
         if (this.id_acteur && this.slug){
-          const themes$ = this.nomenclatureService.getAllByType("thème",this.id_acteur);
+          const themes$ = this.nomenclatureService.getAllByType("thème_question",this.id_acteur);
           const etats$ = this.nomenclatureService.getAllByType("statut_entretien");
           const noResponse$ = this.nomenclatureService.getNoResponse("");
 
@@ -152,6 +151,24 @@ export class EntretienComponent implements OnInit,OnDestroy{
     this.afomComponent.setKeywords(mots_cles);
   }
 
+  //Cache ou affiche le menu en fonction de l'onglet choisi
+  onTabChange(event: MatTabChangeEvent) {
+    let menu = document.getElementById("menu");
+    if (event.index === 0) { 
+    
+      if (menu?.className == "invisible"){
+        menu?.classList.remove("invisible");
+        menu?.classList.add("visible");
+      }
+      
+      
+    }else{
+      if (menu?.className == "visible"){
+        menu?.classList.remove("visible");
+        menu?.classList.add("invisible");
+      }
+    }
+  }
   
   //Met la liste de réponses à jour 
   createReponse = (id_question: number, cr?: Nomenclature) => {
@@ -189,8 +206,6 @@ export class EntretienComponent implements OnInit,OnDestroy{
       if ((valeurId !== this.noResponse.id_nomenclature && valeurId > 0) || isSansIndicateur) {
   
         reponsesCompletes++;
-      }else{
-        console.log(reponse.question?.libelle);
       }
     }
   
@@ -204,8 +219,8 @@ export class EntretienComponent implements OnInit,OnDestroy{
     }
  
     if (totalReponses > 0) {
-      console.log(this.reponses);
-      this.reponsesSubscription = this.reponseService.update(this.reponses).subscribe(
+   
+      this.reponsesSubscription = this.reponseService.updateAllButAfom(this.reponses).subscribe(
         themes => {
           this.prepareResults(themes,this.etats,this.noResponse);
 

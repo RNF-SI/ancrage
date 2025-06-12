@@ -7,7 +7,7 @@ export class MotCle {
     id_mot_cle=0;
     nom="";
     reponses?:Reponse[];
-    categories:Nomenclature[] = [];
+    categorie:Nomenclature = new Nomenclature();
     mots_cles_issus:MotCle[]=[];
     diagnostic:Diagnostic = new Diagnostic();
     mot_cle_id_groupe?:number;
@@ -22,7 +22,7 @@ export class MotCle {
         copy.nom = this.nom;
         copy.reponses = this.reponses?.map(r => r.copy()) || [];
         copy.mots_cles_issus = this.mots_cles_issus?.map(r => r.copy()) || [];
-        copy.categories = this.categories?.map(c => c.copy()) || [];
+        copy.categorie = this.categorie.copy();
         copy.diagnostic = this.diagnostic.copy();
         copy.mot_cle_id_groupe = this.mot_cle_id_groupe;
         return copy;
@@ -36,7 +36,7 @@ export class MotCle {
         mot_cle.nom = data.nom;
         mot_cle.reponses = (data.reponses || []).map(r => Reponse.fromJson(r));
         mot_cle.mots_cles_issus = (data.mots_cles_issus || []).map(mc => MotCle.fromJson(mc));
-        mot_cle.categories = (data.categories || []).map(c => Nomenclature.fromJson(c));
+        mot_cle.categorie = Nomenclature.fromJson(data.categorie);
         mot_cle.diagnostic = Diagnostic.fromJson(data.diagnostic);
         mot_cle.mot_cle_id_groupe = data.mot_cle_id_groupe;
         return mot_cle;
@@ -47,7 +47,7 @@ export class MotCle {
             ...this,
             reponses: this.reponses ? this.reponses.map(r => r.toJson()) : [],
             mots_cles: this.mots_cles_issus ? this.mots_cles_issus.map(r => r.toJson()) : [],
-            categories: this.categories ? this.categories.map(c => c.toJson()) : [],
+            categorie: this.categorie.toJson(),
             diagnostic: this.diagnostic!.toJson(),
         };
     }

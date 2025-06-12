@@ -188,7 +188,6 @@ export class ActeurComponent implements OnInit,OnDestroy{
   //Alerte de confirmation
   getConfirmation(message:string,actor:Acteur){
     this.pageDiagnostic = localStorage.getItem("pageDiagnostic")!;
-    console.log(this.pageDiagnostic);
     this.previousPage = localStorage.getItem("previousPage")!;
     this.diagnostic.acteurs.push(actor);
     

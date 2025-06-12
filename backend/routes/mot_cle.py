@@ -24,7 +24,7 @@ def getKeywordsByActor(id_acteur):
         .join(MotCle.reponses)
         .join(Reponse.acteur)
         .filter(Acteur.id_acteur == id_acteur)
-        .options(joinedload(MotCle.categories))
+        .options(joinedload(MotCle.categorie))
         .all()
     )
     logger.debug(f"🔍 {len(mots_cles)} mots-clés récupérés pour l'acteur {id_acteur}")

@@ -1,22 +1,22 @@
-<mat-tab-group >
-  <mat-tab label="Questions">
-      <div class="p-3">
-        <form [formGroup]="formGroup">
-          <div class="container">
-            <div class="row">
-              <div class="col-4">
-                <app-menu-lateral
-                  [themes]="themes"
-                ></app-menu-lateral>
-              </div>
-        
-              <div class="col-8">
+<div class="container">
+  <div class="row">
+    <div class="col-3">
+      <app-menu-lateral
+        [themes]="themes"
+      ></app-menu-lateral>
+    </div>
+
+    <div class="col-9">
+      <mat-tab-group (selectedTabChange)="onTabChange($event)">
+        <mat-tab label="Questions">
+            <div class="p-3">
+              <form [formGroup]="formGroup">
                 <h2>{{ title }}</h2>
-        
+
                 <div *ngFor="let theme of themes">
                   <div *ngIf="theme.libelle != 'AFOM'">
                     <h3>{{ theme.libelle }}</h3>
-        
+
                     <div *ngFor="let q of theme.questions" [attr.id]="'question-' + q.id_question">
                       <h4 class="question_d_{{q.id_question}}">{{ q.libelle }} <fa-icon class="warn warn_{{q.id_question}}"[icon]="['fas', 'triangle-exclamation']"></fa-icon></h4>
                       
@@ -33,32 +33,35 @@
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </form>
-      </div>  
-  </mat-tab>
-  
-  <mat-tab label="AFOM">
-    <div class="p-3">
-    
-      <ng-container *ngIf="true">
+              </form>
+            </div>  
+        </mat-tab>
         
-        <app-mots-cles-zone #afom
-          [diagnostic]="diagnostic"
-          [id_acteur]="id_acteur"
-          [noResponse]="noResponse"
-          [createReponse]="createReponse"
-          [reponses]="reponses"
-        >
+        <mat-tab label="AFOM">
+          <div class="p-3">
+          
+            <ng-container *ngIf="true">
+              
+              <app-mots-cles-zone #afom
+                [diagnostic]="diagnostic"
+                [id_acteur]="id_acteur"
+                [noResponse]="noResponse"
+                [createReponse]="createReponse"
+                [reponses]="reponses"
+              >
+            
+              </app-mots-cles-zone>
+            </ng-container>
+          </div>
+        </mat-tab>
+        
+        
+      </mat-tab-group>
       
-        </app-mots-cles-zone>
-      </ng-container>
     </div>
-  </mat-tab>
-  
-  
-</mat-tab-group>
+  </div>
+</div>
+
+
 <button mat-raised-button color="accent" type="button" (click)="navigate(this.previousPage,this.diagnostic)">{{labels.btnPreviousStepLabel}}</button>
   

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import { AfterViewInit, Component, inject, Input, OnDestroy, SimpleChanges } from '@angular/core';
 import { ReactiveFormsModule, FormsModule, FormControl } from '@angular/forms';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -24,8 +24,9 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { AlerteMotsClesComponent } from '@app/components/alertes/alerte-mots-cles/alerte-mots-cles.component';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { GraphMotsCles } from '@app/models/graph-mots-cles';
-import { ThisReceiver } from '@angular/compiler';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
+import { ReponseService } from '@app/services/reponse.service';
+
 
 @Component({
   selector: 'app-mots-cles-zone',
@@ -79,9 +80,11 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
   private diagSub?:Subscription;
   private authService = inject(AuthService);
   id_role:number = 0;
+  private reponseSub?:Subscription;
+  private reponseService = inject(ReponseService);
+
 
   ngAfterViewInit(): void {
-    console.log(this.diagnostic);
     if(!this.modeAnalyse){
       let user = this.authService.getCurrentUser();
       this.id_role = user.id_role;
@@ -90,50 +93,50 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
       const keywordsActor$ = this.motCleService.getKeywordsByActor(this.id_acteur);
     
       this.forkSub = forkJoin([keywordsDiag$, sections$, keywordsActor$]).subscribe(([keywords, sections, keywordsActor]) => {
-        this.categories = sections;
-        this.connectedDropListsIds = this.categories.map(c => `dropList-${c.id_nomenclature}`);
+       
+        this.prepareData(keywords,sections,keywordsActor);
         
-        // ⚠️ Important : vider les mots_cles de chaque catégorie proprement
-        for (const cat of this.categories) {
-          cat.mots_cles = [];
-        }
-    
-        this.motsClesReponse = [];
-        if (keywords.length > 0) {
-          for (const k of keywords) {
-            this.allKeywords.push(k.nom);
-          }
-        }
-    
-        this.setKeywords(keywordsActor);
       });
     }
    
   }
 
+  prepareData(keywords:MotCle[],sections:Nomenclature[],keywordsActor:MotCle[]){
+    this.categories = sections;
+    this.connectedDropListsIds = this.categories.map(c => `dropList-${c.id_nomenclature}`);
+    for (const cat of this.categories) {
+      cat.mots_cles = [];
+    }
+
+    this.motsClesReponse = [];
+    this.allKeywords = [];
+    if (keywords.length > 0) {
+      for (const k of keywords) {
+        this.allKeywords.push(k.nom);
+      }
+    }
+
+    this.setKeywords(keywordsActor);
+  }
+
   getDataAnalysis(){
     let user = this.authService.getCurrentUser();
     this.id_role = user.id_role;
-    console.log(this.id_role);
-    console.log(this.diagnostic);
     const sections$ = this.nomenclatureService.getAllByType('AFOM'); 
     const results$ = this.diagnosticService.getOccurencesKeyWords(this.diagnostic.id_diagnostic);
       this.forkSub = forkJoin([results$, sections$]).subscribe(([results, sections]) => {
         this.categories = sections;
-        console.log(this.categories);
         this.connectedDropListsIds = this.categories.map(c => `dropList-${c.id_nomenclature}`);
-        // ⚠️ Important : vider les mots_cles de chaque catégorie proprement
         for (const cat of this.categories) {
           cat.mots_cles = [];
         }
     
-        this.motsClesReponse = [];
+        this.motsCleAnalyse = [];
         this.prepareResults(results);
       });
   }
   ngOnChanges(changes: SimpleChanges): void {
       if (changes['diagnostic'] && this.modeAnalyse) {
-        console.log('ok');
         this.getDataAnalysis();
 
       }
@@ -176,8 +179,6 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
         mc.id_mot_cle !== keyword.id_mot_cle 
       );
     }
-    
-    console.log(this.motsClesReponse);
 
   }
   
@@ -195,7 +196,7 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
     if (!exists) {
       const mot_cle: MotCle = new MotCle();
       mot_cle.nom = kw;
-      mot_cle.categories = [nonClasse];
+      mot_cle.categorie = nonClasse;
       mot_cle.diagnostic = this.diagnostic;
       if(this.modeAnalyse){
         mot_cle.nombre=1;
@@ -238,37 +239,53 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
     }
   
     if (!isShiftPressed) {
-
+      // Déplacement classique
       for (const cat of this.categories) {
         if (cat.mots_cles) {
           cat.mots_cles = cat.mots_cles.filter(k => k.id_mot_cle !== draggedKeyword.id_mot_cle);
         }
       }
-
-      draggedKeyword.categories = [targetCategory];
-    } else {
-
-      const alreadyIn = draggedKeyword.categories.some(c => c.id_nomenclature === targetCategory.id_nomenclature);
-      if (!alreadyIn) {
-        draggedKeyword.categories.push(targetCategory);
-      }
-    }
   
-    targetCategory.mots_cles = targetCategory.mots_cles || [];
-    const alreadyThere = targetCategory.mots_cles.some(mc => mc.id_mot_cle === draggedKeyword.id_mot_cle);
-    if (!alreadyThere) {
-      targetCategory.mots_cles.push(draggedKeyword);
-    }
-    if(!this.modeAnalyse){
-      if (!this.motsClesReponse.some(mc => mc.id_mot_cle === draggedKeyword.id_mot_cle)) {
-        this.motsClesReponse.push(draggedKeyword);
+      draggedKeyword.categorie = targetCategory;
+  
+      // Ajout au tableau cible
+      targetCategory.mots_cles = targetCategory.mots_cles || [];
+      const alreadyThere = targetCategory.mots_cles.some(mc => mc.id_mot_cle === draggedKeyword.id_mot_cle);
+      if (!alreadyThere) {
+        targetCategory.mots_cles.push(draggedKeyword);
       }
-    }else{
-      if (!this.motsCleAnalyse.some(mc => mc.id_mot_cle === draggedKeyword.id_mot_cle)) {
-        this.motsCleAnalyse.push(draggedKeyword);
+  
+      if (!this.modeAnalyse) {
+        if (!this.motsClesReponse.some(mc => mc.id_mot_cle === draggedKeyword.id_mot_cle)) {
+          this.motsClesReponse.push(draggedKeyword);
+        }
+      } else {
+        if (!this.motsCleAnalyse.some(mc => mc.id_mot_cle === draggedKeyword.id_mot_cle)) {
+          this.motsCleAnalyse.push(draggedKeyword);
+        }
+      }
+  
+    } else {
+      // Duplication avec MAJ
+      const alreadyInSameCategory = draggedKeyword.categorie.id_nomenclature === targetCategory.id_nomenclature;
+  
+      if (!alreadyInSameCategory) {
+       
+        const newKeyword = new MotCle();
+        newKeyword.nom = draggedKeyword.nom;
+        newKeyword.categorie = targetCategory;
+        newKeyword.diagnostic = this.diagnostic;
+        // Ajout à la catégorie cible
+        targetCategory.mots_cles = targetCategory.mots_cles || [];
+        targetCategory.mots_cles.push(newKeyword);
+  
+        if (!this.modeAnalyse) {
+          this.motsClesReponse.push(newKeyword);
+        } else {
+          this.motsCleAnalyse.push(newKeyword);
+        }
       }
     }
-    
   }
 
   checkKeywords(keyword:MotCle){
@@ -299,31 +316,27 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
       reponse.acteur = new Acteur();
       reponse.acteur.id_acteur = this.id_acteur;
       for (let i=0;i<reponse.mots_cles.length;i++){
-        for (let j=0;j<reponse.mots_cles[i].categories.length;j++){
-          reponse.mots_cles[i].categories[j].mots_cles=[];
-        }
-      
+        
+          reponse.mots_cles[i].categorie.mots_cles=[];
       }
-      console.log(reponse);
-      this.reponses[this.reponses.length-1]=reponse;
-      this.createReponse(reponse.question!.id_question);
+   
+      this.reponseSub = this.reponseService.updateAfom(reponse).subscribe(keywords=>{
+        this.setKeywords(keywords);
+      })
+
     }else{
       let afoms:GraphMotsCles[]=[];
       for (const mc of this.motsCleAnalyse){
-        for (let i=0;i<mc.categories.length;i++){
-          mc.categories[i].mots_cles = [];
-        
-        }
+        mc.categorie.mots_cles=[];
         let afom = new GraphMotsCles();
         afom.id_afom = mc.afom_id!;
         afom.mot_cle = mc;
         afom.mot_cle.diagnostic.id_diagnostic = this.id_diagnostic
         afom.nombre = mc.nombre!;
-        console.log(afom);
         afoms.push(afom);
       }
       this.diagSub = this.diagnosticService.updateAfom(afoms).subscribe(afoms=>{
-        console.log(afoms);
+       
         this.prepareResults(afoms);
       });
     }
@@ -331,12 +344,13 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
   }
 
   prepareResults(results:GraphMotsCles[]){
+
     this.motsCleAnalyse=[];
     let ids_array:number[]=[]
     for (const res of results) {
       if (res.mot_cle.mots_cles_issus.length > 0){
         const mot_cle = res.mot_cle;
-        
+        mot_cle.nombre = res.nombre; 
         for (const mc of res.mot_cle.mots_cles_issus){
           ids_array.push(mc.id_mot_cle);
           
@@ -371,27 +385,31 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
 
   }
 
-  setKeywords(keywords:MotCle[]): void {
-    console.log(keywords);
+  setKeywords(keywords: MotCle[]): void {
+
+    // Réinitialise les mots-clés associés à chaque catégorie
     for (const cat of this.categories) {
       cat.mots_cles = [];
     }
   
     this.motsClesReponse = [];
-    this.motsCleAnalyse = []
+    this.motsCleAnalyse = [];
+  
     for (const mc of keywords) {
-
+  
+      // Sauter les mots-clés qui sont des enfants (issus d’un groupe)
       if (mc.mot_cle_id_groupe !== null && mc.mot_cle_id_groupe !== undefined) {
         continue;
       }
   
+      // Rattache le diagnostic actuel (utile si nécessaire pour l'affichage ou l’édition)
       mc.diagnostic = new Diagnostic();
       mc.diagnostic.id_diagnostic = this.diagnostic.id_diagnostic;
-  
-      for (const catRef of mc.categories || []) {
-        
-        const matchingCat = this.categories.find(c => c.id_nomenclature === catRef.id_nomenclature);
-        
+    
+      // Utilise la seule catégorie associée (mc.categorie)
+      if (mc.categorie && mc.categorie.id_nomenclature) {
+        const matchingCat = this.categories.find(c => c.id_nomenclature === mc.categorie.id_nomenclature);
+
         if (matchingCat) {
           matchingCat.mots_cles = matchingCat.mots_cles || [];
   
@@ -400,17 +418,17 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
           }
         }
       }
-      if (!this.modeAnalyse){
+  
+      // Ajoute le mot-clé soit dans la liste des réponses, soit dans celle d’analyse
+      if (!this.modeAnalyse) {
         if (!this.motsClesReponse.some(k => k.id_mot_cle === mc.id_mot_cle)) {
           this.motsClesReponse.push(mc);
         }
-      }else{
+      } else {
         if (!this.motsCleAnalyse.some(k => k.id_mot_cle === mc.id_mot_cle)) {
           this.motsCleAnalyse.push(mc);
         }
       }
-     
-
     }
   }
 
@@ -441,7 +459,6 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
   
       dialogRef.afterClosed().subscribe(updatedMotsCles => {
         if (updatedMotsCles) {
-          console.log(updatedMotsCles);
           this.setKeywords(updatedMotsCles);
         }
       });
@@ -483,5 +500,6 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
   ngOnDestroy(): void {
     this.forkSub?.unsubscribe();
     this.diagSub?.unsubscribe();
+    this.reponseSub?.unsubscribe();
   }
 }
