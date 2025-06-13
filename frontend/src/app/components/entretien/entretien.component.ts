@@ -209,7 +209,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
       }
     }
   
-    const statutLabel = (reponsesCompletes === totalReponses) ? "Réalisé" : "En cours";
+    /* const statutLabel = (reponsesCompletes === totalReponses) ? "Réalisé" : "En cours";
     const statut = this.etats.find(e => e.libelle === statutLabel);
   
     if (statut) {
@@ -217,7 +217,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
         reponse.acteur.statut_entretien = statut;
       }
     }
- 
+  */
     if (totalReponses > 0) {
    
       this.reponsesSubscription = this.reponseService.updateAllButAfom(this.reponses).subscribe(

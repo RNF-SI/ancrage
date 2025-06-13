@@ -251,12 +251,17 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   }
 
   openAlertDate(){
-    this.dialog.open(AlerteDatePublicationComponent, {
+    const dialogRef = this.dialog.open(AlerteDatePublicationComponent, {
               data: {
                 labels: this.labels,
                 diagnostic:this.diagnostic,
                 previousPage:this.previousPage,
                 
+              }
+            });
+            dialogRef.afterClosed().subscribe(diagnostic => {
+              if (diagnostic) {
+                this.diagnostic = diagnostic;
               }
             });
   }

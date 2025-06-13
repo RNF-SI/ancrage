@@ -360,10 +360,8 @@ def changeValuesDiagnostic(diagnostic,data):
                     created_by=data['created_by'],
                     diagnostic_id=diagnostic.id_diagnostic,
                     categories=a.categories,
-                    reponses=a.reponses,
                     slug=a.slug,
                     profil_cognitif_id=a.profil_cognitif_id,
-                    statut_entretien=a.statut_entretien,
                     acteur_origine_id = a.acteur_origine_id if a.acteur_origine_id else a.id_acteur,
                     is_copy=True
                 )

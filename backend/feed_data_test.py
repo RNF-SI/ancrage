@@ -189,14 +189,14 @@ with app.app_context():
     ]
 
     themes_questions = [
-        "La réserve",
+        "Le site",
         "Les sources d'information",
         "La fréquence de visite",
         "Les actions mises en place",
-        "L'organisme gestionnaire de la réserve",
-        "Les effets liés à l'existence de la réserve",
+        "L'organisme gestionnaire du site",
+        "Les effets liés à l'existence du site",
         "La nature des liens",
-        "Spécifique aux membres du Comité Consultatif de Gestion (CCG)",
+        "Spécifique à l'instance de gouvernance",
         "Changement climatique et biodiversité",
         "Conclusion",
 

@@ -1,5 +1,5 @@
 from models.models import db
-from flask import request
+from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
 from routes import bp, now, func
@@ -8,6 +8,7 @@ from routes.mot_cle import getKeywordsByActor
 from routes.logger_config import logger
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import raiseload
 
 @bp.route('/reponses/objets', methods=['POST'])
 def enregistrer_reponses_depuis_objets():
@@ -35,6 +36,20 @@ def enregistrer_reponse_depuis_objet():
 
     return getKeywordsByActor(acteur_id)
 
+@bp.route('/question/<libelle>', methods=['GET'])
+def get_question_without_relations(libelle):
+    question = db.session.query(Question).options(
+        raiseload(Question.reponses),
+        raiseload(Question.theme),
+        raiseload(Question.choixReponses),
+        raiseload(Question.theme_question)
+    ).filter_by(libelle=libelle).first()
+
+    schema = QuestionSchema(many=False,exclude = ("reponses", "theme", "choixReponses", "theme_question"))
+
+    questionObj = schema.dump(question)
+    return jsonify(questionObj)  
+
 
 def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
     if not reponses_objets:
@@ -54,16 +69,6 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
         return
 
     logger.info(f"Traitement des réponses pour l'acteur ID {acteur_id}")
-
-    # Mise à jour du statut d’entretien
-    statut_data = acteur_data.get("statut_entretien")
-    if statut_data:
-        try:
-            statut_id = statut_data.get("id_nomenclature")
-            if statut_id and isinstance(statut_id, int):
-                acteur.statut_entretien_id = statut_id
-        except Exception as e:
-            logger.error(f"Erreur lors de l'enregistrement du statut entretien : {e}")
 
     questions_ids_envoyees = set()
 
@@ -104,7 +109,9 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
 
         db.session.commit()
         logger.info(f"Réponses enregistrées pour l'acteur ID {acteur_id}. Vérification des dates entretien…")
-        verifDatesEntretien(acteur.diagnostic)
+        
+        verifCompleteStatus(acteur_id)
+        verifDatesEntretien(acteur.diagnostic.id_diagnostic)
 
     except SQLAlchemyError as e:
         db.session.rollback()
@@ -125,15 +132,6 @@ def enregistrer_reponse_acteur(reponse_objet):
 
     logger.info(f"Traitement de la réponse pour l'acteur ID {acteur_id}")
 
-    # Mise à jour du statut entretien
-    statut_data = acteur_data.get("statut_entretien")
-    if statut_data:
-        try:
-            statut_id = statut_data.get("id_nomenclature")
-            if statut_id and isinstance(statut_id, int):
-                acteur.statut_entretien_id = statut_id
-        except Exception as e:
-            logger.error(f"Erreur lors de l'enregistrement du statut entretien : {e}")
 
     try:
         question_id = reponse_objet['question']['id_question']
@@ -195,6 +193,7 @@ def enregistrer_reponse_acteur(reponse_objet):
     # Mise à jour ou création de la réponse
     reponse = Reponse.query.filter_by(acteur_id=acteur_id, question_id=question_id).first()
     if reponse:
+        print(f"Réponse {reponse.id_reponse}")
         reponse.valeur_reponse_id = valeur_reponse_id
         reponse.commentaires = commentaires
         reponse.mots_cles = mots_cles_bdd
@@ -209,7 +208,9 @@ def enregistrer_reponse_acteur(reponse_objet):
         db.session.add(nouvelle_reponse)
 
     logger.info(f"Réponse enregistrée pour l'acteur ID {acteur_id}. Vérification des dates entretien…")
-    verifDatesEntretien(acteur.diagnostic)
+    
+    verifCompleteStatus(acteur_id)
+    verifDatesEntretien(acteur.diagnostic.id_diagnostic)
 
     diagnostic_id = acteur.diagnostic_id
     mots_cles_repartis = getRepartitionMotsCles(diagnostic_id)
@@ -244,9 +245,12 @@ def record_afoms(diagnostic_id,mots_cles_repartis):
     logger.info(f"Réponse et AFOM enregistrés pour le diagnostic ID {diagnostic_id}")
 
 
-def verifDatesEntretien(diagnostic):
+def verifDatesEntretien(diagnostic_id):
+    diagnostic = Diagnostic.query.filter_by(id_diagnostic=diagnostic_id).first()
+   
     listeTermines = []
     for actor in diagnostic.acteurs:
+      
         if actor.statut_entretien and actor.statut_entretien.libelle == 'Réalisé':
             listeTermines.append(actor)
 
@@ -292,3 +296,31 @@ def getRepartitionMotsCles(id_diagnostic):
         })
 
     return data
+
+def verifCompleteStatus(id_acteur):
+    nb_reponses = db.session.query(func.count(Reponse.id_reponse)).filter_by(acteur_id=id_acteur).scalar()
+    print(nb_reponses)
+    nomenclatures = Nomenclature.query.filter_by(mnemonique="statut_entretien").all()
+    
+    statut_entretien_id=0
+    if nb_reponses == 37:
+        for statut in nomenclatures:
+            if statut.libelle == 'Réalisé':
+                statut_entretien_id = statut.id_nomenclature
+                print('réalisé')
+                break
+    elif nb_reponses < 37:
+        for statut in nomenclatures:
+            if statut.libelle == 'En cours':
+                statut_entretien_id = statut.id_nomenclature
+                print('en cours')
+                break
+    
+    acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
+
+    if not acteur:
+        logger.info(f"❌ Aucun acteur trouvé avec l'ID {id_acteur}")
+    else:
+        acteur.statut_entretien_id = statut_entretien_id
+        db.session.add(acteur)
+        db.session.commit()

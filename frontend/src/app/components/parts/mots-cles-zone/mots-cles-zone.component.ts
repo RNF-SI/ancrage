@@ -26,6 +26,8 @@ import { DiagnosticService } from '@app/services/diagnostic.service';
 import { GraphMotsCles } from '@app/models/graph-mots-cles';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { ReponseService } from '@app/services/reponse.service';
+import { Question } from '@app/models/question.model';
+import { QuestionService } from '@app/services/question.service';
 
 
 @Component({
@@ -82,7 +84,8 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
   id_role:number = 0;
   private reponseSub?:Subscription;
   private reponseService = inject(ReponseService);
-
+  private questionService = inject(QuestionService);
+  questionAfom = new Question();
 
   ngAfterViewInit(): void {
     if(!this.modeAnalyse){
@@ -91,17 +94,18 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
       const sections$ = this.nomenclatureService.getAllByType('AFOM'); 
       const keywordsDiag$ = this.motCleService.getAllByDiag(this.diagnostic.id_diagnostic);
       const keywordsActor$ = this.motCleService.getKeywordsByActor(this.id_acteur);
-    
-      this.forkSub = forkJoin([keywordsDiag$, sections$, keywordsActor$]).subscribe(([keywords, sections, keywordsActor]) => {
+      const questionAfom$ = this.questionService.get("Atouts - Faiblesses - Opportunités - Menaces");
+      this.forkSub = forkJoin([keywordsDiag$, sections$, keywordsActor$,questionAfom$]).subscribe(([keywords, sections, keywordsActor,questionAfom]) => {
        
-        this.prepareData(keywords,sections,keywordsActor);
+        this.prepareData(keywords,sections,keywordsActor,questionAfom);
         
       });
     }
    
   }
 
-  prepareData(keywords:MotCle[],sections:Nomenclature[],keywordsActor:MotCle[]){
+  prepareData(keywords:MotCle[],sections:Nomenclature[],keywordsActor:MotCle[],questionAfom:Question){
+    this.questionAfom = questionAfom;
     this.categories = sections;
     this.connectedDropListsIds = this.categories.map(c => `dropList-${c.id_nomenclature}`);
     for (const cat of this.categories) {
@@ -112,7 +116,10 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
     this.allKeywords = [];
     if (keywords.length > 0) {
       for (const k of keywords) {
-        this.allKeywords.push(k.nom);
+        if (!this.allKeywords.includes(k.nom)){
+          this.allKeywords.push(k.nom);
+        }
+        
       }
     }
 
@@ -205,7 +212,10 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
       mot_cle.id_mot_cle = this.generateTempId();
       nonClasse.mots_cles?.push(mot_cle);
       this.motsClesReponse.push(mot_cle);
-      this.allKeywords.push(mot_cle.nom);
+      if (!this.allKeywords.includes(mot_cle.nom)){
+        this.allKeywords.push(mot_cle.nom);
+      }
+      
     }
   
     this.inputCtrl.setValue('');
@@ -309,7 +319,7 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
     }
     if (!this.modeAnalyse){
       let reponse = new Reponse();
-      reponse.question = this.reponses[this.reponses.length-1].question
+      reponse.question = this.questionAfom;
       reponse.question!.indications="Sans indicateur";
       reponse.valeur_reponse = this.noResponse;
       reponse.mots_cles = this.motsClesReponse;

@@ -40,6 +40,7 @@ export class GraphiquesComponent implements OnDestroy{
   private diagnosticService = inject(DiagnosticService);
   private diagnosticSubscription?:Subscription;
   private routeSubscription?:Subscription;
+  colorPalette = ['#0072B2', '#E69F00', '#009E73', '#F0E442', '#CC79A7', '#D55E00', '#999999'];
   groupedData: { [question: string]: GraphRepartition[] } = {};
   chartDataByTheme: { [theme_id: number]: AvgPerQuestion[] } = {};
   labels = new Labels();
@@ -83,6 +84,7 @@ export class GraphiquesComponent implements OnDestroy{
     categorie: string;
     chartData: ChartConfiguration<'bar'>;
   }[] = [];
+
 
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -132,10 +134,15 @@ export class GraphiquesComponent implements OnDestroy{
         const responses = this.groupedData[question].filter(
           r => !LABELS_TO_EXCLUDE.includes(r.reponse?.toLowerCase())
         );
+        const labels = responses.map(r => r.reponse);
+        const data = responses.map(r => r.nombre);
+        const backgroundColors = labels.map((_, i) => this.colorPalette[i % this.colorPalette.length]);
+
         this.chartDataRepartition[question] = {
-          labels: responses.map(r => r.reponse),
+          labels,
           datasets: [{
-            data: responses.map(r => r.nombre),
+            data,
+            backgroundColor: backgroundColors
           }]
         };
       }
@@ -207,15 +214,23 @@ export class GraphiquesComponent implements OnDestroy{
         const labels = [...new Set(filteredEntries.map(e => e.libelle_graphique))];
 
         const categories = [...new Set(entries.map(e => e.categorie || 'Sans catégorie'))];
-        const datasets = categories.map(categorie => {
+        const datasets = categories.map((categorie, i) => {
           const values = labels.map(label => {
             const match = entries.find(e => e.categorie === categorie && e.libelle_graphique === label);
             return match ? match.score : 0;
           });
-
+        
+          const color = this.colorPalette[i % this.colorPalette.length];
+        
           return {
             label: categorie,
-            data: values
+            data: values,
+            borderColor: color,
+            backgroundColor: color + '66', // transparence (66 = ~40%)
+            pointBackgroundColor: color,
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: color
           };
         });
 
@@ -240,6 +255,7 @@ export class GraphiquesComponent implements OnDestroy{
   
     const motCleData = new Map<number, GraphMotsCles>();
   
+    const racinesEtOrphelins = this.data.filter(item => item.mot_cle.mot_cle_id_groupe === null || item.mot_cle.mot_cle_id_groupe === undefined);
     // Indexation initiale des mots-clés par leur ID
     for (const item of this.data) {
       motCleData.set(item.mot_cle.id_mot_cle, item);
@@ -247,7 +263,7 @@ export class GraphiquesComponent implements OnDestroy{
   
     const aggregated: Record<string, Record<string, number>> = {}; // catégorie -> nom du mot-clé racine -> nombre
   
-    for (const item of this.data) {
+    for (const item of racinesEtOrphelins) {
       const motCle = item.mot_cle;
       const isChild = motCle.mot_cle_id_groupe !== undefined;
   
