@@ -216,6 +216,7 @@ class MotCle(db.Model):
     mots_cles_groupe = db.relationship('MotCle', remote_side=[id_mot_cle], backref='mots_cles_issus')
     diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
     diagnostic = db.relationship('Diagnostic', foreign_keys=[diagnostic_id])
+    is_actif = db.Column(db.Boolean, default=True) 
 
 class Nomenclature(db.Model):
     __tablename__ = 't_nomenclatures'

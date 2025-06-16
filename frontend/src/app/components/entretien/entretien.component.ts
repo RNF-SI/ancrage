@@ -51,8 +51,11 @@ export class EntretienComponent implements OnInit,OnDestroy{
   noResponse:Nomenclature = new Nomenclature();
   afom = new Nomenclature();
   @ViewChild('afom') afomComponent!: MotsClesZoneComponent;
+  menu:any;
 
   ngOnInit(): void {
+    this.menu = document.getElementById("menu");
+    this.display();
     this.previousPage = localStorage.getItem("previousPage")!;
     this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
     this.routeSubscription = this.route.params.subscribe((params: any) => {
@@ -135,38 +138,33 @@ export class EntretienComponent implements OnInit,OnDestroy{
       
     }
 
-    let lastReponse = reponses[reponses.length - 1];
-    let mots_cles: MotCle[] = [];
-    
-    if (
-      lastReponse.question &&
-      Array.isArray(lastReponse.question.reponses) &&
-      lastReponse.question.reponses.length > 0 &&
-      Array.isArray(lastReponse.question.reponses[0].mots_cles)
-    ) {
-      mots_cles = lastReponse.question.reponses[0].mots_cles;
-    } else if (Array.isArray(lastReponse.mots_cles)) {
-      mots_cles = lastReponse.mots_cles;
-    }
-    this.afomComponent.setKeywords(mots_cles);
   }
 
   //Cache ou affiche le menu en fonction de l'onglet choisi
   onTabChange(event: MatTabChangeEvent) {
-    let menu = document.getElementById("menu");
+    
     if (event.index === 0) { 
     
-      if (menu?.className == "invisible"){
-        menu?.classList.remove("invisible");
-        menu?.classList.add("visible");
-      }
-      
+      this.display()
       
     }else{
-      if (menu?.className == "visible"){
-        menu?.classList.remove("visible");
-        menu?.classList.add("invisible");
-      }
+      this.hide();
+      
+    }
+  }
+
+  hide(){
+    if (this.menu?.className == "visible"){
+      this.menu?.classList.remove("visible");
+      this.menu?.classList.add("invisible");
+    }
+  }
+
+  display(){
+    console.log(this.menu?.className);
+    if (this.menu?.className == "invisible"){
+      this.menu?.classList.remove("invisible");
+      this.menu?.classList.add("visible");
     }
   }
   

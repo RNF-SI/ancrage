@@ -372,22 +372,22 @@ def changeValuesDiagnostic(diagnostic,data):
 
     return diagnostic
 
-@bp.route('/diagnostic/afom/update',methods=['POST'])
+@bp.route('/diagnostic/afom/update', methods=['POST'])
 def enregistrer_afoms():
     graph_data = request.get_json()
 
     try:
         diagnostic_id = graph_data[0]['mot_cle']['diagnostic']['id_diagnostic']
-        logger.info(diagnostic_id)
+        logger.info(f"[INFO] Diagnostic ID : {diagnostic_id}")
     except (KeyError, IndexError, TypeError):
-        logger.info("[ERREUR] Impossible d'extraire l'identifiant du diagnostic.")
+        logger.error("[ERREUR] Impossible d'extraire l'identifiant du diagnostic.")
         return {"error": "Données invalides"}, 400
 
     try:
-        # Suppression des AFOM existants liés au diagnostic
+        # 🔥 Étape 0 : suppression explicite des AFOM liés au diagnostic
         afom_ids_to_delete = (
             db.session.query(Afom.id_afom)
-            .join(Afom.mot_cle)
+            .join(MotCle)
             .filter(MotCle.diagnostic_id == diagnostic_id)
             .all()
         )
@@ -395,10 +395,13 @@ def enregistrer_afoms():
         if ids:
             db.session.query(Afom).filter(Afom.id_afom.in_(ids)).delete(synchronize_session=False)
 
-        mots_cles_bdd = []
-        groupes_attendus = []
+        # Puis suppression des mots-clés du diagnostic
+        db.session.query(MotCle).filter_by(diagnostic_id=diagnostic_id).update({MotCle.is_actif: False}, synchronize_session=False)
+        db.session.flush()
 
-        # Création des nouveaux mots-clés
+        parents_temp = []
+
+        # 🔁 Étape 1 : Création des groupes (parents)
         for item in graph_data:
             mot_cle_data = item['mot_cle']
             nombre = item.get('nombre', 1)
@@ -410,59 +413,76 @@ def enregistrer_afoms():
             if not nom or not diagnostic_id:
                 continue
 
-            # Récupération de categorie_id
             categorie_id = None
             if isinstance(categorie_data, dict):
-                cat_id = categorie_data.get('id_nomenclature')
-                if cat_id:
-                    categorie_id = cat_id
-                    print(categorie_id)
-           
+                categorie_id = categorie_data.get('id_nomenclature')
 
-            # ✅ Création du nouveau mot-clé
-            nouveau_mc = MotCle(
+            parent = db.session.query(MotCle).filter_by(
                 nom=nom,
-                diagnostic_id=diagnostic_id,
-                categorie_id=categorie_id
-            )
-            db.session.add(nouveau_mc)
-            db.session.flush()
+                diagnostic_id=diagnostic_id
+            ).first()
 
-            mots_cles_bdd.append((nouveau_mc, nombre))
+            if parent:
+                parent.is_actif = True
+                parent.categorie_id = categorie_id
+                parent.mots_cles_groupe_id = None  # c’est un groupe lui-même
+            else:
+                parent = MotCle(
+                    nom=nom,
+                    diagnostic_id=diagnostic_id,
+                    categorie_id=categorie_id,
+                    is_actif=True
+                )
+                db.session.add(parent)
+            
+            parents_temp.append((parent, enfants, nombre))
 
-            if enfants:
-                groupes_attendus.append((nouveau_mc, enfants))
+        db.session.flush()  # Assure que les parents ont un id
 
-
-        # Étape 2 : Création des enfants et liaison aux groupes
-        for parent_mc, enfants in groupes_attendus:
+        # 🧒 Étape 2 : Création des enfants
+        for parent_mc, enfants, _ in parents_temp:
             for enfant_data in enfants:
                 nom_enfant = enfant_data.get('nom')
-                diag_id_enfant = enfant_data.get('diagnostic', {}).get('id_diagnostic')
-                if not nom_enfant or not diag_id_enfant:
+                diag_enfant_id = enfant_data.get('diagnostic', {}).get('id_diagnostic')
+
+                if not nom_enfant or not diag_enfant_id:
                     continue
 
-                enfant = MotCle.query.filter_by(nom=nom_enfant, diagnostic_id=diag_id_enfant).first()
-                if not enfant:
-                    enfant = MotCle(nom=nom_enfant, diagnostic_id=diag_id_enfant)
+                enfant = db.session.query(MotCle).filter_by(
+                    nom=nom_enfant,
+                    diagnostic_id=diag_enfant_id
+                ).first()
+
+                if enfant:
+                    enfant.is_actif = True
+                    enfant.mots_cles_groupe_id = parent_mc.id_mot_cle
+                else:
+                    enfant = MotCle(
+                        nom=nom_enfant,
+                        diagnostic_id=diag_enfant_id,
+                        mots_cles_groupe_id=parent_mc.id_mot_cle,
+                        is_actif=True
+                    )
                     db.session.add(enfant)
-                    db.session.flush()
+                db.session.add(enfant)
+                logger.info(f"→ Enfant '{nom_enfant}' ajouté au groupe '{parent_mc.nom}'")
 
-                enfant.mots_cles_groupe_id = parent_mc.id_mot_cle
+        db.session.flush()
 
-        # Étape 3 : Création des AFOMs (mots_cles_bdd contient les couples (mot_clé, nombre))
-        for mot_cle, nombre in mots_cles_bdd:
-            afom = Afom(mot_cle_id=mot_cle.id_mot_cle, number=nombre)
+        # ✅ Étape 3 : Création des AFOMs
+        for parent_mc, _, nombre in parents_temp:
+            afom = Afom(mot_cle_id=parent_mc.id_mot_cle, number=nombre)
             db.session.add(afom)
 
         db.session.commit()
+        logger.info("[SUCCÈS] Tous les groupes et enfants ont été enregistrés.")
+        return get_afoms_par_mot_cle_et_diagnostic(diagnostic_id)
 
     except Exception as e:
         db.session.rollback()
-        logger.info(f"[ERREUR ENREGISTREMENT] {e}")
+        logger.error(f"[ERREUR ENREGISTREMENT] {e}")
         return {"error": "Erreur serveur lors de l’enregistrement"}, 500
-
-    return get_afoms_par_mot_cle_et_diagnostic(diagnostic_id)
+    
 
 @bp.route('/diagnostic/mots-cles/<int:id_diagnostic>', methods=['GET'])
 def get_afoms_par_mot_cle_et_diagnostic(id_diagnostic):
@@ -482,12 +502,20 @@ def get_afoms_par_mot_cle_et_diagnostic(id_diagnostic):
         )
         .join(mc_alias, Afom.mot_cle)
         .join(cat_alias, mc_alias.categorie)
-        .filter(mc_alias.diagnostic_id == id_diagnostic)
-        .group_by(mc_alias.nom, cat_alias.id_nomenclature, cat_alias.libelle, cat_alias.value, cat_alias.mnemonique)
+        .filter(
+            mc_alias.diagnostic_id == id_diagnostic,
+            mc_alias.is_actif == True  # ✅ bon champ, bon alias
+        )
+        .group_by(
+            mc_alias.nom,
+            cat_alias.id_nomenclature,
+            cat_alias.libelle,
+            cat_alias.value,
+            cat_alias.mnemonique
+        )
         .order_by(cat_alias.libelle, mc_alias.nom)
         .all()
     )
-
     data = []
     for row in results:
         motcle_obj = db.session.get(MotCle, row.id_mot_cle)

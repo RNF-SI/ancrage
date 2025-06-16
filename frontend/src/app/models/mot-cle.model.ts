@@ -13,6 +13,7 @@ export class MotCle {
     mot_cle_id_groupe?:number;
     nombre?:number;
     afom_id?:number;
+    is_actif=false;
 
     /** Copie profonde de l'objet */
     copy(): MotCle {
@@ -25,6 +26,7 @@ export class MotCle {
         copy.categorie = this.categorie.copy();
         copy.diagnostic = this.diagnostic.copy();
         copy.mot_cle_id_groupe = this.mot_cle_id_groupe;
+        copy.is_actif = this.is_actif;
         return copy;
     }
 
@@ -39,6 +41,7 @@ export class MotCle {
         mot_cle.categorie = Nomenclature.fromJson(data.categorie);
         mot_cle.diagnostic = Diagnostic.fromJson(data.diagnostic);
         mot_cle.mot_cle_id_groupe = data.mot_cle_id_groupe;
+        mot_cle.is_actif = data.is_actif;
         return mot_cle;
     }
 

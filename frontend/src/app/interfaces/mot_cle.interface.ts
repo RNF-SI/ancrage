@@ -11,4 +11,5 @@ export interface IMotCle {
     mots_cles_issus:MotCle[];
     diagnostic:Diagnostic;
     mot_cle_id_groupe?:number;
+    is_actif:boolean;
 }

@@ -88,20 +88,22 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
   questionAfom = new Question();
 
   ngAfterViewInit(): void {
-    if(!this.modeAnalyse){
-      let user = this.authService.getCurrentUser();
-      this.id_role = user.id_role;
-      const sections$ = this.nomenclatureService.getAllByType('AFOM'); 
-      const keywordsDiag$ = this.motCleService.getAllByDiag(this.diagnostic.id_diagnostic);
-      const keywordsActor$ = this.motCleService.getKeywordsByActor(this.id_acteur);
-      const questionAfom$ = this.questionService.get("Atouts - Faiblesses - Opportunités - Menaces");
-      this.forkSub = forkJoin([keywordsDiag$, sections$, keywordsActor$,questionAfom$]).subscribe(([keywords, sections, keywordsActor,questionAfom]) => {
-       
-        this.prepareData(keywords,sections,keywordsActor,questionAfom);
-        
+    if (!this.modeAnalyse) {
+      setTimeout(() => {
+        const user = this.authService.getCurrentUser();
+        this.id_role = user.id_role;
+  
+        const sections$ = this.nomenclatureService.getAllByType('AFOM'); 
+        const keywordsDiag$ = this.motCleService.getAllByDiag(this.diagnostic.id_diagnostic);
+        const keywordsActor$ = this.motCleService.getKeywordsByActor(this.id_acteur);
+        const questionAfom$ = this.questionService.get("Atouts - Faiblesses - Opportunités - Menaces");
+  
+        this.forkSub = forkJoin([keywordsDiag$, sections$, keywordsActor$, questionAfom$]).subscribe(([keywords, sections, keywordsActor, questionAfom]) => {
+          this.prepareData(keywords, sections, keywordsActor, questionAfom);
+          
+        });
       });
     }
-   
   }
 
   prepareData(keywords:MotCle[],sections:Nomenclature[],keywordsActor:MotCle[],questionAfom:Question){
@@ -211,7 +213,12 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
       // ✅ ID temporaire négatif (évite collision avec des IDs réels positifs)
       mot_cle.id_mot_cle = this.generateTempId();
       nonClasse.mots_cles?.push(mot_cle);
-      this.motsClesReponse.push(mot_cle);
+      if(this.modeAnalyse){
+        this.motsCleAnalyse.push(mot_cle);
+      }else{
+        this.motsClesReponse.push(mot_cle);
+      }
+      
       if (!this.allKeywords.includes(mot_cle.nom)){
         this.allKeywords.push(mot_cle.nom);
       }
@@ -300,11 +307,25 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
 
   checkKeywords(keyword:MotCle){
     if(keyword.mots_cles_issus!.length > 0){
-      this.dialog.open(AlerteMotsClesComponent, {
+      let listToSend:MotCle[] = [];
+      if(this.modeAnalyse){
+        listToSend = this.motsCleAnalyse;
+      }else{
+        listToSend = this.motsClesReponse;
+      }
+ 
+      const dialogRef = this.dialog.open(AlerteMotsClesComponent, {
         data: {
-          keyword:keyword
+          keyword:keyword,
+          listeMotsCles:listToSend,
+          sections:this.categories
         }
       });
+      dialogRef.afterClosed().subscribe(listeMC=>{
+        if(this.modeAnalyse){
+          this.setKeywords(listeMC);
+        }
+      })
     }
   }
 
@@ -382,10 +403,12 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
       }
      
     }
+    console.log(this.motsCleAnalyse);
     for(let i=0;i<this.motsCleAnalyse.length;i++){
       for (let j=0;j<ids_array.length;j++){
         if (this.motsCleAnalyse[i].id_mot_cle == ids_array[j]){
           this.motsCleAnalyse.splice(i,1);
+          break;
         }
       }
       
