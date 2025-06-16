@@ -45,12 +45,17 @@ export class AlerteMotsClesComponent {
               this.data.listeMotsCles.push(mc);
 
             }
-            console.log(this.data.listeMotsCles);
+           
             this.dialogRef.close(this.data.listeMotsCles);
           }
 
           rename(){
-
+            for(let i = 0;i<this.data.listeMotsCles.length;i++){
+              if (this.data.listeMotsCles[i].id_mot_cle == this.data.keyword.id_mot_cle){
+                this.data.listeMotsCles[i].nom = this.data.keyword.nom;
+                this.dialogRef.close(this.data.listeMotsCles);
+              }
+            }
           }
 
           displayInput(){

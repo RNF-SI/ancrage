@@ -280,6 +280,7 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
         if (!this.motsCleAnalyse.some(mc => mc.id_mot_cle === draggedKeyword.id_mot_cle)) {
           this.motsCleAnalyse.push(draggedKeyword);
         }
+        console.log(this.motsCleAnalyse);
       }
   
     } else {
@@ -419,7 +420,7 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
   }
 
   setKeywords(keywords: MotCle[]): void {
-
+    console.log(keywords);
     // Réinitialise les mots-clés associés à chaque catégorie
     for (const cat of this.categories) {
       cat.mots_cles = [];
@@ -442,23 +443,23 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
       // Utilise la seule catégorie associée (mc.categorie)
       if (mc.categorie && mc.categorie.id_nomenclature) {
         const matchingCat = this.categories.find(c => c.id_nomenclature === mc.categorie.id_nomenclature);
-
+        console.log(mc.nom,matchingCat?.libelle);
         if (matchingCat) {
           matchingCat.mots_cles = matchingCat.mots_cles || [];
   
-          if (!matchingCat.mots_cles.some(k => k.id_mot_cle === mc.id_mot_cle)) {
+          if (mc.id_mot_cle == 0 || !matchingCat.mots_cles.some(k => k.id_mot_cle === mc.id_mot_cle)) {
             matchingCat.mots_cles.push(mc);
           }
         }
       }
-  
+      console.log(this.motsCleAnalyse.some(k => k.id_mot_cle === mc.id_mot_cle));
       // Ajoute le mot-clé soit dans la liste des réponses, soit dans celle d’analyse
       if (!this.modeAnalyse) {
-        if (!this.motsClesReponse.some(k => k.id_mot_cle === mc.id_mot_cle)) {
+        if (mc.id_mot_cle == 0 || !this.motsClesReponse.some(k => k.id_mot_cle === mc.id_mot_cle)) {
           this.motsClesReponse.push(mc);
         }
       } else {
-        if (!this.motsCleAnalyse.some(k => k.id_mot_cle === mc.id_mot_cle)) {
+        if (mc.id_mot_cle == 0 || !this.motsCleAnalyse.some(k => k.id_mot_cle === mc.id_mot_cle)) {
           this.motsCleAnalyse.push(mc);
         }
       }
@@ -473,12 +474,13 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
 
     if (!this.isGroup(source) && !this.isGroup(target)) {
       let listToSend:MotCle[]=[];
-
+     
       if(this.modeAnalyse){
         listToSend = this.motsCleAnalyse;
       }else{
         listToSend = this.motsClesReponse;
       }
+      console.log(listToSend);
       const dialogRef = this.dialog.open(AlerteGroupeMotsClesComponent, {
         disableClose: true,
         data: {

@@ -384,24 +384,21 @@ def enregistrer_afoms():
         return {"error": "Données invalides"}, 400
 
     try:
-        # 🔥 Étape 0 : suppression explicite des AFOM liés au diagnostic
-        afom_ids_to_delete = (
+        afom_ids = (
             db.session.query(Afom.id_afom)
             .join(MotCle)
             .filter(MotCle.diagnostic_id == diagnostic_id)
             .all()
         )
-        ids = [id_tuple[0] for id_tuple in afom_ids_to_delete]
+        ids = [row.id_afom for row in afom_ids]
         if ids:
             db.session.query(Afom).filter(Afom.id_afom.in_(ids)).delete(synchronize_session=False)
-
-        # Puis suppression des mots-clés du diagnostic
         db.session.query(MotCle).filter_by(diagnostic_id=diagnostic_id).update({MotCle.is_actif: False}, synchronize_session=False)
         db.session.flush()
 
         parents_temp = []
 
-        # 🔁 Étape 1 : Création des groupes (parents)
+        # 🔁 Étape 1 : création des groupes sans tentative de réutilisation
         for item in graph_data:
             mot_cle_data = item['mot_cle']
             nombre = item.get('nombre', 1)
@@ -417,29 +414,18 @@ def enregistrer_afoms():
             if isinstance(categorie_data, dict):
                 categorie_id = categorie_data.get('id_nomenclature')
 
-            parent = db.session.query(MotCle).filter_by(
+            nouveau_parent = MotCle(
                 nom=nom,
-                diagnostic_id=diagnostic_id
-            ).first()
+                diagnostic_id=diagnostic_id,
+                categorie_id=categorie_id,
+                is_actif=True
+            )
+            db.session.add(nouveau_parent)
+            db.session.flush()  # 🔐 assure l’ID du parent
+            parents_temp.append((nouveau_parent, enfants, nombre))
+            logger.info(f"[GROUPE] Nouveau groupe ajouté : '{nom}' (ID {nouveau_parent.id_mot_cle})")
 
-            if parent:
-                parent.is_actif = True
-                parent.categorie_id = categorie_id
-                parent.mots_cles_groupe_id = None  # c’est un groupe lui-même
-            else:
-                parent = MotCle(
-                    nom=nom,
-                    diagnostic_id=diagnostic_id,
-                    categorie_id=categorie_id,
-                    is_actif=True
-                )
-                db.session.add(parent)
-            
-            parents_temp.append((parent, enfants, nombre))
-
-        db.session.flush()  # Assure que les parents ont un id
-
-        # 🧒 Étape 2 : Création des enfants
+        # 👶 Étape 2 : enfants liés à chaque groupe
         for parent_mc, enfants, _ in parents_temp:
             for enfant_data in enfants:
                 nom_enfant = enfant_data.get('nom')
@@ -448,28 +434,18 @@ def enregistrer_afoms():
                 if not nom_enfant or not diag_enfant_id:
                     continue
 
-                enfant = db.session.query(MotCle).filter_by(
+                enfant = MotCle(
                     nom=nom_enfant,
-                    diagnostic_id=diag_enfant_id
-                ).first()
-
-                if enfant:
-                    enfant.is_actif = True
-                    enfant.mots_cles_groupe_id = parent_mc.id_mot_cle
-                else:
-                    enfant = MotCle(
-                        nom=nom_enfant,
-                        diagnostic_id=diag_enfant_id,
-                        mots_cles_groupe_id=parent_mc.id_mot_cle,
-                        is_actif=True
-                    )
-                    db.session.add(enfant)
+                    diagnostic_id=diag_enfant_id,
+                    mots_cles_groupe_id=parent_mc.id_mot_cle,
+                    is_actif=True
+                )
                 db.session.add(enfant)
                 logger.info(f"→ Enfant '{nom_enfant}' ajouté au groupe '{parent_mc.nom}'")
 
         db.session.flush()
 
-        # ✅ Étape 3 : Création des AFOMs
+        # ✅ Étape 3 : création des AFOMs pour chaque groupe parent
         for parent_mc, _, nombre in parents_temp:
             afom = Afom(mot_cle_id=parent_mc.id_mot_cle, number=nombre)
             db.session.add(afom)

@@ -61,7 +61,7 @@ export class AlerteGroupeMotsClesComponent{
   
       // Ajoute le nouveau groupe
       this.data.motsClesReponse.push(this.keyword);
-  
+      console.log(this.data.motsClesReponse);
       // Ferme le dialogue en renvoyant la liste mise à jour
       this.dialogRef.close(this.data.motsClesReponse);
     } else {
@@ -73,7 +73,7 @@ export class AlerteGroupeMotsClesComponent{
   }
   
   close() {
-    this.dialogRef.close();
+    this.dialogRef.close(this.data.motsClesReponse);
   }
   
 }
