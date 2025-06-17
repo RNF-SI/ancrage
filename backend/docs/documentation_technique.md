@@ -143,39 +143,39 @@ Chaque modèle est couplé à une interface et comprend trois méthodes copy, fr
         }
 
  - interface : 
-    export interface IMotCle {
-        id_mot_cle:number;
-        nom:string;
-        reponses?:Reponse[];
-        categorie:Nomenclature;
-        mots_cles_issus:MotCle[];
-        diagnostic:Diagnostic;
-        mot_cle_id_groupe?:number;
-        is_actif:boolean;
-    }
+        export interface IMotCle {
+            id_mot_cle:number;
+            nom:string;
+            reponses?:Reponse[];
+            categorie:Nomenclature;
+            mots_cles_issus:MotCle[];
+            diagnostic:Diagnostic;
+            mot_cle_id_groupe?:number;
+            is_actif:boolean;
+        }
 
 Dans copy :  
 
  - les variables simples renvoient à this suivi du nom de la variable :
-    copy.id_mot_cle = this.id_mot_cle;
+        copy.id_mot_cle = this.id_mot_cle;
  - les variables de type Objet ont ce format. Il faut aussi que cet Objet implémente sa propre méthode copy (ici diagnostic = new Diagnostic()) : 
-    copy.diagnostic = this.diagnostic.copy();
+        copy.diagnostic = this.diagnostic.copy();
  - les variables de type Liste d'objets ont ce format. Il faut aussi que cet Objet implémente sa propre méthode copy (ici reponses:Reponses[]) :
-    copy.reponses = this.reponses?.map(r => r.copy()) || [];
+        copy.reponses = this.reponses?.map(r => r.copy()) || [];
 
 Dans fromJson, data est une interface correspondant à la classe modèle (ici IMotCle).
  - pour les variables simples, le format est le suivant :
-    mot_cle.id_mot_cle = data.id_mot_cle;
+        mot_cle.id_mot_cle = data.id_mot_cle;
  - pour les variables Objet (ici categorie = new Nomenclature()). L'objet doit avoir sa propre méthode fromJson().
-    mot_cle.categorie = Nomenclature.fromJson(data.categorie);
+        mot_cle.categorie = Nomenclature.fromJson(data.categorie);
  - pour les variables listes d'objets (ici mots_cles_issus:MotCle[] = []). L'objet de la liste doit avoir sa propre méthode fromJson().
-    mot_cle.mots_cles_issus = (data.mots_cles_issus || []).map(mc => MotCle.fromJson(mc));
+        mot_cle.mots_cles_issus = (data.mots_cles_issus || []).map(mc => MotCle.fromJson(mc));
 
 Dans toJson, il ne faut renseigner que les champs de type Objet ou liste d'objets. Notez le this précédé de points de suspension. Il copie les champs de type number,string ou boolean.
  - le format pour les variables de type liste d'Objets est (ici reponses:Reponse[] = []). L'objet de la liste doit avoir sa propre méthode toJson().
-    reponses: this.reponses ? this.reponses.map(r => r.toJson()) : [],
+        reponses: this.reponses ? this.reponses.map(r => r.toJson()) : [],
  - pour les variables de type Objet (ici categorie = new Categorie()). L'objet doit avoir sa propre méthode toJson().
-    categorie: this.categorie.toJson(),
+        categorie: this.categorie.toJson(),
     
 
 Chaque modèle est aussi relié à un service. Les méthodes appelant l’API retournent des Observable du modèle renvoyé par l’API. 
