@@ -103,7 +103,6 @@ Chaque modèle est couplé à une interface et comprend trois méthodes copy, fr
         afom_id?:number;
         is_actif=false;
 
-        /** Copie profonde de l'objet */
         copy(): MotCle {
             const copy = new MotCle();
 
@@ -118,7 +117,6 @@ Chaque modèle est couplé à une interface et comprend trois méthodes copy, fr
             return copy;
         }
 
-        /** Création depuis un JSON brut (avec reconversion des objets internes et dates) */
         static fromJson(data: IMotCle): MotCle {
             const mot_cle = new MotCle();
 
