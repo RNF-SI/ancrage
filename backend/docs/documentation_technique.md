@@ -36,7 +36,7 @@ A la création, il faut indiquer standalone :true.
     })
  et modifier dans le fichier app.module.ts sa déclaration. Ces composants sont déclarés dans la partie imports et non déclarations. 
 
-    'imports: [
+    imports: [
         BrowserModule,
         AppRoutingModule,
         CommonModule,
@@ -81,7 +81,7 @@ A la création, il faut indiquer standalone :true.
         progressBar: true
         }),
     
-    ]'
+    ]
     
 Les services doivent être déclarés en variable privée avec la méthode inject().
 
@@ -89,7 +89,8 @@ private siteService = inject(SiteService);
 
 Chaque modèle est couplé à une interface et comprend trois méthodes copy, fromJson et toJson. Il faut donc penser à chaque modification ou création de modèle, à compléter ou créer les interfaces et implémenter les trois méthodes. Les modèles n’ont pas de constructeur défini : cela permet de déclarer des instances avec des valeurs par défaut. Voici un exemple avec MotCle :
 
- - modèle : 
+ - modèle :
+    
     export class MotCle {
         id_mot_cle=0;
         nom="";
