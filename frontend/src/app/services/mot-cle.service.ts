@@ -12,6 +12,7 @@ import { IMotCle } from '@app/interfaces/mot_cle.interface';
 export class MotCleService {
 
 	private GET_ALL_URL = environment.flask_server+'mots_cles';
+	private BASE_URL = environment.flask_server+'mot_cle';
 	private http = inject(HttpClient);
 
 	//Récupère tous les motCles
@@ -34,6 +35,21 @@ export class MotCleService {
 			})
 		  );
 	}
+
+	update(mot_cle:MotCle): Observable<MotCle> {
+		const route = this.BASE_URL + '/' + mot_cle.id_mot_cle;
+	   
+		return this.http.put<IMotCle>(route, mot_cle.toJson()).pipe(
+		  map(mot_cleJson => MotCle.fromJson(mot_cleJson))
+		);
+	}
+
+	add(mot_cle:MotCle): Observable<MotCle> {
+		return this.http.post<IMotCle>(this.BASE_URL, mot_cle.toJson()).pipe(
+		  map(mcJson => MotCle.fromJson(mcJson))
+		);
+	}
+	
 
 	sortByName(objArray:MotCle[]){
 		objArray.sort(function(a, b) {

@@ -217,6 +217,7 @@ class MotCle(db.Model):
     diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
     diagnostic = db.relationship('Diagnostic', foreign_keys=[diagnostic_id])
     is_actif = db.Column(db.Boolean, default=True) 
+    nombre = db.Column(db.Integer)
 
 class Nomenclature(db.Model):
     __tablename__ = 't_nomenclatures'
