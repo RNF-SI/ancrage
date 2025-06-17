@@ -102,10 +102,11 @@ export class GraphiquesComponent implements OnDestroy{
     const motsCles$ = this.diagnosticService.getOccurencesKeyWords(id_diagnostic);
     const normalize = (str: string) => str
             .toLowerCase()
-            .normalize("NFD")              // décompose les caractères accentués
-            .replace(/[\u0300-\u036f]/g, '') // supprime les accents
-            .replace(/’/g, "'")              // remplace l’apostrophe typographique par l’apostrophe simple
+            .normalize("NFD")              
+            .replace(/[\u0300-\u036f]/g, '') 
+            .replace(/’/g, "'")              
             .trim();
+
     const LABELS_TO_EXCLUDE = ["attentes", "Sentiment d'être concerné"].map(normalize);
     this.diagnosticSubscription = forkJoin([moyennes$,repartitions$,radars$,motsCles$]).subscribe(([graphs,repartitions,radars,motsCles]) => {
       const grouped = new Map<string, GraphMoy[]>();
@@ -129,7 +130,7 @@ export class GraphiquesComponent implements OnDestroy{
         groupedRepartition[rep.question].push(rep);
       }
       this.groupedData = groupedRepartition;
-      this.chartDataRepartition = {}; // reset
+      this.chartDataRepartition = {};
       for (const question in this.groupedData) {
         const responses = this.groupedData[question].filter(
           r => !LABELS_TO_EXCLUDE.includes(r.reponse?.toLowerCase())
@@ -256,22 +257,20 @@ export class GraphiquesComponent implements OnDestroy{
     const motCleData = new Map<number, GraphMotsCles>();
   
     const racinesEtOrphelins = this.data.filter(item => item.mot_cle.mot_cle_id_groupe === null || item.mot_cle.mot_cle_id_groupe === undefined);
-    // Indexation initiale des mots-clés par leur ID
+    
     for (const item of this.data) {
       motCleData.set(item.mot_cle.id_mot_cle, item);
     }
   
-    const aggregated: Record<string, Record<string, number>> = {}; // catégorie -> nom du mot-clé racine -> nombre
+    const aggregated: Record<string, Record<string, number>> = {}; 
   
     for (const item of racinesEtOrphelins) {
       const motCle = item.mot_cle;
       const isChild = motCle.mot_cle_id_groupe !== undefined;
   
-      // Récupère le mot-clé racine (lui-même ou son parent si enfant)
       const rootId = motCle.mot_cle_id_groupe ?? motCle.id_mot_cle;
       const rootMotCle = motCleData.get(rootId)?.mot_cle ?? motCle;
   
-      // On utilise la catégorie du mot-clé racine
       const catLabel = rootMotCle.categorie?.libelle ?? 'Sans catégorie';
   
       if (!aggregated[catLabel]) {

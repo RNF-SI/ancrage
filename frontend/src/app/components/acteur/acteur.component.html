@@ -12,46 +12,46 @@
                 <mat-form-field appearance="fill" id="fieldName" >
                     <mat-label>{{labels.nameLabel}}</mat-label>
                     <input matInput placeholder="Entrez un nom" formControlName="nom" required >
-                    <mat-error *ngIf="formGroup.get('nom')?.hasError('required')">Le nom est requis.</mat-error>
+                    <mat-error *ngIf="formGroup.get('nom')?.hasError('required')">{{labels.requiredName}}</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill" id="fieldName" >
                     <mat-label>{{labels.firstNameLabel}}</mat-label>
                     <input matInput placeholder="Entrez un prénom" formControlName="prenom" required >
-                    <mat-error *ngIf="formGroup.get('prenom')?.hasError('required')">Le prénom est requis.</mat-error>
+                    <mat-error *ngIf="formGroup.get('prenom')?.hasError('required')">{{labels.requiredFirstName}}</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
                     <mat-label>{{ labels.chooseCategories }}</mat-label>
                     <mat-select formControlName="categories" multiple>
                         <mat-option *ngFor="let cat of uniqueCategories" [value]="cat">{{ cat.libelle }}</mat-option>
                     </mat-select>
-                    <mat-error *ngIf="formGroup.get('categories')?.hasError('required')">Au moins une catégorie est requise.</mat-error>
+                    <mat-error *ngIf="formGroup.get('categories')?.hasError('required')">{{labels.requiredCategory}}</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
                     <mat-label>{{ labels.chooseProfile }}</mat-label>
                     <mat-select formControlName="profil">
                         <mat-option *ngFor="let pfl of uniqueProfiles" [value]="pfl">{{ pfl.libelle }}</mat-option>
                     </mat-select>
-                    <mat-error *ngIf="formGroup.get('profil')?.hasError('required')">Le profil est requis.</mat-error>
+                    <mat-error *ngIf="formGroup.get('profil')?.hasError('required')">{{labels.requiredProfile}}</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill" id="fieldName" >
                     <mat-label>{{labels.status}}</mat-label>
                     <input matInput placeholder="Entrez un statut" formControlName="fonction" required >
-                    <mat-error *ngIf="formGroup.get('fonction')?.hasError('required')">Le statut est requis.</mat-error>
+                    <mat-error *ngIf="formGroup.get('fonction')?.hasError('required')">{{labels.requiredStatus}}</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill" id="fieldName" >
                     <mat-label>{{labels.telephone}}</mat-label>
                     <input matInput placeholder="Entrez un numéro de téléphone" formControlName="telephone"  >
-                    <mat-error *ngIf="formGroup.get('telephone')?.hasError('pattern')">Le format doit être : 0X XX XX XX XX.</mat-error>
+                    <mat-error *ngIf="formGroup.get('telephone')?.hasError('pattern')">{{labels.telephoneFormat}}</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill" id="fieldName" >
                     <mat-label>{{labels.mail}}</mat-label>
                     <input matInput placeholder="Entrez un mail" formControlName="mail" >
-                    <mat-error *ngIf="formGroup.get('mail')?.hasError('pattern')">Le format est incorrect.</mat-error>
+                    <mat-error *ngIf="formGroup.get('mail')?.hasError('pattern')">{{labels.mailFormat}}</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill" id="fieldName" >
                     <mat-label>{{labels.structure}}</mat-label>
                     <input matInput placeholder="Entrez une structure" formControlName="structure" required >
-                    <mat-error *ngIf="formGroup.get('structure')?.hasError('required')">La structure est requise.</mat-error>
+                    <mat-error *ngIf="formGroup.get('structure')?.hasError('required')">{{labels.requiredStructure}}</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill">
                     <input type="text"

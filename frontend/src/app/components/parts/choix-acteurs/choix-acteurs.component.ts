@@ -333,7 +333,7 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
     this.siteService.navigateAndCache(path,diagnostic);
   }
   
-
+  //Enregistre les acteurs
   recordActors(){
     const selectedActors:Acteur[] = this.actors.filter(a => a.selected == true);
     if (selectedActors.length > 0){

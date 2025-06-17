@@ -20,7 +20,7 @@
                         <p *ngFor="let site of diagnostic.sites">{{ site.nom }}, {{site.type.libelle}} </p>
                         <h3>{{labels.files}}</h3>
                         <ul *ngFor="let doc of diagnostic.documents">
-                          <div>{{doc.nom}} <button mat-raised-button type="button" (click)="getFile(doc.nom)">Télécharger</button></div>
+                          <div>{{doc.nom}} <button mat-raised-button type="button" (click)="getFile(doc.nom)">{{labels.download}}</button></div>
                         </ul>
                         <div
                           class="upload-zone"
@@ -30,9 +30,9 @@
                           (dragleave)="onDragLeave($event)"
                           (drop)="onDrop($event)"
                           >
-                          <p>Glissez vos fichiers ici ou cliquez pour sélectionner</p>
+                          <p>{{labels.dropFilesSelect}}</p>
                           <input type="file" multiple (change)="onFileSelected($event)" hidden #fileInput />
-                          <button mat-raised-button (click)="fileInput.click()">Choisir des fichiers</button>
+                          <button mat-raised-button (click)="fileInput.click()">{{labels.chooseFiles}}</button>
                           </div>
 
                           <ul *ngIf="files.length">

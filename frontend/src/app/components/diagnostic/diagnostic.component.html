@@ -12,7 +12,7 @@
                     <mat-form-field appearance="fill" class="fieldName" >
                         <mat-label>{{nameLabel}}</mat-label>
                         <input matInput placeholder="Entrez un nom" formControlName="nom" required >
-                        <mat-error *ngIf="formGroup.get('nom')?.hasError('required')">Le nom est requis.</mat-error>
+                        <mat-error *ngIf="formGroup.get('nom')?.hasError('required')">{{labels.requiredName}}</mat-error>
                     </mat-form-field>
                     
                     <mat-form-field appearance="fill" class="fieldName">
@@ -20,7 +20,7 @@
                         <mat-select formControlName="sites" multiple (selectionChange)="getDiagName(formGroup.value.sites,this.diagnostic)" [compareWith]="compareSites">
                             <mat-option *ngFor="let site of uniqueSites" [value]="site">{{ site.nom }}</mat-option>
                         </mat-select>
-                        <mat-error *ngIf="formGroup.get('sites')?.hasError('required')">Au moins un site est requis.</mat-error>
+                        <mat-error *ngIf="formGroup.get('sites')?.hasError('required')">{{labels.requiredSite}}</mat-error>
                     </mat-form-field>
                     <h4 >{{chosenSitesTitle}}</h4>
                     <div *ngFor="let site of chosenSites">

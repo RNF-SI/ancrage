@@ -250,6 +250,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
     this.docReadSub?.unsubscribe();
   }
 
+  //Affiche la popup pour saisir la date de publication
   openAlertDate(){
     const dialogRef = this.dialog.open(AlerteDatePublicationComponent, {
               data: {

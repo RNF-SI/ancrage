@@ -132,6 +132,7 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy,On
     this.onSearchChange();
   }
   
+  //Récupère les infos de l'utilisateur
   private initUserContext() {
     const user = this.authService.getCurrentUser();
     this.user_id = user.id_role;
@@ -161,7 +162,7 @@ export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy,On
     
     this.uniqueTypes = Array.from(new Set(this.sites.map(site =>
       site.type?.libelle).filter(Boolean)));
-  
+      
     /* this.uniqueHabitats = Array.from(new Set(this.sites.flatMap(site =>
       site.habitats.map(hab => hab.libelle)))); */
   }

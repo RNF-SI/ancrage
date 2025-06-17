@@ -10,9 +10,9 @@
             <mat-label>Mot-clé</mat-label>
             <input matInput placeholder="Entrez le nom du groupe de mots-clés" [(ngModel)]="data.keyword.nom">
         </mat-form-field>
-        <button mat-raised-button color="accent" type="button" (click)="rename()">Valider</button>
+        <button mat-raised-button color="accent" type="button" (click)="rename()">{{data.labels.record}}</button>
     </div>
 </mat-dialog-content>
 <mat-dialog-actions>
-    <button mat-raised-button color="accent" type="button" (click)="close()">Fermer</button>
+    <button mat-raised-button color="accent" type="button" (click)="close()">{{data.labels.cancel}}</button>
 </mat-dialog-actions>

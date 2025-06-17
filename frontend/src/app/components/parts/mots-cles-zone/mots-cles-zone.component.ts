@@ -87,6 +87,8 @@ export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
   private questionService = inject(QuestionService);
   questionAfom = new Question();
 
+  //modeAnalyse : utilisé dans la partie générale ; !modeAnalyse: utilisé au niveau de l'entretien
+
   ngAfterViewInit(): void {
     if (!this.modeAnalyse) {
       setTimeout(() => {

@@ -45,4 +45,30 @@ export class Labels {
     files="Fichiers joints";
     interviewPrompt = "Saisir les entretiens";
     addActors = "Ajouter ou enlever acteurs";
+    requiredName = "Le nom est requis.";
+    requiredFirstName = "Le prénom est requis.";
+    requiredCategory = "Au moins une catégorie est requise.";
+    requiredProfile = "Le profil est requis.";
+    requiredStatus = "Le statut est requis.";
+    telephoneForamt = "Le format doit être : 0X XX XX XX XX.";
+    invalidFormat = "Le format est incorrect.";
+    requiredStructure = "La structure est requise.";
+    createAnotherActor = "Créer un autre acteur";
+    correctActor = "Corriger cet acteur";
+    correctDate = "CorrectDate";
+    record = "Enregistrer";
+    cancel = "Annuler";
+    createGroup = "Créer le groupe";
+    close = "Fermer";
+    createAnotherSite = "Créer un autre site";
+    correctSite = "Corriger ce site";
+    requiredState = "L'état est requis.";
+    requiredSite = "Au moins un site est requis.";
+    dropFilesSelect = "Glissez vos fichiers ici ou cliquez pour sélectionner";
+    chooseFiles = "Choisir des fichiers";
+    download = "Télécharger";
+    requiredDepartment = "Au moins un département est requis.";
+    requiredLatitude = "Une latitude est requise.";
+    requiredLongitude = "Une longitude est requise.";
+
 }

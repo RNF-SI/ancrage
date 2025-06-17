@@ -10,7 +10,9 @@ import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { ToastrService } from 'ngx-toastr';
+import { Labels } from '@app/utils/labels';
 
+//Popup qui apparaît à la fusion de deux mots-clés
 @Component({
   selector: 'app-alerte-groupe-mots-cles',
   templateUrl: './alerte-groupe-mots-cles.component.html',
@@ -27,6 +29,7 @@ export class AlerteGroupeMotsClesComponent{
             diagnostic:Diagnostic,
             motsClesReponse:MotCle[],
             categories:Nomenclature[]
+            labels:Labels
           }
         ) {}
  
@@ -36,6 +39,7 @@ export class AlerteGroupeMotsClesComponent{
   compareNomenclatures = (a: Nomenclature, b: Nomenclature): boolean =>
     a && b ? a.id_nomenclature === b.id_nomenclature : a === b;
 
+  //Création d'un groupe
   createGroup() {
     const nomOk = this.keyword.nom && this.keyword.nom.trim().length > 0;
     const categorieOk = this.keyword.categorie && this.keyword.categorie.id_nomenclature;

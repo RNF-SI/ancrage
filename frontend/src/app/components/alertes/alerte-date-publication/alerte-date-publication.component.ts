@@ -17,7 +17,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DateAdapter } from '@angular/material/core';
 
-
+//Permet de modifier la data de publication
 @Component({
   selector: 'app-alerte-date-publication',
   templateUrl: './alerte-date-publication.component.html',
@@ -47,12 +47,14 @@ export class AlerteDatePublicationComponent implements OnInit{
         this.dialogRef.close();
       }
 
+      //navigation et mise en cache
       navigate(path:string,diagnostic:Diagnostic){
         
         this.dialogRef.close();
         this.siteService.navigateAndCache(path,diagnostic);
       }
 
+      //enregistrement des données
       recordDiagnostic(){
         
         if (this.data.diagnostic.date_rapport_str){

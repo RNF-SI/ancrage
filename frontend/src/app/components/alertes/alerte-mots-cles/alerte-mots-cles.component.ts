@@ -8,9 +8,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MotCle } from '@app/models/mot-cle.model';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { MotCleService } from '@app/services/mot-cle.service';
+import { Labels } from '@app/utils/labels';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { Subscription } from 'rxjs';
 
+//Alerte pour voir contenu d'un groupe et le renommer
 @Component({
   selector: 'app-alerte-mots-cles',
   templateUrl: './alerte-mots-cles.component.html',
@@ -25,6 +27,7 @@ export class AlerteMotsClesComponent implements OnInit, OnDestroy{
               keyword:MotCle;
               listeMotsCles:MotCle[];
               sections:Nomenclature[];
+              labels:Labels
             }
           ) {}
 
@@ -34,12 +37,12 @@ export class AlerteMotsClesComponent implements OnInit, OnDestroy{
 
           ngOnInit(): void {
             this.mot_cle_origine = this.data.keyword;
-            console.log(this.data.listeMotsCles);
+       
           }
 
-
+          //Dissocier groupe : pas utilisée 
           explodeGroup(){
-            console.log(this.data.listeMotsCles);
+         
             for(let i = 0;i<this.data.listeMotsCles.length;i++){
               if (this.data.listeMotsCles[i].id_mot_cle == this.data.keyword.id_mot_cle){
                 this.data.listeMotsCles.splice(i,1);
@@ -56,6 +59,7 @@ export class AlerteMotsClesComponent implements OnInit, OnDestroy{
             this.dialogRef.close(this.data.listeMotsCles);
           }
 
+          //Permet de renommer un groupe
           rename(){
 
             if (this.data.keyword.nom != ""){
@@ -77,6 +81,7 @@ export class AlerteMotsClesComponent implements OnInit, OnDestroy{
             
           }
 
+          //Traite les données reçues
           traitement(mot_cle:MotCle){
             mot_cle.nombre = this.mot_cle_origine.nombre;
             for(let i = 0;i<this.data.listeMotsCles.length;i++){
@@ -85,10 +90,11 @@ export class AlerteMotsClesComponent implements OnInit, OnDestroy{
                 
               }
             }
-            console.log(mot_cle);
+        
             this.dialogRef.close(this.data.listeMotsCles);
           }
 
+          //Permet d'afficher le champ pour renommer
           displayInput(){
             const element = document.getElementById("field");
             element?.classList.remove("invisible");

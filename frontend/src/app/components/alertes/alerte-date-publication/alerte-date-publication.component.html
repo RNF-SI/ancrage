@@ -14,9 +14,9 @@
       {{ data.labels.btnPreviousStepLabel }}
     </button>
     <button mat-raised-button mat-dialog-close (click)="close()" color="accent">
-      Corriger la date
+      {{data.labels.correctDate}}
     </button>
     <button mat-raised-button mat-dialog-close (click)="recordDiagnostic()" color="warn">
-        Enregistrer
+        {{data.labels.record}}
     </button>
 </mat-dialog-actions>

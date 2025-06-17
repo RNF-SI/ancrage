@@ -256,6 +256,7 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
     
   }
 
+  //Export en PNG
   exportMapAsPNG(): void {
     const mapElement = document.getElementById('map'); // Assure-toi que ta carte a bien cet id
 
