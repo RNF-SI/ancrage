@@ -384,6 +384,7 @@ def enregistrer_afoms():
         return {"error": "Données invalides"}, 400
 
     try:
+        # 🔥 Étape 0 : suppression des AFOM liés au diagnostic
         afom_ids = (
             db.session.query(Afom.id_afom)
             .join(MotCle)
@@ -393,12 +394,32 @@ def enregistrer_afoms():
         ids = [row.id_afom for row in afom_ids]
         if ids:
             db.session.query(Afom).filter(Afom.id_afom.in_(ids)).delete(synchronize_session=False)
-        db.session.query(MotCle).filter_by(diagnostic_id=diagnostic_id).update({MotCle.is_actif: False}, synchronize_session=False)
+
+        # 🔁 Étape 0bis : collecter les id_mot_cle encore utilisés (parents + enfants)
+        ids_a_conserver = set()
+        for item in graph_data:
+            mot_cle_data = item.get('mot_cle', {})
+            id_parent = mot_cle_data.get('id_mot_cle')
+            if isinstance(id_parent, int) and id_parent > 0:
+                ids_a_conserver.add(id_parent)
+
+            enfants = mot_cle_data.get('mots_cles_issus', [])
+            for enfant in enfants:
+                id_enfant = enfant.get('id_mot_cle')
+                if isinstance(id_enfant, int) and id_enfant > 0:
+                    ids_a_conserver.add(id_enfant)
+
+        # 🔧 Étape 0ter : désactivation sélective des anciens mots-clés non présents dans le JSON
+        db.session.query(MotCle).filter(
+            MotCle.diagnostic_id == diagnostic_id,
+            ~MotCle.id_mot_cle.in_(ids_a_conserver)
+        ).update({MotCle.is_actif: False}, synchronize_session=False)
+
         db.session.flush()
 
         parents_temp = []
 
-        # 🔁 Étape 1 : création des groupes sans tentative de réutilisation
+        # 🔁 Étape 1 : création des groupes (parents)
         for item in graph_data:
             mot_cle_data = item['mot_cle']
             nombre = item.get('nombre', 1)
@@ -406,6 +427,7 @@ def enregistrer_afoms():
             diagnostic_id = mot_cle_data.get('diagnostic', {}).get('id_diagnostic')
             categorie_data = mot_cle_data.get('categorie')
             enfants = mot_cle_data.get('mots_cles_issus', [])
+            id_parent = mot_cle_data.get('id_mot_cle')
 
             if not nom or not diagnostic_id:
                 continue
@@ -414,38 +436,63 @@ def enregistrer_afoms():
             if isinstance(categorie_data, dict):
                 categorie_id = categorie_data.get('id_nomenclature')
 
-            nouveau_parent = MotCle(
-                nom=nom,
-                diagnostic_id=diagnostic_id,
-                categorie_id=categorie_id,
-                is_actif=True
-            )
-            db.session.add(nouveau_parent)
-            db.session.flush()  # 🔐 assure l’ID du parent
-            parents_temp.append((nouveau_parent, enfants, nombre))
-            logger.info(f"[GROUPE] Nouveau groupe ajouté : '{nom}' (ID {nouveau_parent.id_mot_cle})")
+            if isinstance(id_parent, int) and id_parent > 0:
+                parent = db.session.get(MotCle, id_parent)
+                if parent:
+                    parent.is_actif = True
+                    parent.nom = nom  # mise à jour possible
+                    parent.categorie_id = categorie_id
+                    parent.mots_cles_groupe_id = None  # c'est un groupe
+                else:
+                    logger.warning(f"[AVERTISSEMENT] Mot-clé parent ID {id_parent} introuvable.")
+                    continue
+            else:
+                parent = MotCle(
+                    nom=nom,
+                    diagnostic_id=diagnostic_id,
+                    categorie_id=categorie_id,
+                    is_actif=True
+                )
+                db.session.add(parent)
+                db.session.flush()
 
-        # 👶 Étape 2 : enfants liés à chaque groupe
+            parents_temp.append((parent, enfants, nombre))
+            logger.info(f"[GROUPE] Groupe traité : '{parent.nom}' (ID {parent.id_mot_cle})")
+
+        # 👶 Étape 2 : création ou mise à jour des enfants
         for parent_mc, enfants, _ in parents_temp:
             for enfant_data in enfants:
                 nom_enfant = enfant_data.get('nom')
                 diag_enfant_id = enfant_data.get('diagnostic', {}).get('id_diagnostic')
+                id_enfant = enfant_data.get('id_mot_cle')
 
                 if not nom_enfant or not diag_enfant_id:
                     continue
 
-                enfant = MotCle(
-                    nom=nom_enfant,
-                    diagnostic_id=diag_enfant_id,
-                    mots_cles_groupe_id=parent_mc.id_mot_cle,
-                    is_actif=True
-                )
-                db.session.add(enfant)
-                logger.info(f"→ Enfant '{nom_enfant}' ajouté au groupe '{parent_mc.nom}'")
+                if isinstance(id_enfant, int) and id_enfant > 0:
+                    enfant = db.session.get(MotCle, id_enfant)
+                    if enfant:
+                        enfant.nom = nom_enfant  # mise à jour
+                        enfant.diagnostic_id = diag_enfant_id
+                        enfant.mots_cles_groupe_id = parent_mc.id_mot_cle
+                        enfant.is_actif = True
+                    else:
+                        logger.warning(f"[AVERTISSEMENT] Enfant ID {id_enfant} introuvable.")
+                        continue
+                else:
+                    enfant = MotCle(
+                        nom=nom_enfant,
+                        diagnostic_id=diag_enfant_id,
+                        mots_cles_groupe_id=parent_mc.id_mot_cle,
+                        is_actif=True
+                    )
+                    db.session.add(enfant)
+
+                logger.info(f"→ Enfant '{nom_enfant}' lié au groupe '{parent_mc.nom}'")
 
         db.session.flush()
 
-        # ✅ Étape 3 : création des AFOMs pour chaque groupe parent
+        # ✅ Étape 3 : création des AFOMs
         for parent_mc, _, nombre in parents_temp:
             afom = Afom(mot_cle_id=parent_mc.id_mot_cle, number=nombre)
             db.session.add(afom)
@@ -458,6 +505,7 @@ def enregistrer_afoms():
         db.session.rollback()
         logger.error(f"[ERREUR ENREGISTREMENT] {e}")
         return {"error": "Erreur serveur lors de l’enregistrement"}, 500
+
     
 
 @bp.route('/diagnostic/mots-cles/<int:id_diagnostic>', methods=['GET'])
