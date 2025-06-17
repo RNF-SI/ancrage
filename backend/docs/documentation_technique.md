@@ -143,7 +143,7 @@ Chaque modèle est couplé à une interface et comprend trois méthodes copy, fr
         }
 
  - interface : 
-            export interface IMotCle {
+            ``export interface IMotCle {
                 id_mot_cle:number;
                 nom:string;
                 reponses?:Reponse[];
@@ -152,7 +152,7 @@ Chaque modèle est couplé à une interface et comprend trois méthodes copy, fr
                 diagnostic:Diagnostic;
                 mot_cle_id_groupe?:number;
                 is_actif:boolean;
-            }
+            }``
 
 Dans copy :  
 
