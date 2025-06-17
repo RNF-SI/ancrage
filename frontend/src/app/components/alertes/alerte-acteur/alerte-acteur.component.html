@@ -14,6 +14,6 @@
 
 <mat-dialog-actions>
     <button mat-raised-button color="accent" type="button" (click)="navigate(data.previousPage,data.diagnostic)">{{data.labels.btnPreviousStepLabel}}</button>
-    <button mat-raised-button (click)="navigate('/acteur',data.diagnostic)" color="accent">{{labels.createAnotherActor}}</button>
-    <button mat-raised-button mat-dialog-close (click)="close()" color="accent">{{labels.correctActor}}</button>
+    <button mat-raised-button (click)="navigate('/acteur',data.diagnostic)" color="accent">{{data.labels.createAnotherActor}}</button>
+    <button mat-raised-button mat-dialog-close (click)="close()" color="accent">{{data.labels.correctActor}}</button>
 </mat-dialog-actions>

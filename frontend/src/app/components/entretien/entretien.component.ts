@@ -54,8 +54,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
   menu:any;
 
   ngOnInit(): void {
-    this.menu = document.getElementById("menu");
-    this.display();
+  
     this.previousPage = localStorage.getItem("previousPage")!;
     this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
     this.routeSubscription = this.route.params.subscribe((params: any) => {
@@ -70,6 +69,10 @@ export class EntretienComponent implements OnInit,OnDestroy{
 
           forkJoin([themes$,etats$,noResponse$]).subscribe(([themes,etats,noResponse]) => {
             this.prepareResults(themes,etats,noResponse);
+            this.menu = document.getElementById("menu");
+            setTimeout(() => {
+              this.display();
+            }, 0);
             
           });
         }
@@ -163,7 +166,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
 
   //cache le menu
   display(){
-    console.log(this.menu?.className);
+
     if (this.menu?.className == "invisible"){
       this.menu?.classList.remove("invisible");
       this.menu?.classList.add("visible");

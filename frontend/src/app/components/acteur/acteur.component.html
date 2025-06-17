@@ -46,7 +46,7 @@
                 <mat-form-field appearance="fill" id="fieldName" >
                     <mat-label>{{labels.mail}}</mat-label>
                     <input matInput placeholder="Entrez un mail" formControlName="mail" >
-                    <mat-error *ngIf="formGroup.get('mail')?.hasError('pattern')">{{labels.mailFormat}}</mat-error>
+                    <mat-error *ngIf="formGroup.get('mail')?.hasError('pattern')">{{labels.invalidFormat}}</mat-error>
                 </mat-form-field>
                 <mat-form-field appearance="fill" id="fieldName" >
                     <mat-label>{{labels.structure}}</mat-label>

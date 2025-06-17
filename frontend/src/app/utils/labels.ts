@@ -50,7 +50,7 @@ export class Labels {
     requiredCategory = "Au moins une catégorie est requise.";
     requiredProfile = "Le profil est requis.";
     requiredStatus = "Le statut est requis.";
-    telephoneForamt = "Le format doit être : 0X XX XX XX XX.";
+    telephoneFormat = "Le format doit être : 0X XX XX XX XX.";
     invalidFormat = "Le format est incorrect.";
     requiredStructure = "La structure est requise.";
     createAnotherActor = "Créer un autre acteur";
