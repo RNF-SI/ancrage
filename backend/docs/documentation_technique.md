@@ -180,13 +180,13 @@ Dans toJson, il ne faut renseigner que les champs de type Objet ou liste d'objet
 
 Chaque modèle est aussi relié à un service. Les méthodes appelant l’API retournent des Observable du modèle renvoyé par l’API. 
 
-  update(mot_cle:MotCle): Observable<MotCle> {
-		const route = this.BASE_URL + '/' + mot_cle.id_mot_cle;
-	   
-		return this.http.put<IMotCle>(route, mot_cle.toJson()).pipe(
-		  map(mot_cleJson => MotCle.fromJson(mot_cleJson))
-		);
-	}
+    update(mot_cle:MotCle): Observable<MotCle> {
+      const route = this.BASE_URL + '/' + mot_cle.id_mot_cle;
+      
+      return this.http.put<IMotCle>(route, mot_cle.toJson()).pipe(
+        map(mot_cleJson => MotCle.fromJson(mot_cleJson))
+      );
+	  }
 
 Dans le composant, il faut donc les souscrire pour récupérer l’objet avec la fonction subscribe.Chaque méthode suivie de subscribe est dans une instance Subscription (typée ?Subscription). 
 
