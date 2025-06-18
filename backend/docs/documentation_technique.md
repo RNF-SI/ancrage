@@ -5,6 +5,8 @@ L’application comprend deux parties :
 -	Une application frontend en typescript et Angular 15
 Le fichier readme indique comment installer le projet. 
 
+Elle est conçue pour être exécutée dans un environnement Linux. Si vous êtes sous Windows, il faut installer WSL.
+
 <h2>Backend</h2>
 Tous les modèles sont définis dans le fichier models.py du répertoire models.
 Un dossier routes comprend une série de routes regroupées par modèle. Les fichiers routes du répertoire doivent être importés dans le fichier __init__.py du même répertoire. De même, pour les variables globales. 
@@ -251,6 +253,8 @@ Ces Subscription doivent être détruites dans la méthode ngOnDestroy(){}. Il f
         this.communeSubscription?.unsubscribe();
         this.actorSubscription?.unsubscribe();
     }
+
+Lorsque plusieurs routes de l'API doivent être appelées en même temps, un forkJoin est utilisé comme le montre le bout de code précédent.
 
 Pour faciliter la compréhension du code, les variables ont des noms pertinents et sont toutes typées. Il en va de même pour les méthodes. 
 
