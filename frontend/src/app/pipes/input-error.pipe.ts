@@ -2,7 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
     name: 'inputError',
-    standalone: false
+    standalone:true
 })
 export class InputErrorPipe implements PipeTransform {
 

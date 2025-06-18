@@ -55,16 +55,9 @@ import { AlerteMotsClesComponent } from './components/alertes/alerte-mots-cles/a
 import { AlerteDatePublicationComponent } from './components/alertes/alerte-date-publication/alerte-date-publication.component';
 
 
-@NgModule({ declarations: [
-        AppComponent,
-        AncrageComponent,
-        IndexComponent,
-        LogoutComponent,
-        IntroConnectComponent,
-        ContactComponent,
-        MentionsComponent,
-    ],
-    bootstrap: [AppComponent], imports: [BrowserModule,
+@NgModule({ 
+    bootstrap: [AppComponent], 
+    imports: [BrowserModule,
         AppRoutingModule,
         CommonModule,
         BrowserAnimationsModule,
@@ -100,6 +93,13 @@ import { AlerteDatePublicationComponent } from './components/alertes/alerte-date
         AlerteGroupeMotsClesComponent,
         AlerteMotsClesComponent,
         AlerteDatePublicationComponent,
+        AppComponent,
+        AncrageComponent,
+        IndexComponent,
+        LogoutComponent,
+        IntroConnectComponent,
+        ContactComponent,
+        MentionsComponent,
         ToastrModule.forRoot({
             timeOut: 15000,
             closeButton: true,

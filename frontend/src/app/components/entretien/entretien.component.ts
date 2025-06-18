@@ -24,6 +24,7 @@ import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
     selector: 'app-entretien',
     templateUrl: './entretien.component.html',
     styleUrls: ['./entretien.component.css'],
+    standalone:true,
     imports: [CommonModule, MatRadioModule, ReactiveFormsModule, MatRadioModule, MatButtonModule, MenuLateralComponent, FontAwesomeModule, MotsClesZoneComponent, MatTabsModule]
 })
 export class EntretienComponent implements OnInit,OnDestroy{

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter } from 'rxjs';
 
 
@@ -18,7 +18,7 @@ const dynamicScripts = [
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.css'],
-    standalone: false
+    imports:[RouterModule]
 })
 export class AppComponent implements OnInit{
   title = 'RNF - Diagnostic d\'Ancrage Territorial';

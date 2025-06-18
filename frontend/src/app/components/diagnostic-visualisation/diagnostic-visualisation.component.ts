@@ -31,6 +31,7 @@ import { AlerteDatePublicationComponent } from '../alertes/alerte-date-publicati
     selector: 'app-diagnostic-visualisation',
     templateUrl: './diagnostic-visualisation.component.html',
     styleUrls: ['./diagnostic-visualisation.component.css'],
+    standalone:true,
     imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent, MenuLateralComponent, TableauStructuresComponent, TableauStructuresComponent, MapComponent, MotsClesZoneComponent]
 })
 export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{

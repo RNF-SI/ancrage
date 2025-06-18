@@ -15,6 +15,7 @@ import { SitesDiagnosticsViewComponent } from "../parts/sites-diagnostics-view/s
     selector: 'app-diagostics-liste',
     templateUrl: './diagnostics-liste.component.html',
     styleUrls: ['./diagnostics-liste.component.css'],
+    standalone:true,
     imports: [
         CommonModule,
         MatButtonModule,
