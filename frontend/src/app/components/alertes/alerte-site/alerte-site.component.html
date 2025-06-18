@@ -1,15 +1,39 @@
 <h2 mat-dialog-title>{{ data.title }}</h2>
+
 <mat-dialog-content>
-    <div><span>{{ data.message }}</span></div>
-    <div><b>{{data.labels.nameLabel}}</b> : <span>{{ data.site.nom }}</span></div>
-    <!-- <div><b>{{data.labels.housingLabel}}</b> : <span *ngFor="let hab of data.site.habitats">{{ hab.libelle }} </span></div> -->
-    <div><b>{{data.labels.statusLabel}}</b> : <span>{{ data.site.type.libelle }}</span></div>
-    <div><b>{{data.labels.departementLabel}}</b> : <span *ngFor="let dpt of data.site.departements">{{ dpt.nom_dep }} </span></div>
-    <div><b>{{data.labels.slug}}</b> : <span>{{ data.site.slug }}</span></div>
+  <div><span>{{ data.message }}</span></div>
+  <div><b>{{ data.labels.nameLabel }}</b> : <span>{{ data.site.nom }}</span></div>
+  
+  <!-- Habitats désactivés pour l’instant -->
+  <!--
+  <div>
+    <b>{{ data.labels.housingLabel }}</b> :
+    @for (hab of data.site.habitats; track hab) {
+      <span>{{ hab.libelle }} </span>
+    }
+  </div>
+  -->
+
+  <div><b>{{ data.labels.statusLabel }}</b> : <span>{{ data.site.type.libelle }}</span></div>
+
+  <div>
+    <b>{{ data.labels.departementLabel }}</b> :
+    @for (dpt of data.site.departements; track dpt) {
+      <span>{{ dpt.nom_dep }} </span>
+    }
+  </div>
+
+  <div><b>{{ data.labels.slug }}</b> : <span>{{ data.site.slug }}</span></div>
 </mat-dialog-content>
 
 <mat-dialog-actions>
-    <button mat-raised-button color="accent" type="button" (click)="navigate(data.previousPage,data.diagnostic)">{{data.labels.btnPreviousStepLabel}}</button>
-    <button mat-raised-button mat-dialog-close (click)="navigate('/acteur',data.diagnostic)" color="accent">{{data.labels.createAnotherSite}}</button>
-    <button mat-raised-button mat-dialog-close (click)="close()" color="accent">{{data.labels.correctSite}}</button>
+  <button mat-raised-button color="accent" type="button" (click)="navigate(data.previousPage, data.diagnostic)">
+    {{ data.labels.btnPreviousStepLabel }}
+  </button>
+  <button mat-raised-button mat-dialog-close (click)="navigate('/acteur', data.diagnostic)" color="accent">
+    {{ data.labels.createAnotherSite }}
+  </button>
+  <button mat-raised-button mat-dialog-close (click)="close()" color="accent">
+    {{ data.labels.correctSite }}
+  </button>
 </mat-dialog-actions>

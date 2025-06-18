@@ -14,8 +14,9 @@
                 </mat-card-content>
                 <mat-card-actions>
                     <button mat-raised-button mat-dialog-close (click)="cancel()" color="accent">Fermer</button>
-                    <div *ngIf="can_edit">
+                    @if(can_edit){
                         <button mat-raised-button mat-dialog-close (click)="navigate('/site/' + site.id_site + '/' + site.slug,diagnostic)" color="accent">Modifier</button>
+                    }
                     </div>
                 </mat-card-actions>
             </mat-card>

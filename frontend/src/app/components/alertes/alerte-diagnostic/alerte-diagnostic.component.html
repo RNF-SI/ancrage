@@ -1,30 +1,52 @@
 <h2 mat-dialog-title>{{ data.title }}</h2>
+
 <mat-dialog-content>
-    <div><span>{{ data.message }}</span></div>
-    <div><b>{{data.labels.nameLabel}}</b> : <span>{{ data.diagnostic.nom }}</span></div>  
-    <div><b>{{data.labels.chosenSites}}</b> : <span *ngFor="let site of data.diagnostic.sites">{{ site.nom }} </span></div>
-    <div><b>{{data.labels.chosenActors}}</b> : <span *ngFor="let acteur of data.diagnostic.acteurs">{{ acteur.nom }} {{ acteur.prenom }}, </span></div>
-    <div><b>{{data.labels.datePublicationReport}}</b> : <span>{{ data.diagnostic.date_rapport_str }}</span></div>  
+  <div><span>{{ data.message }}</span></div>
+
+  <div>
+    <b>{{ data.labels.nameLabel }}</b> :
+    <span>{{ data.diagnostic.nom }}</span>
+  </div>
+
+  <div>
+    <b>{{ data.labels.chosenSites }}</b> :
+    @for (site of data.diagnostic.sites; track site) {
+      <span>{{ site.nom }} </span>
+    }
+  </div>
+
+  <div>
+    <b>{{ data.labels.chosenActors }}</b> :
+    @for (acteur of data.diagnostic.acteurs; track acteur) {
+      <span>{{ acteur.nom }} {{ acteur.prenom }}, </span>
+    }
+  </div>
+
+  <div>
+    <b>{{ data.labels.datePublicationReport }}</b> :
+    <span>{{ data.diagnostic.date_rapport_str }}</span>
+  </div>
 </mat-dialog-content>
 
-<ng-container *ngIf="data.no_creation; else creation">
-    <mat-dialog-actions>
-      <button mat-raised-button color="accent" type="button" (click)="navigate(data.previousPage, data.diagnostic)">
-        {{ data.labels.btnPreviousStepLabel }}
-      </button>
-      <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic-visualisation/' + data.diagnostic.id_diagnostic + '/' + data.diagnostic.slug, data.diagnostic)">
-        {{ data.labels.interviewPrompt }}
-      </button>
-    </mat-dialog-actions>
-</ng-container>
-  
-<ng-template #creation>
-    <mat-dialog-actions>
-        <button mat-raised-button mat-dialog-close (click)="close()" color="accent">
-        {{ data.labels.addActors }}
-        </button>
-        <button mat-raised-button color="accent" type="button" (click)="navigate('/diagnostic-visualisation/' + data.diagnostic.id_diagnostic + '/' + data.diagnostic.slug, data.diagnostic)">
-        {{ data.labels.interviewPrompt }}
-        </button>
-    </mat-dialog-actions>
-</ng-template>
+@if (data.no_creation) {
+  <mat-dialog-actions>
+    <button mat-raised-button color="accent" type="button"
+      (click)="navigate(data.previousPage, data.diagnostic)">
+      {{ data.labels.btnPreviousStepLabel }}
+    </button>
+    <button mat-raised-button color="accent" type="button"
+      (click)="navigate('/diagnostic-visualisation/' + data.diagnostic.id_diagnostic + '/' + data.diagnostic.slug, data.diagnostic)">
+      {{ data.labels.interviewPrompt }}
+    </button>
+  </mat-dialog-actions>
+} @else {
+  <mat-dialog-actions>
+    <button mat-raised-button mat-dialog-close (click)="close()" color="accent">
+      {{ data.labels.addActors }}
+    </button>
+    <button mat-raised-button color="accent" type="button"
+      (click)="navigate('/diagnostic-visualisation/' + data.diagnostic.id_diagnostic + '/' + data.diagnostic.slug, data.diagnostic)">
+      {{ data.labels.interviewPrompt }}
+    </button>
+  </mat-dialog-actions>
+}
