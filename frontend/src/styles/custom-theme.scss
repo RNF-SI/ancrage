@@ -1,12 +1,14 @@
-@import '@angular/material/theming';
+@use '@angular/material' as mat;
 
-$custom-primary: mat-palette(mat-define-palette((
+// === Couleurs personnalisées ===
+
+$custom-primary: mat.define-palette((
   50:  #e0f4ed,
   100: #b3e2d1,
   200: #80cfb3,
   300: #4dbd96,
   400: #26af81,
-  500: #00885b, // Couleur de base
+  500: #00885b,
   600: #007c52,
   700: #006f48,
   800: #00623e,
@@ -31,10 +33,9 @@ $custom-primary: mat-palette(mat-define-palette((
     A400: rgba(0, 0, 0, 0.87),
     A700: rgba(0, 0, 0, 0.87),
   )
-)));
+));
 
-
-$custom-accent: mat-palette(mat-define-palette((
+$custom-accent: mat.define-palette((
   50:  #f8fbe5,
   100: #eef5bd,
   200: #e2ee94,
@@ -65,18 +66,18 @@ $custom-accent: mat-palette(mat-define-palette((
     A400: rgba(0, 0, 0, 0.87),
     A700: rgba(0, 0, 0, 0.87),
   )
-)));
+));
 
+// === Thème personnalisé ===
 
-$custom-theme: mat-light-theme((
+$custom-theme: mat.define-light-theme((
   color: (
     primary: $custom-primary,
     accent: $custom-accent,
   )
 ));
 
+// === Application du thème ===
 
-@include mat-core();
-
-
-@include angular-material-theme($custom-theme);
+@include mat.core();
+@include mat.all-component-themes($custom-theme);

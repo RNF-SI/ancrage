@@ -10,7 +10,7 @@ import { MentionsComponent } from './components/mentions/mentions.component';
 import { ContactComponent } from './components/contact/contact.component';
 import { NavHomeComponent } from './home-rnf/components/nav-home/nav-home.component';
 import { LoginComponent } from './home-rnf/components/login/login.component';
-import { AuthGuardService } from './home-rnf/services/auth-guard.service';
+import { authGuard, AuthGuardService } from './home-rnf/services/auth-guard.service';
 import { LogoutLinkService } from './home-rnf/services/logout-link.service';
 import { LazyDialogLoader } from './home-rnf/services/lazy-dialog-loader.service';
 import { DiagosticsListeComponent } from './components/diagnostics-liste/diagnostics-liste.component';
@@ -36,12 +36,12 @@ const routes: Routes = [ {
     {
       path: 'methodologie',
       component: AncrageComponent,
-      canActivate: [AuthGuardService]
+      canActivate: [authGuard]
     },
     {
       path: 'intro-connect',
       component: IntroConnectComponent,
-      canActivate: [AuthGuardService]
+      canActivate: [authGuard]
     },
     {
       path: 'contact',
@@ -58,69 +58,74 @@ const routes: Routes = [ {
     {
       path: 'diagnostics-liste',
       component: DiagosticsListeComponent,
-      canActivate: [AuthGuardService]
+      canActivate: [authGuard]
     },
     {
       path: 'mes-diagnostics',
       component: MesDiagnosticsComponent,
-      canActivate: [AuthGuardService]
+      canActivate: [authGuard]
     },
     {
       path: 'site',
       component: SiteComponent,
-      canActivate: [AuthGuardService]
+      canActivate: [authGuard]
     },
     {
       path: 'site/:id_site/:slug',
       component: SiteComponent,
-      canActivate: [AuthGuardService]
+      canActivate: [authGuard]
     },
     {
       path: 'site-ls/:id_site/:slug',
       component: SiteLsComponent,
-      canActivate: [AuthGuardService]
+      canActivate: [authGuard]
     },
     {
       path: 'choix-acteurs/:id_diagnostic/:slug',
       component: ChoixActeursComponent,
-      canActivate: [AuthGuardService]
+      canActivate: [authGuard]
     },
     {
       path: 'diagnostic',
       component: DiagnosticComponent,
-      canActivate: [AuthGuardService]
+      canActivate: [authGuard]
     },
     {
       path: 'diagnostic/:id_diagnostic/:slug',
       component: DiagnosticComponent,
-      canActivate: [AuthGuardService]
+      canActivate: [authGuard]
     },
     {
       path: 'diagnostic-visualisation/:id_diagnostic/:slug',
       component: DiagnosticVisualisationComponent,
-      canActivate: [AuthGuardService]
+      canActivate: [authGuard]
     },
     {
       path: 'acteur',
       component: ActeurComponent,
-      canActivate: [AuthGuardService]
+      canActivate: [authGuard]
     },
     {
       path: 'acteur/:id_acteur/:slug',
       component: ActeurComponent,
-      canActivate: [AuthGuardService]
+      canActivate: [authGuard]
     },
     {
       path: 'entretien/:id_acteur/:slug',
       component: EntretienComponent,
-      canActivate: [AuthGuardService]
+      canActivate: [authGuard]
     }
   ]},
    
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes,{ onSameUrlNavigation: 'reload' })],
+  imports: [RouterModule.forRoot(routes, {
+    paramsInheritanceStrategy: 'always',
+    urlUpdateStrategy: 'eager'
+    // ✅ autres options possibles : scrollPositionRestoration, relativeLinkResolution...
+  })],
   exports: [RouterModule]
 })
+
 export class AppRoutingModule { }

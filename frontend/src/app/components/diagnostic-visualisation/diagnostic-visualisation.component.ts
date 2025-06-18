@@ -1,6 +1,6 @@
 import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { MatTableDataSource, MatTableDataSourcePaginator } from '@angular/material/table';
+import { MatTableDataSource } from '@angular/material/table';
 import { Acteur } from '@app/models/acteur.model';
 import { Departement } from '@app/models/departement.model';
 import { Diagnostic } from '@app/models/diagnostic.model';
@@ -44,7 +44,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   uniqueDepartments: Departement[] = [];
   selectedCategory: Nomenclature = new Nomenclature();
   selectedDepartment: Departement = new Departement();
-  actorsSelected: MatTableDataSource<Acteur,MatTableDataSourcePaginator> = new MatTableDataSource();
+  actorsSelected: MatTableDataSource<Acteur> = new MatTableDataSource<Acteur>();
   uniqueActors: Acteur[] = [];
   hideFilters=true;
   previousPage ="";
