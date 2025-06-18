@@ -8,11 +8,10 @@ import { Labels } from '@app/utils/labels';
 
 //Alerte pour visualiser les infos supplémentaires : Bouton i sur ligne acteur
 @Component({
-  selector: 'app-alerte-show-actor-details',
-  templateUrl: './alerte-show-actor-details.component.html',
-  styleUrls: ['./alerte-show-actor-details.component.css'],
-  standalone:true,
-  imports:[MatDialogModule,MatButtonModule,CommonModule]
+    selector: 'app-alerte-show-actor-details',
+    templateUrl: './alerte-show-actor-details.component.html',
+    styleUrls: ['./alerte-show-actor-details.component.css'],
+    imports: [MatDialogModule, MatButtonModule, CommonModule]
 })
 export class AlerteShowActorDetailsComponent {
   constructor(

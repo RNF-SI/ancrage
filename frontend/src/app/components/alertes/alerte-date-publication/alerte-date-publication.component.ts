@@ -19,11 +19,10 @@ import { DateAdapter } from '@angular/material/core';
 
 //Permet de modifier la data de publication
 @Component({
-  selector: 'app-alerte-date-publication',
-  templateUrl: './alerte-date-publication.component.html',
-  styleUrls: ['./alerte-date-publication.component.css'],
-  imports:[MatButtonModule,MatDatepickerModule,MatFormFieldModule,FormsModule,MatInputModule,MatMomentDateModule,MatDialogModule,FontAwesomeModule,MatTooltipModule],
-  standalone:true
+    selector: 'app-alerte-date-publication',
+    templateUrl: './alerte-date-publication.component.html',
+    styleUrls: ['./alerte-date-publication.component.css'],
+    imports: [MatButtonModule, MatDatepickerModule, MatFormFieldModule, FormsModule, MatInputModule, MatMomentDateModule, MatDialogModule, FontAwesomeModule, MatTooltipModule]
 })
 export class AlerteDatePublicationComponent implements OnInit{
     constructor(

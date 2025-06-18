@@ -7,7 +7,6 @@ import { MatSelectModule } from '@angular/material/select';
 import { Site } from '@app/models/site.model';
 import { SiteService } from '@app/services/sites.service';
 import { forkJoin, Subscription } from 'rxjs';
-import { ChoixActeursComponent } from '../parts/choix-acteurs/choix-acteurs.component';
 import { Acteur } from '@app/models/acteur.model';
 import { Departement } from '@app/models/departement.model';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -29,12 +28,10 @@ registerLocaleData(localeFr);
 
 //Pour création ou modification d'un diagnostic
 @Component({
-  selector: 'app-diagnostic',
-  templateUrl: './diagnostic.component.html',
-  styleUrls: ['./diagnostic.component.css'],
-  standalone:true,
-  imports:[CommonModule,MatSelectModule, MatFormFieldModule,FormsModule,MatInputModule,ChoixActeursComponent,ReactiveFormsModule,MatButtonModule],
-  
+    selector: 'app-diagnostic',
+    templateUrl: './diagnostic.component.html',
+    styleUrls: ['./diagnostic.component.css'],
+    imports: [CommonModule, MatSelectModule, MatFormFieldModule, FormsModule, MatInputModule, ReactiveFormsModule, MatButtonModule]
 })
 export class DiagnosticComponent implements OnInit, OnDestroy{
 

@@ -9,11 +9,10 @@ import { Labels } from '@app/utils/labels';
 
 //Alerte de confirmation à la modification ou à la création d'un acteur
 @Component({
-  selector: 'app-alerte-acteur',
-  templateUrl: './alerte-acteur.component.html',
-  styleUrls: ['./alerte-acteur.component.css'],
-  standalone:true,
-  imports:[MatDialogModule,MatButtonModule,CommonModule]
+    selector: 'app-alerte-acteur',
+    templateUrl: './alerte-acteur.component.html',
+    styleUrls: ['./alerte-acteur.component.css'],
+    imports: [MatDialogModule, MatButtonModule, CommonModule]
 })
 export class AlerteActeurComponent {
   constructor(

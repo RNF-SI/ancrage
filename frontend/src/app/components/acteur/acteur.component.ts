@@ -24,11 +24,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 //Composant pour crééer ou modifier un acteur
 @Component({
-  selector: 'app-acteur',
-  templateUrl: './acteur.component.html',
-  styleUrls: ['./acteur.component.css'],
-  standalone:true,
-  imports:[CommonModule,MatFormFieldModule,ReactiveFormsModule,MatSelectModule,FormsModule,MatInputModule,MatAutocompleteModule,MatButtonModule,MatProgressSpinnerModule]
+    selector: 'app-acteur',
+    templateUrl: './acteur.component.html',
+    styleUrls: ['./acteur.component.css'],
+    imports: [CommonModule, MatFormFieldModule, ReactiveFormsModule, MatSelectModule, FormsModule, MatInputModule, MatAutocompleteModule, MatButtonModule, MatProgressSpinnerModule]
 })
 export class ActeurComponent implements OnInit,OnDestroy{
   

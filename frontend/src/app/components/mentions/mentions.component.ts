@@ -4,9 +4,10 @@ import { Router } from '@angular/router';
 
 
 @Component({
-  selector: 'app-mentions',
-  templateUrl: './mentions.component.html',
-  styleUrls: ['./mentions.component.css']
+    selector: 'app-mentions',
+    templateUrl: './mentions.component.html',
+    styleUrls: ['./mentions.component.css'],
+    standalone: false
 })
 export class MentionsComponent {
 

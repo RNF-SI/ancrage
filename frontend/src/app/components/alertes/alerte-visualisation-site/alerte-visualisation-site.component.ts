@@ -6,11 +6,10 @@ import { Labels } from '@app/utils/labels';
 
 //Affiche les détails d'un site
 @Component({
-  selector: 'app-alerte-visualisation-site',
-  templateUrl: './alerte-visualisation-site.component.html',
-  styleUrls: ['./alerte-visualisation-site.component.css'],
-  standalone:true,
-  imports:[SiteLsComponent]
+    selector: 'app-alerte-visualisation-site',
+    templateUrl: './alerte-visualisation-site.component.html',
+    styleUrls: ['./alerte-visualisation-site.component.css'],
+    imports: [SiteLsComponent]
 })
 export class AlerteVisualisationSiteComponent {
 

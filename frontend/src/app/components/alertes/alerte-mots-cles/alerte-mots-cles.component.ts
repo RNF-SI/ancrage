@@ -14,11 +14,10 @@ import { Subscription } from 'rxjs';
 
 //Alerte pour voir contenu d'un groupe et le renommer
 @Component({
-  selector: 'app-alerte-mots-cles',
-  templateUrl: './alerte-mots-cles.component.html',
-  styleUrls: ['./alerte-mots-cles.component.css'],
-  standalone:true,
-  imports:[CommonModule,MatDialogModule,MatButtonModule,FontAwesomeModule,MatFormFieldModule,MatInputModule,FormsModule]
+    selector: 'app-alerte-mots-cles',
+    templateUrl: './alerte-mots-cles.component.html',
+    styleUrls: ['./alerte-mots-cles.component.css'],
+    imports: [CommonModule, MatDialogModule, MatButtonModule, FontAwesomeModule, MatFormFieldModule, MatInputModule, FormsModule]
 })
 export class AlerteMotsClesComponent implements OnInit, OnDestroy{
   constructor(

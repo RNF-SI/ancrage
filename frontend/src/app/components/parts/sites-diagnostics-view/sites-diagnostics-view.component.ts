@@ -23,11 +23,10 @@ import { MatExpansionModule } from '@angular/material/expansion';
 
 //Composant qui récupère les sites/diagnostics
 @Component({
-  selector: 'app-sites-diagnostics-view',
-  templateUrl: './sites-diagnostics-view.component.html',
-  styleUrls: ['./sites-diagnostics-view.component.css'],
-  standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatTooltipModule, FontAwesomeModule,RouterModule,MapComponent,MatFormFieldModule,MatSelectModule,FormsModule,MatInputModule,MatExpansionModule]
+    selector: 'app-sites-diagnostics-view',
+    templateUrl: './sites-diagnostics-view.component.html',
+    styleUrls: ['./sites-diagnostics-view.component.css'],
+    imports: [CommonModule, MatCardModule, MatButtonModule, MatTooltipModule, FontAwesomeModule, RouterModule, MapComponent, MatFormFieldModule, MatSelectModule, FormsModule, MatInputModule, MatExpansionModule]
 })
 export class SitesDiagnosticsViewComponent implements AfterViewInit,OnDestroy,OnInit{
 

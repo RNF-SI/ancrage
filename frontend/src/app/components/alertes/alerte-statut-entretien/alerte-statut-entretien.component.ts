@@ -15,11 +15,10 @@ import { Subscription } from 'rxjs';
 
 //Alerte pour la modification d'un statut d'entretien
 @Component({
-  selector: 'app-alerte-statut-entretien',
-  templateUrl: './alerte-statut-entretien.component.html',
-  styleUrls: ['./alerte-statut-entretien.component.css'],
-  standalone:true,
-  imports:[CommonModule,MatDialogModule,MatButtonModule,MatFormFieldModule,ReactiveFormsModule,MatSelectModule]
+    selector: 'app-alerte-statut-entretien',
+    templateUrl: './alerte-statut-entretien.component.html',
+    styleUrls: ['./alerte-statut-entretien.component.css'],
+    imports: [CommonModule, MatDialogModule, MatButtonModule, MatFormFieldModule, ReactiveFormsModule, MatSelectModule]
 })
 export class AlerteStatutEntretienComponent implements OnInit,OnDestroy{
   constructor(

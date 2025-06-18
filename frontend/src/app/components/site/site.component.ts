@@ -23,11 +23,10 @@ import { Labels } from '@app/utils/labels';
 
 //Modifie ou crée un site
 @Component({
-  selector: 'app-site',
-  templateUrl: './site.component.html',
-  styleUrls: ['./site.component.css'],
-  standalone:true,
-  imports: [MatInputModule, MatFormFieldModule, CommonModule, FormsModule, MatSelectModule, MatButtonModule, MapComponent,ReactiveFormsModule]
+    selector: 'app-site',
+    templateUrl: './site.component.html',
+    styleUrls: ['./site.component.css'],
+    imports: [MatInputModule, MatFormFieldModule, CommonModule, FormsModule, MatSelectModule, MatButtonModule, MapComponent, ReactiveFormsModule]
 })
 export class SiteComponent implements OnInit,OnDestroy{
   

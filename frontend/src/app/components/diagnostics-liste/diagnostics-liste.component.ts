@@ -12,18 +12,17 @@ import { SitesDiagnosticsViewComponent } from "../parts/sites-diagnostics-view/s
 
 //Affiche la liste des sites/diagnostics.
 @Component({
-  selector: 'app-diagostics-liste',
-  templateUrl: './diagnostics-liste.component.html',
-  styleUrls: ['./diagnostics-liste.component.css'],
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatButtonModule,
-    FontAwesomeModule,
-    MatCardModule,
-    MatTooltipModule,
-    SitesDiagnosticsViewComponent
-]
+    selector: 'app-diagostics-liste',
+    templateUrl: './diagnostics-liste.component.html',
+    styleUrls: ['./diagnostics-liste.component.css'],
+    imports: [
+        CommonModule,
+        MatButtonModule,
+        FontAwesomeModule,
+        MatCardModule,
+        MatTooltipModule,
+        SitesDiagnosticsViewComponent
+    ]
 })
 export class DiagosticsListeComponent implements OnInit, OnDestroy{
 	sites:Site[]=[];

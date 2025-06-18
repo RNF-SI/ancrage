@@ -28,11 +28,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { AlerteDatePublicationComponent } from '../alertes/alerte-date-publication/alerte-date-publication.component';
 
 @Component({
-  selector: 'app-diagnostic-visualisation',
-  templateUrl: './diagnostic-visualisation.component.html',
-  styleUrls: ['./diagnostic-visualisation.component.css'],
-  standalone:true,
-  imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent, MenuLateralComponent, TableauStructuresComponent,TableauStructuresComponent,MapComponent,MotsClesZoneComponent]
+    selector: 'app-diagnostic-visualisation',
+    templateUrl: './diagnostic-visualisation.component.html',
+    styleUrls: ['./diagnostic-visualisation.component.css'],
+    imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent, MenuLateralComponent, TableauStructuresComponent, TableauStructuresComponent, MapComponent, MotsClesZoneComponent]
 })
 export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
 

@@ -25,11 +25,10 @@ interface ReponseRep {
 }
 
 @Component({
-  selector: 'app-graphiques',
-  templateUrl: './graphiques.component.html',
-  styleUrls: ['./graphiques.component.css'],
-  standalone:true,
-  imports:[CommonModule,MatTabsModule,NgChartsModule,MatButtonModule]
+    selector: 'app-graphiques',
+    templateUrl: './graphiques.component.html',
+    styleUrls: ['./graphiques.component.css'],
+    imports: [CommonModule, MatTabsModule, NgChartsModule, MatButtonModule]
 })
 
 export class GraphiquesComponent implements OnDestroy{

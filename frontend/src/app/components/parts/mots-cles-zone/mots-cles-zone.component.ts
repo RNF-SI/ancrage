@@ -31,23 +31,22 @@ import { QuestionService } from '@app/services/question.service';
 
 
 @Component({
-  selector: 'app-mots-cles-zone',
-  templateUrl: './mots-cles-zone.component.html',
-  styleUrls: ['./mots-cles-zone.component.scss'],
-  standalone:true,
-  imports: [
-    MatChipsModule,
-    MatAutocompleteModule,
-    MatFormFieldModule,
-    MatInputModule,
-    ReactiveFormsModule,
-    FormsModule,
-    DragDropModule,
-    MatIconModule,
-    CommonModule,
-    MatButtonModule,
-    FontAwesomeModule
-  ]
+    selector: 'app-mots-cles-zone',
+    templateUrl: './mots-cles-zone.component.html',
+    styleUrls: ['./mots-cles-zone.component.scss'],
+    imports: [
+        MatChipsModule,
+        MatAutocompleteModule,
+        MatFormFieldModule,
+        MatInputModule,
+        ReactiveFormsModule,
+        FormsModule,
+        DragDropModule,
+        MatIconModule,
+        CommonModule,
+        MatButtonModule,
+        FontAwesomeModule
+    ]
 })
 export class MotsClesZoneComponent implements AfterViewInit,OnDestroy{
   

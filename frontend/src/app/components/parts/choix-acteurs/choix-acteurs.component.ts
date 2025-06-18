@@ -30,11 +30,10 @@ import { SiteService } from '@app/services/sites.service';
 
 //Tableau des acteurs
 @Component({
-  selector: 'app-choix-acteurs',
-  templateUrl: './choix-acteurs.component.html',
-  styleUrls: ['./choix-acteurs.component.css'],
-  standalone:true,
-  imports:[CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule,RouterModule,ReactiveFormsModule,FontAwesomeModule,MatListModule,MatCardModule,MatTooltipModule]
+    selector: 'app-choix-acteurs',
+    templateUrl: './choix-acteurs.component.html',
+    styleUrls: ['./choix-acteurs.component.css'],
+    imports: [CommonModule, MatTableModule, MatCheckboxModule, FormsModule, MatSelectModule, MatFormFieldModule, MatButtonModule, RouterModule, ReactiveFormsModule, FontAwesomeModule, MatListModule, MatCardModule, MatTooltipModule]
 })
 export class ChoixActeursComponent implements OnInit,OnDestroy{
   

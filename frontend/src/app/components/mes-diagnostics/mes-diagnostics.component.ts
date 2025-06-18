@@ -13,20 +13,17 @@ import { Subscription } from 'rxjs';
 
 //Affiche les diagnostics de l'utilisateur
 @Component({
-  selector: 'app-mes-diagnostics',
-  templateUrl: './mes-diagnostics.component.html',
-  styleUrls: ['./mes-diagnostics.component.css'],
-  standalone:true,
-  imports: [
-      CommonModule,
-      MatButtonModule,
-      FontAwesomeModule,
-      MatCardModule,
-      MatTooltipModule,
-      SitesDiagnosticsViewComponent,
-    
-  ]
-  
+    selector: 'app-mes-diagnostics',
+    templateUrl: './mes-diagnostics.component.html',
+    styleUrls: ['./mes-diagnostics.component.css'],
+    imports: [
+        CommonModule,
+        MatButtonModule,
+        FontAwesomeModule,
+        MatCardModule,
+        MatTooltipModule,
+        SitesDiagnosticsViewComponent,
+    ]
 })
 
   export class MesDiagnosticsComponent implements OnInit,OnDestroy{

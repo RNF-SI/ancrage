@@ -7,11 +7,10 @@ import { Subscription } from 'rxjs';
 
 //Affiche la liste des structures sur la page diagnostic-visualisation en lecture seule
 @Component({
-  selector: 'app-tableau-structures',
-  templateUrl: './tableau-structures.component.html',
-  styleUrls: ['./tableau-structures.component.css'],
-  standalone:true,
-  imports:[CommonModule,MatListModule]
+    selector: 'app-tableau-structures',
+    templateUrl: './tableau-structures.component.html',
+    styleUrls: ['./tableau-structures.component.css'],
+    imports: [CommonModule, MatListModule]
 })
 export class TableauStructuresComponent implements OnInit,OnDestroy{
   

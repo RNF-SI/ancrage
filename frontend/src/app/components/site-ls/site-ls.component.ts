@@ -12,11 +12,10 @@ import { Subscription } from 'rxjs';
 
 //Affiche les détails d'un site
 @Component({
-  selector: 'app-site-ls',
-  templateUrl: './site-ls.component.html',
-  styleUrls: ['./site-ls.component.css'],
-  standalone:true,
-  imports:[MatCardModule,CommonModule,MatButtonModule]
+    selector: 'app-site-ls',
+    templateUrl: './site-ls.component.html',
+    styleUrls: ['./site-ls.component.css'],
+    imports: [MatCardModule, CommonModule, MatButtonModule]
 })
 export class SiteLsComponent implements OnInit, OnDestroy{
   

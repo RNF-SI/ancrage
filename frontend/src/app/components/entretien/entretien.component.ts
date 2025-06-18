@@ -17,16 +17,14 @@ import { SiteService } from '@app/services/sites.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MotsClesZoneComponent } from "../parts/mots-cles-zone/mots-cles-zone.component";
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
-import { MotCle } from '@app/models/mot-cle.model';
+
 
 //Page de la saisie de l'entretien
 @Component({
-  selector: 'app-entretien',
-  templateUrl: './entretien.component.html',
-  styleUrls: ['./entretien.component.css'],
-  standalone:true,
-  imports: [CommonModule, MatRadioModule, ReactiveFormsModule, MatRadioModule, MatButtonModule, MenuLateralComponent, FontAwesomeModule, MotsClesZoneComponent,MatTabsModule]
-
+    selector: 'app-entretien',
+    templateUrl: './entretien.component.html',
+    styleUrls: ['./entretien.component.css'],
+    imports: [CommonModule, MatRadioModule, ReactiveFormsModule, MatRadioModule, MatButtonModule, MenuLateralComponent, FontAwesomeModule, MotsClesZoneComponent, MatTabsModule]
 })
 export class EntretienComponent implements OnInit,OnDestroy{
  
