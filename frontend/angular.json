@@ -74,10 +74,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "auth-ancrage:build:production"
+              "buildTarget": "auth-ancrage:build:production"
             },
             "development": {
-              "browserTarget": "auth-ancrage:build:development"
+              "buildTarget": "auth-ancrage:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -85,7 +85,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "auth-ancrage:build"
+            "buildTarget": "auth-ancrage:build"
           }
         },
         "test": {
