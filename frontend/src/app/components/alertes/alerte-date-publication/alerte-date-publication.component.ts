@@ -12,7 +12,7 @@ import { SiteService } from '@app/services/sites.service';
 import { Labels } from '@app/utils/labels';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { Subscription } from 'rxjs';
-import * as moment from 'moment';
+import moment from 'moment';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DateAdapter } from '@angular/material/core';

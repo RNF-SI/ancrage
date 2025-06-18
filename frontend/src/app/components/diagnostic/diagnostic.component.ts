@@ -22,7 +22,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { AlerteDiagnosticComponent } from '../alertes/alerte-diagnostic/alerte-diagnostic.component';
 import { registerLocaleData } from '@angular/common';
 import localeFr from '@angular/common/locales/fr';
-import * as moment from 'moment';
+import moment from 'moment';
 import { Moment } from 'moment';
 
 registerLocaleData(localeFr);

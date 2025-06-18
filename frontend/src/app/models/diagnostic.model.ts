@@ -1,6 +1,6 @@
 import { IDiagnostic } from "@app/interfaces/diagnostic.interface";
 import { Site } from "./site.model";
-import * as moment from 'moment';
+import moment from 'moment';
 import { Acteur } from "./acteur.model";
 import { Document } from "./document.model";
 

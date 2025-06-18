@@ -9,7 +9,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatIconModule} from '@angular/material/icon';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import { MatMenuModule } from '@angular/material/menu';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { MatButtonModule} from '@angular/material/button';
 import { HomeRnfModule } from './home-rnf/home-rnf.module';
 import { RouterModule } from '@angular/router';
@@ -55,68 +55,59 @@ import { AlerteMotsClesComponent } from './components/alertes/alerte-mots-cles/a
 import { AlerteDatePublicationComponent } from './components/alertes/alerte-date-publication/alerte-date-publication.component';
 
 
-@NgModule({
-  declarations: [
-    AppComponent,
-    AncrageComponent,
-    IndexComponent,
-    LogoutComponent,
-    IntroConnectComponent,
-    ContactComponent,
-    MentionsComponent,
-    
-  ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    CommonModule,
-    BrowserAnimationsModule,
-    MatToolbarModule,
-    MatIconModule,
-    MatMenuModule,
-    HttpClientModule,
-    MatButtonModule,
-    HomeRnfModule,
-    RouterModule,
-    NgbModule,
-    MatDialogModule,
-    DiagosticsListeComponent,
-    SitesDiagnosticsViewComponent,
-    MapComponent,
-    MesDiagnosticsComponent,
-    SiteComponent,
-    AlerteSiteComponent,
-    ChoixActeursComponent,
-    SiteLsComponent,
-    AlerteVisualisationSiteComponent,
-    DiagnosticComponent,
-    AlerteShowActorDetailsComponent,
-    DiagnosticVisualisationComponent,
-    ActeurComponent,
-    AlerteActeurComponent, 
-    AlerteDiagnosticComponent,
-    EntretienComponent,
-    GraphiquesComponent,
-    MenuLateralComponent,
-    AlerteStatutEntretienComponent,
-    TableauStructuresComponent,
-    MotsClesZoneComponent,
-    AlerteGroupeMotsClesComponent,
-    AlerteMotsClesComponent,
-    AlerteDatePublicationComponent,
-    ToastrModule.forRoot({
-      timeOut: 15000,
-      closeButton: true,
-      positionClass: 'toast-bottom-right',
-      progressBar: true
-    }),
-  
-  ],
-  providers: [
-    
-  ],
-  bootstrap: [AppComponent]
-})
+@NgModule({ declarations: [
+        AppComponent,
+        AncrageComponent,
+        IndexComponent,
+        LogoutComponent,
+        IntroConnectComponent,
+        ContactComponent,
+        MentionsComponent,
+    ],
+    bootstrap: [AppComponent], imports: [BrowserModule,
+        AppRoutingModule,
+        CommonModule,
+        BrowserAnimationsModule,
+        MatToolbarModule,
+        MatIconModule,
+        MatMenuModule,
+        MatButtonModule,
+        HomeRnfModule,
+        RouterModule,
+        NgbModule,
+        MatDialogModule,
+        DiagosticsListeComponent,
+        SitesDiagnosticsViewComponent,
+        MapComponent,
+        MesDiagnosticsComponent,
+        SiteComponent,
+        AlerteSiteComponent,
+        ChoixActeursComponent,
+        SiteLsComponent,
+        AlerteVisualisationSiteComponent,
+        DiagnosticComponent,
+        AlerteShowActorDetailsComponent,
+        DiagnosticVisualisationComponent,
+        ActeurComponent,
+        AlerteActeurComponent,
+        AlerteDiagnosticComponent,
+        EntretienComponent,
+        GraphiquesComponent,
+        MenuLateralComponent,
+        AlerteStatutEntretienComponent,
+        TableauStructuresComponent,
+        MotsClesZoneComponent,
+        AlerteGroupeMotsClesComponent,
+        AlerteMotsClesComponent,
+        AlerteDatePublicationComponent,
+        ToastrModule.forRoot({
+            timeOut: 15000,
+            closeButton: true,
+            positionClass: 'toast-bottom-right',
+            progressBar: true
+        })], providers: [
+        provideHttpClient(withInterceptorsFromDi())
+    ] })
 export class AppModule { 
    constructor(library: FaIconLibrary) {
       library.addIconPacks(
