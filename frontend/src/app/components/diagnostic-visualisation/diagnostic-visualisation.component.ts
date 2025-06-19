@@ -83,6 +83,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   id_role = signal<number>(0);
   is_read_only = signal<boolean>(false);
   routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
+
   constructor() {
     effect(() => {
       const { id_diagnostic, slug } = this.routeParams() as Params;
@@ -99,7 +100,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
         }).subscribe(({ diag, themes }) => {
           this.diagnostic.set(diag);
           this.themes.set(themes);
-  
+          this.actors.set(this.diagnostic().acteurs);
           const user = this.authService.getCurrentUser();
           this.id_role.set(user.id_role);
   
@@ -113,7 +114,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   }
 
   ngOnInit(): void {
-    this.previousPage.set(localStorage.getItem('previousPage') ?? '');
+    this.previousPage.set(localStorage.getItem('previousPage')!);
 
     
   }

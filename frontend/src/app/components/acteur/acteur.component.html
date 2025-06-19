@@ -89,12 +89,15 @@
                    matInput
                    formControlName="commune"
                    [matAutocomplete]="auto"
-                   placeholder="Nom de la commune">
+                   placeholder="Nom de la commune" required>
             <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
               @for (town of filteredTowns; track town) {
                 <mat-option [value]="town">{{ town.nom_com }}</mat-option>
               }
             </mat-autocomplete>
+            @if (formGroup.get('commune')?.hasError('required')) {
+              <mat-error>{{ labels.requiredTown }}</mat-error>
+            }
           </mat-form-field>
   
           <button mat-raised-button color="accent" (click)="navigate(pageDiagnostic, diagnostic)">

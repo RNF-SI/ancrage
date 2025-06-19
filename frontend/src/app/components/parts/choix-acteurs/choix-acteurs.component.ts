@@ -79,15 +79,18 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
   private siteService = inject(SiteService);
 
   ngOnInit(): void {
+    
     if (!this.no_creation){
       this.previousPage = localStorage.getItem("previousPage")!;
       this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!) as Diagnostic;
+      console.log(this.diagnostic)
       this.formGroup = this.fb.group({
       
         acteurs: this.fb.control<Acteur[]>([], [Validators.required]),  
         
       });
       this.actors = this.diagnostic.acteurs;
+
       this.routeSub = this.route.params.subscribe((params: any) => {
         const id_diagnostic = params['id_diagnostic'];  
         this.slug = params['slug'];

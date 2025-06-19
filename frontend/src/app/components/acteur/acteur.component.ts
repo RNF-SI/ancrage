@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, effect, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
@@ -7,7 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { Acteur } from '@app/models/acteur.model';
 import { Commune } from '@app/models/commune.model';
@@ -21,6 +21,7 @@ import { AlerteActeurComponent } from '../alertes/alerte-acteur/alerte-acteur.co
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { SiteService } from '@app/services/sites.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 //Composant pour crééer ou modifier un acteur
 @Component({
@@ -35,7 +36,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
   uniqueProfiles:Nomenclature[] = [];
   uniqueTowns:Commune[] = [];
   uniqueCategories:Nomenclature[]=[];
-  actor = new Acteur();
+  actor = signal<Acteur>(new Acteur());
   options = ['oui','non'];
   formGroup = this.fb.group({
         id_acteur: [0, [Validators.required]],
@@ -52,10 +53,8 @@ export class ActeurComponent implements OnInit,OnDestroy{
         modified_by: [0],
         slug: ['']
   });
-  private routeSubscription?:Subscription;
-  private route = inject(ActivatedRoute);
-  id_actor = 0;
-  slug="";
+  id_actor = signal<number>(0);
+  slug=signal<string>("");
   private communeService = inject(CommuneService);
   private nomenclatureService = inject(NomenclatureService);
   private authService = inject(AuthService);
@@ -72,60 +71,61 @@ export class ActeurComponent implements OnInit,OnDestroy{
   previousPage = "";
   isLoading=false;
   pageDiagnostic = "";
+  routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
 
-  ngOnInit(): void {
-    
-    this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
-    this.isLoading = true;
-    this.routeSubscription = this.route.params.subscribe((params: any) => {
-          this.id_actor = params['id_acteur'];  
-          this.slug = params['slug'];
-          const communes$ = this.communeService.getAll();
-          const profils$ = this.nomenclatureService.getAllByType("profil");
-          const categories$ = this.nomenclatureService.getAllByType("categorie");
-          this.user_id = this.authService.getCurrentUser().id_role;
-          /* Modification */
-          if (this.id_actor && this.slug) {
-            this.title = this.labels.modifyActor;
-            const actor$ = this.actorService.get(this.id_actor,this.slug);
-
-            forkJoin([actor$, communes$, profils$,categories$]).subscribe(([actor,communes, profils,categories]) => {
-              
-              this.actor = actor;
+  constructor() {
+    effect(() => {
+      this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
+      const { id_acteur, slug } = this.routeParams() as Params;
+      const id = Number(id_acteur);
+      const slugValue = slug as string;
+      const communes$ = this.communeService.getAll();
+      const profils$ = this.nomenclatureService.getAllByType("profil");
+      const categories$ = this.nomenclatureService.getAllByType("categorie");
+      if (id && slugValue) {
+        this.id_actor.set(id);
+        this.slug.set(slugValue);
+        this.user_id = this.authService.getCurrentUser().id_role;
+        const actor$ = this.actorService.get(this.id_actor(),this.slug());
+        forkJoin([actor$, communes$, profils$,categories$]).subscribe(([actor,communes, profils,categories]) => {
+          this.actor.set(actor);
               
               
-              this.instructionsWithResults(communes,profils,categories);
-              this.actor.categories = (this.actor.categories|| []).map(cat =>
-                this.uniqueCategories.find(uc => uc.id_nomenclature === cat.id_nomenclature) || cat
-              );
-              this.actor.profil = this.uniqueProfiles.find(pfl => pfl.id_nomenclature === this.actor.profil?.id_nomenclature) || this.actor.profil;
-              
-              this.formGroup.patchValue({
-                id_acteur: this.actor.id_acteur,
-                nom: this.actor.nom,
-                prenom: this.actor.prenom,
-                created_by: this.actor.created_by,
-                fonction: this.actor.fonction,
-                telephone: this.actor.telephone,
-                mail: this.actor.mail,
-                commune: this.actor.commune,
-                profil: this.actor.profil?.id_nomenclature! > 0 ? this.actor.profil : null,
-                categories: this.actor.categories,
-                structure: this.actor.structure,
-                slug: this.actor.slug
-              });
-              this.isLoading = false; 
-            });
-          } else {
-            /* Création */
-            this.title = this.labels.createActor;
+          this.instructionsWithResults(communes,profils,categories);
+          this.actor().categories = (this.actor().categories|| []).map(cat =>
+            this.uniqueCategories.find(uc => uc.id_nomenclature === cat.id_nomenclature) || cat
+          );
+          this.actor().profil = this.uniqueProfiles.find(pfl => pfl.id_nomenclature === this.actor().profil?.id_nomenclature) || this.actor().profil;
+          
+          this.formGroup.patchValue({
+            id_acteur: this.actor().id_acteur,
+            nom: this.actor().nom,
+            prenom: this.actor().prenom,
+            created_by: this.actor().created_by,
+            fonction: this.actor().fonction,
+            telephone: this.actor().telephone,
+            mail: this.actor().mail,
+            commune: this.actor().commune,
+            profil: this.actor().profil?.id_nomenclature! > 0 ? this.actor().profil : null,
+            categories: this.actor().categories,
+            structure: this.actor().structure,
+            slug: this.actor().slug
+          });
+          this.isLoading = false; 
+        });
+      }else{
+        this.title = this.labels.createActor;
             forkJoin([communes$, profils$,categories$]).subscribe(([communes, profils,categories]) => {
               
               this.instructionsWithResults(communes,profils,categories);
               this.isLoading = false; 
             });
-          }
-        });
+      }
+    });
+  }
+
+  ngOnInit(): void {
+    
   }
   //Réception des données
   instructionsWithResults(communes:Commune[],profils:Nomenclature[],categories:Nomenclature[]){
@@ -155,16 +155,20 @@ export class ActeurComponent implements OnInit,OnDestroy{
   //Enregistrement du formulaire
   recordActor(event: Event) {
     event.preventDefault();
+    console.log(this.id_actor());
     //Ajout
-    if (this.id_actor == undefined){
+    if (this.id_actor() === 0){
       this.formGroup.get('created_by')!.setValue(this.user_id);
       if (!this.formGroup.invalid){
-        this.actor = Object.assign(new Acteur(),this.formGroup.value);
-        this.actor.diagnostic = new Diagnostic();
-        this.actor.diagnostic.id_diagnostic = this.diagnostic.id_diagnostic;
-        this.actorSubscription = this.actorService.add(this.actor).subscribe(
+        this.actor.set(Object.assign(new Acteur(),this.formGroup.value));
+        const actorToSend = this.actor();
+        actorToSend.diagnostic = new Diagnostic();
+        actorToSend.diagnostic.id_diagnostic = this.diagnostic.id_diagnostic;
+        console.log(actorToSend);
+        this.actorSubscription = this.actorService.add(actorToSend).subscribe(
           actor =>{
             this.getConfirmation("L'acteur suivant a été créé dans la base de données et a été ajouté au diagnostic : ",actor);
+            this.diagnostic.acteurs.push(actor);
           }
         )
       }
@@ -172,12 +176,17 @@ export class ActeurComponent implements OnInit,OnDestroy{
     }else{
       //Modification
       this.formGroup.get('modified_by')!.setValue(this.user_id);
-      this.actor = Object.assign(new Acteur(),this.formGroup.value);
+      this.actor.set(Object.assign(new Acteur(),this.formGroup.value));
      
       if (!this.formGroup.invalid){
-        this.actorSubscription = this.actorService.update(this.actor).subscribe(
+        this.actorSubscription = this.actorService.update(this.actor()).subscribe(
           actor =>{
             this.getConfirmation("L'acteur suivant a été modifié dans la base de données et a été ajouté au diagnostic : ",actor);
+            for (let act of this.diagnostic.acteurs){
+              if (actor.id_acteur === act.id_acteur){
+                act = actor;
+              }
+            }
           }
         )
       }
@@ -212,7 +221,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
   }
 
   ngOnDestroy(): void {
-    this.routeSubscription?.unsubscribe();
+   
     this.communeSubscription?.unsubscribe();
     this.actorSubscription?.unsubscribe();
   }
