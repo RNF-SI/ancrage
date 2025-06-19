@@ -14,25 +14,7 @@ import { Labels } from '@app/utils/labels';
     templateUrl: './alerte-diagnostic.component.html',
     styleUrls: ['./alerte-diagnostic.component.css'],
     imports: [MatDialogModule, MatButtonModule, CommonModule],
-    providers: [
-        { provide: LOCALE_ID, useValue: 'fr-FR' },
-        { provide: MAT_DATE_LOCALE, useValue: 'fr-FR' },
-        { provide: MAT_MOMENT_DATE_ADAPTER_OPTIONS, useValue: { useUtc: true } },
-        {
-            provide: MAT_DATE_FORMATS,
-            useValue: {
-                parse: {
-                    dateInput: 'DD/MM/YY',
-                },
-                display: {
-                    dateInput: 'DD/MM/YY',
-                    monthYearLabel: 'MMMM YYYY',
-                    dateA11yLabel: 'LL',
-                    monthYearA11yLabel: 'MMMM YYYY',
-                },
-            },
-        },
-    ]
+    
 })
 export class AlerteDiagnosticComponent {
   constructor(

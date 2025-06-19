@@ -15,7 +15,7 @@ import { Subscription } from 'rxjs';
 import moment from 'moment';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { DateAdapter, MatNativeDateModule } from '@angular/material/core';
+import { DateAdapter } from '@angular/material/core';
 
 //Permet de modifier la data de publication
 @Component({

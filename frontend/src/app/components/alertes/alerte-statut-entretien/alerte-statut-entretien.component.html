@@ -5,7 +5,7 @@
     <mat-form-field appearance="fill">
       <mat-label>{{ data.labels.chooseInterviewState }}</mat-label>
       <mat-select required formControlName="statut_entretien" [compareWith]="compareFn">
-        @for (st of uniqueStates; track st) {
+        @for (st of uniqueStates(); track st) {
           <mat-option [value]="st" required>{{ st.libelle }}</mat-option>
         }
       </mat-select>
