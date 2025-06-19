@@ -3,7 +3,7 @@ from backend.models.models import Reponse, MotCle, Diagnostic, Acteur, Nomenclat
 from backend.schemas.metier import ReponseSchema
 from sqlalchemy.orm import joinedload
 from backend.app import db
-from werkzeug.exceptions import NotFound
+from backend.error_handlers import NotFound
 from sqlalchemy import func
 from datetime import datetime
 

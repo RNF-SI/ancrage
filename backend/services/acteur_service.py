@@ -4,7 +4,7 @@ from backend.schemas.metier import ActeurSchema
 from sqlalchemy.orm import joinedload
 from sqlalchemy import and_, func
 from backend.app import db
-from werkzeug.exceptions import NotFound
+from backend.error_handlers import NotFound
 
 class ActeurService(BaseService):
     """Service pour gérer les acteurs"""

@@ -14,18 +14,21 @@ diagnostic_service = DiagnosticService()
 
 @bp.route('/diagnostic/<int:id_diagnostic>/<slug>', methods=['GET','PUT'])
 def diagnosticMethods(id_diagnostic, slug):
+    """Gestion diagnostic par ID et slug - REFACTORISÉ gestion erreurs"""
+    from backend.error_handlers import NotFound, BadRequest
+    
     diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
 
     if not diagnostic:
         logger.warning(f"❌ Aucun diagnostic trouvé pour l'ID {id_diagnostic}")
-        return jsonify({'error': 'Diagnostic non trouvé'}), 404
+        raise NotFound('Diagnostic non trouvé')
 
     if request.method == 'GET':
         if diagnostic.slug == slug:
             return getDiagnostic(diagnostic)
         else:
             logger.warning(f"❌ Slug invalide pour diagnostic {id_diagnostic}")
-            return jsonify({'error': 'Slug invalide'}), 400
+            raise BadRequest('Slug invalide')
 
     elif request.method == 'PUT':
         if diagnostic.slug == slug:
@@ -50,7 +53,7 @@ def diagnosticMethods(id_diagnostic, slug):
             return getDiagnostic(diagnostic)
         else:
             logger.warning(f"❌ Slug invalide pour mise à jour du diagnostic {id_diagnostic}")
-            return jsonify({'error': 'Slug invalide'}), 400
+            raise BadRequest('Slug invalide')
     
 def print_diagnostic(diagnostic):
     logger.info("🔍 Diagnostic :")

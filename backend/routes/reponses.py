@@ -16,19 +16,15 @@ reponse_service = ReponseService()
 
 @bp.route('/reponses/objets', methods=['POST'])
 def enregistrer_reponses_depuis_objets():
-    """Enregistre des réponses en masse - AMÉLIORATION : validation JSON"""
-    from backend.error_handlers import validate_json_request
+    """Enregistre des réponses en masse - REFACTORISÉ gestion erreurs"""
+    from backend.error_handlers import validate_json_request, ValidationError
     
-    try:
-        data = validate_json_request(request)
-        logger.info("Réception des données de réponses depuis objets")
+    data = validate_json_request(request)
+    logger.info("Réception des données de réponses depuis objets")
 
-        if not isinstance(data, list):
-            logger.warning("Format invalide : données non listées")
-            return {"message": "Format invalide"}, 400
-    except Exception as e:
-        reponse_service.logger.error(f"Erreur validation JSON: {str(e)}")
-        return {"message": "Données JSON invalides"}, 400
+    if not isinstance(data, list):
+        logger.warning("Format invalide : données non listées")
+        raise ValidationError("Format invalide : données doivent être une liste")
 
     enregistrer_reponses_acteur_depuis_objets(data)
     acteur_id = data[0].get('acteur', {}).get('id_acteur')
@@ -38,15 +34,11 @@ def enregistrer_reponses_depuis_objets():
 
 @bp.route('/reponse/objet', methods=['POST'])
 def enregistrer_reponse_depuis_objet():
-    """Enregistre une réponse unique - AMÉLIORATION : validation JSON"""
+    """Enregistre une réponse unique - REFACTORISÉ gestion erreurs"""
     from backend.error_handlers import validate_json_request
     
-    try:
-        data = validate_json_request(request)
-        logger.info("Réception des données de réponse depuis objet")
-    except Exception as e:
-        reponse_service.logger.error(f"Erreur validation JSON: {str(e)}")
-        return {"message": "Données JSON invalides"}, 400
+    data = validate_json_request(request)
+    logger.info("Réception des données de réponse depuis objet")
 
     enregistrer_reponse_acteur(data)
     acteur_id = data.get('acteur', {}).get('id_acteur')

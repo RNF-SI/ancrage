@@ -9,47 +9,22 @@ departement_service = DepartementService()
 
 @bp.route('/departement/<int:id_departement>', methods=['GET', 'PUT', 'DELETE'])
 def departementMethods(id_departement):
-    """Récupère, met à jour ou supprime un département"""
+    """Récupère, met à jour ou supprime un département - REFACTORISÉ gestion erreurs"""
     if request.method == 'GET':
-        departement = departement_service.model.query.get(id_departement)
-        if not departement:
-            return jsonify({'error': 'Département non trouvé'}), 404
-        return jsonify(departement_service.serialize(departement))
+        return jsonify(departement_service.get_by_id_simple(id_departement))
     
     elif request.method == 'PUT':
         data = validate_json_request(request)
-        departement = departement_service.model.query.get(id_departement)
-        if not departement:
-            return jsonify({'error': 'Département non trouvé'}), 404
-        
-        departement.libelle = data['nom']
-        departement.mnemonique = data['position_x']
-        
-        db.session.commit()
-        return jsonify(departement_service.serialize(departement))
+        return jsonify(departement_service.update_simple(id_departement, data))
     
     elif request.method == 'DELETE':
-        departement = departement_service.model.query.get(id_departement)
-        if not departement:
-            return jsonify({'error': 'Département non trouvé'}), 404
-        
-        db.session.delete(departement)
-        db.session.commit()
-        return {"success": "Suppression terminée"}
+        return jsonify(departement_service.delete_simple(id_departement))
 
 @bp.route('/departement', methods=['POST'])
 def postDepartement():
-    """Crée un nouveau département"""
+    """Crée un nouveau département - REFACTORISÉ"""
     data = validate_json_request(request)
-    
-    departement = departement_service.model()
-    departement.libelle = data['nom']
-    departement.mnemonique = data['position_x']
-    
-    db.session.add(departement)
-    db.session.commit()
-    
-    return jsonify(departement_service.serialize(departement)), 201
+    return jsonify(departement_service.create_simple(data)), 201
 
 @bp.route('/departements', methods=['GET'])
 def getAllDepartements():

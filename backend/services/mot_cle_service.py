@@ -3,7 +3,7 @@ from backend.models.models import MotCle, Diagnostic, Nomenclature, Reponse, Act
 from backend.schemas.metier import MotCleSchema
 from sqlalchemy.orm import joinedload
 from backend.app import db
-from werkzeug.exceptions import NotFound
+from backend.error_handlers import NotFound
 
 class MotCleService(BaseService):
     """Service pour gérer les mots-clés"""

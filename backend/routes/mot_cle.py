@@ -40,13 +40,10 @@ def rename(id_mot_cle):
     
 @bp.route('/mot_cle', methods=['POST'])
 def create_mot_cle():
-    """Crée un mot-clé avec enfants - REFACTORISÉ logique métier dans service"""
+    """Crée un mot-clé avec enfants - REFACTORISÉ gestion erreurs"""
     from backend.error_handlers import validate_json_request
     
-    try:
-        data = validate_json_request(request)
-        result = mot_cle_service.create_with_children(data)
-        return jsonify(result)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    data = validate_json_request(request)
+    result = mot_cle_service.create_with_children(data)
+    return jsonify(result)
        

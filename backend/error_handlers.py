@@ -1,6 +1,6 @@
 from flask import jsonify
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import HTTPException, BadRequest as WerkzeugBadRequest, NotFound as WerkzeugNotFound, Unauthorized as WerkzeugUnauthorized
 from backend.routes.logger_config import setup_logger
 
 logger = setup_logger("error_handler")
@@ -93,14 +93,23 @@ def validate_json_request(request):
     
     return data
 
-class BadRequest(Exception):
+class BadRequest(WerkzeugBadRequest):
     """Exception personnalisée pour les requêtes invalides"""
     pass
 
-class NotFound(Exception):
+class NotFound(WerkzeugNotFound):
     """Exception personnalisée pour les ressources non trouvées"""
     pass
 
-class Unauthorized(Exception):
+class Unauthorized(WerkzeugUnauthorized):
     """Exception personnalisée pour les accès non autorisés"""
     pass
+
+class ValidationError(WerkzeugBadRequest):
+    """Exception pour les erreurs de validation"""
+    pass
+
+class DatabaseError(HTTPException):
+    """Exception pour les erreurs de base de données"""
+    code = 500
+    description = "Erreur de base de données"

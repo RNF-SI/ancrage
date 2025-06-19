@@ -9,28 +9,16 @@ commune_service = CommuneService()
 
 @bp.route('/commune/<int:id_commune>', methods=['GET', 'PUT', 'DELETE'])
 def communeMethods(id_commune):
-    """Récupère, met à jour ou supprime une commune"""
+    """Récupère, met à jour ou supprime une commune - REFACTORISÉ gestion erreurs"""
     if request.method == 'GET':
-        commune = commune_service.model.query.get(id_commune)
-        if not commune:
-            return jsonify({'error': 'Commune non trouvée'}), 404
-        return jsonify(commune_service.serialize(commune))
+        return jsonify(commune_service.get_by_id_simple(id_commune))
     
     elif request.method == 'PUT':
         data = validate_json_request(request)
-        commune = commune_service.model.query.get(id_commune)
-        if not commune:
-            return jsonify({'error': 'Commune non trouvée'}), 404
-        
-        commune.libelle = data['nom']
-        commune.mnemonique = data['position_x']
-        
-        db.session.commit()
-        return jsonify(commune_service.serialize(commune))
+        return jsonify(commune_service.update_simple(id_commune, data))
     
     elif request.method == 'DELETE':
-        result = commune_service.delete_commune(id_commune)
-        return jsonify(result)
+        return jsonify(commune_service.delete_commune(id_commune))
 
 @bp.route('/commune', methods=['POST'])
 def postCommune():

@@ -2,7 +2,7 @@ from backend.services.base_service import BaseService
 from backend.models.models import Nomenclature
 from backend.schemas.metier import NomenclatureSchema
 from backend.app import db
-from werkzeug.exceptions import NotFound
+from backend.error_handlers import NotFound
 
 class NomenclatureService(BaseService):
     """Service pour gérer les nomenclatures"""

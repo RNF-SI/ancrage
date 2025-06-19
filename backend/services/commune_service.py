@@ -3,7 +3,7 @@ from backend.models.models import Commune
 from backend.schemas.metier import CommuneSchema
 from sqlalchemy.orm import defer
 from backend.app import db
-from werkzeug.exceptions import NotFound
+from backend.error_handlers import NotFound
 
 class CommuneService(BaseService):
     """Service pour gérer les communes"""
@@ -47,3 +47,24 @@ class CommuneService(BaseService):
         db.session.commit()
         
         return {"message": "Commune supprimée avec succès"}
+    
+    def get_by_id_simple(self, commune_id):
+        """Récupère une commune par ID"""
+        commune = self.model.query.get(commune_id)
+        if not commune:
+            raise NotFound('Commune non trouvée')
+        return self.serialize(commune)
+    
+    def update_simple(self, commune_id, data):
+        """Met à jour une commune"""
+        commune = self.model.query.get(commune_id)
+        if not commune:
+            raise NotFound('Commune non trouvée')
+        
+        if 'nom' in data:
+            commune.libelle = data['nom']
+        if 'position_x' in data:
+            commune.mnemonique = data['position_x']
+        
+        db.session.commit()
+        return self.serialize(commune)

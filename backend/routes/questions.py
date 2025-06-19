@@ -9,20 +9,8 @@ question_service = QuestionService()
 
 @bp.route('/question/<libelle>', methods=['GET'])
 def get_question_without_relations(libelle):
-    """Récupère une question sans ses relations"""
-    question = db.session.query(question_service.model).options(
-        raiseload(question_service.model.reponses),
-        raiseload(question_service.model.theme),
-        raiseload(question_service.model.choixReponses),
-        raiseload(question_service.model.theme_question)
-    ).filter_by(libelle=libelle).first()
-
-    if not question:
-        return jsonify({'error': 'Question non trouvée'}), 404
-
-    schema = question_service.schema(many=False, exclude=("reponses", "theme", "choixReponses", "theme_question"))
-    questionObj = schema.dump(question)
-    return jsonify(questionObj)
+    """Récupère une question sans ses relations - REFACTORISÉ gestion erreurs"""
+    return jsonify(question_service.get_by_libelle_no_relations(libelle))
 
 @bp.route('/questions', methods=['GET'])
 def getAllQuestions():

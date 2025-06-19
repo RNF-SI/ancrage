@@ -2,6 +2,7 @@ from flask import jsonify, abort
 from sqlalchemy.exc import SQLAlchemyError
 from backend.app import db
 from backend.routes.logger_config import setup_logger
+from backend.error_handlers import NotFound, DatabaseError
 from slugify import slugify
 import uuid
 from datetime import datetime
@@ -24,11 +25,12 @@ class BaseService:
         
         if not entity:
             self.logger.warning(f"❌ Aucun(e) {self.entity_name} trouvé(e) avec l'ID {entity_id}")
-            abort(404, f"{self.entity_name.capitalize()} non trouvé(e)")
+            raise NotFound(f"{self.entity_name.capitalize()} non trouvé(e)")
             
         if entity.slug != slug:
             self.logger.warning(f"❌ Slug invalide pour {self.entity_name} ID: {entity_id}")
-            abort(400, "Slug invalide")
+            from backend.error_handlers import BadRequest
+            raise BadRequest("Slug invalide")
             
         return entity
     
@@ -43,29 +45,35 @@ class BaseService:
         """Crée une nouvelle entité"""
         self.logger.info(f"➕ Création d'un(e) nouveau/nouvelle {self.entity_name}")
         
-        entity = self.model()
-        
-        # Appliquer les valeurs de base
-        for key, value in data.items():
-            if hasattr(entity, key) and key not in ['created_at', 'created_by', 'slug']:
-                setattr(entity, key, value)
-        
-        # Génération du slug si l'entité a un nom
-        if hasattr(entity, 'slug') and hasattr(entity, 'nom'):
-            myuuid = uuid.uuid4()
-            entity.slug = slugify(entity.nom) + '-' + str(myuuid)
-        
-        # Timestamps
-        if hasattr(entity, 'created_at'):
-            entity.created_at = datetime.utcnow()
-        if hasattr(entity, 'created_by') and 'created_by' in data:
-            entity.created_by = data['created_by']
+        try:
+            entity = self.model()
             
-        db.session.add(entity)
-        db.session.commit()
-        
-        self.logger.info(f"✅ {self.entity_name.capitalize()} créé(e) avec succès")
-        return self.schema().dump(entity)
+            # Appliquer les valeurs de base
+            for key, value in data.items():
+                if hasattr(entity, key) and key not in ['created_at', 'created_by', 'slug']:
+                    setattr(entity, key, value)
+            
+            # Génération du slug si l'entité a un nom
+            if hasattr(entity, 'slug') and hasattr(entity, 'nom'):
+                myuuid = uuid.uuid4()
+                entity.slug = slugify(entity.nom) + '-' + str(myuuid)
+            
+            # Timestamps
+            if hasattr(entity, 'created_at'):
+                entity.created_at = datetime.utcnow()
+            if hasattr(entity, 'created_by') and 'created_by' in data:
+                entity.created_by = data['created_by']
+                
+            db.session.add(entity)
+            db.session.commit()
+            
+            self.logger.info(f"✅ {self.entity_name.capitalize()} créé(e) avec succès")
+            return self.schema().dump(entity)
+            
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            self.logger.error(f"Erreur DB lors de la création de {self.entity_name}: {e}")
+            raise DatabaseError(f"Erreur lors de la création de {self.entity_name}")
     
     def update(self, entity_id, slug, data):
         """Met à jour une entité"""
