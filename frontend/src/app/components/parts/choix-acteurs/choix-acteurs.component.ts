@@ -20,6 +20,7 @@ import { Labels } from '@app/utils/labels';
 import { AlerteStatutEntretienComponent } from '@app/components/alertes/alerte-statut-entretien/alerte-statut-entretien.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { forkJoin, Subscription } from 'rxjs';
+import { ReferenceDataService } from '@app/services/reference-data.service';
 import { DepartementService } from '@app/services/departement.service';
 import { NomenclatureService } from '@app/services/nomenclature.service';
 import { ActeurService } from '@app/services/acteur.service';
@@ -70,7 +71,8 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
   private siteSub?:Subscription; 
   private diagSub?:Subscription;
   private departementService = inject(DepartementService);
-  private nomenclatureService = inject(NomenclatureService); 
+  private nomenclatureService = inject(NomenclatureService);
+  private referenceDataService = inject(ReferenceDataService); 
   private actorService = inject(ActeurService);
   private route = inject(ActivatedRoute);
   private diagnosticService = inject(DiagnosticService);
@@ -94,12 +96,9 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
         this.slug = params['slug'];
 
         if (id_diagnostic && this.slug){
-          const departments$ = this.departementService.getAll();
-          const categories$ = this.nomenclatureService.getAllByType("categories");
-      
-          forkJoin([departments$,categories$]).subscribe(([departements,categories]) => {
-            this.uniqueDepartments = departements;
-            this.uniqueCategories = categories;
+          this.referenceDataService.getChoiceActorsData().subscribe((refData) => {
+            this.uniqueDepartments = refData.departements;
+            this.uniqueCategories = refData.categories;
             this.getActors(this.diagnostic.sites);
           })  
         }

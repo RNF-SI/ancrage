@@ -7,6 +7,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { Site } from '@app/models/site.model';
 import { SiteService } from '@app/services/sites.service';
 import { forkJoin, Subscription } from 'rxjs';
+import { ReferenceDataService } from '@app/services/reference-data.service';
 import { ChoixActeursComponent } from '../parts/choix-acteurs/choix-acteurs.component';
 import { Acteur } from '@app/models/acteur.model';
 import { Departement } from '@app/models/departement.model';
@@ -74,6 +75,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   private route = inject(ActivatedRoute);
   private diagnosticsService = inject(DiagnosticService);
   private siteService = inject(SiteService);
+  private referenceDataService = inject(ReferenceDataService);
   private authService = inject(AuthService);
   private dialog = inject(MatDialog);
   private diagnosticStoreSubscription ?:Subscription;
@@ -111,14 +113,15 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     this.routeSubscription = this.route.params.subscribe((params: any) => {
       this.id_diagnostic = params['id_diagnostic'];  
       this.slug = params['slug'];
-      const sites$ = this.siteService.getAll();
       //Modification
       if (this.id_diagnostic && this.slug) {
         this.titleDiagnostic = this.titleModifyDiag;
         const diag$ = this.diagnosticsService.get(this.id_diagnostic,this.slug);
+        const sites$ = this.referenceDataService.getReferenceData({ includeSites: true });
         this.formGroup.get('id_diagnostic')?.setValue(this.id_diagnostic);
   
-        forkJoin([diag$,sites$]).subscribe(([diag,sites]) => {
+        forkJoin([diag$,sites$]).subscribe(([diag,refData]) => {
+          const sites = refData.sites;
           this.uniqueSites = sites;
           if(diagnostic.sites.length > diag.sites.length || diagnostic.acteurs.length > diag.acteurs.length){
             this.diagnostic = diagnostic;
@@ -145,7 +148,8 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
         this.user_id = this.user?.id_role;
         this.id_organisme = this.user.id_organisme;
 
-        forkJoin([sites$]).subscribe(([sites]) => {
+        this.referenceDataService.getReferenceData({ includeSites: true }).subscribe((refData) => {
+          const sites = refData.sites;
           this.uniqueSites = sites;
 
           const remappedSites = (this.diagnostic.sites || []).map(site =>

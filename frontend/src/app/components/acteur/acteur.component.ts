@@ -17,6 +17,7 @@ import { CommuneService } from '@app/services/commune.service';
 import { NomenclatureService } from '@app/services/nomenclature.service';
 import { Labels } from '@app/utils/labels';
 import { debounceTime, forkJoin,  Subscription } from 'rxjs';
+import { ReferenceDataService } from '@app/services/reference-data.service';
 import { AlerteActeurComponent } from '../alertes/alerte-acteur/alerte-acteur.component';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { SiteService } from '@app/services/sites.service';
@@ -59,6 +60,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
   slug="";
   private communeService = inject(CommuneService);
   private nomenclatureService = inject(NomenclatureService);
+  private referenceDataService = inject(ReferenceDataService);
   private authService = inject(AuthService);
   private communeSubscription?:Subscription;
   private actorSubscription?:Subscription;
@@ -81,21 +83,19 @@ export class ActeurComponent implements OnInit,OnDestroy{
     this.routeSubscription = this.route.params.subscribe((params: any) => {
           this.id_actor = params['id_acteur'];  
           this.slug = params['slug'];
-          const communes$ = this.communeService.getAll();
-          const profils$ = this.nomenclatureService.getAllByType("profil");
-          const categories$ = this.nomenclatureService.getAllByType("categorie");
           this.user_id = this.authService.getCurrentUser().id_role;
+          
           /* Modification */
           if (this.id_actor && this.slug) {
             this.title = this.labels.modifyActor;
             const actor$ = this.actorService.get(this.id_actor,this.slug);
+            const referenceData$ = this.referenceDataService.getActorFormData();
 
-            forkJoin([actor$, communes$, profils$,categories$]).subscribe(([actor,communes, profils,categories]) => {
-              
+            forkJoin([actor$, referenceData$]).subscribe(([actor, refData]) => {
               this.actor = actor;
+              this.instructionsWithResults(refData.communes, refData.profils, refData.categories);
               
-              
-              this.instructionsWithResults(communes,profils,categories);
+              // Remappage des données avec les références chargées
               this.actor.categories = (this.actor.categories|| []).map(cat =>
                 this.uniqueCategories.find(uc => uc.id_nomenclature === cat.id_nomenclature) || cat
               );
@@ -120,9 +120,8 @@ export class ActeurComponent implements OnInit,OnDestroy{
           } else {
             /* Création */
             this.title = this.labels.createActor;
-            forkJoin([communes$, profils$,categories$]).subscribe(([communes, profils,categories]) => {
-              
-              this.instructionsWithResults(communes,profils,categories);
+            this.referenceDataService.getActorFormData().subscribe((refData) => {
+              this.instructionsWithResults(refData.communes, refData.profils, refData.categories);
               this.isLoading = false; 
             });
           }

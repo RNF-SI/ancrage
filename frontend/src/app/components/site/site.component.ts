@@ -13,6 +13,7 @@ import { SiteService } from '@app/services/sites.service';
 import { MapComponent } from "../parts/map/map.component";
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { ReferenceDataService } from '@app/services/reference-data.service';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { Departement } from '@app/models/departement.model';
 import { DepartementService } from '@app/services/departement.service';
@@ -41,7 +42,8 @@ export class SiteComponent implements OnInit,OnDestroy{
   latitude="";
   longitude="";
   private nomenclatureService = inject(NomenclatureService);
-  private siteService = inject(SiteService)
+  private siteService = inject(SiteService);
+  private referenceDataService = inject(ReferenceDataService);
   private nomenclatureSubscription!: Subscription;
   private siteSubscription!: Subscription;
   mnemoHabitats = "habitats";
@@ -79,19 +81,19 @@ export class SiteComponent implements OnInit,OnDestroy{
     this.routeSubscription = this.route.params.subscribe((params: any) => {
       this.slug = params['slug'];  
       this.id_site = params['id_site'];
-      const habitats$ = this.nomenclatureService.getAllByType(this.mnemoHabitats);
-      const statuts$ = this.nomenclatureService.getAllByType(this.mnemoStatuts);
-      const departements$ = this.departementService.getAll();
+      
       //Modification
       if (this.id_site && this.slug) {
         const site$ = this.siteService.get(this.id_site,this.slug);
+        const referenceData$ = this.referenceDataService.getSiteFormData();
   
-        forkJoin([habitats$, statuts$, site$,departements$]).subscribe(([habitats, statuts, site,departements]) => {
-          this.uniqueHabitats = habitats;
-          this.uniqueStatuts = statuts;
-          this.uniqueDepartements = departements;
-          this.departementService.sortByName(this.uniqueDepartements);
+        forkJoin([site$, referenceData$]).subscribe(([site, refData]) => {
+          this.uniqueHabitats = refData.habitats;
+          this.uniqueStatuts = refData.statuts;
+          this.uniqueDepartements = refData.departements;
           this.site = site;
+          
+          // Remappage des données avec les références chargées
           this.site.habitats = (this.site.habitats || []).map(hab =>
             this.uniqueHabitats.find(uh => uh.id_nomenclature === hab.id_nomenclature) || hab
           );
@@ -114,11 +116,10 @@ export class SiteComponent implements OnInit,OnDestroy{
         });
       } else {
         //Création
-        forkJoin([/* habitats$, */ statuts$,departements$]).subscribe(([/* habitats, */ statuts,departements]) => {
-          /* this.uniqueHabitats = habitats; */
-          this.uniqueStatuts = statuts;
-          this.uniqueDepartements = departements;
-          this.departementService.sortByName(this.uniqueDepartements);
+        this.referenceDataService.getSiteFormData().subscribe((refData) => {
+          this.uniqueHabitats = refData.habitats;
+          this.uniqueStatuts = refData.statuts;
+          this.uniqueDepartements = refData.departements;
         });
       }
     });
