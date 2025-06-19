@@ -9,9 +9,11 @@
             <mat-form-field appearance="fill" class="fieldName">
               <mat-label>{{ nameLabel }}</mat-label>
               <input matInput placeholder="Entrez un nom" formControlName="nom" required>
-              <mat-error @if="formGroup.get('nom')?.hasError('required')">
-                {{ labels.requiredName }}
-              </mat-error>
+              @if(formGroup.get('nom')?.hasError('required')){
+                <mat-error>
+                  {{ labels.requiredName }}
+                </mat-error>
+              }
             </mat-form-field>
   
             <mat-form-field appearance="fill" class="fieldName">
@@ -26,9 +28,12 @@
                   <mat-option [value]="site">{{ site.nom }}</mat-option>
                 }
               </mat-select>
-              <mat-error @if="formGroup.get('sites')?.hasError('required')">
-                {{ labels.requiredSite }}
-              </mat-error>
+              @if(formGroup.get('sites')?.hasError('required')){
+                <mat-error>
+                  {{ labels.requiredSite }}
+                </mat-error>
+              }
+              
             </mat-form-field>
   
             <h4>{{ chosenSitesTitle }}</h4>

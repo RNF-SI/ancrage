@@ -10,7 +10,10 @@
           <mat-form-field appearance="fill">
             <mat-label>{{ labels.nameLabel }}</mat-label>
             <input matInput placeholder="Entrez un nom" formControlName="nom" required />
-            <mat-error @if="formGroup.get('nom')?.hasError('required')">Le nom est requis.</mat-error>
+            @if(formGroup.get('nom')?.hasError('required')){
+                <mat-error>Le nom est requis.</mat-error>
+            }
+            
           </mat-form-field>
   
           <!-- 
@@ -34,7 +37,10 @@
                 <mat-option [value]="type">{{ type.libelle }}</mat-option>
               }
             </mat-select>
-            <mat-error @if="formGroup.get('type')?.hasError('required')">{{ labels.requiredStatus }}</mat-error>
+            @if(formGroup.get('type')?.hasError('required')){
+                <mat-error>{{ labels.requiredStatus }}</mat-error>
+            }
+            
           </mat-form-field>
   
           <mat-form-field appearance="fill">
@@ -44,31 +50,44 @@
                 <mat-option [value]="departement">{{ departement.nom_dep }}</mat-option>
               }
             </mat-select>
-            <mat-error @if="formGroup.get('departements')?.hasError('required')">
-              {{ labels.requiredDepartment }}
-            </mat-error>
+            @if(formGroup.get('departements')?.hasError('required')){
+                <mat-error>
+                    {{ labels.requiredDepartment }}
+                </mat-error>
+            }
+            
           </mat-form-field>
   
           <mat-form-field appearance="fill">
             <mat-label>{{ labels.latitudeLabel }}</mat-label>
             <input matInput placeholder="Entrez une latitude" required formControlName="position_y" />
-            <mat-error @if="formGroup.get('position_y')?.hasError('required')">
-              {{ labels.requiredLatitude }}
-            </mat-error>
-            <mat-error @if="formGroup.get('position_y')?.hasError('pattern')">
-              {{ labels.invalidFormat }}
-            </mat-error>
+            @if(formGroup.get('position_y')?.hasError('required')){
+                <mat-error>
+                    {{ labels.requiredLatitude }}
+                </mat-error>
+            }
+            @if(formGroup.get('position_y')?.hasError('pattern')){
+                <mat-error>
+                    {{ labels.invalidFormat }}
+                </mat-error>
+            }
+           
           </mat-form-field>
   
           <mat-form-field appearance="fill">
             <mat-label>{{ labels.longitudeLabel }}</mat-label>
             <input matInput placeholder="Entrez une longitude" required formControlName="position_x" />
-            <mat-error @if="formGroup.get('position_x')?.hasError('required')">
-              {{ labels.requiredLongitude }}
-            </mat-error>
-            <mat-error @if="formGroup.get('position_x')?.hasError('pattern')">
-              {{ labels.invalidFormat }}
-            </mat-error>
+            @if(formGroup.get('position_x')?.hasError('required')){
+                <mat-error>
+                    {{ labels.requiredLongitude }}
+                </mat-error>
+            }
+            @if(formGroup.get('position_x')?.hasError('pattern')){
+                <mat-error>
+                    {{ labels.invalidFormat }}
+                </mat-error>
+            }
+            
           </mat-form-field>
         </div>
   

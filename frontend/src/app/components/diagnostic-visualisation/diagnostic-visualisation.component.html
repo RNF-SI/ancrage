@@ -1,43 +1,43 @@
 <div class="container">
   <div class="row">
     <div class="col-3">
-      <app-menu-lateral [themes]="themes"></app-menu-lateral>
+      <app-menu-lateral [themes]="themes()"></app-menu-lateral>
     </div>
 
     <div class="col-9">
       <mat-tab-group (selectedTabChange)="onTabChange($event)">
         <mat-tab label="Infos générales">
           <div class="p-3">
-            <h2>{{ diagnostic.nom }}</h2>
+            <h2>{{ diagnostic().nom }}</h2>
 
             <div>
               <b>{{ labels.dateBegLabel }}</b> :
-              <span>{{ diagnostic.date_debut_str }}</span>
+              <span>{{ diagnostic().date_debut_str }}</span>
             </div>
             <div>
               <b>{{ labels.dateEndLabel }}</b> :
-              <span>{{ diagnostic.date_fin_str }}</span>
+              <span>{{ diagnostic().date_fin_str }}</span>
             </div>
             <div>
               <b>{{ labels.datePublicationReport }}</b> :
-              <span>{{ diagnostic.date_rapport_str }}</span>
-              @if (!diagnostic.is_read_only) {
+              <span>{{ diagnostic().date_rapport_str }}</span>
+              @if (!diagnostic().is_read_only) {
                 <button mat-raised-button (click)="openAlertDate()">Saisir date</button>
               }
             </div>
 
             <div>
               <b>{{ labels.investigatorLabel }}</b> :
-              <span>{{ diagnostic.identite_createur }}</span>
+              <span>{{ diagnostic().identite_createur }}</span>
             </div>
 
             <h3>{{ labels.chosenSites }}</h3>
-            @for (site of diagnostic.sites; track site) {
+            @for (site of diagnostic().sites; track site) {
               <p>{{ site.nom }}, {{ site.type.libelle }}</p>
             }
 
             <h3>{{ labels.files }}</h3>
-            @for (doc of diagnostic.documents; track doc) {
+            @for (doc of diagnostic().documents; track doc) {
               <div>
                 {{ doc.nom }}
                 <button mat-raised-button type="button" (click)="getFile(doc.nom)">
@@ -69,17 +69,17 @@
           </div>
         </mat-tab>
 
-        @if (diagnostic.created_by === id_role) {
+        @if (diagnostic().created_by === id_role()) {
           <mat-tab label="Acteurs">
             <div class="p-3">
               <h3>Acteurs</h3>
 
-              <app-map [actors]="actors"></app-map>
+              <app-map [actors]="actors()"></app-map>
 
               <app-choix-acteurs
-                [actors]="actors"
+                [actors]="actors()"
                 [uniqueDiagnostics]="uniqueDiagnostics"
-                [diagnostic]="diagnostic"
+                [diagnostic]="diagnostic()"
                 [selectedDiagnostic]="selectedDiagnostic"
                 [uniqueCategories]="uniqueCategories"
                 [uniqueDepartments]="uniqueDepartments"
@@ -89,20 +89,20 @@
                 [actorsOriginal]="uniqueActors"
                 [formGroup]="formGroup"
                 [hideFilters]="hideFilters"
-                [previousPage]="previousPage"
+                [previousPage]="previousPage()"
                 [no_creation]="true">
               </app-choix-acteurs>
 
-              @if (!diagnostic.is_read_only) {
+              @if (!diagnostic().is_read_only) {
                 <button mat-raised-button type="button" (click)="exportCSV()">
                   {{ labels.exportCSV }}
                 </button>
                 <button mat-raised-button color="accent" type="button"
-                        (click)="navigate('/choix-acteurs/' + diagnostic.id_diagnostic + '/' + diagnostic.slug, diagnostic)">
+                        (click)="navigate('/choix-acteurs/' + diagnostic().id_diagnostic + '/' + diagnostic().slug, diagnostic())">
                   Importer acteurs
                 </button>
                 <button mat-raised-button color="accent" type="button"
-                        (click)="navigate('/acteur', diagnostic)">
+                        (click)="navigate('/acteur', diagnostic())">
                   Créer acteurs
                 </button>
               }
@@ -110,15 +110,15 @@
           </mat-tab>
         } @else {
           <mat-tab label="Structures">
-            <app-tableau-structures [diagnostic]="diagnostic"></app-tableau-structures>
+            <app-tableau-structures [diagnostic]="diagnostic()"></app-tableau-structures>
           </mat-tab>
         }
 
         <mat-tab label="AFOM">
           <div class="p-3">
             <app-mots-cles-zone #afom
-              [id_diagnostic]="id_diagnostic"
-              [diagnostic]="diagnostic"
+              [id_diagnostic]="id_diagnostic()"
+              [diagnostic]="diagnostic()"
               [modeAnalyse]="true">
             </app-mots-cles-zone>
           </div>
@@ -126,7 +126,7 @@
 
         <mat-tab label="Graphiques">
           <div class="p-3">
-            <app-graphiques [route]="route" [diagnostic]="diagnostic"></app-graphiques>
+            <app-graphiques [route]="route" [diagnostic]="diagnostic()"></app-graphiques>
           </div>
         </mat-tab>
       </mat-tab-group>
