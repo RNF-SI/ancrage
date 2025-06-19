@@ -1,71 +1,45 @@
-from models.models import db
 from flask import request, jsonify
-from models.models import *
-from schemas.metier import *
-from routes import bp
-from routes.logger_config import logger
+from backend.routes import bp
+from backend.services.commune_service import CommuneService
+from backend.error_handlers import validate_json_request
+from backend.app import db
 
-@bp.route('/commune/<id_commune>', methods=['GET', 'PUT', 'DELETE'])
+# Instancier le service
+commune_service = CommuneService()
+
+@bp.route('/commune/<int:id_commune>', methods=['GET', 'PUT', 'DELETE'])
 def communeMethods(id_commune):
-    logger.info(f"📍 Requête {request.method} sur la commune ID={id_commune}")
-    commune = Commune.query.filter_by(id_commune=id_commune).first()
-
-    if not commune:
-        logger.warning(f"❌ Commune ID={id_commune} non trouvée")
-        return jsonify({'error': 'Commune non trouvée'}), 404
-
+    """Récupère, met à jour ou supprime une commune"""
     if request.method == 'GET':
-        logger.info(f"📤 Récupération des infos de la commune ID={id_commune}")
-        return getCommune(commune)
-
+        commune = commune_service.model.query.get(id_commune)
+        if not commune:
+            return jsonify({'error': 'Commune non trouvée'}), 404
+        return jsonify(commune_service.serialize(commune))
+    
     elif request.method == 'PUT':
-        data = request.get_json()
-        logger.info(f"✏ Mise à jour de la commune ID={id_commune} avec données : {data}")
-        commune = changeValuesCommune(commune, data)
+        data = validate_json_request(request)
+        commune = commune_service.model.query.get(id_commune)
+        if not commune:
+            return jsonify({'error': 'Commune non trouvée'}), 404
+        
+        commune.libelle = data['nom']
+        commune.mnemonique = data['position_x']
+        
         db.session.commit()
-        logger.info(f"✅ Commune ID={id_commune} mise à jour avec succès")
-        return getCommune(commune)
-
+        return jsonify(commune_service.serialize(commune))
+    
     elif request.method == 'DELETE':
-        logger.info(f"🗑 Suppression de la commune ID={id_commune}")
-        db.session.delete(commune)
-        db.session.commit()
-        logger.info(f"✅ Commune ID={id_commune} supprimée")
-        return {"success": "Suppression terminée"}
+        result = commune_service.delete_commune(id_commune)
+        return jsonify(result)
 
 @bp.route('/commune', methods=['POST'])
 def postCommune():
-    if request.method == 'POST':
-        data = request.get_json()
-        logger.info(f"📥 Création d'une nouvelle commune avec données : {data}")
-        commune = Commune()
-        commune = changeValuesCommune(commune, data)
-        db.session.add(commune)
-        db.session.commit()
-        logger.info(f"✅ Nouvelle commune créée avec ID={commune.id_commune}")
-        return getCommune(commune)
+    """Crée une nouvelle commune"""
+    data = validate_json_request(request)
+    result = commune_service.create(data)
+    return jsonify(result), 201
 
 @bp.route('/communes', methods=['GET'])
 def getAllCommunes():
-    if request.method == 'GET':
-        logger.info("📋 Récupération de toutes les communes (sans champs volumineux)")
-        communes = Commune.query.all()
-        schema = CommuneSchema(many=True, exclude=(
-            'geom', 'code_epci', 'insee_arr', 'insee_can', 'insee_reg',
-            'population', 'statut', 'departement', 'latitude', 'longitude'
-        ))
-        usersObj = schema.dump(communes)
-        logger.info(f"📦 {len(communes)} communes récupérées")
-        return jsonify(usersObj)
-
-def changeValuesCommune(commune, data):
-    logger.debug(f"🔄 Mise à jour des champs de la commune avec : {data}")
-    commune.libelle = data['nom']
-    commune.mnemonique = data['position_x']
-    return commune
-
-def getCommune(commune):
-    logger.debug(f"📤 Sérialisation de la commune ID={commune.id_commune}")
-    schema = CommuneSchema(many=False)
-    communeObj = schema.dump(commune)
-    return jsonify(communeObj)
+    """Liste toutes les communes (optimisé sans champs volumineux)"""
+    return jsonify(commune_service.get_all_optimized())

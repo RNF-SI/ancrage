@@ -7,6 +7,10 @@ from datetime import datetime
 import json
 from werkzeug.utils import secure_filename
 from routes.logger_config import os,logger
+from backend.services.diagnostic_service import DiagnosticService
+
+# Instancier le service (mais on garde la logique complexe intacte)
+diagnostic_service = DiagnosticService()
 
 @bp.route('/diagnostic/<int:id_diagnostic>/<slug>', methods=['GET','PUT'])
 def diagnosticMethods(id_diagnostic, slug):
@@ -62,7 +66,14 @@ def print_diagnostic(diagnostic):
 
 @bp.route('/diagnostic',methods=['POST'])
 def postDiagnostic():
-    data = request.get_json()
+    """Crée un diagnostic - AMÉLIORATION : validation JSON"""
+    from backend.error_handlers import validate_json_request
+    
+    try:
+        data = validate_json_request(request)
+    except Exception as e:
+        diagnostic_service.logger.error(f"Erreur validation JSON: {str(e)}")
+        return {"message": "Données JSON invalides"}, 400
 
     diagnostic = Diagnostic()
     diagnostic.nom=data['nom']
@@ -82,16 +93,20 @@ def postDiagnostic():
 
 @bp.route('/diagnostics',methods=['GET'])
 def getAllDiagnostics():
+    """Liste tous les diagnostics - REFACTORISÉ"""
     if request.method == 'GET': 
-        
-        diagnostics = Diagnostic.query.filter_by().all()
-        schema = DiagnosticSchema(many=True)
-        usersObj = schema.dump(diagnostics)
-        return jsonify(usersObj)
+        return jsonify(diagnostic_service.get_all())
     
 @bp.route('/diagnostics-site', methods=['POST'])
 def getAllDiagnosticsBySites():
-    data = request.get_json()
+    """Diagnostics par sites - AMÉLIORATION : validation JSON"""
+    from backend.error_handlers import validate_json_request
+    
+    try:
+        data = validate_json_request(request)
+    except Exception as e:
+        diagnostic_service.logger.error(f"Erreur validation JSON: {str(e)}")
+        return {"message": "Données JSON invalides"}, 400
 
     if not data or 'id_sites' not in data:
         return jsonify({'message': 'Aucun ID de site fourni.'}), 400
@@ -374,7 +389,14 @@ def changeValuesDiagnostic(diagnostic,data):
 
 @bp.route('/diagnostic/afom/update', methods=['POST'])
 def enregistrer_afoms():
-    graph_data = request.get_json()
+    """Met à jour les AFOM - AMÉLIORATION : validation JSON"""
+    from backend.error_handlers import validate_json_request
+    
+    try:
+        graph_data = validate_json_request(request)
+    except Exception as e:
+        diagnostic_service.logger.error(f"Erreur validation JSON: {str(e)}")
+        return {"message": "Données JSON invalides"}, 400
 
     try:
         diagnostic_id = graph_data[0]['mot_cle']['diagnostic']['id_diagnostic']
@@ -567,17 +589,11 @@ def get_afoms_par_mot_cle_et_diagnostic(id_diagnostic):
 
     return jsonify(data)   
 
-def deleteActors(diagnostic_id):
-     
-    Acteur.query.filter(
-        Acteur.diagnostic_id == diagnostic_id,
-        Acteur.is_copy == True
-    ).delete()
+# Fonction déplacée vers DiagnosticService.delete_actors()
 
 def getDiagnostic(diagnostic):
-    schema = DiagnosticSchema(many=False)
-    diagnosticObj = schema.dump(diagnostic)
-    return jsonify(diagnosticObj)
+    """Helper de sérialisation - REFACTORISÉ"""
+    return jsonify(diagnostic_service.serialize(diagnostic))
 
 
     

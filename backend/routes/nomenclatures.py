@@ -4,31 +4,28 @@ from models.models import *
 from schemas.metier import *
 from routes import bp,joinedload,aliased,and_
 from collections import defaultdict
+from backend.services.nomenclature_service import NomenclatureService
+
+# Instancier le service
+nomenclature_service = NomenclatureService()
 
 @bp.route('/nomenclature/<int:id_nomenclature>', methods=['GET','PUT','DELETE'])
 def nomenclatureMethods(id_nomenclature):
-    nomenclature = Nomenclature.query.filter_by(id_nomenclature=id_nomenclature).first()
-    
+    """Gestion d'une nomenclature par ID - REFACTORISÉ"""
     if request.method == 'GET':
-
-       return getNomenclature(nomenclature)
+        return jsonify(nomenclature_service.get_by_id(id_nomenclature))
     
 @bp.route('/nomenclature/<string:valeur>', methods=['GET','PUT','DELETE'])
 def nomenclatureNoResponse(valeur):
-    nomenclature = Nomenclature.query.filter_by(libelle=valeur).first()
-    
+    """Gestion d'une nomenclature par libellé - REFACTORISÉ"""
     if request.method == 'GET':
-
-       return getNomenclature(nomenclature)
+        return jsonify(nomenclature_service.get_by_libelle(valeur))
 
 @bp.route('/nomenclatures',methods=['GET'])
 def getAllNomenclatures():
+    """Liste toutes les nomenclatures - REFACTORISÉ"""
     if request.method == 'GET': 
-        
-        nomenclatures = Nomenclature.query.filter_by().all()
-        schema = NomenclatureSchema(many=True)
-        usersObj = schema.dump(nomenclatures)
-        return jsonify(usersObj)
+        return jsonify(nomenclature_service.get_all())
 
 @bp.route('/nomenclatures/<mnemonique>', defaults={'id_acteur': None},methods=['GET'])
 @bp.route('/nomenclatures/<mnemonique>/<int:id_acteur>', methods=['GET'])
@@ -173,15 +170,12 @@ def getAllNomenclaturesByType(mnemonique,id_acteur):
 
         return traitementParThemeQuestions(nomenclatures, id_acteur)
     else:
-        nomenclatures = Nomenclature.query.filter_by(mnemonique=mnemonique).all()
-        schema = NomenclatureSchema(many=True)
-        nomenclatures_data = schema.dump(nomenclatures)
-        return jsonify(nomenclatures_data)
+        # Cas simple - utilisation du service
+        return jsonify(nomenclature_service.get_by_mnemonique(mnemonique))
             
 def getNomenclature(nomenclature):
-    schema = NomenclatureSchema(many=False)
-    nomenclatureObj = schema.dump(nomenclature)
-    return jsonify(nomenclatureObj)
+    """Helper de sérialisation - REFACTORISÉ"""
+    return jsonify(nomenclature_service.serialize(nomenclature))
 
 def traitementThemeQuestions(nomenclatures, id_acteur): 
     result = []

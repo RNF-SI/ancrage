@@ -8,16 +8,27 @@ from routes.mot_cle import getKeywordsByActor
 from routes.logger_config import logger
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import SQLAlchemyError
+from backend.services.reponse_service import ReponseService
+
+# Instancier le service (mais on garde la logique complexe intacte)
+reponse_service = ReponseService()
 
 
 @bp.route('/reponses/objets', methods=['POST'])
 def enregistrer_reponses_depuis_objets():
-    data = request.get_json()
-    logger.info("Réception des données de réponses depuis objets")
+    """Enregistre des réponses en masse - AMÉLIORATION : validation JSON"""
+    from backend.error_handlers import validate_json_request
+    
+    try:
+        data = validate_json_request(request)
+        logger.info("Réception des données de réponses depuis objets")
 
-    if not isinstance(data, list):
-        logger.warning("Format invalide : données non listées")
-        return {"message": "Format invalide"}, 400
+        if not isinstance(data, list):
+            logger.warning("Format invalide : données non listées")
+            return {"message": "Format invalide"}, 400
+    except Exception as e:
+        reponse_service.logger.error(f"Erreur validation JSON: {str(e)}")
+        return {"message": "Données JSON invalides"}, 400
 
     enregistrer_reponses_acteur_depuis_objets(data)
     acteur_id = data[0].get('acteur', {}).get('id_acteur')
@@ -27,8 +38,15 @@ def enregistrer_reponses_depuis_objets():
 
 @bp.route('/reponse/objet', methods=['POST'])
 def enregistrer_reponse_depuis_objet():
-    data = request.get_json()
-    logger.info("Réception des données de réponses depuis objets")
+    """Enregistre une réponse unique - AMÉLIORATION : validation JSON"""
+    from backend.error_handlers import validate_json_request
+    
+    try:
+        data = validate_json_request(request)
+        logger.info("Réception des données de réponse depuis objet")
+    except Exception as e:
+        reponse_service.logger.error(f"Erreur validation JSON: {str(e)}")
+        return {"message": "Données JSON invalides"}, 400
 
     enregistrer_reponse_acteur(data)
     acteur_id = data.get('acteur', {}).get('id_acteur')
@@ -95,8 +113,8 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
         db.session.commit()
         logger.info(f"Réponses enregistrées pour l'acteur ID {acteur_id}. Vérification des dates entretien…")
         
-        verifCompleteStatus(acteur_id)
-        verifDatesEntretien(acteur.diagnostic.id_diagnostic)
+        reponse_service.verif_complete_status(acteur_id)
+        reponse_service.verif_dates_entretien(acteur.diagnostic.id_diagnostic)
 
     except SQLAlchemyError as e:
         db.session.rollback()
@@ -194,118 +212,13 @@ def enregistrer_reponse_acteur(reponse_objet):
 
     logger.info(f"Réponse enregistrée pour l'acteur ID {acteur_id}. Vérification des dates entretien…")
     
-    verifCompleteStatus(acteur_id)
-    verifDatesEntretien(acteur.diagnostic.id_diagnostic)
+    reponse_service.verif_complete_status(acteur_id)
+    reponse_service.verif_dates_entretien(acteur.diagnostic.id_diagnostic)
 
     diagnostic_id = acteur.diagnostic_id
-    mots_cles_repartis = getRepartitionMotsCles(diagnostic_id)
+    mots_cles_repartis = reponse_service.get_repartition_mots_cles(diagnostic_id)
 
-    record_afoms(diagnostic_id,mots_cles_repartis)
-
-
-def record_afoms(diagnostic_id,mots_cles_repartis):
-        # Suppression des AFOM précédents liés aux mots-clés de ce diagnostic
-    afom_ids_to_delete = (
-        db.session.query(Afom.id_afom)
-        .join(Afom.mot_cle)
-        .filter(MotCle.diagnostic_id == diagnostic_id)
-        .all()
-    )
-
-    afom_ids_to_delete = [id_tuple[0] for id_tuple in afom_ids_to_delete]
-    if afom_ids_to_delete:
-        db.session.query(Afom).filter(Afom.id_afom.in_(afom_ids_to_delete)).delete(synchronize_session=False)
-
-    # Ajout des nouveaux AFOM
-    for item in mots_cles_repartis:
-        mot_cle = item["mot_cle_obj"]
-        count = item["nombre"]
-        afom = Afom(
-            mot_cle_id=mot_cle.id_mot_cle,
-            number=count
-        )
-        db.session.add(afom)
-
-    db.session.commit()
-    logger.info(f"Réponse et AFOM enregistrés pour le diagnostic ID {diagnostic_id}")
+    reponse_service.record_afoms(diagnostic_id, mots_cles_repartis)
 
 
-def verifDatesEntretien(diagnostic_id):
-    diagnostic = Diagnostic.query.filter_by(id_diagnostic=diagnostic_id).first()
-   
-    listeTermines = []
-    for actor in diagnostic.acteurs:
-      
-        if actor.statut_entretien and actor.statut_entretien.libelle == 'Réalisé':
-            listeTermines.append(actor)
-
-    logger.info(f"Nombre d'acteurs avec entretien 'Réalisé' : {len(listeTermines)}")
-
-    if len(listeTermines) == 1:
-        diagnostic.date_debut = now
-    if len(listeTermines) == len(diagnostic.acteurs):
-        diagnostic.date_fin = now
-
-    db.session.add(diagnostic)
-    db.session.commit()
-
-
-def getRepartitionMotsCles(id_diagnostic): 
-    mots_cles = (
-        db.session.query(MotCle)
-        .filter(MotCle.diagnostic_id == id_diagnostic)
-        .all()
-    )
-
-    counts = dict(
-        db.session.query(
-            MotCle.id_mot_cle,
-            func.count(Reponse.id_reponse)
-        )
-        .join(reponse_mot_cle, reponse_mot_cle.c.mot_cle_id == MotCle.id_mot_cle)
-        .join(Reponse, reponse_mot_cle.c.reponse_id == Reponse.id_reponse)
-        .filter(MotCle.diagnostic_id == id_diagnostic)
-        .group_by(MotCle.id_mot_cle)
-        .all()
-    )
-
-    data = []
-    for mc in mots_cles:
-        data.append({
-            "mot_cle_obj": mc, 
-            "id": mc.id_mot_cle,
-            "nom": mc.nom,
-            "nombre": counts.get(mc.id_mot_cle, 0),
-            "categorie": mc.categorie,
-            "mots_cles_issus": mc.mots_cles_issus
-        })
-
-    return data
-
-def verifCompleteStatus(id_acteur):
-    nb_reponses = db.session.query(func.count(Reponse.id_reponse)).filter_by(acteur_id=id_acteur).scalar()
-    print(nb_reponses)
-    nomenclatures = Nomenclature.query.filter_by(mnemonique="statut_entretien").all()
-    
-    statut_entretien_id=0
-    if nb_reponses == 37:
-        for statut in nomenclatures:
-            if statut.libelle == 'Réalisé':
-                statut_entretien_id = statut.id_nomenclature
-                print('réalisé')
-                break
-    elif nb_reponses < 37:
-        for statut in nomenclatures:
-            if statut.libelle == 'En cours':
-                statut_entretien_id = statut.id_nomenclature
-                print('en cours')
-                break
-    
-    acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
-
-    if not acteur:
-        logger.info(f"❌ Aucun acteur trouvé avec l'ID {id_acteur}")
-    else:
-        acteur.statut_entretien_id = statut_entretien_id
-        db.session.add(acteur)
-        db.session.commit()
+# Toutes les fonctions helpers ont été déplacées vers ReponseService
