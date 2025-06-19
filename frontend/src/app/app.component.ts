@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { filter } from 'rxjs';
+import { HomeRnfModule } from './home-rnf/home-rnf.module';
 
 
 const dynamicScripts = [
@@ -18,7 +20,8 @@ const dynamicScripts = [
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.css'],
-    imports:[RouterModule]
+    imports:[RouterModule,FontAwesomeModule,HomeRnfModule],
+    standalone:true
 })
 export class AppComponent implements OnInit{
   title = 'RNF - Diagnostic d\'Ancrage Territorial';
