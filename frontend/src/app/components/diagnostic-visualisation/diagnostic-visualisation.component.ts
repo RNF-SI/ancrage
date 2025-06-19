@@ -26,13 +26,14 @@ import { MotsClesZoneComponent } from '../parts/mots-cles-zone/mots-cles-zone.co
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { MatDialog } from '@angular/material/dialog';
 import { AlerteDatePublicationComponent } from '../alertes/alerte-date-publication/alerte-date-publication.component';
+import { MatMomentDateModule } from '@angular/material-moment-adapter';
 
 @Component({
     selector: 'app-diagnostic-visualisation',
     templateUrl: './diagnostic-visualisation.component.html',
     styleUrls: ['./diagnostic-visualisation.component.css'],
     standalone:true,
-    imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent, MenuLateralComponent, TableauStructuresComponent, TableauStructuresComponent, MapComponent, MotsClesZoneComponent]
+    imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent, MenuLateralComponent, TableauStructuresComponent, TableauStructuresComponent, MapComponent, MotsClesZoneComponent,MatMomentDateModule]
 })
 export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
 
@@ -81,39 +82,40 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   dragOver = false;
   id_role = signal<number>(0);
   is_read_only = signal<boolean>(false);
-
-  ngOnInit(): void {
-    this.previousPage.set(localStorage.getItem('previousPage') ?? '');
-
-    const routeParams = toSignal(this.route.params, { initialValue: {} });
-
+  routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
+  constructor() {
     effect(() => {
-      const { id_diagnostic, slug } = routeParams() as Params;
+      const { id_diagnostic, slug } = this.routeParams() as Params;
       const id = Number(id_diagnostic);
       const slugValue = slug as string;
-
+  
       if (id && slugValue) {
         this.id_diagnostic.set(id);
         this.slug.set(slugValue);
-
-        // appel simultané aux 2 services
+  
         forkJoin({
           diag: this.diagnosticService.get(id, slugValue),
           themes: this.nomenclatureService.getAllByType('thème'),
         }).subscribe(({ diag, themes }) => {
           this.diagnostic.set(diag);
           this.themes.set(themes);
-
+  
           const user = this.authService.getCurrentUser();
           this.id_role.set(user.id_role);
-
+  
           const isOwner = user.id_role === diag.created_by;
           const isReadOnly = !isOwner || diag.is_read_only;
-
+  
           this.is_read_only.set(isReadOnly);
         });
       }
     });
+  }
+
+  ngOnInit(): void {
+    this.previousPage.set(localStorage.getItem('previousPage') ?? '');
+
+    
   }
   //Cache ou affiche le menu en fonction de l'onglet choisi
   onTabChange(event: MatTabChangeEvent) {
