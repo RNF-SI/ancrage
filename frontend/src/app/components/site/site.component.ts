@@ -14,6 +14,8 @@ import { MapComponent } from "../parts/map/map.component";
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { ReferenceDataService } from '@app/services/reference-data.service';
+import { StateService } from '@app/services/state.service';
+import { NavigationService } from '@app/services/navigation.service';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { Departement } from '@app/models/departement.model';
 import { DepartementService } from '@app/services/departement.service';
@@ -44,6 +46,8 @@ export class SiteComponent implements OnInit,OnDestroy{
   private nomenclatureService = inject(NomenclatureService);
   private siteService = inject(SiteService);
   private referenceDataService = inject(ReferenceDataService);
+  private stateService = inject(StateService);
+  private navigationService = inject(NavigationService);
   private nomenclatureSubscription!: Subscription;
   private siteSubscription!: Subscription;
   mnemoHabitats = "habitats";
@@ -77,7 +81,7 @@ export class SiteComponent implements OnInit,OnDestroy{
   ngOnInit(): void {
     this.mapInstanceKey = Date.now();
     this.user_id = this.authService.getCurrentUser().id_role;
-    this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);    
+    this.diagnostic = this.stateService.getCurrentDiagnostic() || new Diagnostic();    
     this.routeSubscription = this.route.params.subscribe((params: any) => {
       this.slug = params['slug'];  
       this.id_site = params['id_site'];
@@ -159,7 +163,10 @@ export class SiteComponent implements OnInit,OnDestroy{
   //Affiche le message de confirmation
   getConfirmation(message:string,site:Site){
     this.diagnostic.sites.push(site);
-    this.previousPage = localStorage.getItem("previousPage")!;
+    this.previousPage = this.stateService.getCurrentPreviousPage();
+    
+    // Mettre à jour le diagnostic dans le state
+    this.stateService.setDiagnostic(this.diagnostic);
     this.dialog.open(AlerteSiteComponent, {
       data: {
         title: this.titleSite,

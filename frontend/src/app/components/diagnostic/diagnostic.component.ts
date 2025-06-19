@@ -8,6 +8,8 @@ import { Site } from '@app/models/site.model';
 import { SiteService } from '@app/services/sites.service';
 import { forkJoin, Subscription } from 'rxjs';
 import { ReferenceDataService } from '@app/services/reference-data.service';
+import { StateService } from '@app/services/state.service';
+import { NavigationService } from '@app/services/navigation.service';
 import { ChoixActeursComponent } from '../parts/choix-acteurs/choix-acteurs.component';
 import { Acteur } from '@app/models/acteur.model';
 import { Departement } from '@app/models/departement.model';
@@ -76,6 +78,8 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   private diagnosticsService = inject(DiagnosticService);
   private siteService = inject(SiteService);
   private referenceDataService = inject(ReferenceDataService);
+  private stateService = inject(StateService);
+  private navigationService = inject(NavigationService);
   private authService = inject(AuthService);
   private dialog = inject(MatDialog);
   private diagnosticStoreSubscription ?:Subscription;
@@ -106,9 +110,9 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   
   ngOnInit(): void {
     
-    let diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
+    let diagnostic = this.stateService.getCurrentDiagnostic() || new Diagnostic();
     this.titleDiagnostic = this.titleCreateDiag;
-    this.previousPage = localStorage.getItem("previousPage")!;
+    this.previousPage = this.stateService.getCurrentPreviousPage();
     this.user = this.authService.getCurrentUser();
     this.routeSubscription = this.route.params.subscribe((params: any) => {
       this.id_diagnostic = params['id_diagnostic'];  
@@ -221,8 +225,11 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
 
   //Message de confirmation
   getConfirmation(message:string,diag:Diagnostic,no_creation?:boolean){
-      this.previousPage = localStorage.getItem("previousPage")!;
+      this.previousPage = this.stateService.getCurrentPreviousPage();
       this.diagnostic=diag;
+      
+      // Mettre à jour le diagnostic dans le state
+      this.stateService.setDiagnostic(this.diagnostic);
       if(diag.id_diagnostic > 0){
         this.dialog.open(AlerteDiagnosticComponent, {
           data: {

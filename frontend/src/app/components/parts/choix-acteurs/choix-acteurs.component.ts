@@ -21,6 +21,8 @@ import { AlerteStatutEntretienComponent } from '@app/components/alertes/alerte-s
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { forkJoin, Subscription } from 'rxjs';
 import { ReferenceDataService } from '@app/services/reference-data.service';
+import { StateService } from '@app/services/state.service';
+import { NavigationService } from '@app/services/navigation.service';
 import { DepartementService } from '@app/services/departement.service';
 import { NomenclatureService } from '@app/services/nomenclature.service';
 import { ActeurService } from '@app/services/acteur.service';
@@ -72,7 +74,9 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
   private diagSub?:Subscription;
   private departementService = inject(DepartementService);
   private nomenclatureService = inject(NomenclatureService);
-  private referenceDataService = inject(ReferenceDataService); 
+  private referenceDataService = inject(ReferenceDataService);
+  private stateService = inject(StateService);
+  private navigationService = inject(NavigationService); 
   private actorService = inject(ActeurService);
   private route = inject(ActivatedRoute);
   private diagnosticService = inject(DiagnosticService);
@@ -83,8 +87,8 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
 
   ngOnInit(): void {
     if (!this.no_creation){
-      this.previousPage = localStorage.getItem("previousPage")!;
-      this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!) as Diagnostic;
+      this.previousPage = this.stateService.getCurrentPreviousPage();
+      this.diagnostic = this.stateService.getCurrentDiagnostic() || new Diagnostic();
       this.formGroup = this.fb.group({
       
         acteurs: this.fb.control<Acteur[]>([], [Validators.required]),  
@@ -205,9 +209,7 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
 
   navigateToActor(path:string,diagnostic:Diagnostic){
     diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
-    localStorage.setItem("previousPage",this.router.url);
-    localStorage.setItem("diagnostic",JSON.stringify(diagnostic));
-    this.router.navigate([path]);
+    this.navigationService.navigateWithFormCache([path], this.formGroup.value);
   }
 
   //Alerte de confirmation

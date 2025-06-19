@@ -18,6 +18,8 @@ import { NomenclatureService } from '@app/services/nomenclature.service';
 import { Labels } from '@app/utils/labels';
 import { debounceTime, forkJoin,  Subscription } from 'rxjs';
 import { ReferenceDataService } from '@app/services/reference-data.service';
+import { StateService } from '@app/services/state.service';
+import { NavigationService } from '@app/services/navigation.service';
 import { AlerteActeurComponent } from '../alertes/alerte-acteur/alerte-acteur.component';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { SiteService } from '@app/services/sites.service';
@@ -61,6 +63,8 @@ export class ActeurComponent implements OnInit,OnDestroy{
   private communeService = inject(CommuneService);
   private nomenclatureService = inject(NomenclatureService);
   private referenceDataService = inject(ReferenceDataService);
+  private stateService = inject(StateService);
+  private navigationService = inject(NavigationService);
   private authService = inject(AuthService);
   private communeSubscription?:Subscription;
   private actorSubscription?:Subscription;
@@ -78,7 +82,8 @@ export class ActeurComponent implements OnInit,OnDestroy{
 
   ngOnInit(): void {
     
-    this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
+    // Récupérer le diagnostic depuis le StateService (sécurisé)
+    this.diagnostic = this.stateService.getCurrentDiagnostic() || new Diagnostic();
     this.isLoading = true;
     this.routeSubscription = this.route.params.subscribe((params: any) => {
           this.id_actor = params['id_acteur'];  
@@ -186,9 +191,12 @@ export class ActeurComponent implements OnInit,OnDestroy{
   }
   //Alerte de confirmation
   getConfirmation(message:string,actor:Acteur){
-    this.pageDiagnostic = localStorage.getItem("pageDiagnostic")!;
-    this.previousPage = localStorage.getItem("previousPage")!;
+    this.pageDiagnostic = this.stateService.getCurrentPageDiagnostic();
+    this.previousPage = this.stateService.getCurrentPreviousPage();
     this.diagnostic.acteurs.push(actor);
+    
+    // Mettre à jour le diagnostic dans le state
+    this.stateService.setDiagnostic(this.diagnostic);
     
     if(actor.id_acteur > 0){
       

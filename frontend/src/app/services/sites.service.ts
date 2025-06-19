@@ -5,6 +5,7 @@ import { Site } from '@app/models/site.model';
 import { ISite } from '@app/interfaces/site.interface';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
+import { StateService } from './state.service';
 import { Diagnostic } from '@app/models/diagnostic.model';
 
 @Injectable({
@@ -16,6 +17,7 @@ export class SiteService {
 	private GET_ALL_URL = environment.flask_server+'sites';
 	private BASE_URL = environment.flask_server+'site/';
 	private http = inject(HttpClient);
+	private stateService = inject(StateService);
 	private router = inject(Router);
 	
 	//Récupère tous les sites
@@ -80,10 +82,9 @@ export class SiteService {
 			diagnostic.acteurs[i].reponses = [];
 			
 		}
-		localStorage.removeItem("diagnostic");
-		localStorage.setItem("diagnostic",JSON.stringify(diagnostic));
-		
-		localStorage.setItem("previousPage", this.router.url);
+		// Utiliser le StateService pour la gestion d'état
+		this.stateService.setDiagnostic(diagnostic);
+		this.stateService.setPreviousPage(this.router.url);
 	  
 		this.router.navigate([path]);
 	}
