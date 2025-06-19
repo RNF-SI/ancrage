@@ -39,7 +39,7 @@ def diagnosticMethods(id_diagnostic, slug):
                 for acteur in data['acteurs']:
                     logger.info(f" - ID: {acteur.get('id_acteur')}, Nom: {acteur.get('nom')}")
 
-            diagnostic = changeValuesDiagnostic(diagnostic, data)
+            diagnostic = diagnostic_service.update_diagnostic_values(diagnostic, data)
             diagnostic.modified_at = now
             raw_date = data.get('date_rapport')
             print(raw_date)
@@ -55,17 +55,7 @@ def diagnosticMethods(id_diagnostic, slug):
             logger.warning(f"❌ Slug invalide pour mise à jour du diagnostic {id_diagnostic}")
             raise BadRequest('Slug invalide')
     
-def print_diagnostic(diagnostic):
-    logger.info("🔍 Diagnostic :")
-    logger.info(f"  ID              : {diagnostic.id_diagnostic}")
-    logger.info(f"  Nom             : {diagnostic.nom}")
-    logger.info(f"  Date début      : {diagnostic.date_debut}")
-    logger.info(f"  Date fin        : {diagnostic.date_fin}")
-    logger.info(f"  Date rapport    : {diagnostic.date_rapport}")
-    logger.info(f"  Créé par        : {diagnostic.created_by}")
-    logger.info(f"  Est en lecture seule : {diagnostic.is_read_only}")
-    logger.info(f"  Sites associés  : {[site.id_site for site in diagnostic.sites]}")
-    logger.info(f"  Acteurs associés: {[acteur.id_acteur for acteur in diagnostic.acteurs]}")
+# Fonction déplacée vers DiagnosticService.print_diagnostic_info()
 
 @bp.route('/diagnostic',methods=['POST'])
 def postDiagnostic():
@@ -131,163 +121,31 @@ def getAllDiagnosticsBySites():
 
 @bp.route('/diagnostics/charts/average/<id_diagnostic>')
 def getAveragebyQuestion(id_diagnostic):
-    # Aliases pour les différentes utilisations de Nomenclature
-    ValeurReponse = aliased(Nomenclature)     # tn
-    Categorie = aliased(Nomenclature)         # tn3
-    Theme = aliased(Nomenclature)             # tn4
-
-    
-    query = (
-        db.session.query(
-            Theme.libelle.label("theme"),
-            Theme.id_nomenclature.label("theme_id"),
-            Question.id_question.label("id_question"),
-            Question.libelle_graphique.label("question"),
-            Categorie.libelle_court.label("categorie_acteur"),
-            func.avg(ValeurReponse.value).label("moyenne_score")
-        )
-        .select_from(Diagnostic)  
-        .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
-        .join(Reponse, Acteur.id_acteur == Reponse.acteur_id)
-        .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
-        .join(Question, Reponse.question_id == Question.id_question)
-        .join(Theme, Question.theme_id == Theme.id_nomenclature)
-        .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
-        .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic)
-        .group_by(
-            Theme.id_nomenclature,
-            Question.id_question,
-            Categorie.id_nomenclature
-        )
-        .order_by(Theme.id_nomenclature,Question.id_question)
-    )
-
-    results = query.all()
-    data = [
-        {
-            "theme": r.theme,
-            "question": r.question,
-            "categorie": r.categorie_acteur,
-            "moyenne": float(r.moyenne_score),
-            "id_question":r.id_question,
-            "theme_id":r.theme_id
-        }
-        for r in results
-    ]
-    return jsonify(data)
+    """Calcule moyennes par question - REFACTORISÉ"""
+    return jsonify(diagnostic_service.get_average_by_question(id_diagnostic))
 
 @bp.route("/diagnostics/charts/repartition/<id_diagnostic>", methods=["GET"])
 def get_reponses_par_theme(id_diagnostic):
-    ValeurReponse = aliased(Nomenclature)
-    Categorie = aliased(Nomenclature)
-    Theme = aliased(Nomenclature)
-
-    results = (
-        db.session.query(
-            Theme.libelle.label("theme"),
-            Theme.id_nomenclature.label("theme_id"),
-            Question.libelle_graphique.label("question"),
-            Question.id_question.label("id_question"),
-            ValeurReponse.libelle.label("reponse"),
-            func.count(Reponse.id_reponse).label("nombre"),
-            ValeurReponse.value.label("valeur")
-        )
-        .select_from(Diagnostic)  
-        .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
-        .join(Reponse, Acteur.id_acteur == Reponse.acteur_id)
-        .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
-        .join(Question, Reponse.question_id == Question.id_question)
-        .join(Theme, Question.theme_id == Theme.id_nomenclature)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic)
-        .group_by(Theme.id_nomenclature, Question.id_question, ValeurReponse.value, ValeurReponse.libelle)
-        .order_by(Theme.id_nomenclature,Question.id_question, ValeurReponse.value)
-        .all()
-    )
-
-    # transformer en liste de dicts
-    output = [
-        {
-            "theme": r.theme,
-            "question": r.question,
-            "reponse": r.reponse,
-            "nombre": r.nombre,
-            "valeur": r.valeur,
-            "id_question":r.id_question,
-            "theme_id":r.theme_id
-        }
-        for r in results
-    ]
-
-    return jsonify(output)
+    """Calcule répartition par thème - REFACTORISÉ"""
+    return jsonify(diagnostic_service.get_reponses_par_theme(id_diagnostic))
 
 @bp.route('/diagnostic/structures/<int:id_diagnostic>', methods=['GET'])
 def get_structures_by_diagnostic(id_diagnostic):
-
-    structures = (
-        db.session.query(Acteur.structure)
-        .filter(Acteur.diagnostic_id == id_diagnostic)
-        .filter(Acteur.structure.isnot(None))
-        .distinct()
-        .all()
-    )
-
-    structure_list = [s[0] for s in structures]
-
-    return jsonify({'structures': structure_list})
+    return jsonify(diagnostic_service.get_structures_by_diagnostic(id_diagnostic))
 
 @bp.route("/diagnostics/charts/radars/<int:id_diagnostic>", methods=["GET"])
 def get_scores(id_diagnostic):
-
-    ValeurReponse = aliased(Nomenclature)
-    Categorie = aliased(Nomenclature)
-    Theme = aliased(Nomenclature)
-
-    # Jointure ORM
-    results = (
-        db.session.query(
-            func.avg(ValeurReponse.value).label("score"),
-            Question.libelle_graphique.label("libelle_graphique"),
-            Categorie.libelle.label("categorie"),
-            Theme.libelle.label("theme"),
-            Theme.id_nomenclature.label("theme_id"),
-            Question.id_question.label("id_question"),
-
-        )
-        .select_from(Diagnostic)  
-        .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
-        .join(Reponse, Acteur.id_acteur == Reponse.acteur_id)
-        .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
-        .join(Question, Reponse.question_id == Question.id_question)
-        .join(Theme, Question.theme_id == Theme.id_nomenclature)
-        .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
-        .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic)
-        .group_by(Theme.id_nomenclature,Question.id_question,Question.libelle_graphique,Categorie.libelle,Theme.libelle)
-        .order_by(Theme.id_nomenclature,Question.id_question)
-        .all()
-    )
-
-    # Formatage JSON
-    data = [
-        {
-            "score": round(r.score, 2) if r.score is not None else None,
-            "libelle_graphique": r.libelle_graphique,
-            "categorie": r.categorie,
-            "theme": r.theme,
-            "id_question": r.id_question,
-            "theme_id":r.theme_id
-        }
-        for r in results
-    ]
-
-    return jsonify(data)
+    return jsonify(diagnostic_service.get_scores_radar(id_diagnostic))
 
 
 @bp.route('/diagnostic/upload', methods=['POST'])
 def create_documents():
+    """Upload documents - REFACTORISÉ"""
     documents = json.loads(request.form['documents'])
     files = request.files.getlist("files")
+    
+    result = diagnostic_service.create_documents(documents, files)
+    return jsonify(result)
 
     upload_folder = current_app.config.get("UPLOAD_FOLDER", "uploads")
 
@@ -332,63 +190,7 @@ def uploaded_file(filename):
 
     return send_from_directory(upload_folder, filename)
     
-def changeValuesDiagnostic(diagnostic,data):
-    
-    diagnostic.nom = data.get('nom', diagnostic.nom)
-    if data.get('date_debut'):
-        diagnostic.date_debut = data['date_debut']
-
-    if data.get('date_fin'):
-        diagnostic.date_fin = data['date_fin']
-
-    # Extraire les ID des nouveaux sites
-    new_site_ids = {s['id_site'] for s in data.get('sites', [])}
-    current_site_ids = {s.id_site for s in diagnostic.sites}
-
-    # Supprimer les sites en trop
-    diagnostic.sites = [s for s in diagnostic.sites if s.id_site in new_site_ids]
-
-    # Ajouter les nouveaux sites manquants
-    for site_id in new_site_ids - current_site_ids:
-        site = Site.query.filter_by(id_site=site_id).first()
-        if site:
-            diagnostic.sites.append(site)
-        else:
-            logger.info(f"Site ID {site_id} not found in database.")
-
-    if 'acteurs' in data:
-        
-        new_actors_ids = {a['id_acteur'] for a in data['acteurs']}
-        acteurs_orig = Acteur.query.filter(Acteur.id_acteur.in_(new_actors_ids)).all()
-        
-        """ deleteActors(diagnostic.id_diagnostic) """
-
-        copied_acteurs = []
-        with db.session.no_autoflush:
-            for a in acteurs_orig:
-                new_acteur = Acteur(
-                    nom=a.nom,
-                    prenom=a.prenom,
-                    fonction=a.fonction,
-                    telephone=a.telephone,
-                    mail=a.mail,
-                    commune_id=a.commune_id,
-                    structure=a.structure,
-                    created_at=now,
-                    created_by=data['created_by'],
-                    diagnostic_id=diagnostic.id_diagnostic,
-                    categories=a.categories,
-                    slug=a.slug,
-                    profil_cognitif_id=a.profil_cognitif_id,
-                    acteur_origine_id = a.acteur_origine_id if a.acteur_origine_id else a.id_acteur,
-                    is_copy=True
-                )
-                db.session.add(new_acteur)
-                copied_acteurs.append(new_acteur)
-
-            diagnostic.acteurs = copied_acteurs
-
-    return diagnostic
+# Fonction déplacée vers DiagnosticService.update_diagnostic_values()
 
 @bp.route('/diagnostic/afom/update', methods=['POST'])
 def enregistrer_afoms():

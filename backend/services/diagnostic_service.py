@@ -1,11 +1,15 @@
 from backend.services.base_service import BaseService
-from backend.models.models import Diagnostic, Site, Acteur, MotCle, Nomenclature, Reponse, Question, Document
+from backend.models.models import Diagnostic, Site, Acteur, MotCle, Nomenclature, Reponse, Question, Document, acteur_categorie
 from backend.schemas.metier import DiagnosticSchema, GraphMoySchema, GraphRepartitionSchema, GraphMotsClesSchema, GraphRadarSchema
-from sqlalchemy import func, and_, distinct
+from sqlalchemy import func, and_, distinct, aliased
 from sqlalchemy.orm import joinedload
 from backend.app import db
 import json
+import os
 from collections import defaultdict
+from werkzeug.utils import secure_filename
+from datetime import datetime
+from flask import current_app
 
 class DiagnosticService(BaseService):
     """Service pour gérer les diagnostics avec la logique métier spécifique"""
@@ -270,3 +274,271 @@ class DiagnosticService(BaseService):
         
         db.session.commit()
         return deleted_count
+    
+    def get_average_by_question(self, diagnostic_id):
+        """Calcule les moyennes par question pour les graphiques"""
+        self.logger.info(f"📊 Calcul moyennes par question pour diagnostic {diagnostic_id}")
+        
+        # Aliases pour les différentes utilisations de Nomenclature
+        ValeurReponse = aliased(Nomenclature)     # tn
+        Categorie = aliased(Nomenclature)         # tn3
+        Theme = aliased(Nomenclature)             # tn4
+
+        query = (
+            db.session.query(
+                Theme.libelle.label("theme"),
+                Theme.id_nomenclature.label("theme_id"),
+                Question.id_question.label("id_question"),
+                Question.libelle_graphique.label("question"),
+                Categorie.libelle_court.label("categorie_acteur"),
+                func.avg(ValeurReponse.value).label("moyenne_score")
+            )
+            .select_from(Diagnostic)  
+            .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
+            .join(Reponse, Acteur.id_acteur == Reponse.acteur_id)
+            .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
+            .join(Question, Reponse.question_id == Question.id_question)
+            .join(Theme, Question.theme_id == Theme.id_nomenclature)
+            .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
+            .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
+            .filter(Diagnostic.id_diagnostic==diagnostic_id)
+            .group_by(
+                Theme.id_nomenclature,
+                Question.id_question,
+                Categorie.id_nomenclature
+            )
+            .order_by(Theme.id_nomenclature,Question.id_question)
+        )
+
+        results = query.all()
+        data = [
+            {
+                "theme": r.theme,
+                "question": r.question,
+                "categorie": r.categorie_acteur,
+                "moyenne": float(r.moyenne_score),
+                "id_question":r.id_question,
+                "theme_id":r.theme_id
+            }
+            for r in results
+        ]
+        return data
+    
+    def get_reponses_par_theme(self, diagnostic_id):
+        """Calcule la répartition des réponses par thème"""
+        self.logger.info(f"📊 Calcul répartition par thème pour diagnostic {diagnostic_id}")
+        
+        ValeurReponse = aliased(Nomenclature)
+        Categorie = aliased(Nomenclature)
+        Theme = aliased(Nomenclature)
+
+        results = (
+            db.session.query(
+                Theme.libelle.label("theme"),
+                Theme.id_nomenclature.label("theme_id"),
+                Question.libelle_graphique.label("question"),
+                Question.id_question.label("id_question"),
+                ValeurReponse.libelle.label("reponse"),
+                func.count(Reponse.id_reponse).label("nombre"),
+                ValeurReponse.value.label("valeur")
+            )
+            .select_from(Diagnostic)  
+            .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
+            .join(Reponse, Acteur.id_acteur == Reponse.acteur_id)
+            .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
+            .join(Question, Reponse.question_id == Question.id_question)
+            .join(Theme, Question.theme_id == Theme.id_nomenclature)
+            .filter(Diagnostic.id_diagnostic==diagnostic_id)
+            .group_by(Theme.id_nomenclature, Question.id_question, ValeurReponse.value, ValeurReponse.libelle)
+            .order_by(Theme.id_nomenclature,Question.id_question, ValeurReponse.value)
+            .all()
+        )
+
+        # transformer en liste de dicts
+        output = [
+            {
+                "theme": r.theme,
+                "question": r.question,
+                "reponse": r.reponse,
+                "nombre": r.nombre,
+                "valeur": r.valeur,
+                "id_question":r.id_question,
+                "theme_id":r.theme_id
+            }
+            for r in results
+        ]
+
+        return output
+    
+    def get_structures_by_diagnostic(self, diagnostic_id):
+        """Récupère les structures distinctes d'un diagnostic"""
+        self.logger.info(f"🏢 Récupération structures pour diagnostic {diagnostic_id}")
+        
+        structures = (
+            db.session.query(Acteur.structure)
+            .filter(Acteur.diagnostic_id == diagnostic_id)
+            .filter(Acteur.structure.isnot(None))
+            .distinct()
+            .all()
+        )
+
+        structure_list = [s[0] for s in structures]
+        return {'structures': structure_list}
+    
+    def get_scores_radar(self, diagnostic_id):
+        """Calcule les scores pour le graphique radar"""
+        self.logger.info(f"📊 Calcul scores radar pour diagnostic {diagnostic_id}")
+        
+        ValeurReponse = aliased(Nomenclature)
+        Categorie = aliased(Nomenclature)
+        Theme = aliased(Nomenclature)
+
+        # Jointure ORM
+        results = (
+            db.session.query(
+                func.avg(ValeurReponse.value).label("score"),
+                Question.libelle_graphique.label("libelle_graphique"),
+                Categorie.libelle.label("categorie"),
+                Theme.libelle.label("theme"),
+                Theme.id_nomenclature.label("theme_id"),
+                Question.id_question.label("id_question"),
+
+            )
+            .select_from(Diagnostic)  
+            .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
+            .join(Reponse, Acteur.id_acteur == Reponse.acteur_id)
+            .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
+            .join(Question, Reponse.question_id == Question.id_question)
+            .join(Theme, Question.theme_id == Theme.id_nomenclature)
+            .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
+            .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
+            .filter(Diagnostic.id_diagnostic==diagnostic_id)
+            .group_by(Theme.id_nomenclature,Question.id_question,Question.libelle_graphique,Categorie.libelle,Theme.libelle)
+            .order_by(Theme.id_nomenclature,Question.id_question)
+            .all()
+        )
+
+        # Formatage JSON
+        data = [
+            {
+                "score": round(r.score, 2) if r.score is not None else None,
+                "libelle_graphique": r.libelle_graphique,
+                "categorie": r.categorie,
+                "theme": r.theme,
+                "id_question": r.id_question,
+                "theme_id":r.theme_id
+            }
+            for r in results
+        ]
+
+        return data
+    
+    def create_documents(self, documents_data, files):
+        """Crée et upload des documents pour un diagnostic"""
+        self.logger.info(f"📁 Création de {len(documents_data)} documents")
+        
+        upload_folder = current_app.config.get("UPLOAD_FOLDER", "uploads")
+
+        # Créer le répertoire avec permissions 755 s'il n'existe pas
+        if not os.path.exists(upload_folder):
+            os.makedirs(upload_folder, mode=0o755, exist_ok=True)
+
+        diagnostic_id = None
+        for doc in documents_data:
+            nom = doc.get("nom")
+            diagnostic_id = doc.get("diagnostic", {}).get("id_diagnostic")
+
+            document = Document(
+                nom=nom,
+                diagnostic_id=diagnostic_id  
+            )
+            db.session.add(document)
+
+            # Cherche le fichier correspondant par nom
+            file = next((f for f in files if f.filename == nom), None)
+
+            # Sauvegarder le fichier si trouvé
+            if file:
+                file_path = os.path.join(upload_folder, secure_filename(file.filename))
+                file.save(file_path)
+
+        db.session.commit()
+
+        # Retourner le diagnostic lié au dernier document inséré
+        if diagnostic_id:
+            diagnostic = Diagnostic.query.filter_by(id_diagnostic=diagnostic_id).first()
+            return self.serialize(diagnostic)
+        return None
+    
+    def update_diagnostic_values(self, diagnostic, data):
+        """Met à jour les valeurs d'un diagnostic (helper refactorisé)"""
+        self.logger.info(f"🔄 Mise à jour des valeurs du diagnostic {diagnostic.id_diagnostic}")
+        
+        diagnostic.nom = data.get('nom', diagnostic.nom)
+        if data.get('date_debut'):
+            diagnostic.date_debut = data['date_debut']
+
+        if data.get('date_fin'):
+            diagnostic.date_fin = data['date_fin']
+
+        # Extraire les ID des nouveaux sites
+        new_site_ids = {s['id_site'] for s in data.get('sites', [])}
+        current_site_ids = {s.id_site for s in diagnostic.sites}
+
+        # Supprimer les sites en trop
+        diagnostic.sites = [s for s in diagnostic.sites if s.id_site in new_site_ids]
+
+        # Ajouter les nouveaux sites manquants
+        for site_id in new_site_ids - current_site_ids:
+            site = Site.query.filter_by(id_site=site_id).first()
+            if site:
+                diagnostic.sites.append(site)
+            else:
+                self.logger.info(f"Site ID {site_id} not found in database.")
+
+        if 'acteurs' in data:
+            
+            new_actors_ids = {a['id_acteur'] for a in data['acteurs']}
+            acteurs_orig = Acteur.query.filter(Acteur.id_acteur.in_(new_actors_ids)).all()
+            
+            """ deleteActors(diagnostic.id_diagnostic) """
+
+            copied_acteurs = []
+            with db.session.no_autoflush:
+                for a in acteurs_orig:
+                    new_acteur = Acteur(
+                        nom=a.nom,
+                        prenom=a.prenom,
+                        fonction=a.fonction,
+                        telephone=a.telephone,
+                        mail=a.mail,
+                        commune_id=a.commune_id,
+                        structure=a.structure,
+                        created_at=datetime.utcnow(),
+                        created_by=data['created_by'],
+                        diagnostic_id=diagnostic.id_diagnostic,
+                        categories=a.categories,
+                        slug=a.slug,
+                        profil_cognitif_id=a.profil_cognitif_id,
+                        acteur_origine_id = a.acteur_origine_id if a.acteur_origine_id else a.id_acteur,
+                        is_copy=True
+                    )
+                    db.session.add(new_acteur)
+                    copied_acteurs.append(new_acteur)
+
+                diagnostic.acteurs = copied_acteurs
+
+        return diagnostic
+    
+    def print_diagnostic_info(self, diagnostic):
+        """Log les informations d'un diagnostic (helper refactorisé)"""
+        self.logger.info("🔍 Diagnostic :")
+        self.logger.info(f"  ID              : {diagnostic.id_diagnostic}")
+        self.logger.info(f"  Nom             : {diagnostic.nom}")
+        self.logger.info(f"  Date début      : {diagnostic.date_debut}")
+        self.logger.info(f"  Date fin        : {diagnostic.date_fin}")
+        self.logger.info(f"  Date rapport    : {diagnostic.date_rapport}")
+        self.logger.info(f"  Créé par        : {diagnostic.created_by}")
+        self.logger.info(f"  Est en lecture seule : {diagnostic.is_read_only}")
+        self.logger.info(f"  Sites associés  : {[site.id_site for site in diagnostic.sites]}")
+        self.logger.info(f"  Acteurs associés: {[acteur.id_acteur for acteur in diagnostic.acteurs]}")
