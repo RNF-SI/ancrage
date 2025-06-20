@@ -91,6 +91,11 @@ export class MotsClesZoneComponent implements OnDestroy{
 
   constructor() {
     effect(() => {
+      if (this.modeAnalyse() && this.diagnostic().id_diagnostic > 0) {
+        this.getDataAnalysis();
+      }
+    });
+    effect(() => {
       if (this.modeAnalyse()) return;
   
       const user = this.authService.getCurrentUser();
@@ -146,14 +151,8 @@ export class MotsClesZoneComponent implements OnDestroy{
         this.prepareResults(results);
       });
   }
+
   
-  ngOnChanges(changes: SimpleChanges): void {
-      if (changes['diagnostic'] && this.modeAnalyse()) {
-        this.getDataAnalysis();
-        console.log('ok');
-      }
-      
-    }
 
   hasUnclassifiedKeywords = computed(() => {
     const nonClasse = this.categories().find(c => c.libelle === "Non classés");
@@ -197,34 +196,36 @@ export class MotsClesZoneComponent implements OnDestroy{
     const kw = value?.trim();
     if (!kw) return;
   
-    const nonClasse = this.categories().find(c => c.libelle === "Non classés");
+    const cats = this.categories();
+    const nonClasse = cats.find(c => c.libelle === "Non classés");
     if (!nonClasse) return;
   
-    const exists = this.categories().some(cat =>
+    const keywordExists = cats.some(cat =>
       cat.mots_cles?.some(k => k.nom === kw)
     );
+    if (keywordExists) return;
   
-    if (!exists) {
-      const mot_cle: MotCle = new MotCle();
-      mot_cle.nom = kw;
-      mot_cle.categorie = nonClasse;
-      mot_cle.diagnostic = this.diagnostic();
-      if(this.modeAnalyse()){
-        mot_cle.nombre=1;
-      }
-      // ✅ ID temporaire négatif (évite collision avec des IDs réels positifs)
-      mot_cle.id_mot_cle = this.generateTempId();
-      nonClasse.mots_cles?.push(mot_cle);
-      if(this.modeAnalyse()){
-        this.motsCleAnalyse().push(mot_cle);
-      }else{
-        this.motsClesReponse().push(mot_cle);
-      }
-      
-      if (!this.allKeywords().includes(mot_cle.nom)){
-        this.allKeywords().push(mot_cle.nom);
-      }
-      
+    const newMotCle = new MotCle();
+    newMotCle.nom = kw;
+    newMotCle.categorie = nonClasse;
+    newMotCle.diagnostic = this.diagnostic();
+    newMotCle.id_mot_cle = this.generateTempId();
+    if (this.modeAnalyse()) newMotCle.nombre = 1;
+  
+    nonClasse.mots_cles ??= [];
+    nonClasse.mots_cles.push(newMotCle);
+  
+    // Réinjecter les catégories (copie défensive)
+    this.categories.set([...cats]);
+  
+    if (this.modeAnalyse()) {
+      this.motsCleAnalyse.update(list => [...list, newMotCle]);
+    } else {
+      this.motsClesReponse.update(list => [...list, newMotCle]);
+    }
+  
+    if (!this.allKeywords().includes(kw)) {
+      this.allKeywords.update(list => [...list, kw]);
     }
   
     this.inputCtrl.setValue('');
@@ -276,11 +277,11 @@ export class MotsClesZoneComponent implements OnDestroy{
   
       if (!this.modeAnalyse) {
         if (!this.motsClesReponse().some(mc => mc.id_mot_cle === draggedKeyword.id_mot_cle)) {
-          this.motsClesReponse().push(draggedKeyword);
+          this.motsClesReponse.update(list => [...list, draggedKeyword]);
         }
       } else {
         if (!this.motsCleAnalyse().some(mc => mc.id_mot_cle === draggedKeyword.id_mot_cle)) {
-          this.motsCleAnalyse().push(draggedKeyword);
+          this.motsCleAnalyse.update(list => [...list, draggedKeyword]);
         }
 
       }
@@ -300,9 +301,9 @@ export class MotsClesZoneComponent implements OnDestroy{
         targetCategory.mots_cles.push(newKeyword);
   
         if (!this.modeAnalyse) {
-          this.motsClesReponse().push(newKeyword);
+          this.motsClesReponse.update(list => [...list, newKeyword]);
         } else {
-          this.motsCleAnalyse().push(newKeyword);
+          this.motsCleAnalyse.update(list => [...list, newKeyword]);
         }
       }
     }
@@ -353,7 +354,7 @@ export class MotsClesZoneComponent implements OnDestroy{
         
           reponse.mots_cles[i].categorie.mots_cles=[];
       }
-      console.log(reponse);
+    
       this.reponseSub = this.reponseService.updateAfom(reponse).subscribe(keywords=>{
         this.setKeywords(keywords);
       })
