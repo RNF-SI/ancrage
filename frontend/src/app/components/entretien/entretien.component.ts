@@ -126,27 +126,32 @@ export class EntretienComponent implements OnDestroy{
     for(let i = 0;i<reponses.length;i++){
       this.formGroup.get(`question_${reponses[i].question?.id_question}`)?.setValue(reponses[i].valeur_reponse.value);
       this.formGroup.get(`reponse_${reponses[i].question?.id_question}`)?.setValue(reponses[i].commentaires);
-      if (reponses[i].valeur_reponse.id_nomenclature > 0){
-        console.log('ok');
-        const classe = ".warn_"+reponses[i].question?.id_question;
-        
-        const element = document.querySelector(classe);
-        console.log(element);
-        if (reponses[i].valeur_reponse.id_nomenclature == this.noResponse().id_nomenclature){
-          element?.classList.replace("warn","warn-partial");
-          if(reponses[i].question?.indications == "Sans indicateur"){
-            element?.classList.add("invisible");
-          }
-        }else {
-          element?.classList.add("invisible");
-        }
-        
-      }
+      setTimeout(() => {
+        this.hideWarnings(reponses,i);
+      }, 0);
       
     }
 
   }
 
+  hideWarnings(reponses:Reponse[],iteration:number){
+    if (reponses[iteration].valeur_reponse.id_nomenclature > 0){
+     
+      const classe = ".warn_"+reponses[iteration].question?.id_question;
+      
+      const element = document.querySelector(classe);
+      console.log(element);
+      if (reponses[iteration].valeur_reponse.id_nomenclature == this.noResponse().id_nomenclature){
+        element?.classList.replace("warn","warn-partial");
+        if(reponses[iteration].question?.indications == "Sans indicateur"){
+          element?.classList.add("invisible");
+        }
+      }else {
+        element?.classList.add("invisible");
+      }
+      
+    }
+  }
   //Cache ou affiche le menu en fonction de l'onglet choisi
   onTabChange(event: MatTabChangeEvent) {
     
