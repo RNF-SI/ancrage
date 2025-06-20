@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, inject, Input, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, effect, inject, Input, OnDestroy, OnInit, signal, SimpleChanges, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -7,7 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Params, Router, RouterModule } from '@angular/router';
 import { Acteur } from '@app/models/acteur.model';
 import { Departement } from '@app/models/departement.model';
 import { Diagnostic } from '@app/models/diagnostic.model';
@@ -27,6 +27,7 @@ import { DiagnosticService } from '@app/services/diagnostic.service';
 import { Site } from '@app/models/site.model';
 import { DiagnosticComponent } from '@app/components/diagnostic/diagnostic.component';
 import { SiteService } from '@app/services/sites.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 //Tableau des acteurs
 @Component({
@@ -35,7 +36,7 @@ import { SiteService } from '@app/services/sites.service';
     styleUrls: ['./choix-acteurs.component.css'],
     imports: [CommonModule, MatTableModule, MatCheckboxModule, FormsModule, MatSelectModule, MatFormFieldModule, MatButtonModule, RouterModule, ReactiveFormsModule, FontAwesomeModule, MatListModule, MatCardModule, MatTooltipModule]
 })
-export class ChoixActeursComponent implements OnInit,OnDestroy{
+export class ChoixActeursComponent implements OnDestroy{
   
   @Input() actors: Acteur[]=[];
   title: string="Choisir les acteurs";
@@ -77,25 +78,26 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
   slug:string ="";
   diagComponent:DiagnosticComponent = new DiagnosticComponent();
   private siteService = inject(SiteService);
+  routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
+  id_diagnostic = signal<number>(0);
 
-  ngOnInit(): void {
-    
-    if (!this.no_creation){
-      this.previousPage = localStorage.getItem("previousPage")!;
-      this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!) as Diagnostic;
-      console.log(this.diagnostic)
-      this.formGroup = this.fb.group({
-      
-        acteurs: this.fb.control<Acteur[]>([], [Validators.required]),  
+  constructor(){
+    effect(() => {
+      if (!this.no_creation){
+        this.previousPage = localStorage.getItem("previousPage")!;
+        this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!) as Diagnostic;
+        this.formGroup = this.fb.group({
         
-      });
-      this.actors = this.diagnostic.acteurs;
-
-      this.routeSub = this.route.params.subscribe((params: any) => {
-        const id_diagnostic = params['id_diagnostic'];  
-        this.slug = params['slug'];
-
-        if (id_diagnostic && this.slug){
+          acteurs: this.fb.control<Acteur[]>([], [Validators.required]),  
+          
+        });
+        this.actors = this.diagnostic.acteurs;
+        const { id_diagnostic, slug } = this.routeParams() as Params;
+        const id = Number(id_diagnostic);
+        this.id_diagnostic.set(id);
+        const slugValue = slug as string;
+       
+        if (id && slugValue){
           const departments$ = this.departementService.getAll();
           const categories$ = this.nomenclatureService.getAllByType("categories");
       
@@ -105,8 +107,10 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
             this.getActors(this.diagnostic.sites);
           })  
         }
-      });  
-    }
+         
+      }
+
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -131,7 +135,7 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
   applyFilters() {
     let selectedCat = true;
     let selectedDep = true;
-    let selectedDiag = false;
+    let selectedDiag = true;
     if (this.selectedCategory.id_nomenclature == 0){
       
       selectedCat = false
@@ -262,9 +266,6 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
     this.actorService.sortByNameAndSelected(this.actorsOriginal);
     this.departementService.sortByName(this.uniqueDepartments);
     this.nomenclatureService.sortByName(this.uniqueCategories);
-    
-  
-   
   }
 
   //Sélectionne les acteurs dans l'interface
