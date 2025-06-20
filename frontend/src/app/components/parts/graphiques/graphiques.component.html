@@ -1,10 +1,10 @@
-@for (themeEntry of chartDataByThemeSorted; track themeEntry) {
+@for (themeEntry of chartDataByThemeSorted(); track themeEntry) {
   @if (themeEntry.theme != 'AFOM') {
     <div class="mb-5">
       <h2 class="text-center">{{ themeEntry.theme }}</h2>
 
-      @if (themeEntry) {
-        @for (chart of radarCharts; track chart) {
+      
+        @for (chart of radarCharts(); track chart) {
           @if (chart.theme === themeEntry.theme) {
             <div>
               <canvas class="graph-radar-{{ chart.theme }}" baseChart
@@ -18,7 +18,7 @@
             </div>
           }
         }
-      }
+      
 
       @for (chart of themeEntry.charts; track chart) {
         <div class="mb-4" [attr.id]="'question-' + chart.id_question">
@@ -38,7 +38,7 @@
             <div class="col-md-6 d-flex flex-column align-items-center justify-content-center">
               <h4 class="text-center">Répartition des réponses</h4>
               <canvas class="graph-rep{{ chart.id_question }}" baseChart
-                      [data]="chartDataRepartition[chart.question]"
+                      [data]="getChartData(chart.question)"
                       [type]="'pie'">
               </canvas>
               <button mat-raised-button (click)="exportChart('graph-rep' + chart.id_question, chart.question + '-repartition')">
@@ -54,7 +54,7 @@
 
 <div class="charts-container">
   <h2>AFOM</h2>
-  @for (chart of groupedCharts; track chart) {
+  @for (chart of groupedCharts(); track chart) {
     <div class="chart-wrapper">
       <canvas baseChart
               [data]="chart.chartData.data"
