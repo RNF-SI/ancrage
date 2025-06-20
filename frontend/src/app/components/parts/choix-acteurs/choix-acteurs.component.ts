@@ -72,7 +72,6 @@ export class ChoixActeursComponent implements OnDestroy{
   private departementService = inject(DepartementService);
   private nomenclatureService = inject(NomenclatureService); 
   private actorService = inject(ActeurService);
-  private route = inject(ActivatedRoute);
   private diagnosticService = inject(DiagnosticService);
   uniqueActors:Acteur[] = [];
   slug:string ="";
@@ -153,7 +152,7 @@ export class ChoixActeursComponent implements OnDestroy{
       
       const matchDep = !selectedDep || actor.commune?.departement?.nom_dep === this.selectedDepartment.nom_dep;
       const matchCat = !selectedCat || actor.categories?.some(cat => cat.id_nomenclature === this.selectedCategory.id_nomenclature);
-      const matchDiag = !this.selectedDiagnostic.id_diagnostic ||actor.diagnostic?.id_diagnostic === this.selectedDiagnostic.id_diagnostic;
+      const matchDiag = !selectedDiag ||actor.diagnostic?.id_diagnostic === this.selectedDiagnostic.id_diagnostic;
       
       return matchDep && matchCat && matchDiag;
     });

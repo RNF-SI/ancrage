@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, effect, inject, input, Input, OnDestroy, OnInit, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MatListModule } from '@angular/material/list';
+import { ChildActivationStart } from '@angular/router';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
-import { Subscription } from 'rxjs';
+import { Subscription, switchMap } from 'rxjs';
 
 //Affiche la liste des structures sur la page diagnostic-visualisation en lecture seule
 @Component({
@@ -12,23 +14,28 @@ import { Subscription } from 'rxjs';
     styleUrls: ['./tableau-structures.component.css'],
     imports: [CommonModule, MatListModule]
 })
-export class TableauStructuresComponent implements OnInit,OnDestroy{
+export class TableauStructuresComponent{
   
-  @Input() diagnostic:Diagnostic = new Diagnostic();
-  structures:string[] =[];
-  private structuresSubscription?:Subscription;
+  diagnostic = input<Diagnostic>(new Diagnostic());
+  structures = signal<string[]>([])
   private diagnosticService = inject(DiagnosticService);
-
-
-  ngOnInit(): void {
-    this.structuresSubscription = this.diagnosticService.getStructures(this.diagnostic.id_diagnostic).subscribe(
-      reponses =>{
-        this.structures = reponses.structures.sort();
+  subscription?:Subscription;
+  
+  constructor(){
+    effect(() => {
+      const id = this.diagnostic().id_diagnostic;
+      if (id > 0) {
+        
+        this.subscription = this.diagnosticService.getStructures(id).subscribe(rep =>{
+          this.structures.set(rep.structures);
+        });
       }
-    )
+      
+    });
   }
 
   ngOnDestroy(): void {
-    this.structuresSubscription?.unsubscribe();
+    this.subscription?.unsubscribe();
   }
+
 }
