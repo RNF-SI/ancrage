@@ -1,7 +1,7 @@
 <div class="container">
   <div class="row">
     <div class="col-3">
-      <app-menu-lateral [themes]="themes"></app-menu-lateral>
+      <app-menu-lateral [themes]="themes()"></app-menu-lateral>
     </div>
 
     <div class="col-9">
@@ -11,7 +11,7 @@
             <form [formGroup]="formGroup">
               <h2>{{ title }}</h2>
 
-              @for (theme of themes; track theme) {
+              @for (theme of themes(); track theme) {
                 @if (theme.libelle !== 'AFOM') {
                   <h3>{{ theme.libelle }}</h3>
 
@@ -52,8 +52,8 @@
               <app-mots-cles-zone
                 #afom
                 [diagnostic]="diagnostic"
-                [id_acteur]="id_acteur"
-                [noResponse]="noResponse"
+                [id_acteur]="id_acteur()"
+                [noResponse]="noResponse()"
                 [createReponse]="createReponse"
                 [reponses]="reponses">
               </app-mots-cles-zone>

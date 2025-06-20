@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, effect, inject, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { NomenclatureService } from '@app/services/nomenclature.service';
 import { Labels } from '@app/utils/labels';
@@ -17,6 +17,7 @@ import { SiteService } from '@app/services/sites.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MotsClesZoneComponent } from "../parts/mots-cles-zone/mots-cles-zone.component";
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 
 //Page de la saisie de l'entretien
@@ -27,107 +28,111 @@ import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
     standalone:true,
     imports: [CommonModule, MatRadioModule, ReactiveFormsModule, MatRadioModule, MatButtonModule, MenuLateralComponent, FontAwesomeModule, MotsClesZoneComponent, MatTabsModule]
 })
-export class EntretienComponent implements OnInit,OnDestroy{
+export class EntretienComponent implements OnDestroy{
  
   labels = new Labels();
   title="";
-  themes:Nomenclature[] = [];
-  id_acteur = 0;
-  private routeSubscription?:Subscription;
+  themes = signal<Nomenclature[]>([]);
+  id_acteur = signal<number>(0);
   private nomenclatureSubscription?:Subscription;
   private reponsesSubscription?:Subscription;
   private nomenclatureService = inject(NomenclatureService);
-  private route= inject(ActivatedRoute);
   private fb = inject(FormBuilder);
   private reponseService = inject(ReponseService);
   reponses:Reponse[] = [];
   formGroup: FormGroup = this.fb.group({});
   previousPage = "";
   diagnostic:Diagnostic = new Diagnostic();
-  etats:Nomenclature[]=[];
+  etats = signal<Nomenclature[]>([]);
   siteService = inject(SiteService);
-  slug="";
-  noResponse:Nomenclature = new Nomenclature();
+  slug = signal<string>("");
+  noResponse = signal<Nomenclature>(new Nomenclature());
   afom = new Nomenclature();
   @ViewChild('afom') afomComponent!: MotsClesZoneComponent;
   menu:any;
+  routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
 
-  ngOnInit(): void {
-  
-    this.previousPage = localStorage.getItem("previousPage")!;
-    this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
-    this.routeSubscription = this.route.params.subscribe((params: any) => {
-        this.id_acteur = parseInt(params['id_acteur']); 
-        this.slug = params['slug'];  
-        this.title = this.labels.addInterview;
-        //Modification
-        if (this.id_acteur && this.slug){
-          const themes$ = this.nomenclatureService.getAllByType("thème_question",this.id_acteur);
-          const etats$ = this.nomenclatureService.getAllByType("statut_entretien");
-          const noResponse$ = this.nomenclatureService.getNoResponse("");
+  constructor(){
+    effect(() => {
+      this.previousPage = localStorage.getItem("previousPage")!;
+      this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
+      const { id_acteur, slug } = this.routeParams() as Params;
+      const id = Number(id_acteur);
+      this.id_acteur.set(id);
+      const slugValue = slug as string;
+      this.title = this.labels.addInterview;
+      //Modification
+      if (id && slugValue){
+        const themes$ = this.nomenclatureService.getAllByType("thème_question",id);
+        const etats$ = this.nomenclatureService.getAllByType("statut_entretien");
+        const noResponse$ = this.nomenclatureService.getNoResponse("");
 
-          forkJoin([themes$,etats$,noResponse$]).subscribe(([themes,etats,noResponse]) => {
-            this.prepareResults(themes,etats,noResponse);
-            this.menu = document.getElementById("menu");
-            setTimeout(() => {
-              this.display();
-            }, 0);
-            
-          });
-        }
+        forkJoin([themes$,etats$,noResponse$]).subscribe(([themes,etats,noResponse]) => {
+          this.prepareResults(themes,etats,noResponse);
+          this.menu = document.getElementById("menu");
+          setTimeout(() => {
+            this.display();
+          }, 0);
+          
+        });
+      }
+      
     });
   }
 
   prepareResults(themes:Nomenclature[],etats:Nomenclature[],noResponse:Nomenclature){
     this.reponses = [];
-    this.themes = themes;
-            this.etats = etats;
-            this.noResponse = noResponse;
-            const controls: { [key: string]: any } = {};
-            this.afom = themes[themes.length-1];
-            
-            this.themes.forEach(theme => {
+    this.themes.set(themes);
+    this.etats.set(etats);
+    this.noResponse.set(noResponse);
+    const controls: { [key: string]: any } = {};
+    this.afom = themes[themes.length-1];
+    
+    this.themes().forEach(theme => {
 
+      
+      theme.questions!.forEach(q => {
+        controls[`question_${q.id_question}`] = this.fb.control(null);
+        controls[`reponse_${q.id_question}`] = this.fb.control(null);
+        if (this.id_acteur()){
+            let reponse:Reponse = new Reponse();
               
-              theme.questions!.forEach(q => {
-                controls[`question_${q.id_question}`] = this.fb.control(null);
-                controls[`reponse_${q.id_question}`] = this.fb.control(null);
-                if (this.id_acteur){
-                    let reponse:Reponse = new Reponse();
-                      
-                    reponse.question = q;
-                    reponse.acteur.id_acteur = this.id_acteur;
-                    
-                
-                  q.reponses?.forEach(rep => {
-                    if (rep.acteur.id_acteur==this.id_acteur){
-                      reponse = rep;
-                    }
-                  });
-                  this.reponses.push(reponse);
-                }
-              });
-            });
-          
-            this.formGroup = this.fb.group(controls);
-            if (this.id_acteur){
-              setTimeout(() => {
-                this.patchForm(this.reponses);
-              }, 0);
-              
-            }          
+            reponse.question = q;
+            reponse.acteur.id_acteur = this.id_acteur();
+            
+        
+          q.reponses?.forEach(rep => {
+            if (rep.acteur.id_acteur==this.id_acteur()){
+              reponse = rep;
+            }
+          });
+          this.reponses.push(reponse);
+        }
+      });
+    });
+  
+    this.formGroup = this.fb.group(controls);
+    if (this.id_acteur() > 0){
+      console.log(this.id_acteur());
+      Promise.resolve().then(() => {
+        this.patchForm(this.reponses);
+      });
+      
+    }          
   }
   //Envoie les données récupérées au formulaire
   patchForm(reponses:Reponse[]){
-    
+    console.log(reponses);
     for(let i = 0;i<reponses.length;i++){
       this.formGroup.get(`question_${reponses[i].question?.id_question}`)?.setValue(reponses[i].valeur_reponse.value);
       this.formGroup.get(`reponse_${reponses[i].question?.id_question}`)?.setValue(reponses[i].commentaires);
       if (reponses[i].valeur_reponse.id_nomenclature > 0){
+        console.log('ok');
         const classe = ".warn_"+reponses[i].question?.id_question;
+        
         const element = document.querySelector(classe);
-       
-        if (reponses[i].valeur_reponse.id_nomenclature == this.noResponse.id_nomenclature){
+        console.log(element);
+        if (reponses[i].valeur_reponse.id_nomenclature == this.noResponse().id_nomenclature){
           element?.classList.replace("warn","warn-partial");
           if(reponses[i].question?.indications == "Sans indicateur"){
             element?.classList.add("invisible");
@@ -188,9 +193,9 @@ export class EntretienComponent implements OnInit,OnDestroy{
     const valeurId = reponse!.valeur_reponse?.id_nomenclature ?? 0;
   
     if (commentaire !== '' && valeurId === 0) {
-      reponse!.valeur_reponse = this.noResponse;
+      reponse!.valeur_reponse = this.noResponse();
       warnElement?.classList.replace('warn', 'warn-partial');
-    }else if (valeurId !== this.noResponse.id_nomenclature && valeurId > 0 || reponse!.question?.indications === "Sans indicateur") {
+    }else if (valeurId !== this.noResponse().id_nomenclature && valeurId > 0 || reponse!.question?.indications === "Sans indicateur") {
       warnElement?.classList.add('invisible');
     }
   
@@ -205,7 +210,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
     for (const reponse of this.reponses) {
       const valeurId = reponse.valeur_reponse?.id_nomenclature ?? 0;
       const isSansIndicateur = reponse.question?.indications === "Sans indicateur";
-      if ((valeurId !== this.noResponse.id_nomenclature && valeurId > 0) || isSansIndicateur) {
+      if ((valeurId !== this.noResponse().id_nomenclature && valeurId > 0) || isSansIndicateur) {
   
         reponsesCompletes++;
       }
@@ -215,7 +220,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
    
       this.reponsesSubscription = this.reponseService.updateAllButAfom(this.reponses).subscribe(
         themes => {
-          this.prepareResults(themes,this.etats,this.noResponse);
+          this.prepareResults(themes,this.etats(),this.noResponse());
 
         }
       );
@@ -229,7 +234,7 @@ export class EntretienComponent implements OnInit,OnDestroy{
   }
 
   ngOnDestroy(): void {
-    this.routeSubscription?.unsubscribe();
+  
     this.nomenclatureSubscription?.unsubscribe();
     this.reponsesSubscription?.unsubscribe();
   }
