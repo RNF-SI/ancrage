@@ -1,14 +1,14 @@
 <div class="row">
   <div class="col-6">
     <div class="grid" cdkDropListGroup>
-      @for (cat of categories; track cat.id_nomenclature) {
+      @for (cat of categories(); track cat.id_nomenclature) {
         <div class="column">
           <h3>{{ cat.libelle }}</h3>
           <div
             cdkDropList
             [id]="'dropList-' + cat.id_nomenclature"
             [cdkDropListData]="cat.mots_cles"
-            [cdkDropListConnectedTo]="connectedDropListsIds"
+            [cdkDropListConnectedTo]="connectedDropListsIds()"
             class="dropzone"
             (cdkDropListDropped)="drop($event, cat)">
 
@@ -39,7 +39,7 @@
   </div>
 
   <div class="col-6">
-    @if (!modeAnalyse) {
+    @if (!modeAnalyse()) {
       <mat-form-field appearance="outline">
         <mat-chip-set>
           @for (keyword of keywords; track keyword) {
@@ -72,7 +72,7 @@
 
     <h3>Instructions</h3>
     <ul>
-      @if (!modeAnalyse) {
+      @if (!modeAnalyse()) {
         <li>
           Ajouter un mot-clé : tapez le mot que vous voulez dans la zone de saisie. S'il existe déjà sur le diagnostic, vous pourrez le sélectionner. S'il n'existe pas, tapez Entrée pour créer le mot.
         </li>
@@ -83,7 +83,7 @@
     </ul>
   </div>
 
-  @if (diagnostic.created_by == id_role && !diagnostic.is_read_only) {
+  @if (diagnostic().created_by == id_role() && !diagnostic().is_read_only) {
     <button mat-raised-button type="button" color="warn" (click)="sendResponse()">Enregistrer</button>
   }
 </div>
