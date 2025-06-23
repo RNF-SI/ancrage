@@ -33,7 +33,7 @@
           <mat-form-field appearance="fill">
             <mat-label>{{ labels.statusLabel }}</mat-label>
             <mat-select required formControlName="type" [compareWith]="compareNomenclatures">
-              @for (type of uniqueStatuts; track type) {
+              @for (type of uniqueStatuts(); track type) {
                 <mat-option [value]="type">{{ type.libelle }}</mat-option>
               }
             </mat-select>
@@ -46,7 +46,7 @@
           <mat-form-field appearance="fill">
             <mat-label>{{ labels.departementLabel }}</mat-label>
             <mat-select required multiple formControlName="departements" [compareWith]="compareDepartements">
-              @for (departement of uniqueDepartements; track departement) {
+              @for (departement of uniqueDepartements(); track departement) {
                 <mat-option [value]="departement">{{ departement.nom_dep }}</mat-option>
               }
             </mat-select>
