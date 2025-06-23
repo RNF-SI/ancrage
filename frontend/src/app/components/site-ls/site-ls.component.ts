@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, effect, inject, input, Input, OnDestroy, OnInit, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialogRef } from '@angular/material/dialog';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Params } from '@angular/router';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { Site } from '@app/models/site.model';
 import { SiteService } from '@app/services/sites.service';
@@ -17,35 +18,41 @@ import { Subscription } from 'rxjs';
     styleUrls: ['./site-ls.component.css'],
     imports: [MatCardModule, CommonModule, MatButtonModule]
 })
-export class SiteLsComponent implements OnInit, OnDestroy{
+export class SiteLsComponent implements OnDestroy{
   
   private siteService = inject(SiteService);
   private route = inject(ActivatedRoute);
-  private routeSubscription?:Subscription;
+  private dialogRef = inject(MatDialogRef<SiteLsComponent>);
+  private routeParams = toSignal(this.route.params, { initialValue: {} });
 
-  @Input() labels = new Labels();
-  @Input() site:Site = new Site();
-  @Input() dialogRef = inject(MatDialogRef)
-  diagnostic:Diagnostic = new Diagnostic();
-  siteSubscription?:Subscription;
-  @Input() can_edit:boolean = false;
-  
-  ngOnInit(): void {
-    
-    this.routeSubscription = this.route.params.subscribe((params: any) => {
-      const id_site = params['id_site'];
-      const slug = params['slug'];
-      if (slug && id_site) {
-        this.siteSubscription = this.siteService.get(id_site, slug).subscribe(site => {
-          this.site = site;
+  labels = new Labels();
+
+  site = input<Site>(new Site()); 
+  siteLocal = signal<Site>(new Site()); 
+
+  diagnostic: Diagnostic = new Diagnostic();
+  can_edit = input<boolean>(false);
+
+  private siteSubscription?: Subscription;
+
+  constructor() {
+    effect(() => {
+      const { id_site, slug } = this.routeParams() as Params;
+      const id = Number(id_site);
+      const slugValue = slug as string;
+
+      if (id && slugValue) {
+        this.siteSubscription?.unsubscribe();
+        this.siteSubscription = this.siteService.get(id, slugValue).subscribe(site => {
+          this.siteLocal.set(site); // ← on met à jour la version locale
         });
-      } else if (this.site?.id_site) { 
-        this.siteSubscription = this.siteService.get(this.site.id_site,this.site.slug).subscribe(site => {
-          this.site = site;
+      } else if (this.site().id_site && this.site().slug) {
+        this.siteSubscription?.unsubscribe();
+        this.siteSubscription = this.siteService.get(this.site().id_site, this.site().slug).subscribe(site => {
+          this.siteLocal.set(site);
         });
       }
     });
-    
   }
 
   navigate(path:string,diagnostic:Diagnostic){
@@ -53,7 +60,7 @@ export class SiteLsComponent implements OnInit, OnDestroy{
     this.dialogRef.close();
   }
   ngOnDestroy(): void {
-    this.routeSubscription?.unsubscribe();
+  
     this.siteSubscription?.unsubscribe();
   }
 

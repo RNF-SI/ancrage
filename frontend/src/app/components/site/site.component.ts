@@ -91,7 +91,7 @@ export class SiteComponent implements OnInit,OnDestroy{
       //Modification
       if (id && slugValue) {
         const site$ = this.siteService.get(this.id_site(),this.slug());
-        console.log('ok');
+      
         forkJoin([habitats$, statuts$, site$,departements$]).subscribe(([habitats, statuts, site,departements]) => {
           this.uniqueHabitats.set(habitats);
           this.uniqueStatuts.set(statuts);
