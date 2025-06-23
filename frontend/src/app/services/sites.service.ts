@@ -71,7 +71,7 @@ export class SiteService {
 		})
 	}
 
-	navigateAndCache(path: string,diagnostic: Diagnostic,site?: Site) {
+	navigateAndCache(path: string,diagnostic: Diagnostic,site?: Site,nocache?:boolean) {
 		
 		if (site && !diagnostic.sites.some(s => s.id_site === site.id_site)) {
 		  diagnostic.sites.push(site);
@@ -82,8 +82,10 @@ export class SiteService {
 		}
 		localStorage.removeItem("diagnostic");
 		localStorage.setItem("diagnostic",JSON.stringify(diagnostic));
+		if (!nocache){
+			localStorage.setItem("previousPage", this.router.url);
+		}
 		
-		localStorage.setItem("previousPage", this.router.url);
 	  
 		this.router.navigate([path]);
 	}

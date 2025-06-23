@@ -27,13 +27,7 @@
 </mat-dialog-content>
 
 <mat-dialog-actions>
-  <button mat-raised-button color="accent" type="button" (click)="navigate(data.previousPage, data.diagnostic)">
-    {{ data.labels.btnPreviousStepLabel }}
-  </button>
-  <button mat-raised-button mat-dialog-close (click)="navigate('/acteur', data.diagnostic)" color="accent">
-    {{ data.labels.createAnotherSite }}
-  </button>
-  <button mat-raised-button mat-dialog-close (click)="close()" color="accent">
-    {{ data.labels.correctSite }}
-  </button>
+    <button mat-raised-button color="accent" type="button" (click)="navigate(data.previousPage,data.diagnostic)">{{data.labels.btnPreviousStepLabel}}</button>
+    <button mat-raised-button mat-dialog-close (click)="navigate('/site',data.diagnostic)" color="accent">{{data.labels.createAnotherSite}}</button>
+    <button mat-raised-button mat-dialog-close (click)="navigate('/site/'+data.site.id_site+'/'+data.site.slug,data.diagnostic)" color="accent">{{data.labels.correctSite}}</button>
 </mat-dialog-actions>

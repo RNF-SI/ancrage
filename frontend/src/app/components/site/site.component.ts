@@ -91,7 +91,7 @@ export class SiteComponent implements OnInit,OnDestroy{
       //Modification
       if (id && slugValue) {
         const site$ = this.siteService.get(this.id_site(),this.slug());
-      
+        this.previousPage = localStorage.getItem("previousPage")!;
         forkJoin([habitats$, statuts$, site$,departements$]).subscribe(([habitats, statuts, site,departements]) => {
           this.uniqueHabitats.set(habitats);
           this.uniqueStatuts.set(statuts);
@@ -119,6 +119,7 @@ export class SiteComponent implements OnInit,OnDestroy{
           this.titleSite = this.titleModif;
         });
       } else {
+        this.previousPage = localStorage.getItem("pageDiagCreation")!;
         //Création
         forkJoin([/* habitats$, */ statuts$,departements$]).subscribe(([/* habitats, */ statuts,departements]) => {
           /* this.uniqueHabitats = habitats; */
@@ -154,22 +155,22 @@ export class SiteComponent implements OnInit,OnDestroy{
       if (this.site().id_site == 0){
         this.site().created_by=this.user_id();
         this.siteSubscription = this.siteService.add(this.site()).subscribe(site=>{
-          this.getConfirmation("Le site suivant vient d'être créé dans la base de données et a été ajouté au diagnostic :",site);
+          this.getConfirmation("Le site suivant vient d'être créé dans la base de données et a été ajouté au diagnostic :",site,"pageDiagCreation");
         });
       }else{
         //Modification
         this.site().modified_by=this.user_id();
         this.siteSubscription = this.siteService.update(this.site()).subscribe(site=>{
-          this.getConfirmation("Le site suivant vient d'être modifié dans la base de données et a été ajouté au diagnostic :",site);
+          this.getConfirmation("Le site suivant vient d'être modifié dans la base de données et a été ajouté au diagnostic :",site,"previousPage");
         });
       }
     }
   }
 
   //Affiche le message de confirmation
-  getConfirmation(message:string,site:Site){
+  getConfirmation(message:string,site:Site,page:string){
     this.diagnostic.sites.push(site);
-    this.previousPage = localStorage.getItem("previousPage")!;
+    this.previousPage = localStorage.getItem(page)!;
     this.dialog.open(AlerteSiteComponent, {
       data: {
         title: this.titleSite,
@@ -182,12 +183,12 @@ export class SiteComponent implements OnInit,OnDestroy{
     });
   }
   navigate(path:string,diagnostic:Diagnostic){
-    this.siteService.navigateAndCache(path,diagnostic);
+    this.siteService.navigateAndCache(path,diagnostic,undefined,true);
   }
   ngOnDestroy(): void {
     this.nomenclatureSubscription?.unsubscribe();
     this.siteSubscription?.unsubscribe();
-    this.routeSubscription?.unsubscribe();
+   
   }
 }
 

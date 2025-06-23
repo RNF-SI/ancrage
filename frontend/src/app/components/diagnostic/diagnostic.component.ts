@@ -68,6 +68,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   private siteService = inject(SiteService);
   private authService = inject(AuthService);
   private dialog = inject(MatDialog);
+  private router = inject(Router);
   no_creation=true;
   user_id=0;
   id_organisme = 0;
@@ -97,6 +98,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       this.titleDiagnostic = this.titleCreateDiag;
       this.previousPage = localStorage.getItem("previousPage")!;
       this.user = this.authService.getCurrentUser();
+      localStorage.setItem("pageDiagCreation",this.router.url);
       const { id_diagnostic, slug } = this.routeParams() as Params;
       const id = Number(id_diagnostic);
       const slugValue = slug as string;
