@@ -77,6 +77,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   private authService = inject(AuthService);
   private dialog = inject(MatDialog);
   private diagnosticStoreSubscription ?:Subscription;
+  private router = inject(Router);
   
   no_creation=true;
   user_id=0;
@@ -107,7 +108,9 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
     let diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
     this.titleDiagnostic = this.titleCreateDiag;
     this.previousPage = localStorage.getItem("previousPage")!;
+    localStorage.setItem("pageDiagCreation",this.router.url);
     this.user = this.authService.getCurrentUser();
+
     this.routeSubscription = this.route.params.subscribe((params: any) => {
       this.id_diagnostic = params['id_diagnostic'];  
       this.slug = params['slug'];

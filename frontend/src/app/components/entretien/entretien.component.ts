@@ -17,7 +17,6 @@ import { SiteService } from '@app/services/sites.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MotsClesZoneComponent } from "../parts/mots-cles-zone/mots-cles-zone.component";
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
-import { MotCle } from '@app/models/mot-cle.model';
 
 //Page de la saisie de l'entretien
 @Component({
