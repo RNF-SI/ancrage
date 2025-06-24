@@ -466,9 +466,9 @@ export class MotsClesZoneComponent implements OnDestroy{
         data: {
           source: source,
           target: target,
-          diagnostic: this.diagnostic,
+          diagnostic: this.diagnostic(),
           motsClesReponse: listToSend,
-          categories: this.categories
+          categories: this.categories()
         }
       });
   

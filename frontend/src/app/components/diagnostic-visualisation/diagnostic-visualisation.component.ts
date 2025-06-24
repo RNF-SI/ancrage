@@ -35,7 +35,7 @@ import { MatMomentDateModule } from '@angular/material-moment-adapter';
     standalone:true,
     imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent, MenuLateralComponent, TableauStructuresComponent, TableauStructuresComponent, MapComponent, MotsClesZoneComponent,MatMomentDateModule]
 })
-export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
+export class DiagnosticVisualisationComponent implements OnDestroy{
 
   diagnostic = signal<Diagnostic>(new Diagnostic());
   actors = signal<Acteur[]>([]);
@@ -87,6 +87,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
 
   constructor() {
     effect(() => {
+      this.previousPage.set(localStorage.getItem('previousPage')!);
       const { id_diagnostic, slug } = this.routeParams() as Params;
       const id = Number(id_diagnostic);
       const slugValue = slug as string;
@@ -115,11 +116,6 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
     });
   }
 
-  ngOnInit(): void {
-    this.previousPage.set(localStorage.getItem('previousPage')!);
-
-    
-  }
   //Cache ou affiche le menu en fonction de l'onglet choisi
   onTabChange(event: MatTabChangeEvent) {
     
