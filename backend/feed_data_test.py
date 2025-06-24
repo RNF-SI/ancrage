@@ -151,7 +151,7 @@ with app.app_context():
         "Partenaires, gestionnaires et techniciens",
         "Riverains, élus et usagers locaux",
         "Acteurs économiques",
-        "Membres du CCG"
+        "Membres ou participants au CCG"
     ]
 
     cat_short_labels = [

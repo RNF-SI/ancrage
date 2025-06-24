@@ -18,6 +18,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MotsClesZoneComponent } from "../parts/mots-cles-zone/mots-cles-zone.component";
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { Acteur } from '@app/models/acteur.model';
 
 
 //Page de la saisie de l'entretien
@@ -51,16 +52,25 @@ export class EntretienComponent implements OnDestroy{
   @ViewChild('afom') afomComponent!: MotsClesZoneComponent;
   menu:any;
   routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
+  actor:Acteur = new Acteur();
+  isCCG = false;
 
   constructor(){
     effect(() => {
       this.previousPage = localStorage.getItem("previousPage")!;
       this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
+      this.actor = JSON.parse(localStorage.getItem("acteur")!);
+      for (const cat of this.actor.categories!){
+        if (cat.libelle === this.labels.ccgLabel){
+          this.isCCG = true;
+          break;
+        }
+      }
       const { id_acteur, slug } = this.routeParams() as Params;
       const id = Number(id_acteur);
       this.id_acteur.set(id);
       const slugValue = slug as string;
-      this.title = this.labels.addInterview;
+      this.title = this.labels.addInterview + ' de ' + this.actor.nom + ' '+ this.actor.prenom;
       //Modification
       if (id && slugValue){
         const themes$ = this.nomenclatureService.getAllByType("thème_question",id);
@@ -89,7 +99,6 @@ export class EntretienComponent implements OnDestroy{
     this.afom = themes[themes.length-1];
     
     this.themes().forEach(theme => {
-
       
       theme.questions!.forEach(q => {
         controls[`question_${q.id_question}`] = this.fb.control(null);
@@ -124,7 +133,7 @@ export class EntretienComponent implements OnDestroy{
   patchForm(reponses:Reponse[]){
     console.log(reponses);
     for(let i = 0;i<reponses.length;i++){
-      this.formGroup.get(`question_${reponses[i].question?.id_question}`)?.setValue(reponses[i].valeur_reponse.value);
+      this.formGroup.get(`question_${reponses[i].question?.id_question}`)?.setValue(reponses[i].valeur_reponse.id_nomenclature);
       this.formGroup.get(`reponse_${reponses[i].question?.id_question}`)?.setValue(reponses[i].commentaires);
       setTimeout(() => {
         this.hideWarnings(reponses,i);

@@ -119,7 +119,7 @@
                   <button mat-icon-button type="button" (click)="navigate('/acteur/' + actor.id_acteur + '/' + actor.slug, diagnostic)" [matTooltip]="labels.modifyActor">
                     <fa-icon [icon]="['fas', 'pen']"></fa-icon>
                   </button>
-                  <button mat-icon-button type="button" (click)="navigate('/entretien/' + actor.id_acteur + '/' + actor.slug, diagnostic)" [matTooltip]="labels.goToInterview">
+                  <button mat-icon-button type="button" (click)="navigate('/entretien/' + actor.id_acteur + '/' + actor.slug, diagnostic,actor)" [matTooltip]="labels.goToInterview">
                     <fa-icon [icon]="['fas', 'file-lines']"></fa-icon>
                   </button>
                   @if (actor.statut_entretien?.libelle !== 'Réalisé' && actor.statut_entretien?.libelle !== 'En cours') {

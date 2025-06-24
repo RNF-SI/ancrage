@@ -71,4 +71,5 @@ export class Labels {
     requiredLatitude = "Une latitude est requise.";
     requiredLongitude = "Une longitude est requise.";
     requiredTown = "La commune est requise.";
+    ccgLabel = "Membres ou participants au CCG";
 }

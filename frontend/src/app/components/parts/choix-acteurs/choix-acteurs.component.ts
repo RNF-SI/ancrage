@@ -325,8 +325,8 @@ export class ChoixActeursComponent implements OnDestroy{
     }
   }
 
-  navigate= (path:string,diagnostic:Diagnostic):void =>{
-    console.log(diagnostic);
+  navigate= (path:string,diagnostic:Diagnostic,acteur?:Acteur):void =>{
+    localStorage.setItem("acteur",JSON.stringify(acteur));
     this.siteService.navigateAndCache(path,diagnostic);
   }
   

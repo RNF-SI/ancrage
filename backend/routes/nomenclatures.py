@@ -3,6 +3,7 @@ from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
 from routes import bp,joinedload,aliased,and_
+from routes.functions import checkCCG
 from collections import defaultdict
 
 @bp.route('/nomenclature/<int:id_nomenclature>', methods=['GET','PUT','DELETE'])
@@ -129,49 +130,94 @@ def getAllNomenclaturesByType(mnemonique,id_acteur):
         return traitementThemeQuestions(nomenclatures,id_acteur)
     
     elif mnemonique == "thème_question":
-        ValeurNomenclature = aliased(Nomenclature)
-        Categorie = aliased(Nomenclature)
-        MotCleAlias = aliased(MotCle)
+        isCCG = checkCCG(id_acteur)
+        if isCCG:
+            ValeurNomenclature = aliased(Nomenclature)
+            Categorie = aliased(Nomenclature)
+            MotCleAlias = aliased(MotCle)
 
-        nomenclatures = (
-        db.session.query(Nomenclature)
-        .filter(Nomenclature.mnemonique == "thème_question") 
-        .join(Nomenclature.questions_th)  
-        .outerjoin(Reponse, and_(
-            Reponse.question_id == Question.id_question,
-            Reponse.acteur_id == id_acteur
-        ))
-        .outerjoin(ValeurNomenclature, Reponse.valeur_reponse_id == ValeurNomenclature.id_nomenclature)
-        .outerjoin(Reponse.mots_cles)
-        .outerjoin(Categorie, MotCle.categorie)
-        .outerjoin(MotCleAlias, MotCle.mots_cles_groupe)
-        .options(
-            joinedload(Nomenclature.questions_th)
-                .joinedload(Question.reponses)
-                .joinedload(Reponse.valeur_reponse),
+            nomenclatures = (
+                db.session.query(Nomenclature)
+                .filter(Nomenclature.mnemonique == "thème_question") 
+                .join(Nomenclature.questions_th)  
+                .outerjoin(Reponse, and_(
+                    Reponse.question_id == Question.id_question,
+                    Reponse.acteur_id == id_acteur
+                ))
+                .outerjoin(ValeurNomenclature, Reponse.valeur_reponse_id == ValeurNomenclature.id_nomenclature)
+                .outerjoin(Reponse.mots_cles)
+                .outerjoin(Categorie, MotCle.categorie)
+                .outerjoin(MotCleAlias, MotCle.mots_cles_groupe)
+                .options(
+                    joinedload(Nomenclature.questions_th)
+                        .joinedload(Question.reponses)
+                        .joinedload(Reponse.valeur_reponse),
 
-            joinedload(Nomenclature.questions_th)
-                .joinedload(Question.reponses)
-                .joinedload(Reponse.acteur),
+                    joinedload(Nomenclature.questions_th)
+                        .joinedload(Question.reponses)
+                        .joinedload(Reponse.acteur),
 
-            joinedload(Nomenclature.questions_th)
-                .joinedload(Question.reponses)
-                .joinedload(Reponse.mots_cles)
-                .joinedload(MotCle.categorie),
+                    joinedload(Nomenclature.questions_th)
+                        .joinedload(Question.reponses)
+                        .joinedload(Reponse.mots_cles)
+                        .joinedload(MotCle.categorie),
 
-            joinedload(Nomenclature.questions_th)
-                .joinedload(Question.reponses)
-                .joinedload(Reponse.mots_cles)
-                .joinedload(MotCle.mots_cles_groupe),
+                    joinedload(Nomenclature.questions_th)
+                        .joinedload(Question.reponses)
+                        .joinedload(Reponse.mots_cles)
+                        .joinedload(MotCle.mots_cles_groupe),
 
-            joinedload(Nomenclature.questions_th)
-                .joinedload(Question.choixReponses)
-        )
-        .order_by(Nomenclature.id_nomenclature)
-        .all()
-    )
+                    joinedload(Nomenclature.questions_th)
+                        .joinedload(Question.choixReponses)
+                )
+                .order_by(Nomenclature.id_nomenclature)
+                .all()
+            )
 
-        return traitementParThemeQuestions(nomenclatures, id_acteur)
+            return traitementParThemeQuestions(nomenclatures, id_acteur)
+        else:
+            ValeurNomenclature = aliased(Nomenclature)
+            Categorie = aliased(Nomenclature)
+            MotCleAlias = aliased(MotCle)
+
+            nomenclatures = (
+                db.session.query(Nomenclature)
+                .filter(Nomenclature.mnemonique == "thème_question",Nomenclature.libelle != "Spécifique à l'instance de gouvernance") 
+                .join(Nomenclature.questions_th)  
+                .outerjoin(Reponse, and_(
+                    Reponse.question_id == Question.id_question,
+                    Reponse.acteur_id == id_acteur
+                ))
+                .outerjoin(ValeurNomenclature, Reponse.valeur_reponse_id == ValeurNomenclature.id_nomenclature)
+                .outerjoin(Reponse.mots_cles)
+                .outerjoin(Categorie, MotCle.categorie)
+                .outerjoin(MotCleAlias, MotCle.mots_cles_groupe)
+                .options(
+                    joinedload(Nomenclature.questions_th)
+                        .joinedload(Question.reponses)
+                        .joinedload(Reponse.valeur_reponse),
+
+                    joinedload(Nomenclature.questions_th)
+                        .joinedload(Question.reponses)
+                        .joinedload(Reponse.acteur),
+
+                    joinedload(Nomenclature.questions_th)
+                        .joinedload(Question.reponses)
+                        .joinedload(Reponse.mots_cles)
+                        .joinedload(MotCle.categorie),
+
+                    joinedload(Nomenclature.questions_th)
+                        .joinedload(Question.reponses)
+                        .joinedload(Reponse.mots_cles)
+                        .joinedload(MotCle.mots_cles_groupe),
+
+                    joinedload(Nomenclature.questions_th)
+                        .joinedload(Question.choixReponses)
+                )
+                .order_by(Nomenclature.id_nomenclature)
+                .all()
+            )
+            return traitementParThemeQuestions(nomenclatures, id_acteur)
     else:
         nomenclatures = Nomenclature.query.filter_by(mnemonique=mnemonique).all()
         schema = NomenclatureSchema(many=True)

@@ -161,8 +161,8 @@ def getAveragebyQuestion(id_diagnostic):
 
 @bp.route("/diagnostics/charts/repartition/<id_diagnostic>", methods=["GET"])
 def get_reponses_par_theme(id_diagnostic):
+
     ValeurReponse = aliased(Nomenclature)
-    Categorie = aliased(Nomenclature)
     Theme = aliased(Nomenclature)
 
     results = (
