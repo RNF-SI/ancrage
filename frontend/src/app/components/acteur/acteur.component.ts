@@ -75,7 +75,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
   pageDiagnostic = "";
 
   ngOnInit(): void {
-    
+    this.pageDiagnostic = localStorage.getItem("pageDiagnostic")!;
     this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
     this.isLoading = true;
     this.routeSubscription = this.route.params.subscribe((params: any) => {
@@ -187,7 +187,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
   }
   //Alerte de confirmation
   getConfirmation(message:string,actor:Acteur){
-    this.pageDiagnostic = localStorage.getItem("pageDiagnostic")!;
+    
     this.previousPage = localStorage.getItem("previousPage")!;
     this.diagnostic.acteurs.push(actor);
     

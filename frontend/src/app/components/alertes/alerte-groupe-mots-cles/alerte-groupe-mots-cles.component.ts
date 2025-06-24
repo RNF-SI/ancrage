@@ -11,6 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { ToastrService } from 'ngx-toastr';
 import { Labels } from '@app/utils/labels';
+import { MatOptionModule } from '@angular/material/core';
 
 //Popup qui apparaît à la fusion de deux mots-clés
 @Component({
@@ -18,7 +19,7 @@ import { Labels } from '@app/utils/labels';
   templateUrl: './alerte-groupe-mots-cles.component.html',
   styleUrls: ['./alerte-groupe-mots-cles.component.css'],
   standalone:true,
-  imports:[MatButtonModule,CommonModule,MatDialogModule,MatSelectModule,FormsModule,MatFormFieldModule,MatInputModule]
+  imports:[MatButtonModule,CommonModule,MatDialogModule,MatSelectModule,FormsModule,MatFormFieldModule,MatInputModule,MatOptionModule]
 })
 export class AlerteGroupeMotsClesComponent{
   constructor(
@@ -29,10 +30,10 @@ export class AlerteGroupeMotsClesComponent{
             diagnostic:Diagnostic,
             motsClesReponse:MotCle[],
             categories:Nomenclature[]
-            labels:Labels
+            
           }
         ) {}
- 
+  labels:Labels = new Labels();
   keyword = new MotCle();
   private toastr = inject(ToastrService);
   

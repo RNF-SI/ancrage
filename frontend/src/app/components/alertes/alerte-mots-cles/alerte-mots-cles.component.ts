@@ -27,10 +27,10 @@ export class AlerteMotsClesComponent implements OnInit, OnDestroy{
               keyword:MotCle;
               listeMotsCles:MotCle[];
               sections:Nomenclature[];
-              labels:Labels
+             
             }
           ) {}
-
+          labels = new Labels();
           private kwSub?:Subscription;
           private kwService = inject(MotCleService);
           mot_cle_origine = new MotCle();

@@ -58,8 +58,8 @@
                         matInput
                         formControlName="commune"
                         [matAutocomplete]="auto"
-                        placeholder="Nom de la commune">
-                
+                        placeholder="Nom de la commune" required>
+                    <mat-error *ngIf="formGroup.get('commune')?.hasError('required')">{{labels.requiredTown}}</mat-error>
                     <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
                     <mat-option *ngFor="let town of filteredTowns" [value]="town">
                         {{ town.nom_com }}
