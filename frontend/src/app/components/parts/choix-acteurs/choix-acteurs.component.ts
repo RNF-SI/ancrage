@@ -82,9 +82,11 @@ export class ChoixActeursComponent implements OnDestroy{
 
   constructor(){
     effect(() => {
+      this.previousPage = localStorage.getItem("previousPage")!;
+      this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!) as Diagnostic;
+      console.log(this.diagnostic);
       if (!this.no_creation){
-        this.previousPage = localStorage.getItem("previousPage")!;
-        this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!) as Diagnostic;
+        
         this.formGroup = this.fb.group({
         
           acteurs: this.fb.control<Acteur[]>([], [Validators.required]),  
@@ -209,13 +211,6 @@ export class ChoixActeursComponent implements OnDestroy{
 
   }
 
-  navigateToActor(path:string,diagnostic:Diagnostic){
-    diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
-    localStorage.setItem("previousPage",this.router.url);
-    localStorage.setItem("diagnostic",JSON.stringify(diagnostic));
-    this.router.navigate([path]);
-  }
-
   //Alerte de confirmation
   openAlert(actor:Acteur){
     this.dialog.open(AlerteStatutEntretienComponent, {
@@ -331,7 +326,7 @@ export class ChoixActeursComponent implements OnDestroy{
   }
 
   navigate= (path:string,diagnostic:Diagnostic):void =>{
-    
+    console.log(diagnostic);
     this.siteService.navigateAndCache(path,diagnostic);
   }
   

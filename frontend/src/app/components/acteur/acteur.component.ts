@@ -77,6 +77,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
     effect(() => {
       this.pageDiagnostic = localStorage.getItem("pageDiagnostic")!;
       this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
+      console.log(this.diagnostic);
       const { id_acteur, slug } = this.routeParams() as Params;
       const id = Number(id_acteur);
       const slugValue = slug as string;
@@ -164,6 +165,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
         this.actor.set(Object.assign(new Acteur(),this.formGroup.value));
         const actorToSend = this.actor();
         actorToSend.diagnostic = new Diagnostic();
+        
         actorToSend.diagnostic.id_diagnostic = this.diagnostic.id_diagnostic;
         console.log(actorToSend);
         this.actorSubscription = this.actorService.add(actorToSend).subscribe(

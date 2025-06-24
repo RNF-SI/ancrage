@@ -30,7 +30,7 @@ export class AlerteActeurComponent {
     private siteService = inject(SiteService);
   
     navigate(path:string,diagnostic:Diagnostic){
-      
+      console.log(diagnostic);
       this.dialogRef.close();
       this.siteService.navigateAndCache(path,diagnostic,undefined,true);
     }

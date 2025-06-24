@@ -116,7 +116,7 @@
                   <fa-icon [icon]="['fas', 'info']"></fa-icon>
                 </button>
                 @if (!diagnostic.is_read_only) {
-                  <button mat-icon-button type="button" (click)="navigateToActor('/acteur/' + actor.id_acteur + '/' + actor.slug, diagnostic)" [matTooltip]="labels.modifyActor">
+                  <button mat-icon-button type="button" (click)="navigate('/acteur/' + actor.id_acteur + '/' + actor.slug, diagnostic)" [matTooltip]="labels.modifyActor">
                     <fa-icon [icon]="['fas', 'pen']"></fa-icon>
                   </button>
                   <button mat-icon-button type="button" (click)="navigate('/entretien/' + actor.id_acteur + '/' + actor.slug, diagnostic)" [matTooltip]="labels.goToInterview">

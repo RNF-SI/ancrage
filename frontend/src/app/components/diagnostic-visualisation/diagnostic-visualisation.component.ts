@@ -65,6 +65,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   authService = inject(AuthService);
   dialog = inject(MatDialog);
   private router = inject(Router);
+  diag = new Diagnostic();
 
   @ViewChild(MapComponent) mapComponent!: MapComponent;
 
@@ -99,6 +100,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
           themes: this.nomenclatureService.getAllByType('thème'),
         }).subscribe(({ diag, themes }) => {
           this.diagnostic.set(diag);
+          this.diag = this.diagnostic();
           this.themes.set(themes);
           this.actors.set(this.diagnostic().acteurs);
           const user = this.authService.getCurrentUser();
@@ -201,6 +203,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   
   //Navigation et mise en cache
   navigate= (path:string,diagnostic:Diagnostic):void =>{
+    console.log("diag",diagnostic);
     localStorage.setItem("pageDiagnostic",this.router.url);
     this.siteService.navigateAndCache(path,diagnostic);
   }
