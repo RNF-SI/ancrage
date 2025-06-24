@@ -203,7 +203,6 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   
   //Navigation et mise en cache
   navigate= (path:string,diagnostic:Diagnostic):void =>{
-    console.log("diag",diagnostic);
     localStorage.setItem("pageDiagnostic",this.router.url);
     this.siteService.navigateAndCache(path,diagnostic);
   }

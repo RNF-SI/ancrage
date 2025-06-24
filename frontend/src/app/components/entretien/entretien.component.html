@@ -13,6 +13,7 @@
 
               @for (theme of themes(); track theme) {
                 @if (theme.libelle !== 'AFOM') {
+                  
                   <h3>{{ theme.libelle }}</h3>
 
                   @for (q of theme.questions; track q) {

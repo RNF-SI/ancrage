@@ -1,8 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject, inject, LOCALE_ID } from '@angular/core';
-import { MAT_MOMENT_DATE_ADAPTER_OPTIONS } from '@angular/material-moment-adapter';
+import { Component, Inject, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MAT_DATE_LOCALE, MAT_DATE_FORMATS } from '@angular/material/core';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { SiteService } from '@app/services/sites.service';

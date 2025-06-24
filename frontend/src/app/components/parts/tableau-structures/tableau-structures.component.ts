@@ -1,11 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, input, Input, OnDestroy, OnInit, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, effect, inject, input, signal } from '@angular/core';
 import { MatListModule } from '@angular/material/list';
-import { ChildActivationStart } from '@angular/router';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
-import { Subscription, switchMap } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 //Affiche la liste des structures sur la page diagnostic-visualisation en lecture seule
 @Component({

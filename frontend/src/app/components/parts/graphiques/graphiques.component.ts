@@ -1,4 +1,4 @@
-import { Component, DestroyRef, Input, computed, effect, inject, signal } from '@angular/core';
+import { Component, Input, computed, effect, inject, signal } from '@angular/core';
 import { ChartConfiguration, ChartData, ChartOptions, RadialLinearScaleOptions } from 'chart.js';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';

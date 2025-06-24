@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, effect, inject, Input, OnDestroy, OnInit, signal, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, effect, inject, Input, OnDestroy, signal, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -64,7 +64,6 @@ export class ChoixActeursComponent implements OnDestroy{
   titleChooseActors="Acteurs choisis";
   private dialog = inject(MatDialog);
   @Input() no_creation = false;
-  private router = inject(Router);
   private fb = inject(FormBuilder);
   private routeSub?:Subscription; 
   private siteSub?:Subscription; 
@@ -84,7 +83,6 @@ export class ChoixActeursComponent implements OnDestroy{
     effect(() => {
       this.previousPage = localStorage.getItem("previousPage")!;
       this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!) as Diagnostic;
-      console.log(this.diagnostic);
       if (!this.no_creation){
         
         this.formGroup = this.fb.group({

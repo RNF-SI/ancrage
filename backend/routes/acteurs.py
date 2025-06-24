@@ -64,7 +64,6 @@ def postActeur():
         acteur.slug = slugify(acteur.nom) + '-' + str(myuuid)
         acteur.created_by = data.get('created_by', 'unknown')
         acteur.diagnostic_id = data['diagnostic']['id_diagnostic']
-        print(acteur.diagnostic_id)
         db.session.add(acteur)
         db.session.commit()
         logger.info(f"✅ Acteur créé avec ID {acteur.id_acteur} et slug {acteur.slug}")

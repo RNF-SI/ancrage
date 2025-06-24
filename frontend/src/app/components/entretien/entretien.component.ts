@@ -122,7 +122,6 @@ export class EntretienComponent implements OnDestroy{
   
     this.formGroup = this.fb.group(controls);
     if (this.id_acteur() > 0){
-      console.log(this.id_acteur());
       Promise.resolve().then(() => {
         this.patchForm(this.reponses);
       });
@@ -131,7 +130,6 @@ export class EntretienComponent implements OnDestroy{
   }
   //Envoie les données récupérées au formulaire
   patchForm(reponses:Reponse[]){
-    console.log(reponses);
     for(let i = 0;i<reponses.length;i++){
       this.formGroup.get(`question_${reponses[i].question?.id_question}`)?.setValue(reponses[i].valeur_reponse.id_nomenclature);
       this.formGroup.get(`reponse_${reponses[i].question?.id_question}`)?.setValue(reponses[i].commentaires);
@@ -149,7 +147,7 @@ export class EntretienComponent implements OnDestroy{
       const classe = ".warn_"+reponses[iteration].question?.id_question;
       
       const element = document.querySelector(classe);
-      console.log(element);
+ 
       if (reponses[iteration].valeur_reponse.id_nomenclature == this.noResponse().id_nomenclature){
         element?.classList.replace("warn","warn-partial");
         if(reponses[iteration].question?.indications == "Sans indicateur"){

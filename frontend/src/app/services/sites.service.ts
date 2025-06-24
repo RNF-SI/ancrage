@@ -82,6 +82,7 @@ export class SiteService {
 		}
 		localStorage.removeItem("diagnostic");
 		localStorage.setItem("diagnostic",JSON.stringify(diagnostic));
+		
 		if (!nocache){
 			localStorage.setItem("previousPage", this.router.url);
 		}

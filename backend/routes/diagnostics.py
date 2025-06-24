@@ -35,10 +35,8 @@ def diagnosticMethods(id_diagnostic, slug):
             diagnostic = changeValuesDiagnostic(diagnostic, data)
             diagnostic.modified_at = now
             raw_date = data.get('date_rapport')
-            print(raw_date)
             if raw_date is not None:
                 date_rapport = datetime.strptime(raw_date, '%d/%m/%Y')
-                print(date_rapport)
                 diagnostic.is_read_only = True
                 diagnostic.date_rapport = date_rapport
 

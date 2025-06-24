@@ -77,7 +77,6 @@ export class ActeurComponent implements OnInit,OnDestroy{
     effect(() => {
       this.pageDiagnostic = localStorage.getItem("pageDiagnostic")!;
       this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
-      console.log(this.diagnostic);
       const { id_acteur, slug } = this.routeParams() as Params;
       const id = Number(id_acteur);
       const slugValue = slug as string;
@@ -157,7 +156,6 @@ export class ActeurComponent implements OnInit,OnDestroy{
   //Enregistrement du formulaire
   recordActor(event: Event) {
     event.preventDefault();
-    console.log(this.id_actor());
     //Ajout
     if (this.id_actor() === 0){
       this.formGroup.get('created_by')!.setValue(this.user_id);
@@ -167,7 +165,6 @@ export class ActeurComponent implements OnInit,OnDestroy{
         actorToSend.diagnostic = new Diagnostic();
         
         actorToSend.diagnostic.id_diagnostic = this.diagnostic.id_diagnostic;
-        console.log(actorToSend);
         this.actorSubscription = this.actorService.add(actorToSend).subscribe(
           actor =>{
             this.getConfirmation("L'acteur suivant a été créé dans la base de données et a été ajouté au diagnostic : ",actor);

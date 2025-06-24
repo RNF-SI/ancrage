@@ -42,7 +42,7 @@ export class AlerteDatePublicationComponent implements OnInit{
 
       ngOnInit(): void {
         this.dateAdapter.setLocale('fr-FR');
-        console.log(this.dateAdapter);
+
       }
       close(){
         this.dialogRef.close();
