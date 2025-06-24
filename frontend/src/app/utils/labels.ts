@@ -70,5 +70,5 @@ export class Labels {
     requiredDepartment = "Au moins un département est requis.";
     requiredLatitude = "Une latitude est requise.";
     requiredLongitude = "Une longitude est requise.";
-    requiredTown = "La commune est requise."
+    requiredTown = "La commune est requise.";
 }

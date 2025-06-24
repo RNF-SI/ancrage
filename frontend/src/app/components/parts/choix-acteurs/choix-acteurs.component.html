@@ -47,9 +47,11 @@
               <button mat-raised-button type="button" class="otherInfosBtn" (click)="showOtherInfos(actor); $event.stopPropagation()">
                 <fa-icon [icon]="['fas', 'info']"></fa-icon>
               </button>
-              <button mat-raised-button type="button" class="otherInfosBtn" (click)="navigate('/acteur/' + actor.id_acteur + '/' + actor.slug, diagnostic); $event.stopPropagation()">
-                <fa-icon [icon]="['fas', 'pen']"></fa-icon>
-              </button>
+              <span *ngIf="no_creation">
+                <button mat-raised-button type="button" class="otherInfosBtn" (click)="navigate('/acteur/' + actor.id_acteur + '/' + actor.slug, diagnostic); $event.stopPropagation()">
+                  <fa-icon [icon]="['fas', 'pen']"></fa-icon>
+                </button>
+              </span>
             </div>
           </mat-list-option>
         }
