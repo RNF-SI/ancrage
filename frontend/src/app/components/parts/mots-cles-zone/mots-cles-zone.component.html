@@ -1,5 +1,5 @@
-<div class="row">
-  <div class="col-6">
+<div class="grid-6-6">
+  <div class="col-span-6">
     <div class="grid" cdkDropListGroup>
       @for (cat of categories(); track cat.id_nomenclature) {
         <div class="column">
@@ -38,7 +38,7 @@
     </div>
   </div>
 
-  <div class="col-6">
+  <div class="col-span-6">
     @if (!modeAnalyse()) {
       <mat-form-field appearance="outline">
         <mat-chip-set>
