@@ -70,3 +70,21 @@ a{
     text-decoration: underline!important;
     cursor:pointer;
 }
+
+.grid-3-6-3 {
+    display: grid;
+    grid-template-columns: 15% 70% 15%; /* ou 3fr 6fr 3fr */
+    gap: 1rem;
+}
+
+.grid-6-6{
+    display: grid;
+    grid-template-columns: 50% 50%; /* ou 3fr 6fr 3fr */
+    gap: 1rem;
+} 
+.col-left,
+.col-center,
+.col-right {
+    background: #eee;
+    padding: 1rem;
+}

@@ -40,6 +40,8 @@
             "browser": "src/main.ts",
             "stylePreprocessorOptions": {
               "includePaths": [
+                "node_modules",
+                "src",
                 "."
               ]
             }

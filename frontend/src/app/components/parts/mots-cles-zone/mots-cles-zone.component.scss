@@ -23,3 +23,8 @@
   border: 2px dashed #ccc;
   border-radius: 4px;
 }
+
+.grid-6-6{
+  display: grid;
+  grid-template-columns: 50% 50%; /* ou 3fr 6fr 3fr */
+}

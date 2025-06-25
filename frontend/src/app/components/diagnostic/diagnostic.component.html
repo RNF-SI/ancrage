@@ -1,8 +1,8 @@
 <div class="container">
-    <div class="row">
-      <div class="col-2"></div>
+    <div class="grid grid-cols-12 gap-4">
+      <div class="col-span-2"></div>
   
-      <div class="col-8">
+      <div class="col-span-8">
         @let diag = diagnostic;
         @if (!diag().is_read_only) {
         
@@ -60,7 +60,7 @@
        
       </div>
   
-      <div class="col-2"></div>
+      <div class="col-span-2"></div>
     </div>
 </div>
   

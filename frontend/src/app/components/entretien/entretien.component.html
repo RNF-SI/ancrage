@@ -1,10 +1,10 @@
 <div class="container">
-  <div class="row">
-    <div class="col-3">
+  <div class="grid grid-cols-12 gap-4">
+    <div class="col-span-3">
       <app-menu-lateral [themes]="themes()"></app-menu-lateral>
     </div>
 
-    <div class="col-9">
+    <div class="col-span-9">
       <mat-tab-group (selectedTabChange)="onTabChange($event)">
         <mat-tab label="Questions">
           <div class="p-3">

@@ -9,3 +9,8 @@
     width: 100%;
     max-width: 700px;
   }
+
+  .grid-6-6{
+    display: grid;
+    grid-template-columns: 50% 50%; /* ou 3fr 6fr 3fr */
+  }

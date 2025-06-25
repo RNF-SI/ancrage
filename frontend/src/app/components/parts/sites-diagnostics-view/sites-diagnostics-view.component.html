@@ -1,12 +1,12 @@
 <div class="container">
-  <div class="row">
-    <div class="col-3"></div>
-    <div class="col-6 text-center">
+  <div class="grid-3-6-3">
+    <div class="col-left"></div>
+    <div class="col-center">
       <button mat-raised-button id="creaBtn" class="col-6" color="accent" (click)="navigate('/diagnostic', diagnostic)">
         {{ titleBtnCreaDiag }}
       </button>
     </div>
-    <div class="col-3">
+    <div class="col-span-3">
       <button mat-icon-button [matTooltip]="infobulleCreaDiagFromScratch" aria-label="Info création" color="accent">
         <fa-icon [icon]="['fas', 'question']"></fa-icon>
       </button>
@@ -51,12 +51,12 @@
     </button>
   </div>
 
-  <div class="row">
-    <div class="col-6">
+  <div class="grid-6-6">
+    <div >
       <app-map [sites]="filteredSiteList" [attr.key]="mapInstanceKey"></app-map>
     </div>
 
-    <div class="col-6">
+    <div >
       <div id="diagnostics_liste">
         <h2 class="text-center">{{ title }}</h2>
 
