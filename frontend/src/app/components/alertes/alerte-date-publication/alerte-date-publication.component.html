@@ -13,9 +13,7 @@
     <button mat-raised-button color="accent" type="button" (click)="navigate(data.previousPage, data.diagnostic)">
       {{ data.labels.btnPreviousStepLabel }}
     </button>
-    <button mat-raised-button mat-dialog-close (click)="close()" color="accent">
-      {{data.labels.correctDate}}
-    </button>
+    
     <button mat-raised-button mat-dialog-close (click)="recordDiagnostic()" color="warn">
         {{data.labels.record}}
     </button>

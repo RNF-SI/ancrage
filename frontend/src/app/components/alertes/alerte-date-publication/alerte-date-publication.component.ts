@@ -12,18 +12,18 @@ import { SiteService } from '@app/services/sites.service';
 import { Labels } from '@app/utils/labels';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { Subscription } from 'rxjs';
-import * as moment from 'moment';
+import moment from 'moment';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DateAdapter } from '@angular/material/core';
 
 //Permet de modifier la data de publication
 @Component({
-  selector: 'app-alerte-date-publication',
-  templateUrl: './alerte-date-publication.component.html',
-  styleUrls: ['./alerte-date-publication.component.css'],
-  imports:[MatButtonModule,MatDatepickerModule,MatFormFieldModule,FormsModule,MatInputModule,MatMomentDateModule,MatDialogModule,FontAwesomeModule,MatTooltipModule],
-  standalone:true
+    selector: 'app-alerte-date-publication',
+    templateUrl: './alerte-date-publication.component.html',
+    styleUrls: ['./alerte-date-publication.component.css'],
+    imports: [MatButtonModule, MatDatepickerModule, MatFormFieldModule, FormsModule, MatInputModule, MatMomentDateModule, MatDialogModule, FontAwesomeModule, MatTooltipModule],
+    standalone:true
 })
 export class AlerteDatePublicationComponent implements OnInit{
     constructor(
@@ -42,6 +42,7 @@ export class AlerteDatePublicationComponent implements OnInit{
 
       ngOnInit(): void {
         this.dateAdapter.setLocale('fr-FR');
+
       }
       close(){
         this.dialogRef.close();

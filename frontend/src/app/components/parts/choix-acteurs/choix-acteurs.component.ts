@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, inject, Input, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, effect, inject, Input, OnDestroy, signal, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -7,7 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Params, Router, RouterModule } from '@angular/router';
 import { Acteur } from '@app/models/acteur.model';
 import { Departement } from '@app/models/departement.model';
 import { Diagnostic } from '@app/models/diagnostic.model';
@@ -27,16 +27,16 @@ import { DiagnosticService } from '@app/services/diagnostic.service';
 import { Site } from '@app/models/site.model';
 import { DiagnosticComponent } from '@app/components/diagnostic/diagnostic.component';
 import { SiteService } from '@app/services/sites.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 //Tableau des acteurs
 @Component({
-  selector: 'app-choix-acteurs',
-  templateUrl: './choix-acteurs.component.html',
-  styleUrls: ['./choix-acteurs.component.css'],
-  standalone:true,
-  imports:[CommonModule,MatTableModule,MatCheckboxModule,FormsModule,MatSelectModule,MatFormFieldModule,MatButtonModule,RouterModule,ReactiveFormsModule,FontAwesomeModule,MatListModule,MatCardModule,MatTooltipModule]
+    selector: 'app-choix-acteurs',
+    templateUrl: './choix-acteurs.component.html',
+    styleUrls: ['./choix-acteurs.component.css'],
+    imports: [CommonModule, MatTableModule, MatCheckboxModule, FormsModule, MatSelectModule, MatFormFieldModule, MatButtonModule, RouterModule, ReactiveFormsModule, FontAwesomeModule, MatListModule, MatCardModule, MatTooltipModule]
 })
-export class ChoixActeursComponent implements OnInit,OnDestroy{
+export class ChoixActeursComponent implements OnDestroy{
   
   @Input() actors: Acteur[]=[];
   title: string="Choisir les acteurs";
@@ -64,7 +64,6 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
   titleChooseActors="Acteurs choisis";
   private dialog = inject(MatDialog);
   @Input() no_creation = false;
-  private router = inject(Router);
   private fb = inject(FormBuilder);
   private routeSub?:Subscription; 
   private siteSub?:Subscription; 
@@ -72,28 +71,32 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
   private departementService = inject(DepartementService);
   private nomenclatureService = inject(NomenclatureService); 
   private actorService = inject(ActeurService);
-  private route = inject(ActivatedRoute);
   private diagnosticService = inject(DiagnosticService);
   uniqueActors:Acteur[] = [];
   slug:string ="";
   diagComponent:DiagnosticComponent = new DiagnosticComponent();
   private siteService = inject(SiteService);
+  routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
+  id_diagnostic = signal<number>(0);
 
-  ngOnInit(): void {
-    if (!this.no_creation){
+  constructor(){
+    effect(() => {
       this.previousPage = localStorage.getItem("previousPage")!;
       this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!) as Diagnostic;
-      this.formGroup = this.fb.group({
-      
-        acteurs: this.fb.control<Acteur[]>([], [Validators.required]),  
+      if (!this.no_creation){
         
-      });
-      this.actors = this.diagnostic.acteurs;
-      this.routeSub = this.route.params.subscribe((params: any) => {
-        const id_diagnostic = params['id_diagnostic'];  
-        this.slug = params['slug'];
-
-        if (id_diagnostic && this.slug){
+        this.formGroup = this.fb.group({
+        
+          acteurs: this.fb.control<Acteur[]>([], [Validators.required]),  
+          
+        });
+        this.actors = this.diagnostic.acteurs;
+        const { id_diagnostic, slug } = this.routeParams() as Params;
+        const id = Number(id_diagnostic);
+        this.id_diagnostic.set(id);
+        const slugValue = slug as string;
+       
+        if (id && slugValue){
           const departments$ = this.departementService.getAll();
           const categories$ = this.nomenclatureService.getAllByType("categories");
       
@@ -103,8 +106,10 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
             this.getActors(this.diagnostic.sites);
           })  
         }
-      });  
-    }
+         
+      }
+
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -129,7 +134,7 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
   applyFilters() {
     let selectedCat = true;
     let selectedDep = true;
-    let selectedDiag = false;
+    let selectedDiag = true;
     if (this.selectedCategory.id_nomenclature == 0){
       
       selectedCat = false
@@ -147,7 +152,7 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
       
       const matchDep = !selectedDep || actor.commune?.departement?.nom_dep === this.selectedDepartment.nom_dep;
       const matchCat = !selectedCat || actor.categories?.some(cat => cat.id_nomenclature === this.selectedCategory.id_nomenclature);
-      const matchDiag = !this.selectedDiagnostic.id_diagnostic ||actor.diagnostic?.id_diagnostic === this.selectedDiagnostic.id_diagnostic;
+      const matchDiag = !selectedDiag ||actor.diagnostic?.id_diagnostic === this.selectedDiagnostic.id_diagnostic;
       
       return matchDep && matchCat && matchDiag;
     });
@@ -204,13 +209,6 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
 
   }
 
-  navigateToActor(path:string,diagnostic:Diagnostic){
-    diagnostic = Object.assign(new Diagnostic(),this.formGroup.value);
-    localStorage.setItem("previousPage",this.router.url);
-    localStorage.setItem("diagnostic",JSON.stringify(diagnostic));
-    this.router.navigate([path]);
-  }
-
   //Alerte de confirmation
   openAlert(actor:Acteur){
     this.dialog.open(AlerteStatutEntretienComponent, {
@@ -260,9 +258,6 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
     this.actorService.sortByNameAndSelected(this.actorsOriginal);
     this.departementService.sortByName(this.uniqueDepartments);
     this.nomenclatureService.sortByName(this.uniqueCategories);
-    
-  
-   
   }
 
   //Sélectionne les acteurs dans l'interface
@@ -328,8 +323,8 @@ export class ChoixActeursComponent implements OnInit,OnDestroy{
     }
   }
 
-  navigate= (path:string,diagnostic:Diagnostic):void =>{
-    
+  navigate= (path:string,diagnostic:Diagnostic,acteur?:Acteur):void =>{
+    localStorage.setItem("acteur",JSON.stringify(acteur));
     this.siteService.navigateAndCache(path,diagnostic);
   }
   

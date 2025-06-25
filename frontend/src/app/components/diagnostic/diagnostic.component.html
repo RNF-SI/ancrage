@@ -1,45 +1,66 @@
 <div class="container">
     <div class="row">
-        <div class="col-2">
-
-        </div>
-        <div class="col-8">
-            <div *ngIf="!diagnostic.is_read_only; else notavailable">
-                <h2>
-                {{titleDiagnostic}}
-                </h2>
-                <form [formGroup] = "formGroup" (submit)="recordDiagnostic($event)">
-                    <mat-form-field appearance="fill" class="fieldName" >
-                        <mat-label>{{nameLabel}}</mat-label>
-                        <input matInput placeholder="Entrez un nom" formControlName="nom" required >
-                        <mat-error *ngIf="formGroup.get('nom')?.hasError('required')">{{labels.requiredName}}</mat-error>
-                    </mat-form-field>
-                    
-                    <mat-form-field appearance="fill" class="fieldName">
-                        <mat-label>{{ labels.chosenSites }}</mat-label>
-                        <mat-select formControlName="sites" multiple (selectionChange)="getDiagName(formGroup.value.sites,this.diagnostic)" [compareWith]="compareSites">
-                            <mat-option *ngFor="let site of uniqueSites" [value]="site">{{ site.nom }}</mat-option>
-                        </mat-select>
-                        <mat-error *ngIf="formGroup.get('sites')?.hasError('required')">{{labels.requiredSite}}</mat-error>
-                    </mat-form-field>
-                    <h4 >{{chosenSitesTitle}}</h4>
-                    <div *ngFor="let site of chosenSites">
-                        <p>{{ site.nom }}, {{site.type.libelle}}</p>
-                        
-                    </div>
-                    <button mat-raised-button color="accent" type="button" (click)="navigate('/site',diagnostic)">{{btnCreateSiteLabel}}</button>
-                    <button mat-raised-button color="accent" (click)="navigate(previousPage,diagnostic)" >{{labels.btnPreviousStepLabel}}</button>
-                    <button mat-raised-button color="warn" type="submit" >{{btnRecordDiag}}</button>
-            
-                </form>
-            </div>
-            <ng-template #notavailable>
-                <p>Vous n'avez pas accès à cette page.</p>
-            </ng-template>
-        </div>
+      <div class="col-2"></div>
+  
+      <div class="col-8">
+        @let diag = diagnostic;
+        @if (!diag().is_read_only) {
         
-        <div class="col-2">
-
-        </div>
+            <h2>{{ titleDiagnostic }}</h2>
+            <form [formGroup]="formGroup" (submit)="recordDiagnostic($event)">
+              <mat-form-field appearance="fill" class="fieldName">
+                <mat-label>{{ nameLabel }}</mat-label>
+                <input matInput placeholder="Entrez un nom" formControlName="nom" required>
+                @if(formGroup.get('nom')?.hasError('required')){
+                  <mat-error>
+                    {{ labels.requiredName }}
+                  </mat-error>
+                }
+              </mat-form-field>
+    
+              <mat-form-field appearance="fill" class="fieldName">
+                <mat-label>{{ labels.chosenSites }}</mat-label>
+                <mat-select
+                  formControlName="sites"
+                  multiple
+                  (selectionChange)="getDiagName(formGroup.value.sites)"
+                  [compareWith]="compareSites"
+                >
+                  @for (site of uniqueSites; track site) {
+                    <mat-option [value]="site">{{ site.nom }}</mat-option>
+                  }
+                </mat-select>
+                @if(formGroup.get('sites')?.hasError('required')){
+                  <mat-error>
+                    {{ labels.requiredSite }}
+                  </mat-error>
+                }
+                
+              </mat-form-field>
+    
+              <h4>{{ chosenSitesTitle }}</h4>
+              @for (site of chosenSites; track site) {
+                <p>{{ site.nom }}, {{ site.type.libelle }}</p>
+              }
+    
+              <button mat-raised-button color="accent" type="button" (click)="navigate('/site', diagnostic())">
+                {{ btnCreateSiteLabel }}
+              </button>
+              <button mat-raised-button color="accent" (click)="navigate(previousPage, diagnostic())">
+                {{ labels.btnPreviousStepLabel }}
+              </button>
+              <button mat-raised-button color="warn" type="submit">
+                {{ btnRecordDiag }}
+              </button>
+            </form>
+        
+        }@else {
+          <p>Vous n'avez pas accès à cette page.</p>
+        }
+       
+      </div>
+  
+      <div class="col-2"></div>
     </div>
 </div>
+  

@@ -1,5 +1,6 @@
 /* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
+  "exclude": ["node_modules/@types/babel__*"],
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
@@ -12,6 +13,10 @@
       "@services/*" : ["src/app/services/*"]
 
     },
+    "types": [
+      "node"
+    ],
+    "esModuleInterop": true,
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -21,7 +26,6 @@
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
     "declaration": false,
-    "downlevelIteration": true,
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,

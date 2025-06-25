@@ -1,114 +1,135 @@
-
 <div class="container">
-    <div class="row">
-        <div class="col-3">
-          <app-menu-lateral
-            [themes]="themes"
-          ></app-menu-lateral>
-        </div>
-        <div class="col-9">
-            <mat-tab-group (selectedTabChange)="onTabChange($event)">
-                <mat-tab label="Infos générales">
-                    <div class="p-3">
-                        <h2>{{diagnostic.nom}}</h2>
-                        <div><b>{{labels.dateBegLabel}}</b> : <span>{{ diagnostic.date_debut_str }}</span></div>
-                        <div><b>{{labels.dateEndLabel}}</b> : <span>{{ diagnostic.date_fin_str }}</span></div>
-                        <div><b>{{labels.datePublicationReport}}</b> : <span>{{ diagnostic.date_rapport_str }}</span> <span *ngIf="!diagnostic.is_read_only"><button mat-raised-button (click)="openAlertDate()">Saisir date</button></span></div>
-
-                        <div><b>{{labels.investigatorLabel}}</b> : <span>{{ diagnostic.identite_createur }}</span></div>
-                        <h3>{{labels.chosenSites}}</h3>
-                        <p *ngFor="let site of diagnostic.sites">{{ site.nom }}, {{site.type.libelle}} </p>
-                        <h3>{{labels.files}}</h3>
-                        <ul *ngFor="let doc of diagnostic.documents">
-                          <div>{{doc.nom}} <button mat-raised-button type="button" (click)="getFile(doc.nom)">{{labels.download}}</button></div>
-                        </ul>
-                        <div
-                          class="upload-zone"
-                          matRipple
-                          [class.dragover]="dragOver"
-                          (dragover)="onDragOver($event)"
-                          (dragleave)="onDragLeave($event)"
-                          (drop)="onDrop($event)"
-                          >
-                          <p>{{labels.dropFilesSelect}}</p>
-                          <input type="file" multiple (change)="onFileSelected($event)" hidden #fileInput />
-                          <button mat-raised-button (click)="fileInput.click()">{{labels.chooseFiles}}</button>
-                          </div>
-
-                          <ul *ngIf="files.length">
-                          <li *ngFor="let file of files">{{ file.name }} </li>
-                          </ul>
-
-                          <button mat-raised-button color="primary" (click)="uploadFiles()" [disabled]="!files.length">
-                            Envoyer
-                          </button>
-                        </div>
-                </mat-tab>
-                <div *ngIf="diagnostic.created_by === id_role; else structures">
-                  <mat-tab label="Acteurs">
-                    <div class="p-3">
-                    
-                      <h3>Acteurs</h3>
-                        <app-map
-                          [actors]="actors"
-                        >
-
-                        </app-map>
-                        <app-choix-acteurs
-                                [actors]="actors"
-                                [uniqueDiagnostics]="uniqueDiagnostics"
-                                [diagnostic]="diagnostic"
-                                [selectedDiagnostic]="selectedDiagnostic"
-                                [uniqueCategories]="uniqueCategories"
-                                [uniqueDepartments]="uniqueDepartments"
-                                [selectedCategory]="selectedCategory"
-                                [selectedDepartment]="selectedDepartment"
-                                [actorsSelected]="actorsSelected"
-                                [actorsOriginal]="uniqueActors"
-                                [formGroup]="formGroup"
-                                [hideFilters]="hideFilters"
-                                [previousPage]="previousPage"
-                                [no_creation]=true
-                        ></app-choix-acteurs>
-                        <div *ngIf="!diagnostic.is_read_only">
-                          <button mat-raised-button type="button" (click)="exportCSV()">{{labels.exportCSV}}</button>
-                          <button mat-raised-button color="accent" type="button" (click)="navigate('/choix-acteurs/'+diagnostic.id_diagnostic + '/' + diagnostic.slug,diagnostic)">Importer acteurs</button>
-                          <button mat-raised-button color="accent" type="button" (click)="navigate('/acteur',diagnostic)">Créer acteurs</button>
-                        </div>
-                        
-                    </div>
-                  </mat-tab>
-                </div>
-                <mat-tab label="AFOM">
-                  <div class="p-3">
-                    <app-mots-cles-zone #afom
-                      [id_diagnostic]="id_diagnostic"
-                      [diagnostic]="diagnostic"
-                      [modeAnalyse]=true
-                    >
-                  
-                    </app-mots-cles-zone>
-                    
-                    
-                  </div>
-                </mat-tab>
-                <ng-template #structures>
-                  <mat-tab label="Structures">
-                  <app-tableau-structures
-                    [diagnostic]="diagnostic"
-                  ></app-tableau-structures>
-                  </mat-tab>
-                </ng-template>
-                
-                <mat-tab label="Graphiques">
-                  <div class="p-3">
-                    <app-graphiques
-                        [route]="route"
-                        [diagnostic]="diagnostic"
-                    ></app-graphiques>
-                  </div>
-                </mat-tab>
-            </mat-tab-group>
-        </div>
+  <div class="row">
+    <div class="col-3">
+      <app-menu-lateral [themes]="themes()"></app-menu-lateral>
     </div>
+
+    <div class="col-9">
+      <mat-tab-group (selectedTabChange)="onTabChange($event)">
+        <mat-tab label="Infos générales">
+          <div class="p-3">
+            <h2>{{ diagnostic().nom }}</h2>
+
+            <div>
+              <b>{{ labels.dateBegLabel }}</b> :
+              <span>{{ diagnostic().date_debut_str }}</span>
+            </div>
+            <div>
+              <b>{{ labels.dateEndLabel }}</b> :
+              <span>{{ diagnostic().date_fin_str }}</span>
+            </div>
+            <div>
+              <b>{{ labels.datePublicationReport }}</b> :
+              <span>{{ diagnostic().date_rapport_str }}</span>
+              @if (!diagnostic().is_read_only) {
+                <button mat-raised-button (click)="openAlertDate()">Saisir date</button>
+              }
+            </div>
+
+            <div>
+              <b>{{ labels.investigatorLabel }}</b> :
+              <span>{{ diagnostic().identite_createur }}</span>
+            </div>
+
+            <h3>{{ labels.chosenSites }}</h3>
+            @for (site of diagnostic().sites; track site) {
+              <p>{{ site.nom }}, {{ site.type.libelle }}</p>
+            }
+
+            <h3>{{ labels.files }}</h3>
+            @for (doc of diagnostic().documents; track doc) {
+              <div>
+                {{ doc.nom }}
+                <button mat-raised-button type="button" (click)="getFile(doc.nom)">
+                  {{ labels.download }}
+                </button>
+              </div>
+            }
+
+            <div class="upload-zone" matRipple [class.dragover]="dragOver"
+              (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
+              <p>{{ labels.dropFilesSelect }}</p>
+              <input type="file" multiple (change)="onFileSelected($event)" hidden #fileInput />
+              <button mat-raised-button (click)="fileInput.click()">
+                {{ labels.chooseFiles }}
+              </button>
+            </div>
+
+            @if (files.length) {
+              <ul>
+                @for (file of files; track file) {
+                  <li>{{ file.name }}</li>
+                }
+              </ul>
+            }
+
+            <button mat-raised-button color="primary" (click)="uploadFiles()" [disabled]="!files.length">
+              Envoyer
+            </button>
+          </div>
+        </mat-tab>
+
+        @if (diagnostic().created_by === id_role()) {
+          <mat-tab label="Acteurs">
+            <div class="p-3">
+              <h3>Acteurs</h3>
+
+              <app-map [actors]="actors()"></app-map>
+
+              <app-choix-acteurs
+                [actors]="actors()"
+                [uniqueDiagnostics]="uniqueDiagnostics"
+                [diagnostic]="diag"
+                [selectedDiagnostic]="selectedDiagnostic"
+                [uniqueCategories]="uniqueCategories"
+                [uniqueDepartments]="uniqueDepartments"
+                [selectedCategory]="selectedCategory"
+                [selectedDepartment]="selectedDepartment"
+                [actorsSelected]="actorsSelected"
+                [actorsOriginal]="uniqueActors"
+                [formGroup]="formGroup"
+                [hideFilters]="hideFilters"
+                [previousPage]="previousPage()"
+                [no_creation]="true">
+              </app-choix-acteurs>
+
+              @if (!diagnostic().is_read_only) {
+                <button mat-raised-button type="button" (click)="exportCSV()">
+                  {{ labels.exportCSV }}
+                </button>
+                <button mat-raised-button color="accent" type="button"
+                        (click)="navigate('/choix-acteurs/' + diagnostic().id_diagnostic + '/' + diagnostic().slug, diagnostic())">
+                  Importer acteurs
+                </button>
+                <button mat-raised-button color="accent" type="button"
+                        (click)="navigate('/acteur', diagnostic())">
+                  Créer acteurs
+                </button>
+              }
+            </div>
+          </mat-tab>
+        } @else {
+          <mat-tab label="Structures">
+            <app-tableau-structures [diagnostic]="diagnostic()"></app-tableau-structures>
+          </mat-tab>
+        }
+
+        <mat-tab label="AFOM">
+          <div class="p-3">
+            <app-mots-cles-zone #afom
+              [id_diagnostic]="id_diagnostic()"
+              [diagnostic]="diagnostic()"
+              [modeAnalyse]="true">
+            </app-mots-cles-zone>
+          </div>
+        </mat-tab>
+
+        <mat-tab label="Graphiques">
+          <div class="p-3">
+            <app-graphiques [diagnostic]="diagnostic()"></app-graphiques>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+  </div>
 </div>

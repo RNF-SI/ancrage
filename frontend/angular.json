@@ -11,11 +11,12 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/auth-ancrage",
+            "outputPath": {
+              "base": "dist/auth-ancrage"
+            },
             "index": "src/index.html",
-            "main": "src/main.ts",
             "polyfills": [
               "zone.js"
             ],
@@ -35,7 +36,13 @@
             ],
             "scripts": [
 
-            ]
+            ],
+            "browser": "src/main.ts",
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "."
+              ]
+            }
           },
           "configurations": {
            "production": {
@@ -60,9 +67,7 @@
               "outputHashing": "all"
             },
             "development": {
-              "buildOptimizer": false,
               "optimization": false,
-              "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
               "namedChunks": true
@@ -74,10 +79,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "auth-ancrage:build:production"
+              "buildTarget": "auth-ancrage:build:production"
             },
             "development": {
-              "browserTarget": "auth-ancrage:build:development"
+              "buildTarget": "auth-ancrage:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -85,7 +90,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "auth-ancrage:build"
+            "buildTarget": "auth-ancrage:build"
           }
         },
         "test": {

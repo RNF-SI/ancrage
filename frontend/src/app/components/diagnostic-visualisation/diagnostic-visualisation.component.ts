@@ -1,6 +1,7 @@
-import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ViewChild,signal, effect } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, Validators } from '@angular/forms';
-import { MatTableDataSource, MatTableDataSourcePaginator } from '@angular/material/table';
+import { MatTableDataSource } from '@angular/material/table';
 import { Acteur } from '@app/models/acteur.model';
 import { Departement } from '@app/models/departement.model';
 import { Diagnostic } from '@app/models/diagnostic.model';
@@ -8,7 +9,7 @@ import { Nomenclature } from '@app/models/nomenclature.model';
 import { Site } from '@app/models/site.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { forkJoin, Subscription } from 'rxjs';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SiteService } from '@app/services/sites.service';
 import { MatButtonModule } from '@angular/material/button';
@@ -20,34 +21,34 @@ import { NomenclatureService } from '@app/services/nomenclature.service';
 import { MenuLateralComponent } from "../parts/menu-lateral/menu-lateral.component";
 import { TableauStructuresComponent } from "../parts/tableau-structures/tableau-structures.component";
 import { Document } from '@app/models/document.model';
-import { environment } from 'src/environments/environment';
 import { MapComponent } from '../parts/map/map.component';
 import { MotsClesZoneComponent } from '../parts/mots-cles-zone/mots-cles-zone.component';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { MatDialog } from '@angular/material/dialog';
 import { AlerteDatePublicationComponent } from '../alertes/alerte-date-publication/alerte-date-publication.component';
+import { MatMomentDateModule } from '@angular/material-moment-adapter';
 
 @Component({
-  selector: 'app-diagnostic-visualisation',
-  templateUrl: './diagnostic-visualisation.component.html',
-  styleUrls: ['./diagnostic-visualisation.component.css'],
-  standalone:true,
-  imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent, MenuLateralComponent, TableauStructuresComponent,TableauStructuresComponent,MapComponent,MotsClesZoneComponent]
+    selector: 'app-diagnostic-visualisation',
+    templateUrl: './diagnostic-visualisation.component.html',
+    styleUrls: ['./diagnostic-visualisation.component.css'],
+    standalone:true,
+    imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent, MenuLateralComponent, TableauStructuresComponent, TableauStructuresComponent, MapComponent, MotsClesZoneComponent,MatMomentDateModule]
 })
-export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
+export class DiagnosticVisualisationComponent implements OnDestroy{
 
-  diagnostic: Diagnostic = new Diagnostic();
-  actors: Acteur[] = [];
+  diagnostic = signal<Diagnostic>(new Diagnostic());
+  actors = signal<Acteur[]>([]);
   uniqueDiagnostics: Diagnostic[] = [];
   selectedDiagnostic: Diagnostic = new Diagnostic();
   uniqueCategories: Nomenclature[] = [];
   uniqueDepartments: Departement[] = [];
   selectedCategory: Nomenclature = new Nomenclature();
   selectedDepartment: Departement = new Departement();
-  actorsSelected: MatTableDataSource<Acteur,MatTableDataSourcePaginator> = new MatTableDataSource();
+  actorsSelected: MatTableDataSource<Acteur> = new MatTableDataSource<Acteur>();
   uniqueActors: Acteur[] = [];
   hideFilters=true;
-  previousPage ="";
+  previousPage = signal<string>('');
   private fb = inject(FormBuilder);
   private diagnosticService = inject(DiagnosticService);
   private routeSubscription?:Subscription;
@@ -55,16 +56,16 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
   route = inject(ActivatedRoute);
   private siteService = inject(SiteService);
   private nomenclatureService = inject(NomenclatureService)
-  id_diagnostic:number = 0;
+  id_diagnostic = signal<number>(0);
   labels = new Labels();
-  themes:Nomenclature[] = [];
+  themes = signal<Nomenclature[]>([]);
   private docsSubscription?:Subscription;
   private docReadSub?:Subscription;
-  environment = environment.flask_server + 'fichiers/';
   file?:Blob;
   authService = inject(AuthService);
   dialog = inject(MatDialog);
   private router = inject(Router);
+  diag = new Diagnostic();
 
   @ViewChild(MapComponent) mapComponent!: MapComponent;
 
@@ -77,42 +78,44 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
       id_organisme: [0, [Validators.required]],
       modified_by: [0, [Validators.required]],
   });
-  slug="";
+  slug = signal<string | null>(null);
   files: File[] = [];
   dragOver = false;
-  id_role:number=0
-  is_read_only=false;
+  id_role = signal<number>(0);
+  is_read_only = signal<boolean>(false);
+  routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
 
-  ngOnInit(): void {
-    this.previousPage = localStorage.getItem("previousPage")!;
-    this.routeSubscription = this.route.params.subscribe((params: any) => {
-          this.id_diagnostic = params['id_diagnostic'];   
-          this.slug = params['slug'];
-          //Récupération des données     
-          if (this.id_diagnostic && this.slug) {
-            const diag$ = this.diagnosticService.get(this.id_diagnostic,this.slug);
-            const themes$ = this.nomenclatureService.getAllByType("thème");
-            forkJoin([diag$, themes$]).subscribe(([diag, themes]) => {
-              this.diagnostic = diag;
-    
-              this.actors = diag.acteurs;
-              this.themes = themes;
-       
-              const user = this.authService.getCurrentUser();
-              this.id_role = user.id_role;
-        
-              if(this.id_role !== this.diagnostic.created_by){
-                this.is_read_only = true;
-              }else{
-                if(this.diagnostic.is_read_only){
-                  this.is_read_only = true;
-                }
-              }
-            });
-          }
+  constructor() {
+    effect(() => {
+      this.previousPage.set(localStorage.getItem('previousPage')!);
+      const { id_diagnostic, slug } = this.routeParams() as Params;
+      const id = Number(id_diagnostic);
+      const slugValue = slug as string;
+  
+      if (id && slugValue) {
+        this.id_diagnostic.set(id);
+        this.slug.set(slugValue);
+  
+        forkJoin({
+          diag: this.diagnosticService.get(id, slugValue),
+          themes: this.nomenclatureService.getAllByType('thème'),
+        }).subscribe(({ diag, themes }) => {
+          this.diagnostic.set(diag);
+          this.diag = this.diagnostic();
+          this.themes.set(themes);
+          this.actors.set(this.diagnostic().acteurs);
+          const user = this.authService.getCurrentUser();
+          this.id_role.set(user.id_role);
+  
+          const isOwner = user.id_role === diag.created_by;
+          const isReadOnly = !isOwner || diag.is_read_only;
+  
+          this.is_read_only.set(isReadOnly);
+        });
+      }
     });
-
   }
+
   //Cache ou affiche le menu en fonction de l'onglet choisi
   onTabChange(event: MatTabChangeEvent) {
     
@@ -172,7 +175,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
     const documents: Document[] = this.files.map(file => {
       const doc = new Document();
       doc.nom = file.name;
-      doc.diagnostic = this.diagnostic;
+      doc.diagnostic = this.diagnostic();
       return doc;
     });
   
@@ -187,10 +190,10 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
     formData.append('documents', JSON.stringify(documents.map(d => d.toJson())));
 
     this.docsSubscription = this.diagnosticService.sendFiles(formData).subscribe(diag =>{
-      this.diagnostic = diag;
+      this.diagnostic.set(diag);
    
     });
-
+    
     
   }
   
@@ -202,7 +205,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
 
   //Exporte le tableau d'acteurs en fichier csv
   exportCSV(){
-    let acteurs:Acteur[] = this.diagnostic.acteurs;
+    let acteurs:Acteur[] = this.diagnostic().acteurs;
     const separator = ';';
     const headers = [
       'id_acteur',
@@ -239,7 +242,7 @@ export class DiagnosticVisualisationComponent implements OnInit,OnDestroy{
 
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'acteurs - '+this.diagnostic.nom+'.csv';
+    link.download = 'acteurs - '+this.diagnostic().nom+'.csv';
     link.click();
   }
 

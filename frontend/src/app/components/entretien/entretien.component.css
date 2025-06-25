@@ -4,3 +4,6 @@
 .warn-partial{
     color:orange;
 }
+mat-radio-group{
+    display: block;
+}

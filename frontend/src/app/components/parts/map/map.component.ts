@@ -30,11 +30,10 @@ L.Marker.prototype.options.icon = L.icon({
 
 //Carte
 @Component({
-  selector: 'app-map',
-  templateUrl: './map.component.html',
-  standalone: true,
-  styleUrls: ['./map.component.css'],
-  imports:[MatButtonModule]
+    selector: 'app-map',
+    templateUrl: './map.component.html',
+    styleUrls: ['./map.component.css'],
+    imports: [MatButtonModule]
 })
 export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterViewChecked {
 

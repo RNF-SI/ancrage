@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, effect, Inject, inject, OnDestroy, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
@@ -15,13 +16,12 @@ import { Subscription } from 'rxjs';
 
 //Alerte pour la modification d'un statut d'entretien
 @Component({
-  selector: 'app-alerte-statut-entretien',
-  templateUrl: './alerte-statut-entretien.component.html',
-  styleUrls: ['./alerte-statut-entretien.component.css'],
-  standalone:true,
-  imports:[CommonModule,MatDialogModule,MatButtonModule,MatFormFieldModule,ReactiveFormsModule,MatSelectModule]
+    selector: 'app-alerte-statut-entretien',
+    templateUrl: './alerte-statut-entretien.component.html',
+    styleUrls: ['./alerte-statut-entretien.component.css'],
+    imports: [CommonModule, MatDialogModule, MatButtonModule, MatFormFieldModule, ReactiveFormsModule, MatSelectModule]
 })
-export class AlerteStatutEntretienComponent implements OnInit,OnDestroy{
+export class AlerteStatutEntretienComponent implements OnDestroy{
   constructor(
       public dialogRef: MatDialogRef<AlerteStatutEntretienComponent>,
       @Inject(MAT_DIALOG_DATA) public data: { 
@@ -32,9 +32,20 @@ export class AlerteStatutEntretienComponent implements OnInit,OnDestroy{
         diagnostic:Diagnostic,
         previousPage:string;
       }
-    ) {}
+    ) {
+      effect(() => {
+      const statuts = this.statuts$();
   
-    uniqueStates: Nomenclature[] = [];
+      const filtered = statuts.filter(
+        s => s.libelle !== 'Réalisé' && s.libelle !== 'En cours'
+      );
+  
+      this.uniqueStates.set(filtered);
+  
+      this.formGroup.get("statut_entretien")?.setValue(this.data.actor.statut_entretien!);
+    });}
+  
+    uniqueStates = signal<Nomenclature[]>([]);
     private fb = inject(FormBuilder);
     formGroup = this.fb.group({
         id_acteur: [0, [Validators.required]],
@@ -45,22 +56,11 @@ export class AlerteStatutEntretienComponent implements OnInit,OnDestroy{
     private acteurSubscription?:Subscription;
     private statutsSubcription ?:Subscription;
     private statutsService = inject(NomenclatureService);
-    
+    statuts$ = toSignal(
+      this.statutsService.getAllByType("statut_entretien"), 
+      { initialValue: [] }
+    );
 
-    ngOnInit(): void {
-      
-      this.statutsSubcription = this.statutsService.getAllByType("statut_entretien").subscribe(statuts =>{
-        for( let i = 0;i<statuts.length;i++){
-          if(statuts[i].libelle == "Réalisé" || statuts[i].libelle == "En cours" ){
-            continue;
-          }else{
-            this.uniqueStates.push(statuts[i]);
-          }
-        }
-        
-        this.formGroup.get("statut_entretien")?.setValue(this.data.actor.statut_entretien!);
-      })
-    }
     recordState(event:Event){
       event.preventDefault();
       this.formGroup.get("id_acteur")?.setValue(this.data.actor.id_acteur);

@@ -9,11 +9,10 @@ import { Labels } from '@app/utils/labels';
 
 //Alerte à la création ou modification d'un site
 @Component({
-  selector: 'app-alerte-site',
-  templateUrl: './alerte-site.component.html',
-  styleUrls: ['./alerte-site.component.css'],
-  standalone:true,
-  imports:[MatDialogModule,MatButtonModule,CommonModule]
+    selector: 'app-alerte-site',
+    templateUrl: './alerte-site.component.html',
+    styleUrls: ['./alerte-site.component.css'],
+    imports: [MatDialogModule, MatButtonModule, CommonModule]
 })
 export class AlerteSiteComponent {
   

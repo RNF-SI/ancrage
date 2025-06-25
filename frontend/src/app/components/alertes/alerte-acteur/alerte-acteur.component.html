@@ -1,15 +1,23 @@
 <h2 mat-dialog-title>{{ data.title }}</h2>
+
 <mat-dialog-content>
-    <div><span>{{ data.message }}</span></div>
-    <div><b>{{data.labels.nameLabel}}</b> : <span>{{ data.acteur.nom }}</span></div>
-    <div><b>{{data.labels.firstNameLabel}}</b> : <span>{{ data.acteur.prenom }}</span></div>
-    <div><b>{{data.labels.status}}</b> : <span>{{ data.acteur.fonction }}</span></div>
-    <div><b>{{data.labels.telephone}}</b> : <span>{{ data.acteur.telephone }}</span></div>
-    <div><b>{{data.labels.mail}}</b> : <span>{{ data.acteur.mail }}</span></div>
-    <div><b>{{data.labels.town}}</b> : <span>{{ data.acteur.commune.nom_com }}</span></div>
-    <div><b>{{data.labels.profile}}</b> : <span>{{ data.acteur.profil?.libelle }}</span></div>
-    <div><b>{{data.labels.structure}}</b> : <span>{{ data.acteur.structure }}</span></div>    
-    <div><b>{{data.labels.category}}</b> : <span *ngFor="let cat of data.acteur.categories">{{ cat.libelle }} </span></div>
+  <div><span>{{ data.message }}</span></div>
+
+  <div><b>{{ data.labels.nameLabel }}</b> : <span>{{ data.acteur.nom }}</span></div>
+  <div><b>{{ data.labels.firstNameLabel }}</b> : <span>{{ data.acteur.prenom }}</span></div>
+  <div><b>{{ data.labels.status }}</b> : <span>{{ data.acteur.fonction }}</span></div>
+  <div><b>{{ data.labels.telephone }}</b> : <span>{{ data.acteur.telephone }}</span></div>
+  <div><b>{{ data.labels.mail }}</b> : <span>{{ data.acteur.mail }}</span></div>
+  <div><b>{{ data.labels.town }}</b> : <span>{{ data.acteur.commune.nom_com }}</span></div>
+  <div><b>{{ data.labels.profile }}</b> : <span>{{ data.acteur.profil?.libelle }}</span></div>
+  <div><b>{{ data.labels.structure }}</b> : <span>{{ data.acteur.structure }}</span></div>
+
+  <div>
+    <b>{{ data.labels.category }}</b> :
+    @for (cat of data.acteur.categories; track cat) {
+      <span>{{ cat.libelle }} </span>
+    }
+  </div>
 </mat-dialog-content>
 
 <mat-dialog-actions>

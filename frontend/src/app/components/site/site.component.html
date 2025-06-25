@@ -1,70 +1,118 @@
 <div class="container">
-    <h2>{{titleSite}}</h2>
+    <h2>{{ titleSite }}</h2>
     <div class="row">
-        <div class="col-2">
-
-        </div>
-        <form [formGroup] = "formGroup" (submit)="recordSite($event)" class="col-8">
-            <div class="text-center">
-
-                <input type="number" formControlName="id_site" required class="invisible" >
-                <mat-form-field appearance="fill">
-                    <mat-label>{{labels.nameLabel}}</mat-label>
-                    <input matInput placeholder="Entrez un nom" formControlName="nom" required >
-                    <mat-error *ngIf="formGroup.get('nom')?.hasError('required')">Le nom est requis.</mat-error>
-                </mat-form-field>
-                <!-- <mat-form-field appearance="fill">
-                    <mat-label>{{labels.housingLabel}}</mat-label>
-                    <mat-select multiple required formControlName="habitats" [compareWith]="compareNomenclatures">
-                        <mat-option *ngFor="let hab of uniqueHabitats" [value]="hab">{{ hab.libelle }}</mat-option>
-                    </mat-select>
-                    <mat-error *ngIf="formGroup.get('habitats')?.hasError('required')">Au moins un habitat est requis.</mat-error>
-                </mat-form-field> -->
-                <mat-form-field appearance="fill">
-                    <mat-label>{{labels.statusLabel}}</mat-label>
-                    <mat-select required formControlName="type" [compareWith]="compareNomenclatures">
-                        <mat-option *ngFor="let type of uniqueStatuts" required [value]="type">{{ type.libelle }}</mat-option>
-                    </mat-select>
-                    <mat-error *ngIf="formGroup.get('type')?.hasError('required')">{{labels.requiredStatus}}</mat-error>
-                </mat-form-field>
-                <mat-form-field appearance="fill">
-                    <mat-label>{{labels.departementLabel}}</mat-label>
-                    <mat-select required multiple formControlName="departements" [compareWith]="compareDepartements">
-                        <mat-option *ngFor="let departement of uniqueDepartements" required [value]="departement">{{ departement.nom_dep }}</mat-option>
-                    </mat-select>
-                    <mat-error *ngIf="formGroup.get('type')?.hasError('required')">{{labels.requiredDepartment}}</mat-error>
-                </mat-form-field>
-                <mat-form-field appearance="fill">
-                    <mat-label>{{labels.latitudeLabel}}</mat-label>
-                    <input matInput placeholder="Entrez une latitude" required formControlName="position_y">
-                    <mat-error *ngIf="formGroup.get('position_y')?.hasError('required')">{{labels.requiredLatitude}}</mat-error>
-                    <mat-error *ngIf="formGroup.get('position_y')?.hasError('pattern')">{{labels.invalidFormat}}</mat-error>
-                </mat-form-field>
-                <mat-form-field appearance="fill">
-                    <mat-label>{{labels.longitudeLabel}}</mat-label>
-                    <input matInput placeholder="Entrez une longitude" required formControlName="position_x">
-                    <mat-error *ngIf="formGroup.get('position_x')?.hasError('pattern')">{{labels.requiredLongitude}}</mat-error>
-                    <mat-error *ngIf="formGroup.get('position_x')?.hasError('pattern')">{{labels.invalidFormat}}</mat-error>
-                </mat-form-field>
-            </div>
-            <div class="row" id="boutons">
-                <div class="col-6">
-                    <button mat-raised-button color="accent" type="button" (click)="navigate(previousPage,diagnostic)">{{labels.btnPreviousStepLabel}}</button>
-                </div>
-                <div class="col-6 text-end">
-                    <button mat-raised-button id="btnNewSite"  type="submit"  color="warn">{{labels.btnRecordLabel}}</button>
-                </div>
-            </div>
-            <app-map
-                [sites]="sites"
-                [attr.key]="mapInstanceKey"
-                [formGroup]="formGroup"
-                [changePosition]="changePosition"
-            ></app-map>
+      <div class="col-2"></div>
+  
+      <form [formGroup]="formGroup" (submit)="recordSite($event)" class="col-8">
+        <div class="text-center">
+          <input type="number" formControlName="id_site" required class="invisible" />
+  
+          <mat-form-field appearance="fill">
+            <mat-label>{{ labels.nameLabel }}</mat-label>
+            <input matInput placeholder="Entrez un nom" formControlName="nom" required />
+            @if(formGroup.get('nom')?.hasError('required')){
+                <mat-error>Le nom est requis.</mat-error>
+            }
             
-        </form>
-        <div class="col-2">
-
+          </mat-form-field>
+  
+          <!-- 
+          <mat-form-field appearance="fill">
+            <mat-label>{{ labels.housingLabel }}</mat-label>
+            <mat-select multiple required formControlName="habitats" [compareWith]="compareNomenclatures">
+              @for (hab of uniqueHabitats; track hab) {
+                <mat-option [value]="hab">{{ hab.libelle }}</mat-option>
+              }
+            </mat-select>
+            <mat-error @if="formGroup.get('habitats')?.hasError('required')">
+              Au moins un habitat est requis.
+            </mat-error>
+          </mat-form-field>
+          -->
+  
+          <mat-form-field appearance="fill">
+            <mat-label>{{ labels.statusLabel }}</mat-label>
+            <mat-select required formControlName="type" [compareWith]="compareNomenclatures">
+              @for (type of uniqueStatuts(); track type) {
+                <mat-option [value]="type">{{ type.libelle }}</mat-option>
+              }
+            </mat-select>
+            @if(formGroup.get('type')?.hasError('required')){
+                <mat-error>{{ labels.requiredStatus }}</mat-error>
+            }
+            
+          </mat-form-field>
+  
+          <mat-form-field appearance="fill">
+            <mat-label>{{ labels.departementLabel }}</mat-label>
+            <mat-select required multiple formControlName="departements" [compareWith]="compareDepartements">
+              @for (departement of uniqueDepartements(); track departement) {
+                <mat-option [value]="departement">{{ departement.nom_dep }}</mat-option>
+              }
+            </mat-select>
+            @if(formGroup.get('departements')?.hasError('required')){
+                <mat-error>
+                    {{ labels.requiredDepartment }}
+                </mat-error>
+            }
+            
+          </mat-form-field>
+  
+          <mat-form-field appearance="fill">
+            <mat-label>{{ labels.latitudeLabel }}</mat-label>
+            <input matInput placeholder="Entrez une latitude" required formControlName="position_y" />
+            @if(formGroup.get('position_y')?.hasError('required')){
+                <mat-error>
+                    {{ labels.requiredLatitude }}
+                </mat-error>
+            }
+            @if(formGroup.get('position_y')?.hasError('pattern')){
+                <mat-error>
+                    {{ labels.invalidFormat }}
+                </mat-error>
+            }
+           
+          </mat-form-field>
+  
+          <mat-form-field appearance="fill">
+            <mat-label>{{ labels.longitudeLabel }}</mat-label>
+            <input matInput placeholder="Entrez une longitude" required formControlName="position_x" />
+            @if(formGroup.get('position_x')?.hasError('required')){
+                <mat-error>
+                    {{ labels.requiredLongitude }}
+                </mat-error>
+            }
+            @if(formGroup.get('position_x')?.hasError('pattern')){
+                <mat-error>
+                    {{ labels.invalidFormat }}
+                </mat-error>
+            }
+            
+          </mat-form-field>
         </div>
+  
+        <div class="row" id="boutons">
+          <div class="col-6">
+            <button mat-raised-button color="accent" type="button" (click)="navigate(previousPage, diagnostic)">
+              {{ labels.btnPreviousStepLabel }}
+            </button>
+          </div>
+          <div class="col-6 text-end">
+            <button mat-raised-button id="btnNewSite" type="submit" color="warn">
+              {{ labels.btnRecordLabel }}
+            </button>
+          </div>
+        </div>
+  
+        <app-map
+          [sites]="sites"
+          [attr.key]="mapInstanceKey"
+          [formGroup]="formGroup"
+          [changePosition]="changePosition">
+        </app-map>
+      </form>
+  
+      <div class="col-2"></div>
     </div>
-</div>
+  </div>
+  

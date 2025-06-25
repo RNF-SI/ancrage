@@ -6,6 +6,7 @@ from routes import bp, now, func
 from routes.nomenclatures import getAllNomenclaturesByType
 from routes.mot_cle import getKeywordsByActor
 from routes.logger_config import logger
+from routes.functions import checkCCG
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -178,7 +179,6 @@ def enregistrer_reponse_acteur(reponse_objet):
     # Mise à jour ou création de la réponse
     reponse = Reponse.query.filter_by(acteur_id=acteur_id, question_id=question_id).first()
     if reponse:
-        print(f"Réponse {reponse.id_reponse}")
         reponse.valeur_reponse_id = valeur_reponse_id
         reponse.commentaires = commentaires
         reponse.mots_cles = mots_cles_bdd
@@ -284,21 +284,30 @@ def getRepartitionMotsCles(id_diagnostic):
 
 def verifCompleteStatus(id_acteur):
     nb_reponses = db.session.query(func.count(Reponse.id_reponse)).filter_by(acteur_id=id_acteur).scalar()
-    print(nb_reponses)
+    isCCG = checkCCG(id_acteur)
+
+    if isCCG:
+        count = db.session.query(func.count(Question.id_question)).scalar()
+    else:
+        count = (
+            db.session.query(func.count(Question.id_question))
+            .join(Nomenclature, Question.theme_question_id == Nomenclature.id_nomenclature)
+            .filter(Nomenclature.libelle != "Spécifique à l'instance de gouvernance")
+            .scalar()
+        )
+    
     nomenclatures = Nomenclature.query.filter_by(mnemonique="statut_entretien").all()
     
     statut_entretien_id=0
-    if nb_reponses == 37:
+    if nb_reponses == count:
         for statut in nomenclatures:
             if statut.libelle == 'Réalisé':
                 statut_entretien_id = statut.id_nomenclature
-                print('réalisé')
                 break
-    elif nb_reponses < 37:
+    elif nb_reponses < count:
         for statut in nomenclatures:
             if statut.libelle == 'En cours':
                 statut_entretien_id = statut.id_nomenclature
-                print('en cours')
                 break
     
     acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()

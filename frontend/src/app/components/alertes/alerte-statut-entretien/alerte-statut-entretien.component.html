@@ -1,17 +1,26 @@
 <h2 mat-dialog-title>{{ data.title }}</h2>
+
 <mat-dialog-content>
-    <form [formGroup] = "formGroup" (submit)="recordState($event)">
-        <mat-form-field appearance="fill">
-            <mat-label>{{data.labels.chooseInterviewState}}</mat-label>
-            <mat-select required formControlName="statut_entretien" [compareWith]="compareFn">
-                <mat-option *ngFor="let st of uniqueStates" required [value]="st">{{ st.libelle }}</mat-option>
-            </mat-select>
-            <mat-error *ngIf="formGroup.get('statut_entretien')?.hasError('required')">{{data.labels.requiredState}}</mat-error>
-        </mat-form-field>
-    
-        <mat-dialog-actions>
-            <button mat-raised-button mat-dialog-close type="submit" color="warn">{{data.labels.record}}</button>
-            <button mat-raised-button mat-dialog-close (click)="close()" color="accent">{{data.labels.cancel}}</button>
-        </mat-dialog-actions>
-    </form>
+  <form [formGroup]="formGroup" (submit)="recordState($event)">
+    <mat-form-field appearance="fill">
+      <mat-label>{{ data.labels.chooseInterviewState }}</mat-label>
+      <mat-select required formControlName="statut_entretien" [compareWith]="compareFn">
+        @for (st of uniqueStates(); track st) {
+          <mat-option [value]="st" required>{{ st.libelle }}</mat-option>
+        }
+      </mat-select>
+      <mat-error *ngIf="formGroup.get('statut_entretien')?.hasError('required')">
+        {{ data.labels.requiredState }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-dialog-actions>
+      <button mat-raised-button mat-dialog-close type="submit" color="warn">
+        {{ data.labels.record }}
+      </button>
+      <button mat-raised-button mat-dialog-close (click)="close()" color="accent">
+        {{ data.labels.cancel }}
+      </button>
+    </mat-dialog-actions>
+  </form>
 </mat-dialog-content>

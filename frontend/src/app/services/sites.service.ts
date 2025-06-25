@@ -86,6 +86,10 @@ export class SiteService {
 			localStorage.setItem("previousPage", this.router.url);
 		}
 		
+		if (!nocache){
+			localStorage.setItem("previousPage", this.router.url);
+		}
+		
 	  
 		this.router.navigate([path]);
 	}

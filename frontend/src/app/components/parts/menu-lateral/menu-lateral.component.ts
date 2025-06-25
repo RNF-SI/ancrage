@@ -6,11 +6,10 @@ import { MatListModule } from '@angular/material/list';
 
 //Menu latéral des questions
 @Component({
-  selector: 'app-menu-lateral',
-  templateUrl: './menu-lateral.component.html',
-  styleUrls: ['./menu-lateral.component.css'],
-  standalone:true,
-  imports:[CommonModule,MatExpansionModule,MatListModule]
+    selector: 'app-menu-lateral',
+    templateUrl: './menu-lateral.component.html',
+    styleUrls: ['./menu-lateral.component.css'],
+    imports: [CommonModule, MatExpansionModule, MatListModule]
 })
 
 export class MenuLateralComponent{

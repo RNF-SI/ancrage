@@ -22,6 +22,15 @@ def createQuestionsByTheme(THEME_MNEMONIQUE, THEME_LIBELLE, question_labels, que
     else:
         sans_reponse_nomenclature = existing_nomenclatures[sans_reponse_key]
 
+    ne_se_prononce_pas_key = ("Ne se prononce pas", 3)
+    if ne_se_prononce_pas_key not in existing_nomenclatures:
+        nsp_nomenclature = Nomenclature(libelle="Ne se prononce pas", value=3, mnemonique="reponse_score")
+        db.session.add(nsp_nomenclature)
+        db.session.flush()
+        existing_nomenclatures[ne_se_prononce_pas_key] = nsp_nomenclature
+    else:
+        nsp_nomenclature = existing_nomenclatures[ne_se_prononce_pas_key]
+
     for col_idx, (label, sht) in enumerate(zip(question_labels, question_labels_short)):
         indications = score_texts[0][col_idx] if score_texts and len(score_texts[0]) > col_idx else ""
 
@@ -37,7 +46,7 @@ def createQuestionsByTheme(THEME_MNEMONIQUE, THEME_LIBELLE, question_labels, que
 
         # Ajout de "Sans réponse" à chaque question
         question.choixReponses.append(sans_reponse_nomenclature)
-
+        question.choixReponses.append(nsp_nomenclature)
         # Ajout des réponses possibles (scores 1 à 5)
         if score_texts:
             for score_offset, score in enumerate(range(1, 6)):

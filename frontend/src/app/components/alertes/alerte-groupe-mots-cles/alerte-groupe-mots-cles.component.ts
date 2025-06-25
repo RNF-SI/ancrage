@@ -15,11 +15,10 @@ import { MatOptionModule } from '@angular/material/core';
 
 //Popup qui apparaît à la fusion de deux mots-clés
 @Component({
-  selector: 'app-alerte-groupe-mots-cles',
-  templateUrl: './alerte-groupe-mots-cles.component.html',
-  styleUrls: ['./alerte-groupe-mots-cles.component.css'],
-  standalone:true,
-  imports:[MatButtonModule,CommonModule,MatDialogModule,MatSelectModule,FormsModule,MatFormFieldModule,MatInputModule,MatOptionModule]
+    selector: 'app-alerte-groupe-mots-cles',
+    templateUrl: './alerte-groupe-mots-cles.component.html',
+    styleUrls: ['./alerte-groupe-mots-cles.component.css'],
+    imports: [MatButtonModule, CommonModule, MatDialogModule, MatSelectModule, FormsModule, MatFormFieldModule, MatInputModule]
 })
 export class AlerteGroupeMotsClesComponent{
   constructor(

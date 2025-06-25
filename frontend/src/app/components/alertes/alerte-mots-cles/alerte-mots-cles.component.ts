@@ -14,11 +14,10 @@ import { Subscription } from 'rxjs';
 
 //Alerte pour voir contenu d'un groupe et le renommer
 @Component({
-  selector: 'app-alerte-mots-cles',
-  templateUrl: './alerte-mots-cles.component.html',
-  styleUrls: ['./alerte-mots-cles.component.css'],
-  standalone:true,
-  imports:[CommonModule,MatDialogModule,MatButtonModule,FontAwesomeModule,MatFormFieldModule,MatInputModule,FormsModule]
+    selector: 'app-alerte-mots-cles',
+    templateUrl: './alerte-mots-cles.component.html',
+    styleUrls: ['./alerte-mots-cles.component.css'],
+    imports: [CommonModule, MatDialogModule, MatButtonModule, FontAwesomeModule, MatFormFieldModule, MatInputModule, FormsModule]
 })
 export class AlerteMotsClesComponent implements OnInit, OnDestroy{
   constructor(
@@ -64,8 +63,9 @@ export class AlerteMotsClesComponent implements OnInit, OnDestroy{
 
             if (this.data.keyword.nom != ""){
               this.data.keyword.categorie.mots_cles = [];
+
               const mc:MotCle = MotCle.fromJson(this.data.keyword);
-          
+              console.log('>>> keyword envoyé à fromJson', JSON.stringify(this.data.keyword));
               if(mc.id_mot_cle > 0 ){
                 this.kwSub = this.kwService.update(mc).subscribe(mot_cle =>{
               

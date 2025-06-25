@@ -41,7 +41,6 @@ def rename(id_mot_cle):
        
         data = request.get_json()
         mot_cle.nom = data['nom']
-        print(data['nom'])
 
         db.session.commit()
         
