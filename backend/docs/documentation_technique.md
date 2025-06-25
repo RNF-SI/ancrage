@@ -26,64 +26,46 @@ Un dossier routes comprend une série de routes regroupées par modèle. Les fic
 Les logs s’enregistrent dans le répertoire /var/log/ancrage.
 
 <h2>Frontend</h2>
-Afin de faciliter la conversion en Angular 19, les composants doivent être « standalone ». 
-A la création, il faut indiquer standalone :true.
+Le projet a été converti en Angular 19. Dans cette version, les composants sont "standalone" par défaut. Il n'est donc plus nécessaire de préciser standalone:true. En revanche, pour les autres éléments, il faut encore le préciser.
 
     @Component({
         selector: 'app-acteur',
         templateUrl: './acteur.component.html',
         styleUrls: ['./acteur.component.css'],
-        standalone:true,
         imports:[CommonModule,MatFormFieldModule,ReactiveFormsModule,MatSelectModule,FormsModule,MatInputModule,MatAutocompleteModule,MatButtonModule,MatProgressSpinnerModule]
     })
- et modifier dans le fichier app.module.ts sa déclaration. Ces composants sont déclarés dans la partie imports et non déclarations. 
 
-    imports: [
-        BrowserModule,
-        AppRoutingModule,
-        CommonModule,
-        BrowserAnimationsModule,
-        MatToolbarModule,
-        MatIconModule,
-        MatMenuModule,
-        HttpClientModule,
-        MatButtonModule,
-        HomeRnfModule,
-        RouterModule,
-        NgbModule,
-        MatDialogModule,
-        DiagosticsListeComponent,
-        SitesDiagnosticsViewComponent,
-        MapComponent,
-        MesDiagnosticsComponent,
-        SiteComponent,
-        AlerteSiteComponent,
-        ChoixActeursComponent,
-        SiteLsComponent,
-        AlerteVisualisationSiteComponent,
-        DiagnosticComponent,
-        AlerteShowActorDetailsComponent,
-        DiagnosticVisualisationComponent,
-        ActeurComponent,
-        AlerteActeurComponent, 
-        AlerteDiagnosticComponent,
-        EntretienComponent,
-        GraphiquesComponent,
-        MenuLateralComponent,
-        AlerteStatutEntretienComponent,
-        TableauStructuresComponent,
-        MotsClesZoneComponent,
-        AlerteGroupeMotsClesComponent,
-        AlerteMotsClesComponent,
-        AlerteDatePublicationComponent,
-        ToastrModule.forRoot({
-        timeOut: 15000,
-        closeButton: true,
-        positionClass: 'toast-bottom-right',
-        progressBar: true
-        }),
+Les modules et les sous-composants utilisés doivent être importés dans un tableau comme le montre le code ci-dessus. Le fichier app-module.ts n'existe plus. Il a été décomposé en un fichier app.routes.ts pour les routes et main.ts. Dans celui-ci, les providers sont définis dans un objet bootstrapApplication.
     
+    import { bootstrapApplication } from '@angular/platform-browser';
+    import { AppComponent } from './app/app.component';
+    import { provideAnimations } from '@angular/platform-browser/animations';
+    import { provideRouter } from '@angular/router';
+    import { routes } from './app/app.routes'
+    import { provideHttpClient } from '@angular/common/http';
+    import { library } from '@fortawesome/fontawesome-svg-core';
+    import { faFacebook } from '@fortawesome/free-brands-svg-icons';
+    import { provideToastr } from 'ngx-toastr';
+    import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS } from '@angular/material-moment-adapter';
+    import { DateAdapter, MAT_DATE_LOCALE, MAT_DATE_FORMATS } from '@angular/material/core';
+
+    library.add(faFacebook)
+
+    bootstrapApplication(AppComponent, {
+    providers: [
+        provideRouter(routes),
+        provideAnimations(),
+        provideHttpClient(), 
+        provideToastr(),
+        {
+        provide: DateAdapter,
+        useClass: MomentDateAdapter,
+        deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS]
+        },
+        { provide: MAT_DATE_FORMATS, useValue: MAT_MOMENT_DATE_FORMATS },
+        { provide: MAT_DATE_LOCALE, useValue: 'fr-FR' }
     ]
+    }).catch(err => console.error(err));
     
 Les services doivent être déclarés en variable privée avec la méthode inject().
 
@@ -190,72 +172,51 @@ Chaque modèle est aussi relié à un service. Les méthodes appelant l’API re
       );
 	  }
 
-Dans le composant, il faut donc les souscrire pour récupérer l’objet avec la fonction subscribe.Chaque méthode suivie de subscribe est dans une instance Subscription (typée ?Subscription). 
+Dans le composant, les méthodes ngOnInit, ngAfterViewInit ont été remplacées par une méthode effect() implémentée dans le constructeur
 
-    private routeSubscription?:Subscription;
+    constructor() {
+        effect(() => {
+            this.previousPage.set(localStorage.getItem('previousPage')!);
+            const { id_diagnostic, slug } = this.routeParams() as Params;
+            const id = Number(id_diagnostic);
+            const slugValue = slug as string;
+        
+            if (id && slugValue) {
+                this.id_diagnostic.set(id);
+                this.slug.set(slugValue);
+        
+                forkJoin({
+                    diag: this.diagnosticService.get(id, slugValue),
+                    themes: this.nomenclatureService.getAllByType('thème'),
+                }).subscribe(({ diag, themes }) => {
+                    this.diagnostic.set(diag);
+                    this.diag = this.diagnostic();
+                    this.themes.set(themes);
+                    this.actors.set(this.diagnostic().acteurs);
+                    const user = this.authService.getCurrentUser();
+                    this.id_role.set(user.id_role);
+            
+                    const isOwner = user.id_role === diag.created_by;
+                    const isReadOnly = !isOwner || diag.is_read_only;
+            
+                    this.is_read_only.set(isReadOnly);
+                });
+            }
+        });
+    }
 
-
-    this.routeSubscription = this.route.params.subscribe((params: any) => {
-          this.id_actor = params['id_acteur'];  
-          this.slug = params['slug'];
-          const communes$ = this.communeService.getAll();
-          const profils$ = this.nomenclatureService.getAllByType("profil");
-          const categories$ = this.nomenclatureService.getAllByType("categorie");
-          this.user_id = this.authService.getCurrentUser().id_role;
-          /* Modification */
-          if (this.id_actor && this.slug) {
-            this.title = this.labels.modifyActor;
-            const actor$ = this.actorService.get(this.id_actor,this.slug);
-
-            forkJoin([actor$, communes$, profils$,categories$]).subscribe(([actor,communes, profils,categories]) => {
-              
-              this.actor = actor;
-              
-              
-              this.instructionsWithResults(communes,profils,categories);
-              this.actor.categories = (this.actor.categories|| []).map(cat =>
-                this.uniqueCategories.find(uc => uc.id_nomenclature === cat.id_nomenclature) || cat
-              );
-              this.actor.profil = this.uniqueProfiles.find(pfl => pfl.id_nomenclature === this.actor.profil?.id_nomenclature) || this.actor.profil;
-              
-              this.formGroup.patchValue({
-                id_acteur: this.actor.id_acteur,
-                nom: this.actor.nom,
-                prenom: this.actor.prenom,
-                created_by: this.actor.created_by,
-                fonction: this.actor.fonction,
-                telephone: this.actor.telephone,
-                mail: this.actor.mail,
-                commune: this.actor.commune,
-                profil: this.actor.profil?.id_nomenclature! > 0 ? this.actor.profil : null,
-                categories: this.actor.categories,
-                structure: this.actor.structure,
-                slug: this.actor.slug
-              });
-              this.isLoading = false; 
-            });
-          } else {
-            /* Création */
-            this.title = this.labels.createActor;
-            forkJoin([communes$, profils$,categories$]).subscribe(([communes, profils,categories]) => {
-              
-              this.instructionsWithResults(communes,profils,categories);
-              this.isLoading = false; 
-            });
-          }
-    });
-
-
-Ces Subscription doivent être détruites dans la méthode ngOnDestroy(){}. Il faut donc implémenter OnDestroy sur les composants concernés.
+Les observables qui utilisent encore des Subscription doivent être détruits dans la méthode ngOnDestroy(){}. Il faut donc implémenter OnDestroy sur les composants concernés.
 
     ngOnDestroy(): void {
-        this.routeSubscription?.unsubscribe();
+        
         this.communeSubscription?.unsubscribe();
         this.actorSubscription?.unsubscribe();
     }
 
 Lorsque plusieurs routes de l'API doivent être appelées en même temps, un forkJoin est utilisé comme le montre le bout de code précédent.
 
+On remplace la plupart des variables par des signaux déclarés de cette façon : "diagnostic = signal<Diagnostic>(new Diagnostic())" La valeur entre parenthèse est celle par défaut. Attention, pour récupérer l'objet Diagnostic il faut ajouter des parenthèses : "const diag:Diagnostic = this.diagnostic();"
+Les @Input() sont remplacés par des input<>(). Attention : les input sont en lecture seule. Si le composant modifiait la valeur des @Input(), il faut donc stocker la valeur de l'input dans une variable au moment où on la remplace.
 Pour faciliter la compréhension du code, les variables ont des noms pertinents et sont toutes typées. Il en va de même pour les méthodes. 
 
 Les composants principaux sont définis dans le répertoire **app**. Toutes les popups sont dans le sous-répertoire **alertes**. Les composants enfants sont dans le sous-répertoire **parts**. La philosophie globale du code est de réutiliser au maximum les éléments (variables, méthodes, composants). 
