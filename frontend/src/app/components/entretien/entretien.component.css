@@ -8,8 +8,8 @@ mat-radio-group{
     display: block;
 }
 
-.grid-3-6-3 {
+.grid-3-9 {
     display: grid;
-    grid-template-columns: 10% 80% 10%; /* ou 3fr 6fr 3fr */
+    grid-template-columns: 30% 70%; /* ou 3fr 6fr 3fr */
     gap: 1rem;
 }

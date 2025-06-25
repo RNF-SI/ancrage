@@ -10,8 +10,8 @@
     background-color: #e3f2fd;
   }
 
-  .grid-3-6-3 {
+  .grid-3-6 {
     display: grid;
-    grid-template-columns: 10% 80% 10%; /* ou 3fr 6fr 3fr */
+    grid-template-columns: 20% 80% ; /* ou 3fr 6fr 3fr */
     gap: 1rem;
   }
