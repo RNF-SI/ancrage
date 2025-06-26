@@ -1,9 +1,9 @@
 import * as L from 'leaflet';
 
 declare module 'leaflet' {
-  export function markerClusterGroup(options?: MarkerClusterGroupOptions): MarkerClusterGroup;
+  function markerClusterGroup(options?: MarkerClusterGroupOptions): MarkerClusterGroup;
 
-  export interface MarkerClusterGroupOptions extends L.LayerOptions {
+  interface MarkerClusterGroupOptions extends L.LayerOptions {
     maxClusterRadius?: number | ((zoom: number) => number);
     iconCreateFunction?: (cluster: MarkerCluster) => L.Icon | L.DivIcon;
     spiderfyOnEveryZoom?: boolean;
@@ -20,7 +20,7 @@ declare module 'leaflet' {
     chunkProgress?: (processed: number, total: number, elapsed: number) => void;
   }
 
-  export interface MarkerClusterGroup extends L.Layer {
+  interface MarkerClusterGroup extends L.LayerGroup {
     addLayer(layer: L.Layer): this;
     removeLayer(layer: L.Layer): this;
     clearLayers(): this;
@@ -31,7 +31,7 @@ declare module 'leaflet' {
     zoomToShowLayer(layer: L.Layer, callback?: () => void): void;
   }
 
-  export interface MarkerCluster extends L.Marker {
+  interface MarkerCluster extends L.Marker {
     getAllChildMarkers(): L.Marker[];
     getChildCount(): number;
     getClusterBounds(): L.LatLngBounds;

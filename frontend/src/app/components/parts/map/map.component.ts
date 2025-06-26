@@ -118,8 +118,11 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
 
-    this.markerClusterGroup = L.markerClusterGroup() as unknown as L.LayerGroup;
-    this.markerClusterGroup.addTo(this.map);
+    this.markerClusterGroup = L.markerClusterGroup?.();
+    if (this.markerClusterGroup){
+      this.markerClusterGroup.addTo(this.map);
+    }
+    
 
     if (this.formGroup) {
       this.formGroup.valueChanges.subscribe(values => {
