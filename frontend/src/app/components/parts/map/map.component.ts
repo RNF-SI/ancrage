@@ -14,9 +14,11 @@ import { Acteur } from '@app/models/acteur.model';
 import { Site } from '@app/models/site.model';
 import { Labels } from '@app/utils/labels';
 import * as L from 'leaflet';
-import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/leaflet.markercluster.js';
 import html2canvas from 'html2canvas';
 import { MatButtonModule } from '@angular/material/button';
+
+/// <reference types="leaflet.markercluster" />
 
 L.Marker.prototype.options.icon = L.icon({
   iconRetinaUrl: 'assets/data/marker-icon-2x.png',
@@ -42,7 +44,7 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
   @Input() changePosition: boolean = false;
   @Input() formGroup: FormGroup | undefined;
   @Input() mapId = 'map';
-  markerClusterGroup: L.MarkerClusterGroup = L.markerClusterGroup();
+  private markerClusterGroup?: L.LayerGroup;
   marker: any;
   private mapClickListener: any;
   labels = new Labels();
@@ -107,38 +109,37 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
 
   //initialise la carte
   private initMap(): void {
-    const mapContainer = this.mapContainer?.nativeElement;
-
+    const mapContainer = this.mapContainer.nativeElement;
     this.map = L.map(mapContainer, {
       center: [48.8566, 2.3522],
       zoom: 13
     });
-    
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
-   
+
+    this.markerClusterGroup = L.markerClusterGroup() as unknown as L.LayerGroup;
+    this.markerClusterGroup.addTo(this.map);
+
     if (this.formGroup) {
       this.formGroup.valueChanges.subscribe(values => {
         const latitude = +values.position_y;
         const longitude = +values.position_x;
-
-        if (latitude && longitude && this.changePosition) {
-          this.moveMarker();
-        }
+        if (latitude && longitude && this.changePosition) this.moveMarker();
       });
     }
   }
 
+
   //Ajoute les marqueurs site
   addMarkers() {
     const bounds = L.latLngBounds([]);
-    this.markerClusterGroup.clearLayers();
+    this.markerClusterGroup?.clearLayers();
 
     for (let i = 0; i < this.sites.length; i++) {
       const lat = parseFloat(this.sites[i].position_y);
       const lng = parseFloat(this.sites[i].position_x);
-      const marker = L.marker([lat, lng]).addTo(this.markerClusterGroup);
+      const marker = L.marker([lat, lng]).addTo(this.markerClusterGroup!);
 
       let departements = '';
       let regions = '';
@@ -157,7 +158,7 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
       bounds.extend([lat, lng]);
     }
 
-    this.markerClusterGroup.addTo(this.map!);
+    this.markerClusterGroup?.addTo(this.map!);
 
     if (this.sites.length > 1) {
       this.map!.fitBounds(bounds, { padding: [30, 30] });
@@ -171,12 +172,12 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
   //Ajoute les marqueurs acteurs
   addMarkersActors() {
     const bounds = L.latLngBounds([]);
-    this.markerClusterGroup.clearLayers();
+    this.markerClusterGroup?.clearLayers();
     
     for (let i = 0; i < this.actors.length; i++) {
       const lat = parseFloat(this.actors[i].commune.latitude!);
       const lng = parseFloat(this.actors[i].commune.longitude!);
-      const marker = L.marker([lat, lng]).addTo(this.markerClusterGroup);
+      const marker = L.marker([lat, lng]).addTo(this.markerClusterGroup!);
 
       let categories = this.actors[i].categories?.map(c => c.libelle).join(", ") ?? "";
 
@@ -194,7 +195,7 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
       bounds.extend([lat, lng]);
     }
 
-    this.markerClusterGroup.addTo(this.map!);
+    this.markerClusterGroup?.addTo(this.map!);
 
     if (this.actors.length > 1) {
       this.map!.fitBounds(bounds, { padding: [30, 30] });
@@ -246,7 +247,7 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
       this.map.remove(); // détruit la carte Leaflet
       this.map = undefined;
     }
-    this.markerClusterGroup.clearLayers();
+    this.markerClusterGroup?.clearLayers();
     this.actorsRendered = false;
     const mapContainer = document.getElementById('map');
     if (mapContainer) {
