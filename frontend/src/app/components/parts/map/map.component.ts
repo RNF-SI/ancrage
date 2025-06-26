@@ -15,12 +15,9 @@ import { Site } from '@app/models/site.model';
 import { Labels } from '@app/utils/labels';
 import { LeafletModule } from '@bluehalo/ngx-leaflet';
 import { LeafletMarkerClusterModule } from '@bluehalo/ngx-leaflet-markercluster';
-import * as L from 'leaflet';
 import html2canvas from 'html2canvas';
-
-// Import explicite pour Angular 19
-import 'leaflet.markercluster';
 import { MatButtonModule } from '@angular/material/button';
+import * as L from 'leaflet'; 
 
 L.Marker.prototype.options.icon = L.icon({
   iconRetinaUrl: 'assets/data/marker-icon-2x.png',
