@@ -13,11 +13,11 @@ import { FormGroup } from '@angular/forms';
 import { Acteur } from '@app/models/acteur.model';
 import { Site } from '@app/models/site.model';
 import { Labels } from '@app/utils/labels';
+import { LeafletModule } from '@bluehalo/ngx-leaflet';
 import * as L from 'leaflet';
+import 'leaflet.markercluster';
 import html2canvas from 'html2canvas';
 import { MatButtonModule } from '@angular/material/button';
-
-/// <reference types="leaflet.markercluster" />
 
 L.Marker.prototype.options.icon = L.icon({
   iconRetinaUrl: 'assets/data/marker-icon-2x.png',
@@ -29,27 +29,27 @@ L.Marker.prototype.options.icon = L.icon({
   shadowSize: [41, 41]
 });
 
-//Carte
 @Component({
-    selector: 'app-map',
-    templateUrl: './map.component.html',
-    styleUrls: ['./map.component.css'],
-    imports: [MatButtonModule]
+  selector: 'app-map',
+  templateUrl: './map.component.html',
+  styleUrls: ['./map.component.css'],
+  standalone: true,
+  imports: [MatButtonModule, LeafletModule]
 })
-export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterViewChecked {
-
+export class MapComponent implements AfterViewInit, OnChanges, OnDestroy, AfterViewChecked {
   private map: L.Map | undefined;
   @Input() sites: Site[] = [];
-  @Input() changePosition: boolean = false;
+  @Input() changePosition = false;
   @Input() formGroup: FormGroup | undefined;
   @Input() mapId = 'map';
-  private markerClusterGroup?: L.LayerGroup;
-  marker: any;
+  private markerClusterGroup: L.MarkerClusterGroup | undefined;
+  marker: L.Marker | undefined;
   private mapClickListener: any;
   labels = new Labels();
   private actorsRendered = false;
   @ViewChild('mapContainer') mapContainer!: ElementRef;
   private _actors: Acteur[] = [];
+
   @Input()
   set actors(value: Acteur[]) {
     this._actors = value;
@@ -61,27 +61,23 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
   get actors(): Acteur[] {
     return this._actors;
   }
-  
+
   ngAfterViewInit(): void {
     const waitForContainer = () => {
       const el = this.mapContainer?.nativeElement;
       const hasSize = el?.offsetHeight > 0 && el?.offsetWidth > 0;
-  
+
       if (hasSize) {
         this.initMap();
         if (this.changePosition) {
           this.moveMarker();
         }
-  
-        setTimeout(() => {
-          this.map?.invalidateSize();
-        }, 100);
+        setTimeout(() => this.map?.invalidateSize(), 100);
       } else {
-        // Re-tente dans 100ms jusqu'à ce que le conteneur soit visible
         setTimeout(waitForContainer, 100);
       }
     };
-  
+
     waitForContainer();
   }
 
@@ -91,76 +87,68 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
       this.actorsRendered = true;
     }
   }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['sites'] && this.map && !this.changePosition) {
       this.addMarkers();
     }
-    
+
     if (changes['formGroup'] && this.map) {
       const latitude = +this.formGroup?.get('position_y')?.value;
       const longitude = +this.formGroup?.get('position_x')?.value;
-
       if (latitude && longitude) {
         this.moveMarker();
       }
     }
   }
 
-  //initialise la carte
   private initMap(): void {
     const mapContainer = this.mapContainer.nativeElement;
     this.map = L.map(mapContainer, {
       center: [48.8566, 2.3522],
       zoom: 13
     });
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
 
-    this.markerClusterGroup = L.markerClusterGroup() as L.LayerGroup;
-    if (this.markerClusterGroup){
-      this.markerClusterGroup.addTo(this.map);
-    }
-    
+    this.markerClusterGroup = L.markerClusterGroup();
+    this.markerClusterGroup.addTo(this.map);
 
     if (this.formGroup) {
       this.formGroup.valueChanges.subscribe(values => {
         const latitude = +values.position_y;
         const longitude = +values.position_x;
-        if (latitude && longitude && this.changePosition) this.moveMarker();
+        if (latitude && longitude && this.changePosition) {
+          this.moveMarker();
+        }
       });
     }
   }
 
-
-  //Ajoute les marqueurs site
-  addMarkers() {
+  addMarkers(): void {
     const bounds = L.latLngBounds([]);
     this.markerClusterGroup?.clearLayers();
 
-    for (let i = 0; i < this.sites.length; i++) {
-      const lat = parseFloat(this.sites[i].position_y);
-      const lng = parseFloat(this.sites[i].position_x);
-      const marker = L.marker([lat, lng]).addTo(this.markerClusterGroup!);
+    for (const site of this.sites) {
+      const lat = parseFloat(site.position_y);
+      const lng = parseFloat(site.position_x);
+      const marker = L.marker([lat, lng]);
 
-      let departements = '';
-      let regions = '';
-      for (let k = 0; k < this.sites[i].departements.length; k++) {
-        departements += this.sites[i].departements[k].nom_dep + " ";
-        regions += this.sites[i].departements[k].region.nom_reg;
-      }
+      const departements = site.departements.map(dep => dep.nom_dep).join(' ');
+      const regions = site.departements.map(dep => dep.region.nom_reg).join(' ');
 
       marker.bindPopup(`
-        <strong>${this.sites[i].nom}</strong><br>
-        Statut : ${this.sites[i].type.libelle}<br>
+        <strong>${site.nom}</strong><br>
+        Statut : ${site.type.libelle}<br>
         Régions : ${regions}<br>
         Départements : ${departements}<br>
       `);
 
+      marker.addTo(this.markerClusterGroup!);
       bounds.extend([lat, lng]);
     }
-
-    this.markerClusterGroup?.addTo(this.map!);
 
     if (this.sites.length > 1) {
       this.map!.fitBounds(bounds, { padding: [30, 30] });
@@ -171,33 +159,31 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
     }
   }
 
-  //Ajoute les marqueurs acteurs
-  addMarkersActors() {
+  addMarkersActors(): void {
     const bounds = L.latLngBounds([]);
     this.markerClusterGroup?.clearLayers();
-    
-    for (let i = 0; i < this.actors.length; i++) {
-      const lat = parseFloat(this.actors[i].commune.latitude!);
-      const lng = parseFloat(this.actors[i].commune.longitude!);
-      const marker = L.marker([lat, lng]).addTo(this.markerClusterGroup!);
 
-      let categories = this.actors[i].categories?.map(c => c.libelle).join(", ") ?? "";
+    for (const actor of this.actors) {
+      const lat = parseFloat(actor.commune.latitude!);
+      const lng = parseFloat(actor.commune.longitude!);
+      const marker = L.marker([lat, lng]);
+
+      const categories = actor.categories?.map(c => c.libelle).join(', ') ?? '';
 
       marker.bindPopup(`
-        <strong>${this.actors[i].nom + ' '+ this.actors[i].prenom}</strong><br>
-        ${this.labels.statusLabel} : ${this.actors[i].fonction}<br>
+        <strong>${actor.nom} ${actor.prenom}</strong><br>
+        ${this.labels.statusLabel} : ${actor.fonction}<br>
         ${this.labels.category} : ${categories}<br>
-        ${this.labels.telephone} : ${this.actors[i].telephone}<br>
-        ${this.labels.mail} : ${this.actors[i].mail}<br>
-        ${this.labels.town} : ${this.actors[i].commune.nom_com}<br>
-        ${this.labels.profile} : ${this.actors[i].profil?.libelle}<br>
-        ${this.labels.structure} : ${this.actors[i].structure}<br>
+        ${this.labels.telephone} : ${actor.telephone}<br>
+        ${this.labels.mail} : ${actor.mail}<br>
+        ${this.labels.town} : ${actor.commune.nom_com}<br>
+        ${this.labels.profile} : ${actor.profil?.libelle}<br>
+        ${this.labels.structure} : ${actor.structure}<br>
       `);
 
+      marker.addTo(this.markerClusterGroup!);
       bounds.extend([lat, lng]);
     }
-
-    this.markerClusterGroup?.addTo(this.map!);
 
     if (this.actors.length > 1) {
       this.map!.fitBounds(bounds, { padding: [30, 30] });
@@ -208,60 +194,41 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
     }
   }
 
-  //Permet de bouger le marqueur
-  moveMarker() {
-    if (this.changePosition) {
-      
-      this.sites = [];
+  moveMarker(): void {
+    if (!this.changePosition || !this.formGroup || !this.map) return;
 
-      let latitude: number = +this.formGroup?.get('position_y')?.value;
-      let longitude: number = +this.formGroup?.get('position_x')?.value;
+    this.sites = [];
 
-      if (longitude === 0 || latitude === 0) {
-        latitude = 47.316667;
-        longitude = 5.016667;
-      }
+    let lat = +this.formGroup.get('position_y')?.value || 47.316667;
+    let lng = +this.formGroup.get('position_x')?.value || 5.016667;
 
-      if (this.marker) {
-        this.marker.remove();
-      }
+    this.marker?.remove();
+    this.marker = L.marker([lat, lng], { draggable: false }).addTo(this.map);
 
-      this.marker = L.marker([latitude, longitude], { draggable: false }).addTo(this.map!);
+    this.mapClickListener = (e: L.LeafletMouseEvent) => {
+      const { lat, lng } = e.latlng;
+      this.marker!.setLatLng([lat, lng]);
+      this.formGroup?.patchValue({
+        position_y: lat.toFixed(6),
+        position_x: lng.toFixed(6)
+      });
+    };
 
-      this.mapClickListener = (e: L.LeafletMouseEvent) => {
-        const { lat, lng } = e.latlng;
-        this.marker.setLatLng([lat, lng]);
-        this.formGroup?.patchValue({
-          position_y: lat.toFixed(6),
-          position_x: lng.toFixed(6)
-        });
-      };
-
-      this.map!.on('click', this.mapClickListener);
-
-      this.map!.setView([latitude, longitude], 13);
-    }
+    this.map.on('click', this.mapClickListener);
+    this.map.setView([lat, lng], 13);
   }
 
   ngOnDestroy(): void {
-    if (this.map) {
-      this.map.off(); // retire tous les écouteurs
-      this.map.remove(); // détruit la carte Leaflet
-      this.map = undefined;
-    }
+    this.map?.off();
+    this.map?.remove();
     this.markerClusterGroup?.clearLayers();
     this.actorsRendered = false;
     const mapContainer = document.getElementById('map');
-    if (mapContainer) {
-      mapContainer.innerHTML = ''; // supprime tout contenu DOM résiduel
-    }
-    
+    if (mapContainer) mapContainer.innerHTML = '';
   }
 
-  //Export en PNG
   exportMapAsPNG(): void {
-    const mapElement = document.getElementById('map'); // Assure-toi que ta carte a bien cet id
-
+    const mapElement = document.getElementById('map');
     if (mapElement) {
       html2canvas(mapElement, { useCORS: true }).then(canvas => {
         const link = document.createElement('a');
