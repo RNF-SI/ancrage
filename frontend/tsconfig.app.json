@@ -16,6 +16,10 @@
   "files": [
     "src/main.ts"
   ],
+  "exclude": [
+    "**/*.spec.ts",
+    "**/*.spec.model.ts"
+  ],
   "include": [
     "src/**/*.d.ts"
   ]
