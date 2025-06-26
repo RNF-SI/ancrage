@@ -11,6 +11,7 @@ import { faFacebook } from '@fortawesome/free-brands-svg-icons';
 import { provideToastr } from 'ngx-toastr';
 import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS } from '@angular/material-moment-adapter';
 import { DateAdapter, MAT_DATE_LOCALE, MAT_DATE_FORMATS } from '@angular/material/core';
+import '@app/utils/leaflet-markercluster-loader';
 
 library.add(faFacebook)
 

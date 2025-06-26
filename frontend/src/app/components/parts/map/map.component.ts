@@ -14,7 +14,6 @@ import { Acteur } from '@app/models/acteur.model';
 import { Site } from '@app/models/site.model';
 import { Labels } from '@app/utils/labels';
 import * as L from 'leaflet';
-import 'leaflet.markercluster/dist/leaflet.markercluster.js';
 import html2canvas from 'html2canvas';
 import { MatButtonModule } from '@angular/material/button';
 
@@ -118,7 +117,7 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy,AfterVi
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
 
-    this.markerClusterGroup = L.markerClusterGroup?.();
+    this.markerClusterGroup = L.markerClusterGroup() as L.LayerGroup;
     if (this.markerClusterGroup){
       this.markerClusterGroup.addTo(this.map);
     }
