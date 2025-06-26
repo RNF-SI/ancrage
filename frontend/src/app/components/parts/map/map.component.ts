@@ -13,7 +13,8 @@ import { FormGroup } from '@angular/forms';
 import { Acteur } from '@app/models/acteur.model';
 import { Site } from '@app/models/site.model';
 import { Labels } from '@app/utils/labels';
-import { LeafletModule, LeafletMarkerClusterModule } from '@bluehalo/ngx-leaflet';
+import { LeafletModule } from '@bluehalo/ngx-leaflet';
+import { LeafletMarkerClusterModule } from '@bluehalo/ngx-leaflet-markercluster';
 import * as L from 'leaflet';
 import html2canvas from 'html2canvas';
 
@@ -118,12 +119,12 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy, AfterV
     // Vérification que markerClusterGroup est disponible
     if (typeof (L as any).markerClusterGroup === 'function') {
       this.markerClusterGroup = (L as any).markerClusterGroup();
-      this.markerClusterGroup.addTo(this.map);
+      this.markerClusterGroup?.addTo(this.map);
     } else {
       console.error('MarkerClusterGroup not loaded properly');
       // Fallback: utiliser un simple FeatureGroup
       this.markerClusterGroup = L.featureGroup() as any;
-      this.markerClusterGroup.addTo(this.map);
+      this.markerClusterGroup?.addTo(this.map);
     }
 
     if (this.formGroup) {
