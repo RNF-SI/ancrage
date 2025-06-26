@@ -13,10 +13,12 @@ import { FormGroup } from '@angular/forms';
 import { Acteur } from '@app/models/acteur.model';
 import { Site } from '@app/models/site.model';
 import { Labels } from '@app/utils/labels';
-import { LeafletModule } from '@bluehalo/ngx-leaflet';
+import { LeafletModule, LeafletMarkerClusterModule } from '@bluehalo/ngx-leaflet';
 import * as L from 'leaflet';
-import 'leaflet.markercluster';
 import html2canvas from 'html2canvas';
+
+// Import explicite pour Angular 19
+import 'leaflet.markercluster';
 import { MatButtonModule } from '@angular/material/button';
 
 L.Marker.prototype.options.icon = L.icon({
@@ -34,7 +36,7 @@ L.Marker.prototype.options.icon = L.icon({
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.css'],
   standalone: true,
-  imports: [MatButtonModule, LeafletModule]
+  imports: [MatButtonModule, LeafletModule, LeafletMarkerClusterModule]
 })
 export class MapComponent implements AfterViewInit, OnChanges, OnDestroy, AfterViewChecked {
   private map: L.Map | undefined;
@@ -113,8 +115,16 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy, AfterV
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
 
-    this.markerClusterGroup = L.markerClusterGroup();
-    this.markerClusterGroup.addTo(this.map);
+    // Vérification que markerClusterGroup est disponible
+    if (typeof (L as any).markerClusterGroup === 'function') {
+      this.markerClusterGroup = (L as any).markerClusterGroup();
+      this.markerClusterGroup.addTo(this.map);
+    } else {
+      console.error('MarkerClusterGroup not loaded properly');
+      // Fallback: utiliser un simple FeatureGroup
+      this.markerClusterGroup = L.featureGroup() as any;
+      this.markerClusterGroup.addTo(this.map);
+    }
 
     if (this.formGroup) {
       this.formGroup.valueChanges.subscribe(values => {

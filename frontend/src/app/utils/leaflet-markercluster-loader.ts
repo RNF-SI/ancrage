@@ -1,5 +1,5 @@
 import * as L from 'leaflet';
-import 'leaflet.markercluster.esm/dist/MarkerCluster.esm.js';
+import 'leaflet.markercluster/dist/leaflet.markercluster';
 
 if (typeof (L as any).markerClusterGroup !== 'function') {
   console.error('[Leaflet]  markerClusterGroup() non chargé !');
