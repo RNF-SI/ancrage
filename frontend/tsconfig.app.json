@@ -4,7 +4,13 @@
   "compilerOptions": {
     "outDir": "./out-tsc/app",
     "types": [
-      "@angular/localize"
+      "@angular/localize",
+      "leaflet",
+      "leaflet.markercluster"
+    ],
+    "typeRoots": [
+      "node_modules/@types",
+      "src/typings"
     ]
   },
   "files": [
