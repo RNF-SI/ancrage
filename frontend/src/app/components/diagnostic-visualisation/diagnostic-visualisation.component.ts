@@ -84,6 +84,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   id_role = signal<number>(0);
   is_read_only = signal<boolean>(false);
   routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
+  isLoading=true;
 
   constructor() {
     effect(() => {
@@ -111,6 +112,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
           const isReadOnly = !isOwner || diag.is_read_only;
   
           this.is_read_only.set(isReadOnly);
+          this.isLoading=false;
         });
       }
     });

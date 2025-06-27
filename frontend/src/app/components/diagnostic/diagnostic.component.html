@@ -3,6 +3,9 @@
       <div class="col-span-2"></div>
   
       <div class="col-span-8">
+        @if (isLoading) {
+          <app-loading-spinner></app-loading-spinner>
+        }
         @let diag = diagnostic;
         @if (!diag().is_read_only) {
         

@@ -6,9 +6,7 @@
         <h2>{{ title }}</h2>
   
         @if (isLoading) {
-          <div class="loading-spinner">
-            <mat-spinner diameter="50" strokeWidth="5" color="accent"></mat-spinner>
-          </div>
+          <app-loading-spinner></app-loading-spinner>
         }
   
         <form [formGroup]="formGroup" (submit)="recordActor($event)">

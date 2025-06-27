@@ -22,13 +22,14 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 import { SiteService } from '@app/services/sites.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinner/loading-spinner.component';
 
 //Composant pour crééer ou modifier un acteur
 @Component({
     selector: 'app-acteur',
     templateUrl: './acteur.component.html',
     styleUrls: ['./acteur.component.css'],
-    imports: [CommonModule, MatFormFieldModule, ReactiveFormsModule, MatSelectModule, FormsModule, MatInputModule, MatAutocompleteModule, MatButtonModule, MatProgressSpinnerModule]
+    imports: [CommonModule, MatFormFieldModule, ReactiveFormsModule, MatSelectModule, FormsModule, MatInputModule, MatAutocompleteModule, MatButtonModule, MatProgressSpinnerModule,LoadingSpinnerComponent]
 })
 export class ActeurComponent implements OnInit,OnDestroy{
   
@@ -69,7 +70,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
   title = "";
   diagnostic:Diagnostic = new Diagnostic();
   previousPage = "";
-  isLoading=false;
+  isLoading=true;
   pageDiagnostic = "";
   routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
 
@@ -90,8 +91,6 @@ export class ActeurComponent implements OnInit,OnDestroy{
         const actor$ = this.actorService.get(this.id_actor(),this.slug());
         forkJoin([actor$, communes$, profils$,categories$]).subscribe(([actor,communes, profils,categories]) => {
           this.actor.set(actor);
-              
-              
           this.instructionsWithResults(communes,profils,categories);
           this.actor().categories = (this.actor().categories|| []).map(cat =>
             this.uniqueCategories.find(uc => uc.id_nomenclature === cat.id_nomenclature) || cat

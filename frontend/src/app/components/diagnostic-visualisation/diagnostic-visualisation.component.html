@@ -1,10 +1,14 @@
 <div class="container">
+
   <div class="grid-3-6">
     <div class="col-span-3">
       <app-menu-lateral [themes]="themes()"></app-menu-lateral>
     </div>
 
     <div class="col-span-9">
+      @if (isLoading) {
+        <app-loading-spinner></app-loading-spinner>
+      }
       <mat-tab-group (selectedTabChange)="onTabChange($event)">
         <mat-tab label="Infos générales">
           <div class="p-3">
@@ -21,7 +25,7 @@
             <div>
               <b>{{ labels.datePublicationReport }}</b> :
               <span>{{ diagnostic().date_rapport_str }}</span>
-              @if (!diagnostic().is_read_only) {
+              @if (diagnostic().created_by === id_role()) {
                 <button mat-raised-button (click)="openAlertDate()">Saisir date</button>
               }
             </div>

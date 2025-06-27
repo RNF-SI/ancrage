@@ -91,6 +91,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   private actorsSub?:Subscription;
   initialize=true;
   routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
+  isLoading=true;
 
   constructor() {
     effect(() => {
@@ -159,7 +160,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
 
   //Met à jour la liste this.chosenSites
   checkSite(){
-
+    this.isLoading = false;
     if (this.chosenSites?.length) {
       
       const chosenIds = this.chosenSites.map(site => site.id_site);
