@@ -27,13 +27,14 @@ import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { MatDialog } from '@angular/material/dialog';
 import { AlerteDatePublicationComponent } from '../alertes/alerte-date-publication/alerte-date-publication.component';
 import { MatMomentDateModule } from '@angular/material-moment-adapter';
+import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinner/loading-spinner.component';
 
 @Component({
     selector: 'app-diagnostic-visualisation',
     templateUrl: './diagnostic-visualisation.component.html',
     styleUrls: ['./diagnostic-visualisation.component.css'],
     standalone:true,
-    imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent, MenuLateralComponent, TableauStructuresComponent, TableauStructuresComponent, MapComponent, MotsClesZoneComponent,MatMomentDateModule]
+    imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent, MenuLateralComponent, TableauStructuresComponent, TableauStructuresComponent, MapComponent, MotsClesZoneComponent,MatMomentDateModule,LoadingSpinnerComponent]
 })
 export class DiagnosticVisualisationComponent implements OnDestroy{
 
