@@ -22,6 +22,7 @@ import localeFr from '@angular/common/locales/fr';
 import moment from 'moment';
 import { Moment } from 'moment';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinner/loading-spinner.component';
 
 registerLocaleData(localeFr);
 
@@ -30,7 +31,7 @@ registerLocaleData(localeFr);
     selector: 'app-diagnostic',
     templateUrl: './diagnostic.component.html',
     styleUrls: ['./diagnostic.component.css'],
-    imports: [CommonModule, MatSelectModule, MatFormFieldModule, FormsModule, MatInputModule, ReactiveFormsModule, MatButtonModule],
+    imports: [CommonModule, MatSelectModule, MatFormFieldModule, FormsModule, MatInputModule, ReactiveFormsModule, MatButtonModule,LoadingSpinnerComponent],
     standalone:true
 })
 export class DiagnosticComponent implements OnInit, OnDestroy{
@@ -91,6 +92,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   private actorsSub?:Subscription;
   initialize=true;
   routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
+  isLoading=true;
 
   constructor() {
     effect(() => {
@@ -159,7 +161,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
 
   //Met à jour la liste this.chosenSites
   checkSite(){
-
+    this.isLoading = false;
     if (this.chosenSites?.length) {
       
       const chosenIds = this.chosenSites.map(site => site.id_site);

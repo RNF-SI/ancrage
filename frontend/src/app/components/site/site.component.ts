@@ -29,7 +29,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
     styleUrls: ['./site.component.css'],
     imports: [MatInputModule, MatFormFieldModule, CommonModule, FormsModule, MatSelectModule, MatButtonModule, MapComponent, ReactiveFormsModule]
 })
-export class SiteComponent implements OnInit,OnDestroy{
+export class SiteComponent implements OnDestroy{
   
   sites:Site[]=[];
   titleSite="Nouveau site";
@@ -130,10 +130,6 @@ export class SiteComponent implements OnInit,OnDestroy{
       }
       
     });
-  }
-
-  ngOnInit(): void {
-   
   }
  
   compareNomenclatures(o1: Nomenclature, o2: Nomenclature): boolean {

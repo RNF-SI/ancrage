@@ -22,15 +22,16 @@ import { Diagnostic } from '@app/models/diagnostic.model';
 import { SiteService } from '@app/services/sites.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinner/loading-spinner.component';
 
 //Composant pour crééer ou modifier un acteur
 @Component({
     selector: 'app-acteur',
     templateUrl: './acteur.component.html',
     styleUrls: ['./acteur.component.css'],
-    imports: [CommonModule, MatFormFieldModule, ReactiveFormsModule, MatSelectModule, FormsModule, MatInputModule, MatAutocompleteModule, MatButtonModule, MatProgressSpinnerModule]
+    imports: [CommonModule, MatFormFieldModule, ReactiveFormsModule, MatSelectModule, FormsModule, MatInputModule, MatAutocompleteModule, MatButtonModule, MatProgressSpinnerModule,LoadingSpinnerComponent]
 })
-export class ActeurComponent implements OnInit,OnDestroy{
+export class ActeurComponent implements OnDestroy{
   
   fb = inject(FormBuilder);
   uniqueProfiles:Nomenclature[] = [];
@@ -69,7 +70,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
   title = "";
   diagnostic:Diagnostic = new Diagnostic();
   previousPage = "";
-  isLoading=false;
+  isLoading=true;
   pageDiagnostic = "";
   routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
 
@@ -90,28 +91,13 @@ export class ActeurComponent implements OnInit,OnDestroy{
         const actor$ = this.actorService.get(this.id_actor(),this.slug());
         forkJoin([actor$, communes$, profils$,categories$]).subscribe(([actor,communes, profils,categories]) => {
           this.actor.set(actor);
-              
-              
           this.instructionsWithResults(communes,profils,categories);
           this.actor().categories = (this.actor().categories|| []).map(cat =>
             this.uniqueCategories.find(uc => uc.id_nomenclature === cat.id_nomenclature) || cat
           );
           this.actor().profil = this.uniqueProfiles.find(pfl => pfl.id_nomenclature === this.actor().profil?.id_nomenclature) || this.actor().profil;
           
-          this.formGroup.patchValue({
-            id_acteur: this.actor().id_acteur,
-            nom: this.actor().nom,
-            prenom: this.actor().prenom,
-            created_by: this.actor().created_by,
-            fonction: this.actor().fonction,
-            telephone: this.actor().telephone,
-            mail: this.actor().mail,
-            commune: this.actor().commune,
-            profil: this.actor().profil?.id_nomenclature! > 0 ? this.actor().profil : null,
-            categories: this.actor().categories,
-            structure: this.actor().structure,
-            slug: this.actor().slug
-          });
+          this.patchValue();
           this.isLoading = false; 
         });
       }else{
@@ -125,9 +111,22 @@ export class ActeurComponent implements OnInit,OnDestroy{
     });
   }
 
-  ngOnInit(): void {
-    
-  }
+  patchValue(){
+    this.formGroup.patchValue({
+      id_acteur: this.actor().id_acteur,
+      nom: this.actor().nom,
+      prenom: this.actor().prenom,
+      created_by: this.actor().created_by,
+      fonction: this.actor().fonction,
+      telephone: this.actor().telephone,
+      mail: this.actor().mail,
+      commune: this.actor().commune,
+      profil: this.actor().profil?.id_nomenclature! > 0 ? this.actor().profil : null,
+      categories: this.actor().categories,
+      structure: this.actor().structure,
+      slug: this.actor().slug
+    });
+ }
   //Réception des données
   instructionsWithResults(communes:Commune[],profils:Nomenclature[],categories:Nomenclature[]){
     this.uniqueProfiles = profils;
@@ -201,7 +200,7 @@ export class ActeurComponent implements OnInit,OnDestroy{
     
     if(actor.id_acteur > 0){
       
-      this.dialog.open(AlerteActeurComponent, {
+      const dialogRef = this.dialog.open(AlerteActeurComponent, {
         data: {
           title: this.title,
           message: message,
@@ -209,6 +208,14 @@ export class ActeurComponent implements OnInit,OnDestroy{
           labels: this.labels,
           diagnostic:this.diagnostic,
           previousPage:this.pageDiagnostic
+        }
+      });
+
+      dialogRef.afterClosed().subscribe(actor => {
+        if (actor) {
+          console.log(actor);
+          this.actor.set(new Acteur());
+          this.patchValue();
         }
       });
     }

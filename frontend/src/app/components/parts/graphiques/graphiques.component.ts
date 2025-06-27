@@ -79,7 +79,7 @@ export class GraphiquesComponent {
       if (diag?.id_diagnostic > 0) {
         this.getCharts(diag.id_diagnostic);
       }
-    }, { allowSignalWrites: true });
+    });
   }
 
   private getCharts(id_diagnostic: number): void {

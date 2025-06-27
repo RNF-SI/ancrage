@@ -275,7 +275,7 @@ export class MotsClesZoneComponent implements OnDestroy{
         targetCategory.mots_cles.push(draggedKeyword);
       }
   
-      if (!this.modeAnalyse) {
+      if (!this.modeAnalyse()) {
         if (!this.motsClesReponse().some(mc => mc.id_mot_cle === draggedKeyword.id_mot_cle)) {
           this.motsClesReponse.update(list => [...list, draggedKeyword]);
         }
@@ -299,12 +299,13 @@ export class MotsClesZoneComponent implements OnDestroy{
         // Ajout à la catégorie cible
         targetCategory.mots_cles = targetCategory.mots_cles || [];
         targetCategory.mots_cles.push(newKeyword);
-  
-        if (!this.modeAnalyse) {
+       
+        if (!this.modeAnalyse()) {
           this.motsClesReponse.update(list => [...list, newKeyword]);
         } else {
           this.motsCleAnalyse.update(list => [...list, newKeyword]);
         }
+        
       }
     }
   }
