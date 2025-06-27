@@ -5,12 +5,12 @@ import { Nomenclature } from "./nomenclature.model";
 import { Reponse } from "./reponse.model";
 
 export class Acteur implements IActeur{
-    id_acteur:number = 1;
+    id_acteur:number = 0;
     nom:string="";
     prenom:string="";
     fonction:string="";
-    telephone:string="06 06 06 06 06";
-    mail:string="mail@mail.com";
+    telephone:string="";
+    mail:string="";
     commune:Commune = new Commune();
     profil?:Nomenclature;
     structure="";
