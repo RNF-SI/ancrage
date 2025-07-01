@@ -7,4 +7,8 @@ mat-form-field{
     justify-content: center;
     align-items: center;
     margin: 20px 0;
-  }
+}
+
+button{
+    margin-right: 1%;
+}
