@@ -42,3 +42,10 @@
     padding:1%;
 }
 
+.boutons{
+    margin-top: 1%;
+}
+
+mat-card{
+    height:60px;
+}
