@@ -22,9 +22,9 @@ def createQuestionsByTheme(THEME_MNEMONIQUE, THEME_LIBELLE, question_labels, que
     else:
         sans_reponse_nomenclature = existing_nomenclatures[sans_reponse_key]
 
-    ne_se_prononce_pas_key = ("Ne se prononce pas", 3)
+    ne_se_prononce_pas_key = ("N'a pas exprimé de réponse claire", 3)
     if ne_se_prononce_pas_key not in existing_nomenclatures:
-        nsp_nomenclature = Nomenclature(libelle="Ne se prononce pas", value=3, mnemonique="reponse_score")
+        nsp_nomenclature = Nomenclature(libelle="N'a pas exprimé de réponse claire", value=3, mnemonique="reponse_score")
         db.session.add(nsp_nomenclature)
         db.session.flush()
         existing_nomenclatures[ne_se_prononce_pas_key] = nsp_nomenclature

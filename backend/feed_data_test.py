@@ -52,7 +52,9 @@ with app.app_context():
     # Ajout de 3 types de site (mnemonique = 'statut')
     types_sites = []
     types_labels = [
-        "Réserve naturelle",
+        "Réserve naturelle régionale",
+        "Réserve naturelle nationale",
+        "Réserve naturelle corse",
         "Parc Naturel National",
         "Parc Naturel Régional",
         "Espace CEN",

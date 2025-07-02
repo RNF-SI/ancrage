@@ -152,6 +152,6 @@ def changeValuesActeur(acteur, data):
 
 def getActeur(acteur):
     logger.info(f"📤 Sérialisation de l'acteur {acteur.id_acteur}")
-    schema = ActeurSchema(many=False)
+    schema = ActeurWithoutResponsesSchema(many=False)
     acteurObj = schema.dump(acteur)
     return jsonify(acteurObj)
