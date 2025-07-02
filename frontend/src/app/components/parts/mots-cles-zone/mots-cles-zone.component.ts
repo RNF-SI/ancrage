@@ -154,10 +154,11 @@ export class MotsClesZoneComponent implements OnDestroy{
 
   
 
-  hasUnclassifiedKeywords = computed(() => {
+  hasUnclassifiedKeywords() {
     const nonClasse = this.categories().find(c => c.libelle === "Non classés");
+    console.log(nonClasse);
     return !!nonClasse?.mots_cles?.length;
-  });
+  };
 
   handleKeydown(event: KeyboardEvent): void {
 
@@ -355,10 +356,10 @@ export class MotsClesZoneComponent implements OnDestroy{
         
           reponse.mots_cles[i].categorie.mots_cles=[];
       }
-    
+      
       this.reponseSub = this.reponseService.updateAfom(reponse).subscribe(keywords=>{
         this.setKeywords(keywords);
-      })
+      });
 
     }else{
       let afoms:GraphMotsCles[]=[];
@@ -367,6 +368,11 @@ export class MotsClesZoneComponent implements OnDestroy{
         let afom = new GraphMotsCles();
         afom.id_afom = mc.afom_id!;
         afom.mot_cle = mc;
+        for( let kw of mc.mots_cles_issus){
+          kw.categorie.mots_cles = [];
+          kw.mots_cles_issus = [];
+        }
+        afom.mot_cle.categorie.mots_cles = []
         afom.mot_cle.diagnostic.id_diagnostic = this.id_diagnostic();
         afom.nombre = mc.nombre!;
         afoms.push(afom);
@@ -400,7 +406,7 @@ export class MotsClesZoneComponent implements OnDestroy{
     // Retirer les mots-clés "issus" (enfants) de la liste
     const filtered = newKeywords.filter(k => !idsIssus.includes(k.id_mot_cle));
   
-    this.setKeywords(filtered);  // ✅ utilise la nouvelle version
+    this.setKeywords(filtered); 
   }
 
   setKeywords(keywords: MotCle[]): void {
@@ -434,17 +440,19 @@ export class MotsClesZoneComponent implements OnDestroy{
       if (!this.modeAnalyse()) {
         if (!responseKeywords.some(k => k.id_mot_cle === mc.id_mot_cle)) {
           responseKeywords.push(mc);
+          this.motsClesReponse.set(responseKeywords);
         }
       } else {
         if (!analyseKeywords.some(k => k.id_mot_cle === mc.id_mot_cle)) {
           analyseKeywords.push(mc);
+          this.motsCleAnalyse.set(analyseKeywords);
         }
       }
     }
   
     this.categories.set(updatedCats);
-    this.motsClesReponse.set(responseKeywords);
-    this.motsCleAnalyse.set(analyseKeywords);
+    
+    console.log(this.motsCleAnalyse());
   }
 
   getVisibleKeywords(cat: Nomenclature): MotCle[] {
@@ -492,7 +500,7 @@ export class MotsClesZoneComponent implements OnDestroy{
           target.nombre += source.nombre;
         }
         
-        if (!this.modeAnalyse){
+        if (!this.modeAnalyse()){
           this.motsClesReponse.set(this.motsClesReponse().filter(mc =>
             mc.id_mot_cle !== source.id_mot_cle 
           ));
