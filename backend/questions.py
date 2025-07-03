@@ -398,7 +398,7 @@ with app.app_context():
     
     updates = [
         # Bloc 1
-        (1, 1, 10), (2, 2, 10), (4, 3, 10), (5, 4, 10), (6, 5, 10), (7, 7, 10), (13, 6, 10),
+        (1, 1, 12), (2, 2, 10), (4, 3, 10), (5, 4, 10), (6, 5, 10), (7, 7, 10), (13, 6, 10),
         # Bloc 2
         (8, 8, 11), (9, 9, 11), (10, 10, 11),
         # Bloc 3
@@ -410,7 +410,7 @@ with app.app_context():
         # Bloc 6
         (22, 22, 16), (23, 23, 16), (26, 26, 17), (32, 32, 18),
         # Bloc 7
-        (34, 34, 19), (21, 21, 16), (36, 36, 19), (24, 24, 16), (25, 25, 16), (27, 27, 16),
+        (34, 34, 19), (21, 21, 16), (36, 36, 19), (24, 24, 16), (25, 25, 16), (27, 27, 17),
         # Bloc 8
         (28, 28, 17), (29, 29, 17), (30, 30, 18), (31, 31, 18),
         # Bloc 9
@@ -424,7 +424,7 @@ with app.app_context():
         if question:
             question.ordre = ordre
             question.metrique = id_question  
-            question.theme_question_id = theme_question_id
+            question.theme_question_id = theme_question_id + 2
         else:
             print(f"Question ID {id_question} non trouvée.")
 
