@@ -108,6 +108,7 @@ class Diagnostic(db.Model):
     documents = db.relationship('Document', backref='diagnostic')
     sites = db.relationship('Site', secondary='cor_sites_diagnostics', back_populates='diagnostics')
     slug = db.Column(db.String)
+    is_disabled = db.Column(db.Boolean,default=False)
     
 class Document(db.Model):
     __tablename__ = 't_documents'

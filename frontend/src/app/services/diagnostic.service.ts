@@ -127,5 +127,11 @@ export class DiagnosticService {
         })
       );
     }
+
+    disableDiag(diagnostic:Diagnostic): Observable<Diagnostic> {
+      return this.http.put<IDiagnostic>(this.BASE_URL + '/disable/' + diagnostic.id_diagnostic + '/' + diagnostic.slug, diagnostic.toJson()).pipe(
+        map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
+      );
+    }
     
 }

@@ -45,6 +45,24 @@ def diagnosticMethods(id_diagnostic, slug):
         else:
             logger.warning(f"❌ Slug invalide pour mise à jour du diagnostic {id_diagnostic}")
             return jsonify({'error': 'Slug invalide'}), 400
+        
+@bp.route('/diagnostic/disable/<int:id_diagnostic>/<slug>', methods=['GET','PUT'])
+def disableDiagnostic(id_diagnostic, slug):
+    diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
+
+    if not diagnostic:
+        logger.warning(f"❌ Aucun diagnostic trouvé pour l'ID {id_diagnostic}")
+        return jsonify({'error': 'Diagnostic non trouvé'}), 404
+    
+    if diagnostic.slug == slug:
+        diagnostic.is_disabled = True
+        db.session.add(diagnostic)
+        db.session.commit()
+        diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
+        return getDiagnostic(diagnostic)
+    else:
+        logger.warning(f"❌ Slug invalide pour mise à jour du diagnostic {id_diagnostic}")
+        return jsonify({'error': 'Slug invalide'}), 400
     
 def print_diagnostic(diagnostic):
     logger.info("🔍 Diagnostic :")
