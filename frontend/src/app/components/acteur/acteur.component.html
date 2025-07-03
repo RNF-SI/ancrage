@@ -45,14 +45,12 @@
                 <mat-option [value]="pfl">{{ pfl.libelle }}</mat-option>
               }
             </mat-select>
-            @if (formGroup.get('profil')?.hasError('required')) {
-              <mat-error>{{ labels.requiredProfile }}</mat-error>
-            }
+            
           </mat-form-field>
   
           <mat-form-field appearance="fill">
             <mat-label>{{ labels.status }}</mat-label>
-            <input matInput placeholder="Entrez un statut" formControlName="fonction" required>
+            <input matInput placeholder="Entrez un statut ou fonction (profession, retraité ou occupation bénévole : président)" formControlName="fonction" required>
             @if (formGroup.get('fonction')?.hasError('required')) {
               <mat-error>{{ labels.requiredStatus }}</mat-error>
             }
@@ -76,7 +74,7 @@
   
           <mat-form-field appearance="fill">
             <mat-label>{{ labels.structure }}</mat-label>
-            <input matInput placeholder="Entrez une structure" formControlName="structure" required>
+            <input matInput placeholder="Entrez une structure. Si inconnue, tapez 'privée'" formControlName="structure" required>
             @if (formGroup.get('structure')?.hasError('required')) {
               <mat-error>{{ labels.requiredStructure }}</mat-error>
             }

@@ -284,6 +284,7 @@ def getRepartitionMotsCles(id_diagnostic):
 
 def verifCompleteStatus(id_acteur):
     nb_reponses = db.session.query(func.count(Reponse.id_reponse)).filter_by(acteur_id=id_acteur).scalar()
+
     isCCG = checkCCG(id_acteur)
 
     if isCCG:
@@ -291,8 +292,8 @@ def verifCompleteStatus(id_acteur):
     else:
         count = (
             db.session.query(func.count(Question.id_question))
-            .join(Nomenclature, Question.theme_question_id == Nomenclature.id_nomenclature)
-            .filter(Nomenclature.libelle != "Spécifique à l'instance de gouvernance")
+            .join(Nomenclature, Question.theme_id == Nomenclature.id_nomenclature)
+            .filter(Nomenclature.libelle != "CCG")
             .scalar()
         )
     
@@ -309,6 +310,8 @@ def verifCompleteStatus(id_acteur):
             if statut.libelle == 'En cours':
                 statut_entretien_id = statut.id_nomenclature
                 break
+    else:
+        logger.error(f"Nombre réponses supérieur aux questions !!!")
     
     acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
 

@@ -48,7 +48,7 @@ export class ActeurComponent implements OnDestroy{
         telephone: ["",[Validators.pattern(/^0[1-9](?: \d{2}){4}$/)]],
         mail: ['',[Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]],
         commune: this.fb.control<Commune | null>(null, [Validators.required]),
-        profil: this.fb.control<Nomenclature | null>(null, [Validators.required]),
+        profil: this.fb.control<Nomenclature | null>(null),
         categories: this.fb.control<Nomenclature[] | null>(null, [Validators.required]),
         structure: ['', [Validators.required]],
         modified_by: [0],
