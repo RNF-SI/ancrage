@@ -72,7 +72,8 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
                 continue
 
             questions_ids_envoyees.add(question_id)
-
+            print("acteur_id")
+            print(acteur_id)
             stmt = insert(Reponse).values(
                 acteur_id=acteur_id,
                 question_id=question_id,
@@ -175,7 +176,7 @@ def enregistrer_reponse_acteur(reponse_objet):
             )
             db.session.add(nouvel_enfant)
             db.session.flush()
-
+   
     # Mise à jour ou création de la réponse
     reponse = Reponse.query.filter_by(acteur_id=acteur_id, question_id=question_id).first()
     if reponse:
@@ -284,7 +285,8 @@ def getRepartitionMotsCles(id_diagnostic):
 
 def verifCompleteStatus(id_acteur):
     nb_reponses = db.session.query(func.count(Reponse.id_reponse)).filter_by(acteur_id=id_acteur).scalar()
-
+    print("nombre réponses")
+    print(nb_reponses)
     isCCG = checkCCG(id_acteur)
 
     if isCCG:
@@ -296,7 +298,8 @@ def verifCompleteStatus(id_acteur):
             .filter(Nomenclature.libelle != "CCG")
             .scalar()
         )
-    
+    print ("nombre questions")
+    print(count)
     nomenclatures = Nomenclature.query.filter_by(mnemonique="statut_entretien").all()
     
     statut_entretien_id=0

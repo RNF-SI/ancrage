@@ -133,7 +133,8 @@ def changeValuesActeur(acteur, data):
     acteur.mail = data['mail']
     acteur.commune_id = data['commune']['id_commune']
     acteur.structure = data['structure']
-    acteur.profil_cognitif_id = data['profil']['id_nomenclature']
+    if 'profil' in data and data['profil']:
+        acteur.profil_cognitif_id = data['profil']['id_nomenclature']
 
     new_cat_ids = {c['id_nomenclature'] for c in data['categories']}
     current_cats = {c.id_nomenclature for c in acteur.categories}
