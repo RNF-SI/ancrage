@@ -9,7 +9,7 @@
       @if (isLoading) {
         <app-loading-spinner></app-loading-spinner>
       }
-      <mat-tab-group (selectedTabChange)="onTabChange($event)">
+      <mat-tab-group (selectedTabChange)="onTabChange($event)" [selectedIndex]="index">
         <mat-tab label="Infos générales">
           <div class="p-3">
             <h2>{{ diagnostic().nom }}</h2>

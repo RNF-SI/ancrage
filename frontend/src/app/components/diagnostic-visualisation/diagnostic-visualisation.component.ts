@@ -87,9 +87,14 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   is_read_only = signal<boolean>(false);
   routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
   isLoading=true;
+  index=0;
 
   constructor() {
     effect(() => {
+      if (localStorage.getItem("fromActor") === 'oui'){
+        this.index=1;
+        localStorage.setItem("fromActor",'non');
+      }
       this.previousPage.set(localStorage.getItem('previousPage')!);
       const { id_diagnostic, slug } = this.routeParams() as Params;
       const id = Number(id_diagnostic);
