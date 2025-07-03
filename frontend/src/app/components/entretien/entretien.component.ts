@@ -19,6 +19,7 @@ import { MotsClesZoneComponent } from "../parts/mots-cles-zone/mots-cles-zone.co
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Acteur } from '@app/models/acteur.model';
+import { Question } from '@app/models/question.model';
 
 
 //Page de la saisie de l'entretien
@@ -88,6 +89,12 @@ export class EntretienComponent implements OnDestroy{
       }
       
     });
+  }
+
+  isChoixVisible(q: Question, cr: Nomenclature): boolean {
+    const isSansReponse = cr.libelle === 'Sans réponse';
+    const sansReponseAutorise = q.indications === "Sans indicateur" ? true : false;
+    return !isSansReponse || (isSansReponse && sansReponseAutorise);
   }
 
   prepareResults(themes:Nomenclature[],etats:Nomenclature[],noResponse:Nomenclature){

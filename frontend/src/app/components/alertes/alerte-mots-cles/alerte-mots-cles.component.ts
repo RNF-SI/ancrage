@@ -65,7 +65,7 @@ export class AlerteMotsClesComponent implements OnInit, OnDestroy{
               this.data.keyword.categorie.mots_cles = [];
 
               const mc:MotCle = MotCle.fromJson(this.data.keyword);
-              console.log('>>> keyword envoyé à fromJson', JSON.stringify(this.data.keyword));
+            
               if(mc.id_mot_cle > 0 ){
                 this.kwSub = this.kwService.update(mc).subscribe(mot_cle =>{
               
