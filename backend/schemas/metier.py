@@ -48,45 +48,65 @@ class SiteSchema(SQLAlchemyAutoSchema):
         include_relationships = True
         load_instance = True
 
-    type = fields.Nested(lambda: NomenclatureSchema, exclude=("sites",))
-    diagnostics = fields.Nested(lambda: DiagnosticSchema, many=True, exclude=('sites',))
+    type = fields.Nested(lambda: NomenclatureDiagSchema)
+    diagnostics = fields.Nested(lambda: DiagnosticLiteSchema, many=True)
     departements = fields.Method("get_departements_flat")
-    habitats = fields.Method("get_habitats_flat")
+    """ habitats = fields.Method("get_habitats_flat") """
 
-    def get_diagnostics_flat(self, obj):
-        return [DiagnosticLiteSchema().dump(ds.diagnostic) for ds in obj.diagnostics if ds.diagnostic]
     def get_departements_flat(self, obj):
         return [
             DepartementSchema(exclude=("sites",)).dump(ds)
             for ds in obj.departements
             if ds
         ]
-    def get_habitats_flat(self, obj):
+    """ def get_habitats_flat(self, obj):
         return [
             NomenclatureSchema(exclude=("sites",)).dump(habitat)
             for habitat in obj.habitats
             if habitat
-    ]
+    ] """
+
+class SiteFromDiagSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Site
+        include_relationships = True
+        load_instance = True
+
+    type = fields.Nested(lambda: NomenclatureDiagSchema)
+    departements = fields.Method("get_departements_flat")
+
+    def get_departements_flat(self, obj):
+        return [
+            DepartementSchema(exclude=("sites",)).dump(ds)
+            for ds in obj.departements
+            if ds
+        ]
+
 
 class DiagnosticSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Diagnostic
         include_relationships = True
         load_instance = True
-
+        
     acteurs = fields.Nested(lambda: ActeurSchema, many=True, exclude=('diagnostic',))
     documents = fields.Nested(lambda: DocumentSchema, many=True, exclude=("diagnostic",))
-    sites = fields.Nested(lambda: SiteSchema, many=True, exclude=('diagnostics',))
+    sites = fields.Nested(lambda: SiteFromDiagSchema, many=True, exclude=('diagnostics',))
 
-    def get_sites_flat(self, obj):
-        return [SiteSchema().dump(ds.site) for ds in obj.sites]
 
 class DiagnosticLiteSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Diagnostic
         load_instance = True
-        exclude =  ("acteurs", "documents",)
+        exclude =  ("acteurs", "documents",'sites')
 
+class DiagnosticWithSitesSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Diagnostic
+        load_instance = True
+        exclude =  ("acteurs", "documents")
+
+    sites = fields.Nested(lambda: SiteFromDiagSchema, many=True, exclude=('diagnostics',))
 
 class DocumentSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -103,12 +123,24 @@ class ActeurSchema(SQLAlchemyAutoSchema):
         include_relationships = True
         load_instance = True
 
-    diagnostic = fields.Nested(lambda: DiagnosticSchema)
+    diagnostic = fields.Nested(lambda: DiagnosticWithSitesSchema)
     commune = fields.Nested(lambda: CommuneSchema)
-    categories = fields.Nested(lambda: NomenclatureSchema, many=True)
+    categories = fields.Nested(lambda: NomenclatureLightSchema, many=True)
     reponses = fields.Nested(lambda: ReponseSchema, many=True,exclude=("acteur",))
-    profil = fields.Nested(lambda: NomenclatureSchema)
-    statut_entretien = fields.Nested(lambda: NomenclatureSchema)
+    profil = fields.Nested(lambda: NomenclatureLightSchema)
+    statut_entretien = fields.Nested(lambda: NomenclatureLightSchema)
+
+class ActeurWithoutResponsesSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Acteur
+        include_relationships = True
+        load_instance = True
+
+    diagnostic = fields.Nested(lambda: DiagnosticWithSitesSchema)
+    commune = fields.Nested(lambda: CommuneSchema)
+    categories = fields.Nested(lambda: NomenclatureLightSchema, many=True)
+    profil = fields.Nested(lambda: NomenclatureLightSchema)
+    statut_entretien = fields.Nested(lambda: NomenclatureLightSchema)
     
 
 class QuestionSchema(SQLAlchemyAutoSchema):
@@ -136,8 +168,8 @@ class ReponseSchema(SQLAlchemyAutoSchema):
 
     mots_cles = fields.Nested(lambda: MotCleSchema, many=True, exclude=("reponses",))
     question = fields.Nested(lambda: QuestionSchema, exclude=("reponses",))
-    acteur = fields.Nested(lambda: ActeurSchema)
-    valeur_reponse = fields.Nested(lambda: NomenclatureSchema)
+    acteur = fields.Nested(lambda: ActeurLiteSchema)
+    valeur_reponse = fields.Nested(lambda: NomenclatureLightSchema)
 
 
 class MotCleSchema(SQLAlchemyAutoSchema):
@@ -166,9 +198,21 @@ class NomenclatureSchema(SQLAlchemyAutoSchema):
     questions = fields.Nested(lambda: QuestionSchema, many=True, exclude=("theme",))
     mots_cles = fields.Nested(lambda: MotCleSchema, many=True, exclude=("categorie",))
 
+class NomenclatureDiagSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Nomenclature
+        load_instance = True
+        exclude = ('acteurs_c','acteurs_p','sites','questions','mots_cles',)
+
+    acteurs_c = fields.Nested(lambda: ActeurSchema, many=True, exclude=("categories", "diagnostic",))
+    acteurs_p = fields.Nested(lambda: ActeurSchema, many=True, exclude=("categories", "diagnostic",))
+    sites = fields.Nested(lambda: SiteSchema, many=True, exclude=("habitats",))
+    questions = fields.Nested(lambda: QuestionSchema, many=True, exclude=("theme",))
+    mots_cles = fields.Nested(lambda: MotCleSchema, many=True, exclude=("categorie",))
+
 class NomenclatureLightSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Nomenclature
         include_fk = True
         load_instance = True
-        exclude = ("mots_cles",)
+        exclude = ("mots_cles","acteurs_c","acteurs_p","sites","questions")

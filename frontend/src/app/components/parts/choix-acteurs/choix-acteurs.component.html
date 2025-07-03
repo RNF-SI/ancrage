@@ -138,9 +138,11 @@
   </div>
 
   @if (!no_creation) {
-    <button mat-raised-button type="button" (click)="recordActors()" color="warn">{{ labels.addActors }}</button>
-    <button mat-raised-button type="button" (click)="navigate(previousPage, diagnostic)" color="accent">
-      {{ labels.btnPreviousStepLabel }}
-    </button>
+    <div class="boutons">
+      <button mat-raised-button type="button" (click)="recordActors()" color="warn">{{ labels.addActors }}</button>
+      <button mat-raised-button type="button" (click)="navigate(previousPage, diagnostic)" color="accent">
+        {{ labels.btnPreviousStepLabel }}
+      </button>
+    </div>
   }
 </div>

@@ -237,13 +237,29 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy, AfterV
 
   exportMapAsPNG(): void {
     const mapElement = document.getElementById('map');
+  
     if (mapElement) {
-      html2canvas(mapElement, { useCORS: true }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = 'map.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      });
+      // Sélectionne les contrôles de zoom (classe par défaut de Leaflet)
+      const zoomControls = mapElement.querySelector('.leaflet-control-zoom') as HTMLElement;
+  
+      if (zoomControls) {
+        zoomControls.style.display = 'none'; // Masquer les contrôles
+      }
+  
+      // Petite pause pour s'assurer que le DOM est à jour (facultatif mais plus sûr)
+      setTimeout(() => {
+        html2canvas(mapElement, { useCORS: true }).then(canvas => {
+          const link = document.createElement('a');
+          link.download = 'map.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+  
+          // Réaffiche les contrôles après la capture
+          if (zoomControls) {
+            zoomControls.style.display = 'block';
+          }
+        });
+      }, 100); // 100ms suffisent généralement
     }
   }
 }

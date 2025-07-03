@@ -101,17 +101,19 @@
               </app-choix-acteurs>
 
               @if (!diagnostic().is_read_only) {
-                <button mat-raised-button type="button" (click)="exportCSV()">
-                  {{ labels.exportCSV }}
-                </button>
-                <button mat-raised-button color="accent" type="button"
-                        (click)="navigate('/choix-acteurs/' + diagnostic().id_diagnostic + '/' + diagnostic().slug, diagnostic())">
-                  Importer acteurs
-                </button>
-                <button mat-raised-button color="accent" type="button"
-                        (click)="navigate('/acteur', diagnostic())">
-                  Créer acteurs
-                </button>
+                <div class="buttons">
+                  <button mat-raised-button type="button" (click)="exportCSV()">
+                    {{ labels.exportCSV }}
+                  </button>
+                  <button mat-raised-button color="accent" type="button"
+                          (click)="navigate('/choix-acteurs/' + diagnostic().id_diagnostic + '/' + diagnostic().slug, diagnostic())">
+                    Importer acteurs
+                  </button>
+                  <button mat-raised-button color="accent" type="button"
+                          (click)="navigate('/acteur', diagnostic())">
+                    Créer acteurs
+                  </button>
+                </div>
               }
             </div>
           </mat-tab>

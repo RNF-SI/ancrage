@@ -15,3 +15,9 @@
     grid-template-columns: 20% 80% ; /* ou 3fr 6fr 3fr */
     gap: 1rem;
   }
+
+  .buttons{
+    margin-top: 2%;
+  }
+
+ 

@@ -2,7 +2,7 @@
 
 L’application comprend deux parties :
 -	Une application backend en python avec Flask reliée à une base de données PostGreSQL
--	Une application frontend en typescript et Angular 15
+-	Une application frontend en typescript et Angular 19
 Le fichier readme indique comment installer le projet. 
 
 Elle est conçue pour être exécutée dans un environnement Linux. Si vous êtes sous Windows, il faut installer WSL.
@@ -70,6 +70,18 @@ Les modules et les sous-composants utilisés doivent être importés dans un tab
 Les services doivent être déclarés en variable privée avec la méthode inject().
 
     private siteService = inject(SiteService);
+
+Les ngIf et ngFor sont remplacés par @if(){} et @for(){} :
+
+    @if (isLoading) {
+          <app-loading-spinner></app-loading-spinner>
+    }
+
+    <mat-select formControlName='categories' multiple>
+        @for (cat of uniqueCategories; track cat) {
+            <mat-option [value]='cat'>{{ cat.libelle }}</mat-option>
+        }
+    </mat-select>
 
 Chaque modèle est couplé à une interface et comprend trois méthodes copy, fromJson et toJson. Il faut donc penser à chaque modification ou création de modèle, à compléter ou créer les interfaces et implémenter les trois méthodes. Les modèles n’ont pas de constructeur défini : cela permet de déclarer des instances avec des valeurs par défaut. Voici un exemple avec MotCle :
 
@@ -170,7 +182,7 @@ Chaque modèle est aussi relié à un service. Les méthodes appelant l’API re
       return this.http.put<IMotCle>(route, mot_cle.toJson()).pipe(
         map(mot_cleJson => MotCle.fromJson(mot_cleJson))
       );
-	  }
+	}
 
 Dans le composant, les méthodes ngOnInit, ngAfterViewInit ont été remplacées par une méthode effect() implémentée dans le constructeur
 
