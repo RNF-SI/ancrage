@@ -32,6 +32,7 @@ export class AlerteActeurComponent {
     navigate(path:string,diagnostic:Diagnostic){
      
       this.dialogRef.close(this.data.acteur);
+      localStorage.setItem("fromActor","oui");
       this.siteService.navigateAndCache(path,diagnostic,undefined,true);
     }
     close(){
