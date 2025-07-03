@@ -61,6 +61,10 @@
               <button mat-raised-button color="primary" (click)="uploadFiles()" [disabled]="!files.length">
                 Envoyer
               </button>
+
+              <div id="delete-button">
+                <button mat-raised-button color="warn" (click)="openAlertDisable()" >{{labels.delete}}</button>
+              </div>
             }
             
 

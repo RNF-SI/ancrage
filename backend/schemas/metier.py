@@ -49,9 +49,13 @@ class SiteSchema(SQLAlchemyAutoSchema):
         load_instance = True
 
     type = fields.Nested(lambda: NomenclatureDiagSchema)
-    diagnostics = fields.Nested(lambda: DiagnosticLiteSchema, many=True)
+    diagnostics = fields.Method("get_active_diagnostics")
     departements = fields.Method("get_departements_flat")
     """ habitats = fields.Method("get_habitats_flat") """
+
+    def get_active_diagnostics(self, obj):
+        active_diags = [d for d in obj.diagnostics if not d.is_disabled]
+        return DiagnosticLiteSchema(many=True).dump(active_diags)
 
     def get_departements_flat(self, obj):
         return [

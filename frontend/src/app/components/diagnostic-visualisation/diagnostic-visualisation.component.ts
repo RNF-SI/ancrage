@@ -28,6 +28,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { AlerteDatePublicationComponent } from '../alertes/alerte-date-publication/alerte-date-publication.component';
 import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinner/loading-spinner.component';
+import { AlerteDesactivationDiagComponent } from '../alertes/alerte-desactivation-diag/alerte-desactivation-diag.component';
 
 @Component({
     selector: 'app-diagnostic-visualisation',
@@ -199,6 +200,18 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
     
     
   }
+
+  openAlertDisable(){
+    this.dialog.open(AlerteDesactivationDiagComponent, {
+      data: {
+        title: "Supprimer le diagnostic",
+        diagnostic:this.diagnostic(),
+        message: "Vous êtes sur le point de supprimer ce diagnostic. Etes-vous sûr-e de vouloir continuer ?"
+        
+      }
+    });
+    
+  }
   
   //Navigation et mise en cache
   navigate= (path:string,diagnostic:Diagnostic):void =>{
@@ -261,7 +274,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
     const dialogRef = this.dialog.open(AlerteDatePublicationComponent, {
               data: {
                 labels: this.labels,
-                diagnostic:this.diagnostic,
+                diagnostic:this.diagnostic(),
                 previousPage:this.previousPage,
                 
               }

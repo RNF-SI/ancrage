@@ -72,4 +72,5 @@ export class Labels {
     requiredLongitude = "Une longitude est requise.";
     requiredTown = "La commune est requise.";
     ccgLabel = "Membres ou participants au CCG";
+    delete="Supprimer";
 }

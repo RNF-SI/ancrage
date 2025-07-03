@@ -443,7 +443,7 @@ export class MotsClesZoneComponent implements OnDestroy{
           this.motsClesReponse.set(responseKeywords);
         }
       } else {
-        console.log("mc.id")
+
         if (!analyseKeywords.some(k => k.id_mot_cle === mc.id_mot_cle) || mc.id_mot_cle === 0) {
           analyseKeywords.push(mc);
         

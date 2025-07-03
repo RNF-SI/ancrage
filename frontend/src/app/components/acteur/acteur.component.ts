@@ -213,7 +213,7 @@ export class ActeurComponent implements OnDestroy{
 
       dialogRef.afterClosed().subscribe(actor => {
         if (actor) {
-          console.log(actor);
+    
           this.actor.set(new Acteur());
           this.patchValue();
         }
