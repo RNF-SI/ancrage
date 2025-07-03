@@ -438,13 +438,15 @@ export class MotsClesZoneComponent implements OnDestroy{
   
       // affectation à la bonne liste finale
       if (!this.modeAnalyse()) {
-        if (!responseKeywords.some(k => k.id_mot_cle === mc.id_mot_cle)) {
+        if (!responseKeywords.some(k => k.id_mot_cle === mc.id_mot_cle) || mc.id_mot_cle === 0) {
           responseKeywords.push(mc);
           this.motsClesReponse.set(responseKeywords);
         }
       } else {
-        if (!analyseKeywords.some(k => k.id_mot_cle === mc.id_mot_cle)) {
+        console.log("mc.id")
+        if (!analyseKeywords.some(k => k.id_mot_cle === mc.id_mot_cle) || mc.id_mot_cle === 0) {
           analyseKeywords.push(mc);
+        
           this.motsCleAnalyse.set(analyseKeywords);
         }
       }
@@ -452,7 +454,6 @@ export class MotsClesZoneComponent implements OnDestroy{
   
     this.categories.set(updatedCats);
     
-    console.log(this.motsCleAnalyse());
   }
 
   getVisibleKeywords(cat: Nomenclature): MotCle[] {
@@ -482,6 +483,7 @@ export class MotsClesZoneComponent implements OnDestroy{
       });
   
       dialogRef.afterClosed().subscribe(updatedMotsCles => {
+        console.log("updateMotsCles",updatedMotsCles);
         if (updatedMotsCles) {
           this.setKeywords(updatedMotsCles);
         }
