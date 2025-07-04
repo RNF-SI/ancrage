@@ -1,5 +1,5 @@
 <div>
-  @if (!hideFilters) {
+  @if (!hideFilters()) {
     <h4>{{ titleChooseActors }}</h4>
     @for (ca of chosenActors; track ca) {
       <p>{{ ca }}</p>
@@ -8,7 +8,7 @@
     <mat-form-field appearance="fill">
       <mat-label>{{ labels.diagnosticsList }}</mat-label>
       <mat-select [(value)]="selectedDiagnostic" (selectionChange)="applyFilters()">
-        @for (diag of uniqueDiagnostics; track diag) {
+        @for (diag of uniqueDiagnostics(); track diag.id_diagnostic) {
           <mat-option [value]="diag">{{ diag.nom }} du {{ diag.created_at_str }}</mat-option>
         }
       </mat-select>
@@ -17,7 +17,7 @@
     <mat-form-field appearance="fill">
       <mat-label>{{ labels.department }}</mat-label>
       <mat-select [(value)]="selectedDepartment" (selectionChange)="applyFilters()">
-        @for (dpt of uniqueDepartments; track dpt) {
+        @for (dpt of uniqueDepartments(); track dpt.id_departement) {
           <mat-option [value]="dpt">{{ dpt.nom_dep }}</mat-option>
         }
       </mat-select>
@@ -26,7 +26,7 @@
     <mat-form-field appearance="fill" class="accent-select">
       <mat-label>{{ labels.category }}</mat-label>
       <mat-select [(value)]="selectedCategory" (selectionChange)="applyFilters()">
-        @for (cat of uniqueCategories; track cat) {
+        @for (cat of uniqueCategories(); track cat.id_nomenclature) {
           <mat-option [value]="cat">{{ cat.libelle }}</mat-option>
         }
       </mat-select>
@@ -38,17 +38,17 @@
   }
 
   <div [formGroup]="formGroup">
-    @if (!hideFilters) {
-      <mat-selection-list formControlName="acteurs">
-        @for (actor of actors; track actor) {
+    @if (!hideFilters()) {
+      <mat-selection-list formControlName="acteurs" [compareWith]="compareActors">
+        @for (actor of acteurs(); track actor.id_acteur) {
           <mat-list-option [value]="actor" (click)="addOrRemoveActor(actor, true)">
             <div class="list-item-content">
               <div class="space">{{ actor.nom }} {{ actor.prenom }} {{ actor.structure }}</div>
               <button mat-raised-button type="button" class="otherInfosBtn" (click)="showOtherInfos(actor); $event.stopPropagation()">
                 <fa-icon [icon]="['fas', 'info']"></fa-icon>
               </button>
-              <span *ngIf="no_creation">
-                <button mat-raised-button type="button" class="otherInfosBtn" (click)="navigate('/acteur/' + actor.id_acteur + '/' + actor.slug, diagnostic); $event.stopPropagation()">
+              <span *ngIf="no_creation()">
+                <button mat-raised-button type="button" class="otherInfosBtn" (click)="navigate('/acteur/' + actor.id_acteur + '/' + actor.slug, diag()); $event.stopPropagation()">
                   <fa-icon [icon]="['fas', 'pen']"></fa-icon>
                 </button>
               </span>
@@ -58,7 +58,7 @@
       </mat-selection-list>
     } @else {
       <div class="actor-cards">
-        @for (actor of actors; track actor) {
+        @for (actor of acteurs(); track actor.id_acteur) {
           <mat-card class="actor-card">
             <div class="card-content">
               <div class="actor-info">
@@ -115,11 +115,11 @@
                 <button mat-icon-button type="button" (click)="showOtherInfos(actor)" [matTooltip]="labels.showMoreInfo">
                   <fa-icon [icon]="['fas', 'info']"></fa-icon>
                 </button>
-                @if (!diagnostic.is_read_only) {
-                  <button mat-icon-button type="button" (click)="navigate('/acteur/' + actor.id_acteur + '/' + actor.slug, diagnostic)" [matTooltip]="labels.modifyActor">
+                @if (!diag().is_read_only) {
+                  <button mat-icon-button type="button" (click)="navigate('/acteur/' + actor.id_acteur + '/' + actor.slug, diag())" [matTooltip]="labels.modifyActor">
                     <fa-icon [icon]="['fas', 'pen']"></fa-icon>
                   </button>
-                  <button mat-icon-button type="button" (click)="navigate('/entretien/' + actor.id_acteur + '/' + actor.slug, diagnostic,actor)" [matTooltip]="labels.goToInterview">
+                  <button mat-icon-button type="button" (click)="navigate('/entretien/' + actor.id_acteur + '/' + actor.slug, diag(),actor)" [matTooltip]="labels.goToInterview">
                     <fa-icon [icon]="['fas', 'file-lines']"></fa-icon>
                   </button>
                   @if (actor.statut_entretien?.libelle !== 'Réalisé' && actor.statut_entretien?.libelle !== 'En cours') {
@@ -137,10 +137,10 @@
     }
   </div>
 
-  @if (!no_creation) {
+  @if (!no_creation()) {
     <div class="boutons">
       <button mat-raised-button type="button" (click)="recordActors()" color="warn">{{ labels.addActors }}</button>
-      <button mat-raised-button type="button" (click)="navigate(previousPage, diagnostic)" color="accent">
+      <button mat-raised-button type="button" (click)="navigate(previousPage, diag())" color="accent">
         {{ labels.btnPreviousStepLabel }}
       </button>
     </div>

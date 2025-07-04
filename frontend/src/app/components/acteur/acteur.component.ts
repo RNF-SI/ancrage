@@ -223,7 +223,7 @@ export class ActeurComponent implements OnDestroy{
   }
   //Navigation et mise en cache du diagnostic
   navigate(path:string,diagnostic:Diagnostic){
-    
+    localStorage.setItem("fromActor","oui");
     this.siteService.navigateAndCache(path,diagnostic);
   }
 
