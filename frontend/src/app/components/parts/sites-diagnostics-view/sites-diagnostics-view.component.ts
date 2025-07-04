@@ -107,6 +107,8 @@ export class SitesDiagnosticsViewComponent {
   readonly btnForDiagnosticsLbl = signal("");
 
   mapInstanceKey = Date.now();
+  readonly showMoreInfo = "Afficher les détails";
+  readonly modify = "Modifier"
 
   constructor() {
 

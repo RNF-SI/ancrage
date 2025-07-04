@@ -72,11 +72,21 @@
               <mat-expansion-panel>
                 <mat-expansion-panel-header>
                   <mat-panel-title>
-                    <a (click)="showSiteDetails(site)">{{ site.nom }}</a>
+                    {{ site.nom }}
                   </mat-panel-title>
                 </mat-expansion-panel-header>
-
+                
                 <div class="d-flex justify-content-between align-items-center my-2">
+                  <button mat-raised-button class="directBtn" 
+                          (click)="showSiteDetails(site)" [matTooltip]="showMoreInfo">
+                          <fa-icon [icon]="['fas', 'info']"></fa-icon>
+                  </button>
+                  @if(site.created_by === user_id()){
+                    <button mat-raised-button class="directBtn" 
+                    (click)="navigate('/site/'+site.id_site+'/'+site.slug, diagnostic(), site)" [matTooltip]="modify">
+                      <fa-icon [icon]="['fas', 'pen']"></fa-icon>
+                    </button>
+                  }
                   <button mat-raised-button class="directBtn" color="accent"
                           (click)="navigate('/diagnostic', diagnostic(), site)">
                     {{ titleBtnCreaDiag() }}
