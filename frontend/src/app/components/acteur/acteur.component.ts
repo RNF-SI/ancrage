@@ -88,8 +88,9 @@ export class ActeurComponent implements OnDestroy{
       const communes$ = this.communeService.getAll();
       const profils$ = this.nomenclatureService.getAllByType("profil");
       const categories$ = this.nomenclatureService.getAllByType("categorie");
-      
+
       if (id && slugValue) {
+        this.title = this.labels.modifyActor;
         this.id_actor.set(id);
         this.slug.set(slugValue);
         this.user_id = this.authService.getCurrentUser().id_role;

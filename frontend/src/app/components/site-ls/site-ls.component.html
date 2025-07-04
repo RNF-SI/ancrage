@@ -14,10 +14,6 @@
         </mat-card-content>
         <mat-card-actions>
             <button mat-raised-button mat-dialog-close (click)="cancel()" color="accent">Fermer</button>
-            @if(can_edit()){
-                <button mat-raised-button mat-dialog-close (click)="navigate('/site/' + siteLocal().id_site + '/' + siteLocal().slug,diagnostic)" color="accent">Modifier</button>
-            }
-            
         </mat-card-actions>
     </mat-card>
         
