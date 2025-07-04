@@ -7,7 +7,10 @@ import {
   SimpleChanges,
   ElementRef,
   ViewChild,
-  AfterViewChecked
+  AfterViewChecked,
+  input,
+  effect,
+  signal
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Acteur } from '@app/models/acteur.model';
@@ -18,6 +21,7 @@ import { LeafletMarkerClusterModule } from '@bluehalo/ngx-leaflet-markercluster'
 import html2canvas from 'html2canvas';
 import { MatButtonModule } from '@angular/material/button';
 import * as L from 'leaflet'; 
+import { toSignal } from '@angular/core/rxjs-interop';
 
 L.Marker.prototype.options.icon = L.icon({
   iconRetinaUrl: 'assets/data/marker-icon-2x.png',
@@ -36,31 +40,52 @@ L.Marker.prototype.options.icon = L.icon({
   standalone: true,
   imports: [MatButtonModule, LeafletModule, LeafletMarkerClusterModule]
 })
-export class MapComponent implements AfterViewInit, OnChanges, OnDestroy, AfterViewChecked {
+export class MapComponent implements AfterViewInit,OnDestroy {
   private map: L.Map | undefined;
-  @Input() sites: Site[] = [];
-  @Input() changePosition = false;
-  @Input() formGroup: FormGroup | undefined;
-  @Input() mapId = 'map';
+  readonly sites = input<Site[]>([]);
+  readonly changePosition = input<boolean>(false);
+  readonly formGroup = input<FormGroup>(new FormGroup({}));
+  readonly mapId = input<string>('map');
+  readonly formGroupValues = toSignal(
+    this.formGroup().valueChanges,
+    { initialValue: this.formGroup()!.value }
+  );
+  readonly actors = input<Acteur[]>([]);
+  private readonly mapSig = signal<L.Map | null>(null);
   private markerClusterGroup: L.MarkerClusterGroup | undefined;
   marker: L.Marker | undefined;
   private mapClickListener: any;
   labels = new Labels();
   private actorsRendered = false;
   @ViewChild('mapContainer') mapContainer!: ElementRef;
-  private _actors: Acteur[] = [];
 
-  @Input()
-  set actors(value: Acteur[]) {
-    this._actors = value;
-    if (this.map && !this.changePosition) {
-      this.addMarkersActors();
-    }
+  constructor(){
+    effect(() => {
+      if (this.mapSig() && !this.changePosition() && this.sites().length > 0 ) {
+        this.addMarkers();
+      }
+    });
+
+    effect(() => {
+      const values = this.formGroupValues();
+      const lat = +values?.position_y;
+      const lng = +values?.position_x;
+    
+      if (this.mapSig() && lat && lng) {
+        this.moveMarker();  // déclenché quand formGroup change de position
+      }
+    });
+
+    effect(() => {
+      const map = this.mapSig();
+      const actors = this.actors();
+      console.log(map)
+      if (map && actors.length > 0 && !this.changePosition()) {
+        this.addMarkersActors();
+      }
+    });
   }
 
-  get actors(): Acteur[] {
-    return this._actors;
-  }
 
   ngAfterViewInit(): void {
     const waitForContainer = () => {
@@ -69,10 +94,10 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy, AfterV
 
       if (hasSize) {
         this.initMap();
-        if (this.changePosition) {
+        if (this.changePosition()) {
           this.moveMarker();
         }
-        setTimeout(() => this.map?.invalidateSize(), 100);
+        setTimeout(() => this.mapSig()?.invalidateSize(), 100);
       } else {
         setTimeout(waitForContainer, 100);
       }
@@ -81,34 +106,13 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy, AfterV
     waitForContainer();
   }
 
-  ngAfterViewChecked(): void {
-    if (this.map && this.actors.length > 0 && !this.changePosition && !this.actorsRendered) {
-      this.addMarkersActors();
-      this.actorsRendered = true;
-    }
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['sites'] && this.map && !this.changePosition) {
-      this.addMarkers();
-    }
-
-    if (changes['formGroup'] && this.map) {
-      const latitude = +this.formGroup?.get('position_y')?.value;
-      const longitude = +this.formGroup?.get('position_x')?.value;
-      if (latitude && longitude) {
-        this.moveMarker();
-      }
-    }
-  }
-
   private initMap(): void {
     const mapContainer = this.mapContainer.nativeElement;
     this.map = L.map(mapContainer, {
       center: [48.8566, 2.3522],
       zoom: 13
     });
-
+    this.mapSig.set(this.map);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
@@ -125,10 +129,10 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy, AfterV
     }
 
     if (this.formGroup) {
-      this.formGroup.valueChanges.subscribe(values => {
+      this.formGroup()!.valueChanges.subscribe(values => {
         const latitude = +values.position_y;
         const longitude = +values.position_x;
-        if (latitude && longitude && this.changePosition) {
+        if (latitude && longitude && this.changePosition()) {
           this.moveMarker();
         }
       });
@@ -139,7 +143,7 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy, AfterV
     const bounds = L.latLngBounds([]);
     this.markerClusterGroup?.clearLayers();
 
-    for (const site of this.sites) {
+    for (const site of this.sites()) {
       const lat = parseFloat(site.position_y);
       const lng = parseFloat(site.position_x);
       const marker = L.marker([lat, lng]);
@@ -158,20 +162,21 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy, AfterV
       bounds.extend([lat, lng]);
     }
 
-    if (this.sites.length > 1) {
+    if (this.sites().length > 1) {
       this.map!.fitBounds(bounds, { padding: [30, 30] });
-    } else if (this.sites.length === 1) {
-      const lat = parseFloat(this.sites[0].position_y);
-      const lng = parseFloat(this.sites[0].position_x);
+    } else if (this.sites().length === 1) {
+      const lat = parseFloat(this.sites()[0].position_y);
+      const lng = parseFloat(this.sites()[0].position_x);
       this.map!.setView([lat, lng], 13);
     }
   }
 
   addMarkersActors(): void {
+    console.log('ok');
     const bounds = L.latLngBounds([]);
     this.markerClusterGroup?.clearLayers();
 
-    for (const actor of this.actors) {
+    for (const actor of this.actors()) {
       const lat = parseFloat(actor.commune.latitude!);
       const lng = parseFloat(actor.commune.longitude!);
       const marker = L.marker([lat, lng]);
@@ -193,22 +198,20 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy, AfterV
       bounds.extend([lat, lng]);
     }
 
-    if (this.actors.length > 1) {
+    if (this.actors().length > 1) {
       this.map!.fitBounds(bounds, { padding: [30, 30] });
-    } else if (this.actors.length === 1) {
-      const lat = parseFloat(this.actors[0].commune.latitude!);
-      const lng = parseFloat(this.actors[0].commune.longitude!);
+    } else if (this.actors().length === 1) {
+      const lat = parseFloat(this.actors()[0].commune.latitude!);
+      const lng = parseFloat(this.actors()[0].commune.longitude!);
       this.map!.setView([lat, lng], 13);
     }
   }
 
   moveMarker(): void {
-    if (!this.changePosition || !this.formGroup || !this.map) return;
+    if (!this.changePosition() || !this.formGroup() || !this.map) return;
 
-    this.sites = [];
-
-    let lat = +this.formGroup.get('position_y')?.value || 47.316667;
-    let lng = +this.formGroup.get('position_x')?.value || 5.016667;
+    let lat = +this.formGroup()!.get('position_y')?.value || 47.316667;
+    let lng = +this.formGroup()!.get('position_x')?.value || 5.016667;
 
     this.marker?.remove();
     this.marker = L.marker([lat, lng], { draggable: false }).addTo(this.map);
@@ -216,7 +219,7 @@ export class MapComponent implements AfterViewInit, OnChanges, OnDestroy, AfterV
     this.mapClickListener = (e: L.LeafletMouseEvent) => {
       const { lat, lng } = e.latlng;
       this.marker!.setLatLng([lat, lng]);
-      this.formGroup?.patchValue({
+      this.formGroup()!.patchValue({
         position_y: lat.toFixed(6),
         position_x: lng.toFixed(6)
       });
