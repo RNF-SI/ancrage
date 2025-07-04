@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnDestroy, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
@@ -16,7 +16,7 @@ import { ActeurService } from '@app/services/acteur.service';
 import { CommuneService } from '@app/services/commune.service';
 import { NomenclatureService } from '@app/services/nomenclature.service';
 import { Labels } from '@app/utils/labels';
-import { debounceTime, forkJoin,  Subscription } from 'rxjs';
+import { forkJoin,  Subscription } from 'rxjs';
 import { AlerteActeurComponent } from '../alertes/alerte-acteur/alerte-acteur.component';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { SiteService } from '@app/services/sites.service';
@@ -59,7 +59,6 @@ export class ActeurComponent implements OnDestroy{
   private communeService = inject(CommuneService);
   private nomenclatureService = inject(NomenclatureService);
   private authService = inject(AuthService);
-  private communeSubscription?:Subscription;
   private actorSubscription?:Subscription;
   private actorService = inject(ActeurService);
   private dialog = inject(MatDialog);
@@ -68,16 +67,21 @@ export class ActeurComponent implements OnDestroy{
   filteredTowns: Commune[] = [];
   labels = new Labels();
   title = "";
-  diagnostic:Diagnostic = new Diagnostic();
+  diagnostic = signal<Diagnostic>(JSON.parse(localStorage.getItem("diagnostic")!));
   previousPage = "";
   isLoading=true;
   pageDiagnostic = "";
   routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
+  readonly communeControl = this.formGroup.get('commune')!;
+  readonly communeValue = toSignal(this.communeControl.valueChanges, { initialValue: this.communeControl.value });
+  readonly nom = computed(() => this.formGroup.get('nom')?.value ?? '');
+  readonly prenom = computed(() => this.formGroup.get('prenom')?.value ?? '');
+  readonly fonction = computed(() => this.formGroup.get('fonction')?.value ?? '');
+  readonly structure = computed(() => this.formGroup.get('structure')?.value ?? '');
 
   constructor() {
     effect(() => {
       this.pageDiagnostic = localStorage.getItem("pageDiagnostic")!;
-      this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
       const { id_acteur, slug } = this.routeParams() as Params;
       const id = Number(id_acteur);
       const slugValue = slug as string;
@@ -109,35 +113,29 @@ export class ActeurComponent implements OnDestroy{
             });
       }
     });
+
+    effect(() => {
+      const value = this.communeValue();
+      const filterValue = typeof value === 'string' ? value : value?.nom_com || '';
+      this.filteredTowns = this._filter(filterValue);
+    });
   }
 
-  patchValue(){
+  
+  patchValue() {
     this.formGroup.patchValue({
-      id_acteur: this.actor().id_acteur,
-      nom: this.actor().nom,
-      prenom: this.actor().prenom,
-      created_by: this.actor().created_by,
-      fonction: this.actor().fonction,
-      telephone: this.actor().telephone,
-      mail: this.actor().mail,
-      commune: this.actor().commune,
-      profil: this.actor().profil?.id_nomenclature! > 0 ? this.actor().profil : null,
-      categories: this.actor().categories,
-      structure: this.actor().structure,
-      slug: this.actor().slug
+      ...this.actor(),
+      profil: this.actor().profil?.id_nomenclature ? this.actor().profil : null,
+      categories: this.actor().categories ?? [],
     });
- }
+  }
+ 
   //Réception des données
   instructionsWithResults(communes:Commune[],profils:Nomenclature[],categories:Nomenclature[]){
     this.uniqueProfiles = profils;
     this.uniqueTowns = communes;
     this.uniqueCategories = categories;
-    this.communeSubscription = this.formGroup.get('commune')!.valueChanges
-    .pipe(debounceTime(200))
-    .subscribe((value: string | Commune | null) => {
-      const filterValue = typeof value === 'string' ? value : value?.nom_com || '';
-      this.filteredTowns = this._filter(filterValue);
-    });
+    
   }
   //Filtre sur communes
   private _filter(filterValue: string): Commune[] {
@@ -163,11 +161,11 @@ export class ActeurComponent implements OnDestroy{
         const actorToSend = this.actor();
         actorToSend.diagnostic = new Diagnostic();
         
-        actorToSend.diagnostic.id_diagnostic = this.diagnostic.id_diagnostic;
+        actorToSend.diagnostic.id_diagnostic = this.diagnostic().id_diagnostic;
         this.actorSubscription = this.actorService.add(actorToSend).subscribe(
           actor =>{
             this.getConfirmation("L'acteur suivant a été créé dans la base de données et a été ajouté au diagnostic : ",actor);
-            this.diagnostic.acteurs.push(actor);
+            
           }
         )
       }
@@ -181,7 +179,7 @@ export class ActeurComponent implements OnDestroy{
         this.actorSubscription = this.actorService.update(this.actor()).subscribe(
           actor =>{
             this.getConfirmation("L'acteur suivant a été modifié dans la base de données et a été ajouté au diagnostic : ",actor);
-            for (let act of this.diagnostic.acteurs){
+            for (let act of this.diagnostic().acteurs){
               if (actor.id_acteur === act.id_acteur){
                 act = actor;
               }
@@ -196,7 +194,7 @@ export class ActeurComponent implements OnDestroy{
   getConfirmation(message:string,actor:Acteur){
     
     this.previousPage = localStorage.getItem("previousPage")!;
-    this.diagnostic.acteurs.push(actor);
+    this.diagnostic().acteurs.push(actor);
     
     if(actor.id_acteur > 0){
       
@@ -206,7 +204,7 @@ export class ActeurComponent implements OnDestroy{
           message: message,
           acteur: actor,
           labels: this.labels,
-          diagnostic:this.diagnostic,
+          diagnostic:this.diagnostic(),
           previousPage:this.pageDiagnostic
         }
       });
@@ -223,13 +221,13 @@ export class ActeurComponent implements OnDestroy{
   }
   //Navigation et mise en cache du diagnostic
   navigate(path:string,diagnostic:Diagnostic){
+    console.log(diagnostic);
     localStorage.setItem("fromActor","oui");
     this.siteService.navigateAndCache(path,diagnostic);
   }
 
   ngOnDestroy(): void {
    
-    this.communeSubscription?.unsubscribe();
     this.actorSubscription?.unsubscribe();
   }
 }

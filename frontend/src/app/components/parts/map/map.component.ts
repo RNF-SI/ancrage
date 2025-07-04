@@ -1,13 +1,9 @@
 import {
   Component,
   AfterViewInit,
-  Input,
-  OnChanges,
   OnDestroy,
-  SimpleChanges,
   ElementRef,
   ViewChild,
-  AfterViewChecked,
   input,
   effect,
   signal
@@ -56,7 +52,6 @@ export class MapComponent implements AfterViewInit,OnDestroy {
   marker: L.Marker | undefined;
   private mapClickListener: any;
   labels = new Labels();
-  private actorsRendered = false;
   @ViewChild('mapContainer') mapContainer!: ElementRef;
 
   constructor(){
@@ -79,7 +74,7 @@ export class MapComponent implements AfterViewInit,OnDestroy {
     effect(() => {
       const map = this.mapSig();
       const actors = this.actors();
-      console.log(map)
+   
       if (map && actors.length > 0 && !this.changePosition()) {
         this.addMarkersActors();
       }
@@ -122,8 +117,7 @@ export class MapComponent implements AfterViewInit,OnDestroy {
       this.markerClusterGroup = (L as any).markerClusterGroup();
       this.markerClusterGroup?.addTo(this.map);
     } else {
-      console.error('MarkerClusterGroup not loaded properly');
-      // Fallback: utiliser un simple FeatureGroup
+  
       this.markerClusterGroup = L.featureGroup() as any;
       this.markerClusterGroup?.addTo(this.map);
     }
@@ -233,7 +227,6 @@ export class MapComponent implements AfterViewInit,OnDestroy {
     this.map?.off();
     this.map?.remove();
     this.markerClusterGroup?.clearLayers();
-    this.actorsRendered = false;
     const mapContainer = document.getElementById('map');
     if (mapContainer) mapContainer.innerHTML = '';
   }

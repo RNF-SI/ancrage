@@ -41,7 +41,7 @@
           <mat-form-field appearance="fill">
             <mat-label>{{ labels.chooseProfile }}</mat-label>
             <mat-select formControlName="profil">
-              @for (pfl of uniqueProfiles; track pfl) {
+              @for (pfl of uniqueProfiles; track pfl.id_nomenclature) {
                 <mat-option [value]="pfl">{{ pfl.libelle }}</mat-option>
               }
             </mat-select>
@@ -96,7 +96,7 @@
             }
           </mat-form-field>
   
-          <button mat-raised-button color="accent" (click)="navigate(pageDiagnostic, diagnostic)">
+          <button mat-raised-button color="accent" (click)="navigate(pageDiagnostic, diagnostic())">
             {{ labels.btnPreviousStepLabel }}
           </button>
           <button mat-raised-button id="btnNewSite" type="submit" color="warn">
