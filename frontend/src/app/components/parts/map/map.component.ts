@@ -18,6 +18,7 @@ import html2canvas from 'html2canvas';
 import { MatButtonModule } from '@angular/material/button';
 import * as L from 'leaflet'; 
 import { toSignal } from '@angular/core/rxjs-interop';
+import leafletImage from 'leaflet-image';
 
 L.Marker.prototype.options.icon = L.icon({
   iconRetinaUrl: 'assets/data/marker-icon-2x.png',
@@ -53,15 +54,18 @@ export class MapComponent implements AfterViewInit,OnDestroy {
   private mapClickListener: any;
   labels = new Labels();
   @ViewChild('mapContainer') mapContainer!: ElementRef;
+  alreadyRendered = false;
 
   constructor(){
     effect(() => {
+      console.log("effect1");
       if (this.mapSig() && !this.changePosition() && this.sites().length > 0 ) {
         this.addMarkers();
       }
     });
 
     effect(() => {
+      console.log("effect2");
       const values = this.formGroupValues();
       const lat = +values?.position_y;
       const lng = +values?.position_x;
@@ -72,11 +76,14 @@ export class MapComponent implements AfterViewInit,OnDestroy {
     });
 
     effect(() => {
+      console.log("effect3");
+      if (this.alreadyRendered || !this.mapSig()) return;
       const map = this.mapSig();
       const actors = this.actors();
    
       if (map && actors.length > 0 && !this.changePosition()) {
         this.addMarkersActors();
+        this.alreadyRendered = true;
       }
     });
   }
@@ -232,30 +239,14 @@ export class MapComponent implements AfterViewInit,OnDestroy {
   }
 
   exportMapAsPNG(): void {
-    const mapElement = document.getElementById('map');
-  
-    if (mapElement) {
-      // Sélectionne les contrôles de zoom (classe par défaut de Leaflet)
-      const zoomControls = mapElement.querySelector('.leaflet-control-zoom') as HTMLElement;
-  
-      if (zoomControls) {
-        zoomControls.style.display = 'none'; // Masquer les contrôles
-      }
-  
-      // Petite pause pour s'assurer que le DOM est à jour (facultatif mais plus sûr)
-      setTimeout(() => {
-        html2canvas(mapElement, { useCORS: true }).then(canvas => {
-          const link = document.createElement('a');
-          link.download = 'map.png';
-          link.href = canvas.toDataURL('image/png');
-          link.click();
-  
-          // Réaffiche les contrôles après la capture
-          if (zoomControls) {
-            zoomControls.style.display = 'block';
-          }
-        });
-      }, 100); // 100ms suffisent généralement
-    }
+
+
+      leafletImage(this.mapSig(), (err: any, canvas: HTMLCanvasElement) => {
+        
+        const link = document.createElement('a');
+        link.download = 'map.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
   }
 }
