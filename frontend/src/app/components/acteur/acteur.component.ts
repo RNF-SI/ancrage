@@ -139,12 +139,17 @@ export class ActeurComponent implements OnDestroy{
     this.uniqueCategories = categories;
     
   }
-  //Filtre sur communes
+
+  private _normalize(text: string): string {
+    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  }
+  
   private _filter(filterValue: string): Commune[] {
-    const lower = filterValue.toLowerCase();
+    const normalizedInput = this._normalize(filterValue);
+  
     return this.uniqueTowns
-      .filter(t => t.nom_com.toLowerCase().includes(lower))
-      .slice(0, 30); // optionnel : limiter le nombre affiché
+      .filter(t => this._normalize(t.nom_com).includes(normalizedInput))
+      .slice(0, 30);
   }
 
   //Autocomplétion
