@@ -156,7 +156,7 @@ export class MotsClesZoneComponent implements OnDestroy{
 
   hasUnclassifiedKeywords() {
     const nonClasse = this.categories().find(c => c.libelle === "Non classés");
-    console.log(nonClasse);
+  
     return !!nonClasse?.mots_cles?.length;
   };
 
@@ -483,7 +483,7 @@ export class MotsClesZoneComponent implements OnDestroy{
       });
   
       dialogRef.afterClosed().subscribe(updatedMotsCles => {
-        console.log("updateMotsCles",updatedMotsCles);
+    
         if (updatedMotsCles) {
           this.setKeywords(updatedMotsCles);
         }

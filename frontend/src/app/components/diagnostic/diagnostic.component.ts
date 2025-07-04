@@ -34,7 +34,7 @@ registerLocaleData(localeFr);
     imports: [CommonModule, MatSelectModule, MatFormFieldModule, FormsModule, MatInputModule, ReactiveFormsModule, MatButtonModule,LoadingSpinnerComponent],
     standalone:true
 })
-export class DiagnosticComponent implements OnInit, OnDestroy{
+export class DiagnosticComponent implements OnDestroy{
 
   titleDiagnostic= "";
   titleCreateDiag="Créer un diagnostic";
@@ -154,10 +154,6 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       }
     });
   }
-  
-  ngOnInit(): void {
-    
-  }
 
   //Met à jour la liste this.chosenSites
   checkSite(){
@@ -216,9 +212,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   getConfirmation(message:string,diag:Diagnostic,no_creation?:boolean){
       this.previousPage = localStorage.getItem("previousPage")!;
       this.diagnostic.set(diag);
-      if (!no_creation){
-        localStorage.setItem("fromActor","oui");
-      }
+      
       if(diag.id_diagnostic > 0){
         this.dialog.open(AlerteDiagnosticComponent, {
           data: {

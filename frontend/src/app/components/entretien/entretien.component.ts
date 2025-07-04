@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import { Component, effect, inject, OnDestroy, signal, ViewChild } from '@angular/core';
+import { ActivatedRoute, Params } from '@angular/router';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { NomenclatureService } from '@app/services/nomenclature.service';
 import { Labels } from '@app/utils/labels';

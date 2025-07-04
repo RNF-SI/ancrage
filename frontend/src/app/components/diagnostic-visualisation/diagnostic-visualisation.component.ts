@@ -53,7 +53,6 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   previousPage = signal<string>('');
   private fb = inject(FormBuilder);
   private diagnosticService = inject(DiagnosticService);
-  private routeSubscription?:Subscription;
   private diagSubscription?:Subscription;
   route = inject(ActivatedRoute);
   private siteService = inject(SiteService);
@@ -268,7 +267,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   }
 
   ngOnDestroy(): void {
-    this.routeSubscription?.unsubscribe();
+
     this.diagSubscription?.unsubscribe();
     this.docsSubscription?.unsubscribe();
     this.docReadSub?.unsubscribe();

@@ -88,6 +88,7 @@ export class ActeurComponent implements OnDestroy{
       const communes$ = this.communeService.getAll();
       const profils$ = this.nomenclatureService.getAllByType("profil");
       const categories$ = this.nomenclatureService.getAllByType("categorie");
+      
       if (id && slugValue) {
         this.id_actor.set(id);
         this.slug.set(slugValue);
@@ -221,7 +222,7 @@ export class ActeurComponent implements OnDestroy{
   }
   //Navigation et mise en cache du diagnostic
   navigate(path:string,diagnostic:Diagnostic){
-    console.log(diagnostic);
+
     localStorage.setItem("fromActor","oui");
     this.siteService.navigateAndCache(path,diagnostic);
   }

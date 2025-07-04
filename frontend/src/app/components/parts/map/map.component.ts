@@ -58,14 +58,14 @@ export class MapComponent implements AfterViewInit,OnDestroy {
 
   constructor(){
     effect(() => {
-      console.log("effect1");
+
       if (this.mapSig() && !this.changePosition() && this.sites().length > 0 ) {
         this.addMarkers();
       }
     });
 
     effect(() => {
-      console.log("effect2");
+
       const values = this.formGroupValues();
       const lat = +values?.position_y;
       const lng = +values?.position_x;
@@ -76,7 +76,7 @@ export class MapComponent implements AfterViewInit,OnDestroy {
     });
 
     effect(() => {
-      console.log("effect3");
+
       if (this.alreadyRendered || !this.mapSig()) return;
       const map = this.mapSig();
       const actors = this.actors();
@@ -140,6 +140,7 @@ export class MapComponent implements AfterViewInit,OnDestroy {
     }
   }
 
+  //Affiche les marqueurs pour les sites
   addMarkers(): void {
     const bounds = L.latLngBounds([]);
     this.markerClusterGroup?.clearLayers();
@@ -172,8 +173,9 @@ export class MapComponent implements AfterViewInit,OnDestroy {
     }
   }
 
+  //Affiche les marqueurs pour les acteurs
   addMarkersActors(): void {
-    console.log('ok');
+
     const bounds = L.latLngBounds([]);
     this.markerClusterGroup?.clearLayers();
 
@@ -208,6 +210,7 @@ export class MapComponent implements AfterViewInit,OnDestroy {
     }
   }
 
+  //Permet de déplacer un marqueur : création/modif d'un site
   moveMarker(): void {
     if (!this.changePosition() || !this.formGroup() || !this.map) return;
 
@@ -238,8 +241,8 @@ export class MapComponent implements AfterViewInit,OnDestroy {
     if (mapContainer) mapContainer.innerHTML = '';
   }
 
+  //Exporte la carte en PNG
   exportMapAsPNG(): void {
-
 
       leafletImage(this.mapSig(), (err: any, canvas: HTMLCanvasElement) => {
         

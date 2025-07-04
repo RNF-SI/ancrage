@@ -7,6 +7,7 @@ import { Labels } from '@app/utils/labels';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 
+//Alerte de confirmation de suppression d'un diag
 @Component({
   selector: 'app-alerte-desactivation-diag',
   imports: [MatDialogModule,CommonModule,MatButtonModule],

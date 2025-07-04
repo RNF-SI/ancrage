@@ -65,7 +65,7 @@ export class ChoixActeursComponent implements OnDestroy{
   private dialog = inject(MatDialog);
   no_creation = input<boolean>(false);
   private fb = inject(FormBuilder);
-  private routeSub?:Subscription; 
+
   private siteSub?:Subscription; 
   private diagSub?:Subscription;
   private departementService = inject(DepartementService);
@@ -90,7 +90,7 @@ export class ChoixActeursComponent implements OnDestroy{
       }else{
         this.diag.set(JSON.parse(localStorage.getItem("diagnostic")!) as Diagnostic);
       }
-      console.log(this.diag());
+ 
       this.formGroup = this.fb.group({
         
         acteurs: this.fb.control<Acteur[]>([], [Validators.required]),  
@@ -364,7 +364,6 @@ export class ChoixActeursComponent implements OnDestroy{
       const newDiag = this.diag();
       newDiag.acteurs = selectedActors;
       const diagToSend = Diagnostic.fromJson(newDiag);
-      console.log(diagToSend);
       this.diagnosticService.update(diagToSend).subscribe(updated => {
         this.setActors(updated);
         this.getConfirmation("Le diagnostic contient désormais ces informations :", updated, this.no_creation());
@@ -396,7 +395,6 @@ export class ChoixActeursComponent implements OnDestroy{
 
   ngOnDestroy(): void {
     this.diagSub?.unsubscribe();
-    this.routeSub?.unsubscribe();
     this.siteSub?.unsubscribe();
   }
 }

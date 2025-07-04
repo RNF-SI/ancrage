@@ -14,6 +14,8 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTabsModule } from '@angular/material/tabs';
 
+//Composant qui affcihe les graphiques
+
 export interface RadarChart {
   theme: string;
   data: ChartData<'radar'>;
@@ -82,6 +84,7 @@ export class GraphiquesComponent {
     });
   }
 
+  //Récupération données
   private getCharts(id_diagnostic: number): void {
     const normalize = (str: string) => str.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/’/g, "'").trim();
     const LABELS_TO_EXCLUDE = ["attentes", "Sentiment d'être concerné"].map(normalize);
@@ -179,6 +182,7 @@ export class GraphiquesComponent {
     });
   }
 
+  //Affiche les mots-clés par catégorie
   private groupByCategorie(): void {
     const motsCles = this.data();
     const rootMap = new Map<number, GraphMotsCles>();
@@ -197,7 +201,7 @@ export class GraphiquesComponent {
     const results = Object.entries(aggregated).map(([categorie, mots]) => ({
       categorie,
       chartData: {
-        type: 'bar' as const,  // ✅ ici
+        type: 'bar' as const, 
         data: {
           labels: Object.keys(mots),
           datasets: [{

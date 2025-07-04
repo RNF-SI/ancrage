@@ -30,8 +30,7 @@ export class AlerteActeurComponent {
     private siteService = inject(SiteService);
   
     navigate(path:string,diagnostic:Diagnostic){
-      console.log(diagnostic);
-      
+ 
       localStorage.setItem("fromActor","oui");
       this.siteService.navigateAndCache(path,diagnostic,undefined,true);
       this.dialogRef.close(this.data.acteur);

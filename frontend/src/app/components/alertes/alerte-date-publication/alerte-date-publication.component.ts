@@ -1,4 +1,4 @@
-import { Component, inject, Inject, OnInit } from '@angular/core';
+import { Component, inject, Inject, OnDestroy, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { AlerteActeurComponent } from '../alerte-acteur/alerte-acteur.component';
@@ -25,7 +25,7 @@ import { DateAdapter } from '@angular/material/core';
     imports: [MatButtonModule, MatDatepickerModule, MatFormFieldModule, FormsModule, MatInputModule, MatMomentDateModule, MatDialogModule, FontAwesomeModule, MatTooltipModule],
     standalone:true
 })
-export class AlerteDatePublicationComponent implements OnInit{
+export class AlerteDatePublicationComponent implements OnInit,OnDestroy{
     constructor(
         public dialogRef: MatDialogRef<AlerteActeurComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { 
@@ -68,5 +68,9 @@ export class AlerteDatePublicationComponent implements OnInit{
           })
         }
         
+      }
+
+      ngOnDestroy(): void {
+        this.diagSub?.unsubscribe();
       }
 }
