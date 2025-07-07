@@ -18,7 +18,6 @@ import html2canvas from 'html2canvas';
 import { MatButtonModule } from '@angular/material/button';
 import * as L from 'leaflet'; 
 import { toSignal } from '@angular/core/rxjs-interop';
-import leafletImage from 'leaflet-image';
 
 L.Marker.prototype.options.icon = L.icon({
   iconRetinaUrl: 'assets/data/marker-icon-2x.png',
@@ -56,56 +55,44 @@ export class MapComponent implements AfterViewInit,OnDestroy {
   @ViewChild('mapContainer') mapContainer!: ElementRef;
   alreadyRendered = false;
 
-  constructor(){
-    effect(() => {
-
-      if (this.mapSig() && !this.changePosition() && this.sites().length > 0 ) {
-        this.addMarkers();
-      }
-    });
-
-    effect(() => {
-
-      const values = this.formGroupValues();
-      const lat = +values?.position_y;
-      const lng = +values?.position_x;
-    
-      if (this.mapSig() && lat && lng) {
-        this.moveMarker();  // déclenché quand formGroup change de position
-      }
-    });
-
-    effect(() => {
-
-      if (this.alreadyRendered || !this.mapSig()) return;
-      const map = this.mapSig();
-      const actors = this.actors();
-   
-      if (map && actors.length > 0 && !this.changePosition()) {
-        this.addMarkersActors();
-        this.alreadyRendered = true;
-      }
-    });
-  }
-
-
   ngAfterViewInit(): void {
     const waitForContainer = () => {
       const el = this.mapContainer?.nativeElement;
       const hasSize = el?.offsetHeight > 0 && el?.offsetWidth > 0;
-
+  
       if (hasSize) {
         this.initMap();
+  
+        // ⚠️ Une seule initialisation
+        if (!this.changePosition() && this.sites().length > 0) {
+          this.addMarkers();
+        }
+  
+        if (!this.changePosition() && this.actors().length > 0 && !this.alreadyRendered) {
+          this.addMarkersActors();
+          this.alreadyRendered = true;
+        }
+  
         if (this.changePosition()) {
           this.moveMarker();
         }
+  
         setTimeout(() => this.mapSig()?.invalidateSize(), 100);
       } else {
         setTimeout(waitForContainer, 100);
       }
     };
-
+  
     waitForContainer();
+  
+    // 🔄 Mise à jour du marqueur si position change via formGroup
+    this.formGroup().valueChanges.subscribe(values => {
+      const lat = +values.position_y;
+      const lng = +values.position_x;
+      if (lat && lng && this.changePosition()) {
+        this.moveMarker();
+      }
+    });
   }
 
   private initMap(): void {
@@ -242,14 +229,31 @@ export class MapComponent implements AfterViewInit,OnDestroy {
   }
 
   //Exporte la carte en PNG
+  
   exportMapAsPNG(): void {
+    const mapElement = document.getElementById('map');
+    
+    if (mapElement) {
+      const zoomControls = mapElement.querySelector('.leaflet-control-zoom') as HTMLElement;
+  
+      if (zoomControls) {
+        zoomControls.style.display = 'none'; // Masquer les contrôles
+      }
+      mapElement.style.cursor = 'progress';
 
-      leafletImage(this.mapSig(), (err: any, canvas: HTMLCanvasElement) => {
-        
+      html2canvas(mapElement, { useCORS: true }).then(canvas => {
         const link = document.createElement('a');
+        document.querySelector('.leaflet-control-zoom')?.classList.remove('hidden');
         link.download = 'map.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
+        if (zoomControls) {
+          zoomControls.style.display = 'block';
+          mapElement.style.cursor = 'default';
+        }
       });
+      
+    }
   }
+  
 }

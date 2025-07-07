@@ -135,18 +135,20 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   onTabChange(event: MatTabChangeEvent) {
     
     let menu = document.getElementById("menu");
+    let page = document.getElementById('page');
     if (event.index === 3) { 
     
       if (menu?.className == "invisible"){
         menu?.classList.remove("invisible");
         menu?.classList.add("visible");
       }
-      
+      page?.classList.replace("one-column","grid-3-6");
       
     }else{
       if (menu?.className == "visible"){
         menu?.classList.remove("visible");
         menu?.classList.add("invisible");
+        page?.classList.replace("grid-3-6","one-column");
       }
     }
   }

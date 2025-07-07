@@ -169,13 +169,14 @@ export class EntretienComponent implements OnDestroy{
   //Cache ou affiche le menu en fonction de l'onglet choisi
   onTabChange(event: MatTabChangeEvent) {
     
+    let page = document.getElementById('page');
     if (event.index === 0) { 
-    
-      this.display()
       
+      this.display()
+      page?.classList.replace('one-column','grid-3-9');
     }else{
       this.hide();
-      
+      page?.classList.replace('grid-3-9','one-column');
     }
   }
 
