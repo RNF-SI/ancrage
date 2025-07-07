@@ -82,6 +82,7 @@ export class ActeurComponent implements OnDestroy{
   constructor() {
     effect(() => {
       this.pageDiagnostic = localStorage.getItem("pageDiagnostic")!;
+      console.log(this.pageDiagnostic);
       const { id_acteur, slug } = this.routeParams() as Params;
       const id = Number(id_acteur);
       const slugValue = slug as string;
@@ -204,7 +205,7 @@ export class ActeurComponent implements OnDestroy{
     this.diagnostic().acteurs.push(actor);
     
     if(actor.id_acteur > 0){
-      
+      console.log(this.diagnostic());
       const dialogRef = this.dialog.open(AlerteActeurComponent, {
         data: {
           title: this.title,

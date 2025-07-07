@@ -73,4 +73,5 @@ export class Labels {
     requiredTown = "La commune est requise.";
     ccgLabel = "Membres ou participants au CCG";
     delete="Supprimer";
+    toActorsList = "Revenir à la liste des acteurs";
 }

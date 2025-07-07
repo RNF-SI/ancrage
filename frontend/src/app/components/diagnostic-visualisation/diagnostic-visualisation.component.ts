@@ -87,19 +87,25 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
   isLoading=true;
   index=0;
+  private initDone = signal(false);
 
   constructor() {
     effect(() => {
+      const done = this.initDone();
+      if (done) return;
       if (localStorage.getItem("fromActor") === 'oui'){
         this.index=1;
         localStorage.setItem("fromActor",'non');
+        
+        this.diagnostic.set(JSON.parse(localStorage.getItem("diagnostic")!));
       }
       this.previousPage.set(localStorage.getItem('previousPage')!);
       const { id_diagnostic, slug } = this.routeParams() as Params;
       const id = Number(id_diagnostic);
       const slugValue = slug as string;
-  
+      console.log(this.diagnostic());
       if (id && slugValue) {
+        this.initDone.set(true);
         this.id_diagnostic.set(id);
         this.slug.set(slugValue);
   
@@ -107,6 +113,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
           diag: this.diagnosticService.get(id, slugValue),
           themes: this.nomenclatureService.getAllByType('thème'),
         }).subscribe(({ diag, themes }) => {
+          console.log(diag);
           this.diagnostic.set(diag);
           this.diag = this.diagnostic();
           this.themes.set(themes);
@@ -220,6 +227,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   //Navigation et mise en cache
   navigate= (path:string,diagnostic:Diagnostic):void =>{
     localStorage.setItem("pageDiagnostic",this.router.url);
+    console.log(this.router.url);
     this.siteService.navigateAndCache(path,diagnostic);
   }
 

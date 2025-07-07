@@ -79,6 +79,7 @@ export class ChoixActeursComponent implements OnDestroy{
   id_diagnostic = signal<number>(0);
   acteurs = signal<Acteur[]>([]);
   @Input({ required: true }) formGroup!: FormGroup;
+  router = inject(Router);
 
   constructor(){
     effect(() => {
@@ -354,6 +355,7 @@ export class ChoixActeursComponent implements OnDestroy{
   navigate= (path:string,diagnostic:Diagnostic,acteur?:Acteur):void =>{
     localStorage.setItem("fromActor","oui");
     localStorage.setItem("acteur",JSON.stringify(acteur));
+    localStorage.setItem("pageDiagnostic",this.router.url);
     this.siteService.navigateAndCache(path,diagnostic);
   }
   
