@@ -171,7 +171,7 @@ export class ActeurComponent implements OnDestroy{
         actorToSend.diagnostic.id_diagnostic = this.diagnostic().id_diagnostic;
         this.actorSubscription = this.actorService.add(actorToSend).subscribe(
           actor =>{
-            this.getConfirmation("L'acteur suivant a été créé dans la base de données et a été ajouté au diagnostic : ",actor);
+            this.getConfirmation("L'acteur suivant a bien été créé et a été ajouté au diagnostic : ",actor);
             
           }
         )
@@ -185,7 +185,7 @@ export class ActeurComponent implements OnDestroy{
       if (!this.formGroup.invalid){
         this.actorSubscription = this.actorService.update(this.actor()).subscribe(
           actor =>{
-            this.getConfirmation("L'acteur suivant a été modifié dans la base de données et a été ajouté au diagnostic : ",actor);
+            this.getConfirmation("L'acteur suivant a bien été modifié et a été ajouté au diagnostic : ",actor);
             for (let act of this.diagnostic().acteurs){
               if (actor.id_acteur === act.id_acteur){
                 act = actor;
