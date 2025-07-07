@@ -41,11 +41,14 @@
               }
   
               <h3>{{ labels.files }}</h3>
-              @for (doc of diagnostic().documents; track doc) {
+              @for (doc of diagnostic().documents; track doc.id_document) {
                 <div>
                   {{ doc.nom }}
                   <button mat-raised-button type="button" (click)="getFile(doc.nom)">
                     {{ labels.download }}
+                  </button>
+                  <button mat-raised-button type="button" color="warn" (click)="deleteFile(doc)">
+                    {{ labels.delete }}
                   </button>
                 </div>
               }
@@ -61,20 +64,22 @@
                 <button mat-raised-button color="primary" (click)="uploadFiles()" [disabled]="!files.length">
                   Envoyer
                 </button>
-  
+                @if (files.length) {
+                  <ul>
+                    @for (file of files; track file) {
+                      <li>{{ file.name }}</li>
+                    }
+                  </ul>
+                }
                 <div id="delete-button">
                   <button mat-raised-button color="warn" (click)="openAlertDisable()" >{{labels.delete}}</button>
+
                 </div>
+
               }
               
   
-              @if (files.length) {
-                <ul>
-                  @for (file of files; track file) {
-                    <li>{{ file.name }}</li>
-                  }
-                </ul>
-              }
+              
   
              
             </div>

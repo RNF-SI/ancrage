@@ -62,6 +62,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   themes = signal<Nomenclature[]>([]);
   private docsSubscription?:Subscription;
   private docReadSub?:Subscription;
+  private docDeleteSub?:Subscription;
   file?:Blob;
   authService = inject(AuthService);
   dialog = inject(MatDialog);
@@ -103,7 +104,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
       const { id_diagnostic, slug } = this.routeParams() as Params;
       const id = Number(id_diagnostic);
       const slugValue = slug as string;
-      console.log(this.diagnostic());
+
       if (id && slugValue) {
         this.initDone.set(true);
         this.id_diagnostic.set(id);
@@ -298,6 +299,12 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
                 this.diagnostic = diagnostic;
               }
             });
+  }
+
+  deleteFile(document:Document){
+    this.docDeleteSub = this.diagnosticService.deleteDocument(document).subscribe(diag =>{
+      this.diagnostic.set(diag);
+    })
   }
 
 }
