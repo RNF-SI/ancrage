@@ -2,7 +2,7 @@ from models.models import db
 from flask import request
 from models.models import *
 from schemas.metier import *
-from routes import bp, now, func
+from routes import bp, now, func,jsonify
 from routes.nomenclatures import getAllNomenclaturesByType
 from routes.mot_cle import getKeywordsByActor
 from routes.logger_config import logger
@@ -26,6 +26,13 @@ def enregistrer_reponses_depuis_objets():
 
     return getAllNomenclaturesByType("thème_question", acteur_id)
 
+@bp.route('/reponse', methods=['POST'])
+def enregistrer_reponse_id():
+    data = request.get_json()
+    logger.info("Réception des données de réponses depuis objets")
+
+    return enregistrer_reponse(data)
+    
 @bp.route('/reponse/objet', methods=['POST'])
 def enregistrer_reponse_depuis_objet():
     data = request.get_json()
@@ -72,8 +79,7 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
                 continue
 
             questions_ids_envoyees.add(question_id)
-            print("acteur_id")
-            print(acteur_id)
+            
             stmt = insert(Reponse).values(
                 acteur_id=acteur_id,
                 question_id=question_id,
@@ -103,6 +109,65 @@ def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
     except SQLAlchemyError as e:
         db.session.rollback()
         logger.error(f"Erreur SQLAlchemy pendant l'enregistrement des réponses : {e}")
+
+def enregistrer_reponse(reponses_objets):
+    if not reponses_objets:
+        logger.warning("Aucune réponse fournie")
+        return
+
+    try:
+        acteur_data = reponses_objets['acteur']
+        acteur_id = acteur_data['id_acteur']
+    except (KeyError, IndexError, TypeError):
+        logger.error("Impossible d'extraire l'identifiant de l'acteur.")
+        return
+
+    acteur = Acteur.query.get(acteur_id)
+    if not acteur:
+        logger.error(f"Acteur avec id {acteur_id} introuvable.")
+        return
+
+    logger.info(f"Traitement des réponses pour l'acteur ID {acteur_id}")
+
+    questions_ids_envoyees = set()
+
+    try:
+        question_id = reponses_objets['question']['id_question']
+        valeur_reponse_id = reponses_objets['valeur_reponse']['id_nomenclature']
+        commentaires = reponses_objets.get('commentaires', "")
+    except (KeyError, TypeError):
+        logger.warning("Réponse mal formée ignorée")
+        
+    questions_ids_envoyees.add(question_id)
+   
+    stmt = insert(Reponse).values(
+        acteur_id=acteur_id,
+        question_id=question_id,
+        valeur_reponse_id=valeur_reponse_id,
+        commentaires=commentaires
+    ).on_conflict_do_update(
+        index_elements=['acteur_id', 'question_id'],
+        set_={
+            'valeur_reponse_id': valeur_reponse_id,
+            'commentaires': commentaires
+        }
+    ).returning(Reponse)
+
+    db.session.execute(stmt)
+    db.session.commit()
+    
+    result = db.session.query(Reponse).filter_by(
+        acteur_id=acteur_id,
+        question_id=question_id
+    ).first()
+   
+    
+    verifCompleteStatus(acteur_id)
+    verifDatesEntretien(acteur.diagnostic.id_diagnostic)
+    
+    schema = ReponseSchema(many=False)
+    schema = ReponseSchema()
+    return jsonify(schema.dump(result))
 
 def enregistrer_reponse_acteur(reponse_objet):
     try:
