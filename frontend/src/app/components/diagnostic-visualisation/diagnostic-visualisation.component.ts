@@ -208,7 +208,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
 
     this.docsSubscription = this.diagnosticService.sendFiles(formData).subscribe(diag =>{
       this.diagnostic.set(diag);
-   
+      this.files = [];
     });
     
     

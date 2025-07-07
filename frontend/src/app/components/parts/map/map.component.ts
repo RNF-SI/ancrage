@@ -55,44 +55,56 @@ export class MapComponent implements AfterViewInit,OnDestroy {
   @ViewChild('mapContainer') mapContainer!: ElementRef;
   alreadyRendered = false;
 
+  constructor(){
+    effect(() => {
+     
+      if (this.mapSig() && !this.changePosition() && this.sites().length > 0 ) {
+        this.addMarkers();
+      }
+    });
+
+    effect(() => {
+    
+      const values = this.formGroupValues();
+      const lat = +values?.position_y;
+      const lng = +values?.position_x;
+    
+      if (this.mapSig() && lat && lng) {
+        this.moveMarker();  // déclenché quand formGroup change de position
+      }
+    });
+
+    effect(() => {
+ 
+      if (this.alreadyRendered || !this.mapSig()) return;
+      const map = this.mapSig();
+      const actors = this.actors();
+   
+      if (map && actors.length > 0 && !this.changePosition()) {
+        this.addMarkersActors();
+        this.alreadyRendered = true;
+      }
+    });
+  }
+
+
   ngAfterViewInit(): void {
     const waitForContainer = () => {
       const el = this.mapContainer?.nativeElement;
       const hasSize = el?.offsetHeight > 0 && el?.offsetWidth > 0;
-  
+
       if (hasSize) {
         this.initMap();
-  
-        // ⚠️ Une seule initialisation
-        if (!this.changePosition() && this.sites().length > 0) {
-          this.addMarkers();
-        }
-  
-        if (!this.changePosition() && this.actors().length > 0 && !this.alreadyRendered) {
-          this.addMarkersActors();
-          this.alreadyRendered = true;
-        }
-  
         if (this.changePosition()) {
           this.moveMarker();
         }
-  
         setTimeout(() => this.mapSig()?.invalidateSize(), 100);
       } else {
         setTimeout(waitForContainer, 100);
       }
     };
-  
+
     waitForContainer();
-  
-    // 🔄 Mise à jour du marqueur si position change via formGroup
-    this.formGroup().valueChanges.subscribe(values => {
-      const lat = +values.position_y;
-      const lng = +values.position_x;
-      if (lat && lng && this.changePosition()) {
-        this.moveMarker();
-      }
-    });
   }
 
   private initMap(): void {
