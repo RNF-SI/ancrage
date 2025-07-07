@@ -74,6 +74,11 @@ export class GraphiquesComponent {
       return acc;
     }, {} as Record<string, RadarChart[]>)
   );
+  has_data_graphs=true;
+  has_data_afom = true;
+  message ="";
+  readonly message_graphs = "Veuillez saisir vos entretiens pour voir les graphiques. ";
+  readonly message_afom = "Veuillez remplir la partie afom des entretiens. ";
 
   constructor() {
     effect(() => {
@@ -95,6 +100,14 @@ export class GraphiquesComponent {
       this.diagnosticService.getRadars(id_diagnostic),
       this.diagnosticService.getOccurencesKeyWords(id_diagnostic)
     ]).subscribe(([graphs, repartitions, radars, motsCles]) => {
+      if (graphs.length === 0 || repartitions.length === 0 || radars.length === 0){
+        this.has_data_graphs = false;
+        this.message += this.message_graphs;
+      }
+      if(motsCles.length === 0){
+        this.has_data_afom = false;
+        this.message += this.message_afom;
+      }
       const grouped = new Map<string, GraphMoy[]>();
       for (const entry of graphs) {
         const label = normalize(entry.question ?? '');
