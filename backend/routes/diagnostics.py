@@ -350,7 +350,7 @@ def enregistrer_afoms():
         return {"error": "Données invalides"}, 400
 
     try:
-        # 🔥 Étape 0 : suppression des AFOM liés au diagnostic
+       
         afom_ids = (
             db.session.query(Afom.id_afom)
             .join(MotCle)
@@ -403,9 +403,10 @@ def enregistrer_afoms():
                 parent = db.session.get(MotCle, id_parent)
                 if parent:
                     parent.is_actif = True
-                    parent.nom = nom  # mise à jour possible
+                    parent.nom = nom
                     parent.categorie_id = categorie_id
-                    parent.mots_cles_groupe_id = None  # c'est un groupe
+                    parent.mots_cles_groupe_id = None
+                    parent.nombre = nombre 
                 else:
                     logger.warning(f"[AVERTISSEMENT] Mot-clé parent ID {id_parent} introuvable.")
                     continue
@@ -414,7 +415,8 @@ def enregistrer_afoms():
                     nom=nom,
                     diagnostic_id=diagnostic_id,
                     categorie_id=categorie_id,
-                    is_actif=True
+                    is_actif=True,
+                    nombre=nombre 
                 )
                 db.session.add(parent)
                 db.session.flush()
@@ -427,6 +429,7 @@ def enregistrer_afoms():
                 nom_enfant = enfant_data.get('nom')
                 diag_enfant_id = enfant_data.get('diagnostic', {}).get('id_diagnostic')
                 id_enfant = enfant_data.get('id_mot_cle')
+                nombre_enfant = enfant_data.get('nombre', 1) 
 
                 if not nom_enfant or not diag_enfant_id:
                     continue
@@ -434,10 +437,11 @@ def enregistrer_afoms():
                 if isinstance(id_enfant, int) and id_enfant > 0:
                     enfant = db.session.get(MotCle, id_enfant)
                     if enfant:
-                        enfant.nom = nom_enfant  # mise à jour
+                        enfant.nom = nom_enfant
                         enfant.diagnostic_id = diag_enfant_id
                         enfant.mots_cles_groupe_id = parent_mc.id_mot_cle
                         enfant.is_actif = True
+                        enfant.nombre = nombre_enfant  
                     else:
                         logger.warning(f"[AVERTISSEMENT] Enfant ID {id_enfant} introuvable.")
                         continue
@@ -446,7 +450,8 @@ def enregistrer_afoms():
                         nom=nom_enfant,
                         diagnostic_id=diag_enfant_id,
                         mots_cles_groupe_id=parent_mc.id_mot_cle,
-                        is_actif=True
+                        is_actif=True,
+                        nombre=nombre_enfant  
                     )
                     db.session.add(enfant)
 
@@ -467,7 +472,6 @@ def enregistrer_afoms():
         logger.error(f"[ERREUR ENREGISTREMENT] {e}")
         return {"error": "Erreur serveur lors de l’enregistrement"}, 500
 
-    
 
 @bp.route('/diagnostic/mots-cles/<int:id_diagnostic>', methods=['GET'])
 def get_afoms_par_mot_cle_et_diagnostic(id_diagnostic):

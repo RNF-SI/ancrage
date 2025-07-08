@@ -126,6 +126,7 @@ export class SitesDiagnosticsViewComponent {
       this.id_organisme.set(user.id_organisme);
       this.btnForDiagnosticsLbl.set(this.btnToShowDiagnosticsLbl);
       localStorage.removeItem("diagnostic");
+      localStorage.removeItem("fromActor");
       localStorage.setItem("previousPage", this.router.url);
     });
   }

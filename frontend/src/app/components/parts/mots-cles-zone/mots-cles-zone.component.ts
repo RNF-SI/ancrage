@@ -396,8 +396,13 @@ export class MotsClesZoneComponent implements OnDestroy{
         afoms.push(afom);
       }
       this.diagSub = this.diagnosticService.updateAfom(afoms).subscribe(afoms=>{
-       
-        this.prepareResults(afoms);
+        if (afoms.length >0 ){
+          this.toastr.success("Données enregistrées");
+          this.prepareResults(afoms);
+        }else{
+          this.toastr.error("Problème à l'enregistrement des données");
+        }
+        
       });
     }
     

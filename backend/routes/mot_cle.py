@@ -32,6 +32,16 @@ def getKeywordsByActor(id_acteur):
     schema = MotCleSchema(many=True)
     return jsonify(schema.dump(mots_cles))
 
+@bp.route('/mot_cle/<int:id_mot_cle>', methods=['GET'])
+def get(id_mot_cle):
+    
+    mot_cle = MotCle.query.filter_by(id_mot_cle=id_mot_cle).first()
+        
+    schema = MotCleSchema(many=False)
+    mcObj = schema.dump(mot_cle)
+    return jsonify(mcObj)
+
+
 @bp.route('/mot_cle/<int:id_mot_cle>', methods=['PUT'])
 def rename(id_mot_cle):
     

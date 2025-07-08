@@ -27,6 +27,7 @@ export class MotCle {
         copy.diagnostic = this.diagnostic.copy();
         copy.mot_cle_id_groupe = this.mot_cle_id_groupe;
         copy.is_actif = this.is_actif;
+        copy.nombre = this.nombre;
         return copy;
     }
 
@@ -42,6 +43,7 @@ export class MotCle {
         mot_cle.diagnostic = Diagnostic.fromJson(data.diagnostic);
         mot_cle.mot_cle_id_groupe = data.mot_cle_id_groupe;
         mot_cle.is_actif = data.is_actif;
+        mot_cle.nombre = data.nombre;
         return mot_cle;
     }
 

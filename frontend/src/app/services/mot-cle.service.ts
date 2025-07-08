@@ -58,4 +58,11 @@ export class MotCleService {
 		  return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
 		})
 	}
+
+	//Récupère un mot-clé
+	get(id:number): Observable<MotCle> {
+		return this.http.get<IMotCle>(this.BASE_URL + '/' + id).pipe(
+			map(motCleJson => MotCle.fromJson(motCleJson))
+		);
+	}
 }
