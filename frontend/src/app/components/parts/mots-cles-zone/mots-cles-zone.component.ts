@@ -86,7 +86,7 @@ export class MotsClesZoneComponent implements OnDestroy{
   motsClesReponse = signal<MotCle[]>([]);
   motsCleAnalyse = signal<MotCle[]>([]);
   results = signal<GraphMotsCles[]>([]);
-
+  disable = signal<boolean>(true);
   //modeAnalyse : utilisé dans la partie générale ; !modeAnalyse: utilisé au niveau de l'entretien
 
   constructor() {
@@ -185,10 +185,16 @@ export class MotsClesZoneComponent implements OnDestroy{
       this.motsClesReponse.set(this.motsClesReponse().filter(mc =>
         mc.id_mot_cle !== keyword.id_mot_cle 
       ));
+      if (this.motsClesReponse().length === 0){
+        this.disable.set(true);
+      }
     }else{
       this.motsCleAnalyse.set(this.motsCleAnalyse().filter(mc =>
         mc.id_mot_cle !== keyword.id_mot_cle 
       ));
+      if (this.motsCleAnalyse().length === 0){
+        this.disable.set(true);
+      }
     }
 
   }
@@ -221,8 +227,10 @@ export class MotsClesZoneComponent implements OnDestroy{
   
     if (this.modeAnalyse()) {
       this.motsCleAnalyse.update(list => [...list, newMotCle]);
+      this.disable.set(false);
     } else {
       this.motsClesReponse.update(list => [...list, newMotCle]);
+      this.disable.set(false);
     }
   
     if (!this.allKeywords().includes(kw)) {
@@ -279,14 +287,16 @@ export class MotsClesZoneComponent implements OnDestroy{
       if (!this.modeAnalyse()) {
         if (!this.motsClesReponse().some(mc => mc.id_mot_cle === draggedKeyword.id_mot_cle)) {
           this.motsClesReponse.update(list => [...list, draggedKeyword]);
+          this.disable.set(false);
         }
       } else {
         if (!this.motsCleAnalyse().some(mc => mc.id_mot_cle === draggedKeyword.id_mot_cle)) {
           this.motsCleAnalyse.update(list => [...list, draggedKeyword]);
+          this.disable.set(false);
         }
 
       }
-  
+      console.log(this.disable());
     } else {
       // Duplication avec MAJ
       const alreadyInSameCategory = draggedKeyword.categorie.id_nomenclature === targetCategory.id_nomenclature;
@@ -303,8 +313,10 @@ export class MotsClesZoneComponent implements OnDestroy{
        
         if (!this.modeAnalyse()) {
           this.motsClesReponse.update(list => [...list, newKeyword]);
+          this.disable.set(false);
         } else {
           this.motsCleAnalyse.update(list => [...list, newKeyword]);
+          this.disable.set(false);
         }
         
       }
@@ -358,7 +370,13 @@ export class MotsClesZoneComponent implements OnDestroy{
       }
       
       this.reponseSub = this.reponseService.updateAfom(reponse).subscribe(keywords=>{
-        this.setKeywords(keywords);
+        if (keywords.length >0 ){
+          this.toastr.success("Données enregistrées");
+          this.setKeywords(keywords);
+        }else{
+          this.toastr.error("Problème à l'enregistrement des données");
+        }
+        
       });
 
     }else{
@@ -441,6 +459,7 @@ export class MotsClesZoneComponent implements OnDestroy{
         if (!responseKeywords.some(k => k.id_mot_cle === mc.id_mot_cle) || mc.id_mot_cle === 0) {
           responseKeywords.push(mc);
           this.motsClesReponse.set(responseKeywords);
+          this.disable.set(false);
         }
       } else {
 
@@ -448,6 +467,7 @@ export class MotsClesZoneComponent implements OnDestroy{
           analyseKeywords.push(mc);
         
           this.motsCleAnalyse.set(analyseKeywords);
+          this.disable.set(false);
         }
       }
     }
