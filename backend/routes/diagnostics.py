@@ -4,8 +4,7 @@ from schemas.metier import *
 from sqlalchemy.orm import aliased
 from routes import bp,now, slugify, uuid,func,request,jsonify
 from datetime import datetime
-
-from routes.logger_config import os,logger
+from configs.logger_config import os,logger
 
 @bp.route('/diagnostic/<int:id_diagnostic>/<slug>', methods=['GET','PUT'])
 def diagnosticMethods(id_diagnostic, slug):

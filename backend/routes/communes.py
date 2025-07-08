@@ -3,7 +3,7 @@ from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
 from routes import bp
-from routes.logger_config import logger
+from configs.logger_config import logger
 
 @bp.route('/commune/<id_commune>', methods=['GET', 'PUT', 'DELETE'])
 def communeMethods(id_commune):

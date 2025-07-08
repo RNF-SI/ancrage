@@ -10,6 +10,7 @@ export const AppConfig = {
     "SEARCH_ITEMS_ROUTE": "",
     "SEARCH_PREFIXE": "",
     "SEARCH_PLACEHOLDER": "",
+    "contact": "thomas.arles@rnfrance.org",
     "menucompte": [
         {
             "texte": "Déconnexion",

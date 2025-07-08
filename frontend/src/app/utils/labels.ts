@@ -18,7 +18,7 @@ export class Labels {
     structure="Structure";
     profile="Profil cognitif";
     telephone="Téléphone";
-    mail="Mail";
+    mail="Adresse email";
     town="Commune";
     state='Etat';
     chosenSites="Sites choisis";
@@ -74,4 +74,10 @@ export class Labels {
     ccgLabel = "Membres ou participants au CCG";
     delete="Supprimer";
     toActorsList = "Revenir à la liste des acteurs";
+    subject = "Objet de votre message";
+    requiredSubject = "L'objet est requis";
+    requiredMessage = "Le message est requis";
+    message = "Message";
+    send = "Envoyer";
+    requiredMail = "L'adresse email est requise."
 }

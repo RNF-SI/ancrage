@@ -7,10 +7,12 @@ import uuid,json
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import NotFound
 
+
 bp = Blueprint('main', __name__)
 now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+
 # Importe toutes les routes ici (elles s’enregistreront sur ce blueprint)
-from . import diagnostics, sites, nomenclatures,regions, departements,acteurs,communes,questions,mot_cle,reponses,documents
+from . import diagnostics, sites, nomenclatures,regions, departements,acteurs,communes,questions,mot_cle,reponses,documents,mail
 
 
 

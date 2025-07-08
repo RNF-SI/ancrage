@@ -4,7 +4,7 @@ from sqlalchemy.orm import contains_eager
 from models.models import *
 from schemas.metier import *
 from routes import bp, now, slugify, uuid
-from routes.logger_config import logger
+from configs.logger_config import logger
 
 @bp.route('/site/<id_site>/<slug>', methods=['GET','PUT','DELETE'])
 def siteMethods(id_site, slug):

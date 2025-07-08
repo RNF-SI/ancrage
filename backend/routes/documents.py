@@ -1,8 +1,8 @@
 from models.models import *
 from schemas.metier import *
 from routes.diagnostics import getDiagnostic
-from routes import bp,request,jsonify,json,current_app,secure_filename,send_from_directory,NotFound
-from routes.logger_config import logger,os
+from routes import bp,request,json,current_app,secure_filename,send_from_directory,NotFound
+from configs.logger_config import logger,os
 
 @bp.route('/diagnostic/upload', methods=['POST'])
 def create_documents():

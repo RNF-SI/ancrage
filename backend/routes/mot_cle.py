@@ -2,7 +2,7 @@ from models.models import db, MotCle, Reponse, Acteur
 from flask import request, jsonify
 from schemas.metier import MotCleSchema
 from routes import bp, joinedload
-from routes.logger_config import logger
+from configs.logger_config import logger
 
 @bp.route('/mots_cles/<int:id_diagnostic>', methods=['GET'])
 def getAllMotCles(id_diagnostic):

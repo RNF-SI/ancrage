@@ -3,7 +3,7 @@ from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
 from routes import bp, now, slugify, uuid
-from routes.logger_config import logger
+from configs.logger_config import logger
 
 @bp.route('/acteur/<id_acteur>/<slug>', methods=['GET', 'PUT'])
 def acteurMethods(id_acteur, slug):

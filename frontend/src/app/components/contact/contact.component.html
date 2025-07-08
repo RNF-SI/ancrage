@@ -1,59 +1,67 @@
-
-
-<div class="center">
-    <div class="lateral _2"></div>
-    <div class="corpus">
-        <div class="inner-content-contact">
-    <div class="div-block-17 contact">
-    <button class="block-back" (click)="backClicked()">
-        <div data-w-id="1dcc6b70-ae50-8655-b78e-c0dbeb625557" class="back-btn inner"><img src="assets/images/arrow.svg"
-            loading="lazy" alt="" class="image-16">
-        <div>Retour</div>
+<div class="center-contact">
+    <div class="grid-2-5-5">
+  
+      <!-- Colonne gauche : bouton retour et texte vertical -->
+      <div class="column border-right">
+        <button class="bouton-retour" (click)="backClicked()">
+          <img src="assets/images/arrow.svg" loading="lazy" alt="Retour"/>
+          <div>Retour</div>
+        </button>
+        <div class="contact-texte">CONTACTEZ-NOUS</div>
+      </div>
+  
+      <!-- Colonne centrale : texte d'information -->
+      <div class="column">
+        <div class="contact-katia-soustitre-text">
+          Réserves Naturelles de France <br />
         </div>
-    </button>
-    <div class="contact-headline">
-        <div class="contact-headline-text">CONTACTEZ-NOUS</div>
-    </div>
-    </div>
-    <div class="contact-line"></div>
-    <div class="block-contact-left">
-        
-        <div class="contact-katia-soustitre">
-            <div class="contact-katia-soustitre-text">Réserves Naturelles de France <br>contact&#64;rnfrance.org</div>
+        <div class="contact-katia-paragraphe-text">
+          Vous pouvez nous contacter avec le formulaire ci-contre pour toute question relative à la Boîte à Outils Diagnostic d’Ancrage Territorial ou pour nous remettre un document lié à votre Diagnostic d’Ancrage Territorial.
+          <br />Nous vous répondrons dans les meilleurs délais.
+          <br />À bientôt !
         </div>
-        <div class="contact-katia-paragraphe">
-            <div class="contact-katia-paragraphe-text">Vous pouvez nous contacter avec le formulaire ci-contre pour
-            toutes questions relatives à la Boîte à Outils Diagnostic d’Ancrage Territorial ou pour nous remettre tout
-            document relatif à votre Diagnostic d’Ancrage Territorial.<br>Je vous répondrai dans les meilleurs
-            délais.<br>À bientôt !</div>
-        </div>
+      </div>
+  
+      <!-- Colonne droite : formulaire -->
+      <div class="column">
+        <form [formGroup]="formGroup" (submit)="recordMail($event)" class="col-center">
+  
+          <mat-form-field appearance="fill">
+            <mat-label>{{ labels.nameLabel }}</mat-label>
+            <input matInput placeholder="Entrez votre nom" formControlName="nom" required />
+            @if (formGroup.get('nom')?.hasError('required')) {
+              <mat-error>{{ labels.requiredName }}</mat-error>
+            }
+          </mat-form-field>
+  
+          <mat-form-field appearance="fill">
+            <mat-label>{{ labels.mail }}</mat-label>
+            <input matInput placeholder="Entrez votre adresse email" formControlName="expediteur" required />
+            @if (formGroup.get('mail')?.hasError('required')) {
+              <mat-error>{{ labels.requiredFirstName }}</mat-error>
+            }
+          </mat-form-field>
+  
+          <mat-form-field appearance="fill">
+            <mat-label>{{ labels.subject }}</mat-label>
+            <input matInput placeholder="Entrez l'objet de votre message" formControlName="objet" required />
+            @if (formGroup.get('objet')?.hasError('required')) {
+              <mat-error>{{ labels.requiredSubject }}</mat-error>
+            }
+          </mat-form-field>
+  
+          <mat-form-field appearance="fill">
+            <mat-label>{{ labels.message }}</mat-label>
+            <textarea matInput placeholder="Écrivez votre message" formControlName="message" required></textarea>
+            @if (formGroup.get('message')?.hasError('required')) {
+              <mat-error>{{ labels.requiredMessage }}</mat-error>
+            }
+          </mat-form-field>
+  
+          <button mat-raised-button type="submit">{{ labels.send }}</button>
+        </form>
+      </div>
+  
     </div>
-    <div class="w-form">
-    <form ngNoForm [action]="url" method="POST" id="email-form"
-        name="email" data-name="Email Form" class="form contact">
-        <label for="name" class="contact-label">Votre
-        nom* :</label><input type="text" class="contact-input w-input" maxlength="256" name="name"
-        data-name="Name" placeholder="Prénom NOM" id="name" required="">
-        <label for="email"
-        class="contact-label">Votre e-mail* :</label><input type="email" class="contact-input w-input"
-        maxlength="256" name="email" data-name="Email" placeholder="adresse e-mail" id="email"
-        required="">
-        <label for="sujet-3" class="contact-label">Sujet de votre message* :</label><input
-        type="text" class="contact-input w-input" maxlength="256" name="sujet" data-name="sujet"
-        placeholder="Sujet de votre message" id="sujet" required="">
-        <label for="message"
-        class="contact-label">Votre message* :</label><textarea placeholder="Votre message" maxlength="5000"
-        id="Message" name="Message" data-name="Message" required=""
-        class="contact-input message w-input"></textarea><input type="submit" value="ENVOYER"
-        data-wait="Please wait..." class="contact-submit w-button"></form>
-    <div class="w-form-done">
-        <div>Thank you! Your submission has been received!</div>
-    </div>
-    <div class="w-form-fail">
-        <div>Oops! Something went wrong while submitting the form.</div>
-    </div>
-    </div>
-</div>
-</div>
-<div class="lateral"></div>
-</div>
+  </div>
+  

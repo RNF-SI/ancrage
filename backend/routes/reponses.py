@@ -5,7 +5,7 @@ from schemas.metier import *
 from routes import bp, now, func,jsonify
 from routes.nomenclatures import getAllNomenclaturesByType
 from routes.mot_cle import getKeywordsByActor
-from routes.logger_config import logger
+from configs.logger_config import logger
 from routes.functions import checkCCG
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import SQLAlchemyError
