@@ -4,4 +4,5 @@ export interface IMail{
     nom:string;
     objet:string;
     message:string;
+    token:string;
 }

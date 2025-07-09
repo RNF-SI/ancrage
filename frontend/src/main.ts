@@ -11,7 +11,7 @@ import { faFacebook } from '@fortawesome/free-brands-svg-icons';
 import { provideToastr } from 'ngx-toastr';
 import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS } from '@angular/material-moment-adapter';
 import { DateAdapter, MAT_DATE_LOCALE, MAT_DATE_FORMATS } from '@angular/material/core';
-
+import { RECAPTCHA_V3_SITE_KEY, ReCaptchaV3Service } from "ng-recaptcha-2";
 
 library.add(faFacebook)
 
@@ -27,7 +27,8 @@ bootstrapApplication(AppComponent, {
       deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS]
     },
     { provide: MAT_DATE_FORMATS, useValue: MAT_MOMENT_DATE_FORMATS },
-    { provide: MAT_DATE_LOCALE, useValue: 'fr-FR' }
+    { provide: MAT_DATE_LOCALE, useValue: 'fr-FR' },
+    { provide: RECAPTCHA_V3_SITE_KEY, useValue: '6LdVGX0rAAAAAEtvEY2NkvUBuhRJ71lQ7ZkwbNX7' },
+    ReCaptchaV3Service,
   ]
 }).catch(err => console.error(err));
-

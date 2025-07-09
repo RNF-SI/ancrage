@@ -7,6 +7,7 @@ export class Mail{
     nom = "";
     objet = "";
     message = "";
+    token="";
 
     /** Copie profonde de l'objet */
         copy(): Mail {
@@ -16,6 +17,7 @@ export class Mail{
             copy.nom = this.nom;
             copy.objet = this.objet;
             copy.message = this.message;
+            copy.token = this.token;
             
             return copy;
         }
@@ -30,6 +32,8 @@ export class Mail{
             mail.nom = data.nom;
             mail.objet = data.objet;
             mail.message = data.message;
+            mail.token = data.token;
+
             return mail;
         }
     

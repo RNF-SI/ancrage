@@ -9,12 +9,14 @@ import { MatInputModule } from '@angular/material/input';
 import { MailService } from '@app/services/mail.service';
 import { Subscription } from 'rxjs';
 import { Mail } from '@app/models/mail.model';
+import { RECAPTCHA_V3_SITE_KEY, ReCaptchaV3Service, RecaptchaFormsModule, RecaptchaV3Module } from "ng-recaptcha-2";
 
 @Component({
     selector: 'app-contact',
     templateUrl: './contact.component.html',
     styleUrls: ['./contact.component.css'],
-    imports:[ReactiveFormsModule,MatFormFieldModule,MatButtonModule,MatInputModule,CommonModule,MatError]
+    imports:[ReactiveFormsModule,MatFormFieldModule,MatButtonModule,MatInputModule,CommonModule,MatError,RecaptchaV3Module,RecaptchaFormsModule],
+    
 })
 export class ContactComponent implements OnDestroy{
   
@@ -28,32 +30,40 @@ export class ContactComponent implements OnDestroy{
     destinataire: [AppConfig.contact],
     expediteur: ['',[Validators.required]],
     objet: ['', [Validators.required]],
-    message: ['', [Validators.required]]
+    message: ['', [Validators.required]],
+    token: [''],
     
-});
-private mailService = inject(MailService);
-private mailSub ?:Subscription;
+  });
+  private mailService = inject(MailService);
+  private mailSub ?:Subscription;
+  captchaToken: string | null = null;
+  private recaptchaService = inject(ReCaptchaV3Service);
+  public log: string[] = [];
+  public declarativeFormCaptchaValue ?: string;
 
-recordMail(event : Event){
-  event.preventDefault();
-  console.log(this.formGroup.value);
-  console.log(this.formGroup.valid);
-  if (this.formGroup.valid){
-    console.log('ok');
-    const mail = Object.assign(new Mail(),this.formGroup.value);
-    console.log(mail);
-    this.mailSub = this.mailService.sendMail(mail).subscribe(mail =>{
+  recordMail(event : Event){
+    event.preventDefault();
 
-    })
+    if (this.formGroup.valid){
+      this.recaptchaService.execute('contact_form').subscribe(token => {
+        this.captchaToken = token;
+        console.log(token);
+        if (this.captchaToken) {
+          
+          const mail = Object.assign(new Mail(), this.formGroup.value);
+          mail.token = token;
+          this.mailSub = this.mailService.sendMail(mail).subscribe();
+        }
+      });
+
+    }
   }
-}
 
-backClicked(){
-  this._location.back();
-}
+  backClicked(){
+    this._location.back();
+  }
 
-ngOnDestroy(): void {
-  this.mailSub?.unsubscribe();
-}
-
+  ngOnDestroy(): void {
+    this.mailSub?.unsubscribe();
+  }
 }

@@ -21,5 +21,10 @@ export class MailService {
       );
   }
 
+  checkToken(json:any){
+    return this.http.post('https://www.google.com/recaptcha/api/siteverify', json).pipe(
+      json => json);
+    
+  }
 
 }

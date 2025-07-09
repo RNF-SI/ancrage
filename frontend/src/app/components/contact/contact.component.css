@@ -58,3 +58,8 @@ mat-form-field{
 button div{
     display:inline;
 }
+
+#g-recaptcha-container {
+    margin-top: 1rem;
+    min-height: 78px; /* hauteur du widget */
+}
