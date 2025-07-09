@@ -77,7 +77,7 @@ export class EntretienComponent implements OnDestroy{
         const themes$ = this.nomenclatureService.getAllByType("thème_question",id);
         const etats$ = this.nomenclatureService.getAllByType("statut_entretien");
         const noResponse$ = this.nomenclatureService.getNoResponse("");
-
+    
         forkJoin([themes$,etats$,noResponse$]).subscribe(([themes,etats,noResponse]) => {
           this.prepareResults(themes,etats,noResponse);
           this.menu = document.getElementById("menu");
