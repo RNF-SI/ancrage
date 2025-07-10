@@ -398,7 +398,7 @@ with app.app_context():
     
     updates = [
         # Bloc 1
-        (1, 1, 12), (2, 2, 10), (4, 3, 10), (5, 4, 10), (6, 5, 10), (7, 7, 10), (13, 6, 10),
+        (1, 1, 10), (2, 2, 10), (4, 3, 10), (5, 4, 10), (6, 5, 10), (7, 7, 10), (13, 6, 10),
         # Bloc 2
         (8, 8, 11), (9, 9, 11), (10, 10, 11),
         # Bloc 3
@@ -418,7 +418,7 @@ with app.app_context():
         # Bloc 10
         (17, 17, 15), (18, 18, 15), (19, 19, 15)
     ]
-
+    
     for id_question, ordre, theme_question_id in updates:
         question = db.session.get(Question, id_question)
         if question:
