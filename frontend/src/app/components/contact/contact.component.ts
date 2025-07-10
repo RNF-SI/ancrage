@@ -10,6 +10,7 @@ import { MailService } from '@app/services/mail.service';
 import { Subscription } from 'rxjs';
 import { Mail } from '@app/models/mail.model';
 import { RECAPTCHA_V3_SITE_KEY, ReCaptchaV3Service, RecaptchaFormsModule, RecaptchaV3Module } from "ng-recaptcha-2";
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
     selector: 'app-contact',
@@ -40,6 +41,7 @@ export class ContactComponent implements OnDestroy{
   private recaptchaService = inject(ReCaptchaV3Service);
   public log: string[] = [];
   public declarativeFormCaptchaValue ?: string;
+  private toaster = inject(ToastrService);
 
   recordMail(event : Event){
     event.preventDefault();
@@ -47,12 +49,16 @@ export class ContactComponent implements OnDestroy{
     if (this.formGroup.valid){
       this.recaptchaService.execute('contact_form').subscribe(token => {
         this.captchaToken = token;
-        console.log(token);
+       
         if (this.captchaToken) {
           
           const mail = Object.assign(new Mail(), this.formGroup.value);
           mail.token = token;
-          this.mailSub = this.mailService.sendMail(mail).subscribe();
+          this.mailSub = this.mailService.sendMail(mail).subscribe(
+            reponse=>{
+              this.toaster.info(reponse.message);
+            }
+          );
         }
       });
 
