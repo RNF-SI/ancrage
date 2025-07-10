@@ -4,7 +4,6 @@ from models.models import *
 from schemas.metier import *
 from routes import bp,joinedload,aliased,and_
 from routes.functions import checkCCG
-from collections import defaultdict
 
 @bp.route('/nomenclature/<int:id_nomenclature>', methods=['GET','PUT','DELETE'])
 def nomenclatureMethods(id_nomenclature):

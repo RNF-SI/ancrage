@@ -2371,8 +2371,9 @@
 .contact-headline-text {
   font-family: century-gothic, sans-serif;
   color: #b9b9b9;
-  font-size: 3.54vw;
+  font-size: 3.50vw;
   font-weight: 700;
+  line-height: initial;
 }
 
 .contact-line {

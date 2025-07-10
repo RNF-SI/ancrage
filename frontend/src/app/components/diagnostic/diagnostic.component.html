@@ -1,65 +1,68 @@
 <div class="container">
     <div class="grid-3-6-3">
       <div class="col-span-2"></div>
-  
+      
       <div class="col-span-8">
+        <h2>{{ titleDiagnostic }}</h2>
         @if (isLoading) {
           <app-loading-spinner></app-loading-spinner>
-        }
-        @let diag = diagnostic;
-        @if (!diag().is_read_only) {
-        
-            <h2>{{ titleDiagnostic }}</h2>
-            <form [formGroup]="formGroup" (submit)="recordDiagnostic($event)">
-              <mat-form-field appearance="fill" class="fieldName">
-                <mat-label>{{ nameLabel }}</mat-label>
-                <input matInput placeholder="Entrez un nom" formControlName="nom" required>
-                @if(formGroup.get('nom')?.hasError('required')){
-                  <mat-error>
-                    {{ labels.requiredName }}
-                  </mat-error>
-                }
-              </mat-form-field>
-    
-              <mat-form-field appearance="fill" class="fieldName">
-                <mat-label>{{ labels.chosenSites }}</mat-label>
-                <mat-select
-                  formControlName="sites"
-                  multiple
-                  (selectionChange)="getDiagName(formGroup.value.sites)"
-                  [compareWith]="compareSites"
-                >
-                  @for (site of uniqueSites; track site) {
-                    <mat-option [value]="site">{{ site.nom }}</mat-option>
+        }@else{
+          @let diag = diagnostic;
+          @if (!diag().is_read_only) {
+          
+              
+              <form [formGroup]="formGroup" (submit)="recordDiagnostic($event)">
+                <mat-form-field appearance="fill" class="fieldName">
+                  <mat-label>{{ nameLabel }}</mat-label>
+                  <input matInput placeholder="Entrez un nom" formControlName="nom" required>
+                  @if(formGroup.get('nom')?.hasError('required')){
+                    <mat-error>
+                      {{ labels.requiredName }}
+                    </mat-error>
                   }
-                </mat-select>
-                @if(formGroup.get('sites')?.hasError('required')){
-                  <mat-error>
-                    {{ labels.requiredSite }}
-                  </mat-error>
+                </mat-form-field>
+      
+                <mat-form-field appearance="fill" class="fieldName">
+                  <mat-label>{{ labels.chosenSites }}</mat-label>
+                  <mat-select
+                    formControlName="sites"
+                    multiple
+                    (selectionChange)="getDiagName(formGroup.value.sites)"
+                    [compareWith]="compareSites"
+                  >
+                    @for (site of uniqueSites; track site) {
+                      <mat-option [value]="site">{{ site.nom }}</mat-option>
+                    }
+                  </mat-select>
+                  @if(formGroup.get('sites')?.hasError('required')){
+                    <mat-error>
+                      {{ labels.requiredSite }}
+                    </mat-error>
+                  }
+                  
+                </mat-form-field>
+      
+                <h4>{{ chosenSitesTitle }}</h4>
+                @for (site of chosenSites; track site) {
+                  <p>{{ site.nom }}, {{ site.type.libelle }}</p>
                 }
-                
-              </mat-form-field>
-    
-              <h4>{{ chosenSitesTitle }}</h4>
-              @for (site of chosenSites; track site) {
-                <p>{{ site.nom }}, {{ site.type.libelle }}</p>
-              }
-    
-              <button mat-raised-button color="accent" type="button" (click)="navigate('/site', diagnostic())">
-                {{ btnCreateSiteLabel }}
-              </button>
-              <button mat-raised-button color="accent" (click)="navigate(previousPage, diagnostic())">
-                {{ labels.btnPreviousStepLabel }}
-              </button>
-              <button mat-raised-button color="warn" type="submit">
-                {{ btnRecordDiag }}
-              </button>
-            </form>
-        
-        }@else {
-          <p>Vous n'avez pas accès à cette page.</p>
+      
+                <button mat-raised-button color="accent" type="button" (click)="navigate('/site', diagnostic())">
+                  {{ btnCreateSiteLabel }}
+                </button>
+                <button mat-raised-button color="accent" (click)="navigate(previousPage, diagnostic())">
+                  {{ labels.btnPreviousStepLabel }}
+                </button>
+                <button mat-raised-button color="warn" type="submit">
+                  {{ btnRecordDiag }}
+                </button>
+              </form>
+          
+          }@else {
+            <p>Vous n'avez pas accès à cette page.</p>
+          }
         }
+        
        
       </div>
   

@@ -6,6 +6,7 @@ import { IGraphRadar } from '@app/interfaces/graphradar.interface';
 import { IGraphMotsCles } from '@app/interfaces/igraph-mots-cles';
 import { IGraphRepartition } from '@app/interfaces/igraph-repartition';
 import { Diagnostic } from '@app/models/diagnostic.model';
+import { Document } from '@app/models/document.model';
 import { GraphMotsCles } from '@app/models/graph-mots-cles';
 import { GraphMoy } from '@app/models/graph-moy.model';
 import { GraphRadar } from '@app/models/graph-radar.model';
@@ -132,6 +133,12 @@ export class DiagnosticService {
       return this.http.put<IDiagnostic>(this.BASE_URL + '/disable/' + diagnostic.id_diagnostic + '/' + diagnostic.slug, diagnostic.toJson()).pipe(
         map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
       );
+    }
+
+    deleteDocument(document:Document):Observable<Diagnostic> {
+      return this.http.delete<IDiagnostic>(this.BASE_URL+'/document/delete/'+document.id_document).pipe(
+        map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
+      )
     }
     
 }

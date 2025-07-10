@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import { Component, effect, inject, OnDestroy, signal, ViewChild } from '@angular/core';
+import { ActivatedRoute, Params } from '@angular/router';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { NomenclatureService } from '@app/services/nomenclature.service';
 import { Labels } from '@app/utils/labels';
@@ -77,7 +77,7 @@ export class EntretienComponent implements OnDestroy{
         const themes$ = this.nomenclatureService.getAllByType("thème_question",id);
         const etats$ = this.nomenclatureService.getAllByType("statut_entretien");
         const noResponse$ = this.nomenclatureService.getNoResponse("");
-
+    
         forkJoin([themes$,etats$,noResponse$]).subscribe(([themes,etats,noResponse]) => {
           this.prepareResults(themes,etats,noResponse);
           this.menu = document.getElementById("menu");
@@ -169,13 +169,14 @@ export class EntretienComponent implements OnDestroy{
   //Cache ou affiche le menu en fonction de l'onglet choisi
   onTabChange(event: MatTabChangeEvent) {
     
+    let page = document.getElementById('page');
     if (event.index === 0) { 
-    
-      this.display()
       
+      this.display()
+      page?.classList.replace('one-column','grid-3-9');
     }else{
       this.hide();
-      
+      page?.classList.replace('grid-3-9','one-column');
     }
   }
 
@@ -198,7 +199,8 @@ export class EntretienComponent implements OnDestroy{
   
   //Met la liste de réponses à jour 
   createReponse = (id_question: number, cr?: Nomenclature) => {
-    const reponse = this.reponses.find(r => r.question?.id_question === id_question);
+    let reponse = new Reponse();
+    reponse = this.reponses.find(r => r.question?.id_question === id_question)!;
     
     if (cr !== undefined) {
       reponse!.valeur_reponse = cr;
@@ -217,33 +219,22 @@ export class EntretienComponent implements OnDestroy{
     }else if (valeurId !== this.noResponse().id_nomenclature && valeurId > 0 || reponse!.question?.indications === "Sans indicateur") {
       warnElement?.classList.add('invisible');
     }
-  
-    this.submit();
+    if (cr?.libelle !== "Sans réponse"){
+      this.submit(reponse);
+    }
+    
   }
 
   //Soumission du formulaire et attribution de l'état Réalisé ou En cours
-  submit(): void {
-    const totalReponses = this.reponses.length;
-    let reponsesCompletes = 0;
+  submit(reponse:Reponse): void {
   
-    for (const reponse of this.reponses) {
-      const valeurId = reponse.valeur_reponse?.id_nomenclature ?? 0;
-      const isSansIndicateur = reponse.question?.indications === "Sans indicateur";
-      if ((valeurId !== this.noResponse().id_nomenclature && valeurId > 0) || isSansIndicateur) {
-  
-        reponsesCompletes++;
-      }
-    }
-  
-    if (totalReponses > 0) {
-   
-      this.reponsesSubscription = this.reponseService.updateAllButAfom(this.reponses).subscribe(
-        themes => {
-          this.prepareResults(themes,this.etats(),this.noResponse());
+      this.reponsesSubscription = this.reponseService.update(reponse).subscribe(
+        reponse => {
+          console.log(reponse);
 
         }
       );
-    }
+
   }
 
   

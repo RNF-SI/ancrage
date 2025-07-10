@@ -3,7 +3,7 @@ from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
 from routes import bp
-from routes.logger_config import logger
+from configs.logger_config import logger
 
 @bp.route('/departement/<id_departement>', methods=['GET', 'PUT', 'DELETE'])
 def departementMethods(id_departement):

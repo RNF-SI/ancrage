@@ -23,6 +23,7 @@ import moment from 'moment';
 import { Moment } from 'moment';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinner/loading-spinner.component';
+import { ToastrService } from 'ngx-toastr';
 
 registerLocaleData(localeFr);
 
@@ -34,7 +35,7 @@ registerLocaleData(localeFr);
     imports: [CommonModule, MatSelectModule, MatFormFieldModule, FormsModule, MatInputModule, ReactiveFormsModule, MatButtonModule,LoadingSpinnerComponent],
     standalone:true
 })
-export class DiagnosticComponent implements OnInit, OnDestroy{
+export class DiagnosticComponent implements OnDestroy{
 
   titleDiagnostic= "";
   titleCreateDiag="Créer un diagnostic";
@@ -93,6 +94,7 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
   initialize=true;
   routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
   isLoading=true;
+  private toaster = inject(ToastrService);
 
   constructor() {
     effect(() => {
@@ -154,10 +156,6 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       }
     });
   }
-  
-  ngOnInit(): void {
-    
-  }
 
   //Met à jour la liste this.chosenSites
   checkSite(){
@@ -192,44 +190,25 @@ export class DiagnosticComponent implements OnInit, OnDestroy{
       if (this.formGroup.valid) {
           this.convertDateReport();    
           this.diagnosticSubscription = this.diagnosticsService.add(this.diagnostic()).subscribe(diagnostic=>{
-            this.getConfirmation("Ce diagnostic vient d'être créé dans la base de données et contient ces informations : ",diagnostic,true);
+            this.getConfirmation("Le diagnostic a bien été créé. ",diagnostic);
           });
       }else{
         this.formGroup.markAllAsTouched();
       }
       
-    }else{
-      //Modification
-      this.formGroup.get("modified_by")?.setValue(this.user_id);
-      this.convertDateReport();
-      if (this.formGroup.valid) {
-        this.diagnosticSubscription = this.diagnosticsService.update(this.diagnostic()).subscribe(diagnostic=>{
-          this.getConfirmation("Ce diagnostic vient d'être créé dans la base de données et contient ces informations : ",diagnostic,true);
-        });
-      }else{
-        this.formGroup.markAllAsTouched();
-      }
     }
   }
 
   //Message de confirmation
-  getConfirmation(message:string,diag:Diagnostic,no_creation?:boolean){
+  getConfirmation(message:string,diag:Diagnostic){
       this.previousPage = localStorage.getItem("previousPage")!;
-      this.diagnostic.set(diag);
-      if (!no_creation){
-        localStorage.setItem("fromActor","oui");
-      }
+      
       if(diag.id_diagnostic > 0){
-        this.dialog.open(AlerteDiagnosticComponent, {
-          data: {
-            title: this.titleDiagnostic,
-            message: message,
-            labels: this.labels,
-            diagnostic:this.diagnostic(),
-            previousPage:this.previousPage,
-            no_creation:no_creation
-          }
-        });
+        this.toaster.success(message);
+        const path = "diagnostic-visualisation/"+diag.id_diagnostic+"/"+diag.slug;
+        this.navigate(path,diag);
+      }else{
+        this.toaster.error("Erreur serveur");
       }
       
   }

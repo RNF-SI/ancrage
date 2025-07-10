@@ -1,12 +1,10 @@
-from flask import request, jsonify, current_app, send_from_directory
+
 from models.models import *
 from schemas.metier import *
 from sqlalchemy.orm import aliased
-from routes import bp,now, slugify, uuid,func
+from routes import bp,now, slugify, uuid,func,request,jsonify
 from datetime import datetime
-import json
-from werkzeug.utils import secure_filename
-from routes.logger_config import os,logger
+from configs.logger_config import os,logger
 
 @bp.route('/diagnostic/<int:id_diagnostic>/<slug>', methods=['GET','PUT'])
 def diagnosticMethods(id_diagnostic, slug):
@@ -281,55 +279,6 @@ def get_scores(id_diagnostic):
 
     return jsonify(data)
 
-
-@bp.route('/diagnostic/upload', methods=['POST'])
-def create_documents():
-    documents = json.loads(request.form['documents'])
-    files = request.files.getlist("files")
-
-    upload_folder = current_app.config.get("UPLOAD_FOLDER", "uploads")
-
-    # Créer le répertoire avec permissions 755 s’il n’existe pas
-    if not os.path.exists(upload_folder):
-        os.makedirs(upload_folder, mode=0o755, exist_ok=True)
-
-    for doc in documents:
-        nom = doc.get("nom")
-        id_diagnostic = doc.get("diagnostic", {}).get("id_diagnostic")
-
-        document = Document(
-            nom=nom,
-            diagnostic_id=id_diagnostic  
-        )
-        db.session.add(document)
-
-        # Cherche le fichier correspondant par nom
-        file = next((f for f in files if f.filename == nom), None)
-
-        # Sauvegarder le fichier si trouvé
-        if file:
-            file_path = os.path.join(upload_folder, secure_filename(file.filename))
-            file.save(file_path)
-
-    db.session.commit()
-
-    # Retourner le diagnostic lié au dernier document inséré
-    diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
-    return getDiagnostic(diagnostic)
-
-@bp.route('/diagnostic/uploads/<path:filename>')
-def uploaded_file(filename):
-    filename = secure_filename(filename)
-    upload_folder = current_app.config['UPLOAD_FOLDER']
-    full_path = os.path.join(upload_folder, filename)
-
-    logger.info("Recherche fichier :", full_path)
-
-    if not os.path.exists(full_path):
-        return f"Fichier non trouvé : {filename}", 404
-
-    return send_from_directory(upload_folder, filename)
-    
 def changeValuesDiagnostic(diagnostic,data):
     
     diagnostic.nom = data.get('nom', diagnostic.nom)
@@ -400,7 +349,7 @@ def enregistrer_afoms():
         return {"error": "Données invalides"}, 400
 
     try:
-        # 🔥 Étape 0 : suppression des AFOM liés au diagnostic
+       
         afom_ids = (
             db.session.query(Afom.id_afom)
             .join(MotCle)
@@ -411,7 +360,6 @@ def enregistrer_afoms():
         if ids:
             db.session.query(Afom).filter(Afom.id_afom.in_(ids)).delete(synchronize_session=False)
 
-        # 🔁 Étape 0bis : collecter les id_mot_cle encore utilisés (parents + enfants)
         ids_a_conserver = set()
         for item in graph_data:
             mot_cle_data = item.get('mot_cle', {})
@@ -425,7 +373,6 @@ def enregistrer_afoms():
                 if isinstance(id_enfant, int) and id_enfant > 0:
                     ids_a_conserver.add(id_enfant)
 
-        # 🔧 Étape 0ter : désactivation sélective des anciens mots-clés non présents dans le JSON
         db.session.query(MotCle).filter(
             MotCle.diagnostic_id == diagnostic_id,
             ~MotCle.id_mot_cle.in_(ids_a_conserver)
@@ -435,7 +382,6 @@ def enregistrer_afoms():
 
         parents_temp = []
 
-        # 🔁 Étape 1 : création des groupes (parents)
         for item in graph_data:
             mot_cle_data = item['mot_cle']
             nombre = item.get('nombre', 1)
@@ -456,9 +402,10 @@ def enregistrer_afoms():
                 parent = db.session.get(MotCle, id_parent)
                 if parent:
                     parent.is_actif = True
-                    parent.nom = nom  # mise à jour possible
+                    parent.nom = nom
                     parent.categorie_id = categorie_id
-                    parent.mots_cles_groupe_id = None  # c'est un groupe
+                    parent.mots_cles_groupe_id = None
+                    parent.nombre = nombre 
                 else:
                     logger.warning(f"[AVERTISSEMENT] Mot-clé parent ID {id_parent} introuvable.")
                     continue
@@ -467,7 +414,8 @@ def enregistrer_afoms():
                     nom=nom,
                     diagnostic_id=diagnostic_id,
                     categorie_id=categorie_id,
-                    is_actif=True
+                    is_actif=True,
+                    nombre=nombre 
                 )
                 db.session.add(parent)
                 db.session.flush()
@@ -475,12 +423,12 @@ def enregistrer_afoms():
             parents_temp.append((parent, enfants, nombre))
             logger.info(f"[GROUPE] Groupe traité : '{parent.nom}' (ID {parent.id_mot_cle})")
 
-        # 👶 Étape 2 : création ou mise à jour des enfants
         for parent_mc, enfants, _ in parents_temp:
             for enfant_data in enfants:
                 nom_enfant = enfant_data.get('nom')
                 diag_enfant_id = enfant_data.get('diagnostic', {}).get('id_diagnostic')
                 id_enfant = enfant_data.get('id_mot_cle')
+                nombre_enfant = enfant_data.get('nombre', 1) 
 
                 if not nom_enfant or not diag_enfant_id:
                     continue
@@ -488,10 +436,11 @@ def enregistrer_afoms():
                 if isinstance(id_enfant, int) and id_enfant > 0:
                     enfant = db.session.get(MotCle, id_enfant)
                     if enfant:
-                        enfant.nom = nom_enfant  # mise à jour
+                        enfant.nom = nom_enfant
                         enfant.diagnostic_id = diag_enfant_id
                         enfant.mots_cles_groupe_id = parent_mc.id_mot_cle
                         enfant.is_actif = True
+                        enfant.nombre = nombre_enfant  
                     else:
                         logger.warning(f"[AVERTISSEMENT] Enfant ID {id_enfant} introuvable.")
                         continue
@@ -500,7 +449,8 @@ def enregistrer_afoms():
                         nom=nom_enfant,
                         diagnostic_id=diag_enfant_id,
                         mots_cles_groupe_id=parent_mc.id_mot_cle,
-                        is_actif=True
+                        is_actif=True,
+                        nombre=nombre_enfant  
                     )
                     db.session.add(enfant)
 
@@ -508,7 +458,6 @@ def enregistrer_afoms():
 
         db.session.flush()
 
-        # ✅ Étape 3 : création des AFOMs
         for parent_mc, _, nombre in parents_temp:
             afom = Afom(mot_cle_id=parent_mc.id_mot_cle, number=nombre)
             db.session.add(afom)
@@ -522,7 +471,6 @@ def enregistrer_afoms():
         logger.error(f"[ERREUR ENREGISTREMENT] {e}")
         return {"error": "Erreur serveur lors de l’enregistrement"}, 500
 
-    
 
 @bp.route('/diagnostic/mots-cles/<int:id_diagnostic>', methods=['GET'])
 def get_afoms_par_mot_cle_et_diagnostic(id_diagnostic):
@@ -544,7 +492,7 @@ def get_afoms_par_mot_cle_et_diagnostic(id_diagnostic):
         .join(cat_alias, mc_alias.categorie)
         .filter(
             mc_alias.diagnostic_id == id_diagnostic,
-            mc_alias.is_actif == True  # ✅ bon champ, bon alias
+            mc_alias.is_actif == True  
         )
         .group_by(
             mc_alias.nom,

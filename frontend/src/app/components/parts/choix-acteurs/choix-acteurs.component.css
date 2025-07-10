@@ -49,3 +49,7 @@
 mat-card{
     height:60px;
 }
+
+mat-card div{
+    margin-right: 1%;
+}

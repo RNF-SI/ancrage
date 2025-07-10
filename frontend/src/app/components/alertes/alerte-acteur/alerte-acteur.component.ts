@@ -26,14 +26,14 @@ export class AlerteActeurComponent {
         previousPage:string;
       }
     ) {}
-  
+    
     private siteService = inject(SiteService);
   
     navigate(path:string,diagnostic:Diagnostic){
-     
-      this.dialogRef.close(this.data.acteur);
+      console.log(this.data.previousPage);
       localStorage.setItem("fromActor","oui");
       this.siteService.navigateAndCache(path,diagnostic,undefined,true);
+      this.dialogRef.close(this.data.acteur);
     }
     close(){
       this.dialogRef.close();

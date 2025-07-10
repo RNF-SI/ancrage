@@ -7,6 +7,7 @@ import { Nomenclature } from '@app/models/nomenclature.model';
 import { INomenclature } from '@app/interfaces/nomenclature.interface';
 import { MotCle } from '@app/models/mot-cle.model';
 import { IMotCle } from '@app/interfaces/mot_cle.interface';
+import { IReponse } from '@app/interfaces/reponse.interface';
 
 
 @Injectable({
@@ -35,6 +36,14 @@ export class ReponseService {
         return kwJsonArray.map<MotCle>(
           kwJson => MotCle.fromJson(kwJson)
         )
+      })
+    );
+  }
+
+  update(reponse:Reponse): Observable<Reponse> {
+    return this.http.post<IReponse>(this.BASE_URL,reponse).pipe(
+      map(reponse => {
+           return Reponse.fromJson(reponse);
       })
     );
   }

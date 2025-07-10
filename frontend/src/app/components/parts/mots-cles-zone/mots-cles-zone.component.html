@@ -84,6 +84,6 @@
   </div>
 
   @if (diagnostic().created_by == id_role() && !diagnostic().is_read_only) {
-    <button mat-raised-button type="button" color="warn" (click)="sendResponse()">Enregistrer</button>
+    <button mat-raised-button type="button" color="warn" (click)="sendResponse()" [disabled]="disable()">Enregistrer</button>
   }
 </div>

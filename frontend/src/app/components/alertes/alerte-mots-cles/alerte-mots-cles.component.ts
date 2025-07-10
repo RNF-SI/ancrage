@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, Inject, OnDestroy, OnInit } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
@@ -10,7 +11,7 @@ import { Nomenclature } from '@app/models/nomenclature.model';
 import { MotCleService } from '@app/services/mot-cle.service';
 import { Labels } from '@app/utils/labels';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { Subscription } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
 
 //Alerte pour voir contenu d'un groupe et le renommer
 @Component({
@@ -40,22 +41,28 @@ export class AlerteMotsClesComponent implements OnInit, OnDestroy{
           }
 
           //Dissocier groupe : pas utilisée 
-          explodeGroup(){
-         
-            for(let i = 0;i<this.data.listeMotsCles.length;i++){
-              if (this.data.listeMotsCles[i].id_mot_cle == this.data.keyword.id_mot_cle){
-                this.data.listeMotsCles.splice(i,1);
-              }
-            }
-            
-            for(let mc of this.data.keyword.mots_cles_issus){
-              mc.categorie = new Nomenclature();
-              mc.categorie = this.data.keyword.categorie;
-              this.data.listeMotsCles.push(mc);
-
-            }
-           
-            this.dialogRef.close(this.data.listeMotsCles);
+          explodeGroup() {
+          
+            // Supprimer le mot-clé parent du tableau
+            this.data.listeMotsCles = this.data.listeMotsCles.filter(
+              mc => mc.id_mot_cle !== this.data.keyword.id_mot_cle
+            );
+          
+            // Récupération des enfants à partir de l'API
+            const fetches = this.data.keyword.mots_cles_issus.map(mc =>
+              firstValueFrom(this.kwService.get(mc.id_mot_cle))
+            );
+          
+            Promise.all(fetches).then(motsClesIssus => {
+              motsClesIssus.forEach(mc => {
+                this.data.listeMotsCles.push(mc);
+              });
+          
+              this.dialogRef.close(this.data.listeMotsCles);
+            }).catch(error => {
+              console.error("Erreur lors de la récupération des enfants :", error);
+              this.dialogRef.close(this.data.listeMotsCles);
+            });
           }
 
           //Permet de renommer un groupe

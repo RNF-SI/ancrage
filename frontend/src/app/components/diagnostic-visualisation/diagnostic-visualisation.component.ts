@@ -53,7 +53,6 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   previousPage = signal<string>('');
   private fb = inject(FormBuilder);
   private diagnosticService = inject(DiagnosticService);
-  private routeSubscription?:Subscription;
   private diagSubscription?:Subscription;
   route = inject(ActivatedRoute);
   private siteService = inject(SiteService);
@@ -63,6 +62,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   themes = signal<Nomenclature[]>([]);
   private docsSubscription?:Subscription;
   private docReadSub?:Subscription;
+  private docDeleteSub?:Subscription;
   file?:Blob;
   authService = inject(AuthService);
   dialog = inject(MatDialog);
@@ -88,19 +88,25 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
   isLoading=true;
   index=0;
+  private initDone = signal(false);
 
   constructor() {
     effect(() => {
+      const done = this.initDone();
+      if (done) return;
       if (localStorage.getItem("fromActor") === 'oui'){
         this.index=1;
         localStorage.setItem("fromActor",'non');
+        
+        this.diagnostic.set(JSON.parse(localStorage.getItem("diagnostic")!));
       }
       this.previousPage.set(localStorage.getItem('previousPage')!);
       const { id_diagnostic, slug } = this.routeParams() as Params;
       const id = Number(id_diagnostic);
       const slugValue = slug as string;
-  
+
       if (id && slugValue) {
+        this.initDone.set(true);
         this.id_diagnostic.set(id);
         this.slug.set(slugValue);
   
@@ -108,6 +114,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
           diag: this.diagnosticService.get(id, slugValue),
           themes: this.nomenclatureService.getAllByType('thème'),
         }).subscribe(({ diag, themes }) => {
+          console.log(diag);
           this.diagnostic.set(diag);
           this.diag = this.diagnostic();
           this.themes.set(themes);
@@ -129,18 +136,20 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   onTabChange(event: MatTabChangeEvent) {
     
     let menu = document.getElementById("menu");
+    let page = document.getElementById('page');
     if (event.index === 3) { 
     
       if (menu?.className == "invisible"){
         menu?.classList.remove("invisible");
         menu?.classList.add("visible");
       }
-      
+      page?.classList.replace("one-column","grid-3-6");
       
     }else{
       if (menu?.className == "visible"){
         menu?.classList.remove("visible");
         menu?.classList.add("invisible");
+        page?.classList.replace("grid-3-6","one-column");
       }
     }
   }
@@ -200,7 +209,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
 
     this.docsSubscription = this.diagnosticService.sendFiles(formData).subscribe(diag =>{
       this.diagnostic.set(diag);
-   
+      this.files = [];
     });
     
     
@@ -221,6 +230,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   //Navigation et mise en cache
   navigate= (path:string,diagnostic:Diagnostic):void =>{
     localStorage.setItem("pageDiagnostic",this.router.url);
+    console.log(this.router.url);
     this.siteService.navigateAndCache(path,diagnostic);
   }
 
@@ -268,7 +278,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   }
 
   ngOnDestroy(): void {
-    this.routeSubscription?.unsubscribe();
+
     this.diagSubscription?.unsubscribe();
     this.docsSubscription?.unsubscribe();
     this.docReadSub?.unsubscribe();
@@ -289,6 +299,12 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
                 this.diagnostic = diagnostic;
               }
             });
+  }
+
+  deleteFile(document:Document){
+    this.docDeleteSub = this.diagnosticService.deleteDocument(document).subscribe(diag =>{
+      this.diagnostic.set(diag);
+    })
   }
 
 }
