@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, OnDestroy, signal, ViewChild } from '@angular/core';
+import { Component, effect, inject, OnDestroy, signal } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { NomenclatureService } from '@app/services/nomenclature.service';
@@ -20,6 +20,7 @@ import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Acteur } from '@app/models/acteur.model';
 import { Question } from '@app/models/question.model';
+import { ToastrService } from 'ngx-toastr';
 
 
 //Page de la saisie de l'entretien
@@ -50,11 +51,11 @@ export class EntretienComponent implements OnDestroy{
   slug = signal<string>("");
   noResponse = signal<Nomenclature>(new Nomenclature());
   afom = new Nomenclature();
-  @ViewChild('afom') afomComponent!: MotsClesZoneComponent;
   menu:any;
   routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
   actor:Acteur = new Acteur();
   isCCG = false;
+  private toaster = inject(ToastrService);
 
   constructor(){
     effect(() => {
@@ -230,7 +231,7 @@ export class EntretienComponent implements OnDestroy{
   
       this.reponsesSubscription = this.reponseService.update(reponse).subscribe(
         reponse => {
-          console.log(reponse);
+          this.toaster.success("Réponse enregistrée");
 
         }
       );

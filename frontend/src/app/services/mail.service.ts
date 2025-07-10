@@ -10,7 +10,6 @@ import { environment } from 'src/environments/environment';
 })
 export class MailService {
 
-  private GET_ALL_URL = environment.flask_server+'mails';
   private BASE_URL = environment.flask_server+'mail';
   private http = inject(HttpClient);
 
@@ -21,10 +20,5 @@ export class MailService {
       );
   }
 
-  checkToken(json:any){
-    return this.http.post('https://www.google.com/recaptcha/api/siteverify', json).pipe(
-      json => json);
-    
-  }
-
+  
 }
