@@ -181,20 +181,16 @@ export class MotsClesZoneComponent implements OnDestroy{
     if (index! > -1) {
       cat.mots_cles?.splice(index!, 1);
     }
-    if(!this.modeAnalyse){
+    if(!this.modeAnalyse()){
       this.motsClesReponse.set(this.motsClesReponse().filter(mc =>
         mc.id_mot_cle !== keyword.id_mot_cle 
       ));
-      if (this.motsClesReponse().length === 0){
-        this.disable.set(true);
-      }
+      
     }else{
       this.motsCleAnalyse.set(this.motsCleAnalyse().filter(mc =>
         mc.id_mot_cle !== keyword.id_mot_cle 
       ));
-      if (this.motsCleAnalyse().length === 0){
-        this.disable.set(true);
-      }
+      
     }
 
   }
@@ -362,6 +358,7 @@ export class MotsClesZoneComponent implements OnDestroy{
       reponse.question!.indications="Sans indicateur";
       reponse.valeur_reponse = this.noResponse();
       reponse.mots_cles = this.motsClesReponse();
+      console.log(this.motsClesReponse());
       reponse.acteur = new Acteur();
       reponse.acteur.id_acteur = this.id_acteur();
       for (let i=0;i<reponse.mots_cles.length;i++){
@@ -374,7 +371,7 @@ export class MotsClesZoneComponent implements OnDestroy{
           this.toastr.success("Données enregistrées");
           this.setKeywords(keywords);
         }else{
-          this.toastr.error("Problème à l'enregistrement des données");
+          this.toastr.success("Les données ont bien été effacées.");
         }
         
       });
@@ -400,7 +397,7 @@ export class MotsClesZoneComponent implements OnDestroy{
           this.toastr.success("Données enregistrées");
           this.prepareResults(afoms);
         }else{
-          this.toastr.error("Problème à l'enregistrement des données");
+          this.toastr.success("Les données ont bien été effacées.");
         }
         
       });

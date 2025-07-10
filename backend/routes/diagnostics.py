@@ -492,7 +492,8 @@ def get_afoms_par_mot_cle_et_diagnostic(id_diagnostic):
         .join(cat_alias, mc_alias.categorie)
         .filter(
             mc_alias.diagnostic_id == id_diagnostic,
-            mc_alias.is_actif == True  
+            mc_alias.is_actif == True,
+           
         )
         .group_by(
             mc_alias.nom,
@@ -506,28 +507,29 @@ def get_afoms_par_mot_cle_et_diagnostic(id_diagnostic):
     )
     data = []
     for row in results:
-        motcle_obj = db.session.get(MotCle, row.id_mot_cle)
+        if row.nombre > 0:
+            motcle_obj = db.session.get(MotCle, row.id_mot_cle)
 
-        data.append({
-            "id_afom": None,
-            "nombre": row.nombre,
-            "mot_cle": {
-                "id_mot_cle": row.id_mot_cle,
-                "nom": row.nom,
-                "mots_cles_issus": [
-                    {
-                        "id_mot_cle": enfant.id_mot_cle,
-                        "nom": enfant.nom
-                    } for enfant in motcle_obj.mots_cles_issus
-                ] if motcle_obj else [],
-                "categorie": {
-                    "id_nomenclature": row.cat_id,
-                    "libelle": row.cat_libelle,
-                    "value": row.cat_value,
-                    "mnemonique": row.cat_mnemonique
+            data.append({
+                "id_afom": None,
+                "nombre": row.nombre,
+                "mot_cle": {
+                    "id_mot_cle": row.id_mot_cle,
+                    "nom": row.nom,
+                    "mots_cles_issus": [
+                        {
+                            "id_mot_cle": enfant.id_mot_cle,
+                            "nom": enfant.nom
+                        } for enfant in motcle_obj.mots_cles_issus
+                    ] if motcle_obj else [],
+                    "categorie": {
+                        "id_nomenclature": row.cat_id,
+                        "libelle": row.cat_libelle,
+                        "value": row.cat_value,
+                        "mnemonique": row.cat_mnemonique
+                    }
                 }
-            }
-        })
+            })
 
     return jsonify(data)   
 
