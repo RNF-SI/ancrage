@@ -3,11 +3,6 @@
 @use 'conf/custom.scss' as conf;
 @use '@angular/material' as mat;
 
-// Les fichiers CSS externes doivent rester en @import :
-@import "assets/css/hand-made.css";
-@import "assets/css/normalize.css";
-@import "assets/css/webflow.css";
-@import "assets/css/rnf-site.webflow.css";
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

@@ -38,47 +38,8 @@ export class AppComponent implements OnInit{
 
 
   ngOnInit(): void {
-    this.recallJsFuntions();
-    this.loading = false;
+   
     
   }
-
-
-  recallJsFuntions() {
-    this.loading = true;
-    
-    this.routerSubscription = this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe(event => {
-        this.loadScript();
-        
-        this.loading = false
-      });
-  }
-
-  ngOnDestroy() {
-    this.routerSubscription.unsubscribe();
-  }
-
-  public loadScript() {
-    
-    for (let i = 0; i < dynamicScripts.length; i++) {
-      const node = document.createElement("script");
-      node.src = dynamicScripts[i];
-      node.type = "text/javascript";
-      node.async = false;
-      node.charset = "utf-8";
-      document.getElementsByTagName("head")[0].appendChild(node);
-    }
-    
-  }
-
-
-  isScriptLoaded = (target: string): boolean => {
-    return document.querySelector('script[src="' + target + '"]') ? true : false
-  }
-
-  // Signed In status
-
 
 }

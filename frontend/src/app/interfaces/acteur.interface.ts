@@ -1,4 +1,4 @@
-import { Commune } from "@app/models/commune.model";
+/* import { Commune } from "@app/models/commune.model";
 import { Diagnostic } from "@app/models/diagnostic.model";
 import { Nomenclature } from "@app/models/nomenclature.model";
 import { Reponse } from "@app/models/reponse.model";
@@ -23,3 +23,4 @@ export interface IActeur {
     modified_by:number;
     slug:string;
 }
+ */

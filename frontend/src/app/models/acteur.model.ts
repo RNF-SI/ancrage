@@ -1,4 +1,4 @@
-import { IActeur } from "@app/interfaces/acteur.interface";
+/* import { IActeur } from "@app/interfaces/acteur.interface";
 import { Commune } from "./commune.model";
 import { Diagnostic } from "./diagnostic.model";
 import { Nomenclature } from "./nomenclature.model";
@@ -25,7 +25,6 @@ export class Acteur implements IActeur{
     reponses?:Reponse[];
     slug = "";
 
-    /** Copie profonde de l'objet */
     copy(): Acteur {
         const copy = new Acteur();
 
@@ -51,7 +50,7 @@ export class Acteur implements IActeur{
         return copy;
     }
 
-    /** Création depuis un JSON brut (avec reconversion des objets internes et dates) */
+    
     static fromJson(data: IActeur): Acteur {
         const acteur = new Acteur();
 
@@ -77,7 +76,7 @@ export class Acteur implements IActeur{
         return acteur;
     }
 
-    /** Conversion en JSON, sans id_site si non voulu */
+
     toJson(): IActeur {
         return {
             ...this,
@@ -92,3 +91,4 @@ export class Acteur implements IActeur{
         };
     }
 }
+ */

@@ -1,4 +1,4 @@
-import { Observable, map } from 'rxjs';
+/* import { Observable, map } from 'rxjs';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Acteur } from '@app/models/acteur.model';
@@ -71,4 +71,4 @@ export class ActeurService {
   }
 
 
-}
+} */

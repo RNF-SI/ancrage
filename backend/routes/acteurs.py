@@ -1,4 +1,4 @@
-from models.models import db
+""" from models.models import db
 from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
@@ -47,17 +47,6 @@ def postActeur():
 
         acteur = Acteur()
         acteur = changeValuesActeur(acteur, data)
-
-        logger.info(f"""✔ Données acteur mises à jour :
-        - Nom        : {acteur.nom}
-        - Prénom     : {acteur.prenom}
-        - Fonction   : {acteur.fonction}
-        - Téléphone  : {acteur.telephone}
-        - Email      : {acteur.mail}
-        - Commune ID : {acteur.commune_id}
-        - Structure  : {acteur.structure}
-        - Profil ID  : {acteur.profil_cognitif_id}
-        """)
 
         acteur.created_at = now
         myuuid = uuid.uuid4()
@@ -156,3 +145,4 @@ def getActeur(acteur):
     schema = ActeurWithoutResponsesSchema(many=False)
     acteurObj = schema.dump(acteur)
     return jsonify(acteurObj)
+ """
