@@ -11,6 +11,7 @@ export const AppConfig = {
     "SEARCH_PREFIXE": "",
     "SEARCH_PLACEHOLDER": "",
     "contact": "thomas.arles@rnfrance.org",
+    "datesFormation":"du 13 au 15 novembre 2024 à DIJON (21)",
     "menucompte": [
         {
             "texte": "Déconnexion",

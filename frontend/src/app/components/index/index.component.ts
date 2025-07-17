@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { AppConfig } from 'src/conf/app.config';
 
 @Component({
     selector: 'app-index',
@@ -6,5 +7,5 @@ import { Component } from '@angular/core';
     styleUrls: ['./index.component.css']
 })
 export class IndexComponent {
-
+    datesFormation:string = AppConfig.datesFormation;
 }
