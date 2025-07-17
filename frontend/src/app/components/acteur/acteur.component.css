@@ -1,5 +1,7 @@
 mat-form-field{
     display:block;
+    width:30%;
+    margin: 2%;;
 }
 
 .loading-spinner {
