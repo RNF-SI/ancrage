@@ -28,7 +28,7 @@
                       <mat-radio-group [formControlName]="'question_' + q.id_question">
                         @for (cr of q.choixReponses; track cr) {
                           @if(isChoixVisible(q,cr)){
-                            <mat-radio-button [value]="cr.id_nomenclature" (click)="createReponse(q.id_question, cr)">
+                            <mat-radio-button [value]="cr.id_nomenclature">
                               {{ cr.libelle }}
                             </mat-radio-button>
                           }
