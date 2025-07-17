@@ -299,13 +299,13 @@ def record_afoms(diagnostic_id,mots_cles_repartis):
 def verifDatesEntretien(diagnostic_id):
     diagnostic = Diagnostic.query.filter_by(id_diagnostic=diagnostic_id).first()
    
-    listeTermines = []
-    for actor in diagnostic.acteurs:
-      
-        if actor.statut_entretien and actor.statut_entretien.libelle == 'Réalisé':
-            listeTermines.append(actor)
+    statuts_termines = {'Réalisé', 'Annulé', 'Reporté', 'Rétracté'}
+    listeTermines = [
+        actor for actor in diagnostic.acteurs
+        if actor.statut_entretien and actor.statut_entretien.libelle in statuts_termines
+    ]
 
-    logger.info(f"Nombre d'acteurs avec entretien 'Réalisé' : {len(listeTermines)}")
+    logger.info(f"Nombre d'acteurs avec entretien terminé : {len(listeTermines)}")
 
     if len(listeTermines) == 1:
         diagnostic.date_debut = now
@@ -350,8 +350,6 @@ def getRepartitionMotsCles(id_diagnostic):
 
 def verifCompleteStatus(id_acteur):
     nb_reponses = db.session.query(func.count(Reponse.id_reponse)).filter_by(acteur_id=id_acteur).scalar()
-    print("nombre réponses")
-    print(nb_reponses)
     isCCG = checkCCG(id_acteur)
 
     if isCCG:
@@ -363,8 +361,7 @@ def verifCompleteStatus(id_acteur):
             .filter(Nomenclature.libelle != "CCG")
             .scalar()
         )
-    print ("nombre questions")
-    print(count)
+ 
     nomenclatures = Nomenclature.query.filter_by(mnemonique="statut_entretien").all()
     
     statut_entretien_id=0
@@ -384,7 +381,7 @@ def verifCompleteStatus(id_acteur):
     acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
 
     if not acteur:
-        logger.info(f"❌ Aucun acteur trouvé avec l'ID {id_acteur}")
+        logger.info(f" Aucun acteur trouvé avec l'ID {id_acteur}")
     else:
         acteur.statut_entretien_id = statut_entretien_id
         db.session.add(acteur)
