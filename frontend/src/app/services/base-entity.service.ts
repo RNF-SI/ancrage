@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable, map, shareReplay } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 /**
@@ -38,6 +38,7 @@ export abstract class BaseEntityService<TModel, TInterface> {
   getAll(): Observable<TModel[]> {
     const url = environment.flask_server + this.endpoint;
     return this.http.get<TInterface[]>(url).pipe(
+      shareReplay(1),
       map(jsonArray => {
         return jsonArray.map<TModel>(
           json => this.entityConstructor.fromJson(json)

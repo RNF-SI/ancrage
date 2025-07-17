@@ -1,4 +1,4 @@
-import { Observable, map } from 'rxjs';
+import { Observable, map, shareReplay } from 'rxjs';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Site } from '@app/models/site.model';
@@ -21,6 +21,7 @@ export class SiteService {
 	//Récupère tous les sites
 	getAll(): Observable<Site[]> {
 		return this.http.get<ISite[]>(this.GET_ALL_URL).pipe(
+			shareReplay(1),
 			map(siteJsonArray => {
 				return siteJsonArray.map<Site>(
 					siteJson => Site.fromJson(siteJson)
@@ -32,6 +33,7 @@ export class SiteService {
 	//Récupère tous les sites en fonction du créateur du diag
 	getAllByUser(user_id:number): Observable<Site[]> {
 		return this.http.get<ISite[]>(this.GET_ALL_URL+'/'+user_id).pipe(
+			shareReplay(1),
 			map(siteJsonArray => {
 				return siteJsonArray.map<Site>(
 					siteJson => Site.fromJson(siteJson)
@@ -43,6 +45,7 @@ export class SiteService {
 	//Récupère un site
 	get(id:number,slug: string): Observable<Site> {
 		return this.http.get<ISite>(this.BASE_URL + id + '/' + slug).pipe(
+			shareReplay(1),
 			map(siteJson => Site.fromJson(siteJson))
 		);
 	}
@@ -86,8 +89,7 @@ export class SiteService {
 		if (!nocache){
 			localStorage.setItem("previousPage", this.router.url);
 		}
-		
-	  
+	
 		this.router.navigate([path]);
 	}
 
