@@ -5,3 +5,7 @@
 button{
     margin-right: 5%;
 }
+
+mat-form-field{
+    margin:2%;
+}
