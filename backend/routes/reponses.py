@@ -215,7 +215,8 @@ def enregistrer_reponse_acteur(reponse_objet):
         nouveau_mc = MotCle(
             nom=nom,
             diagnostic_id=diagnostic_id,
-            categorie_id=categorie_id
+            categorie_id=categorie_id,
+            nombre=1
         )
         db.session.add(nouveau_mc)
         db.session.flush()
@@ -237,7 +238,8 @@ def enregistrer_reponse_acteur(reponse_objet):
             nouvel_enfant = MotCle(
                 nom=nom_enfant,
                 diagnostic_id=diag_id_enfant,
-                mots_cles_groupe_id=parent_mc.id_mot_cle
+                mots_cles_groupe_id=parent_mc.id_mot_cle,
+                nombre=1
             )
             db.session.add(nouvel_enfant)
             db.session.flush()
@@ -265,7 +267,7 @@ def enregistrer_reponse_acteur(reponse_objet):
 
     diagnostic_id = acteur.diagnostic_id
     mots_cles_repartis = getRepartitionMotsCles(diagnostic_id)
-
+  
     record_afoms(diagnostic_id,mots_cles_repartis)
 
 
@@ -290,8 +292,10 @@ def record_afoms(diagnostic_id,mots_cles_repartis):
             mot_cle_id=mot_cle.id_mot_cle,
             number=count
         )
-        db.session.add(afom)
-
+        if count > 0:
+            db.session.add(afom)
+        
+        
     db.session.commit()
     logger.info(f"Réponse et AFOM enregistrés pour le diagnostic ID {diagnostic_id}")
 

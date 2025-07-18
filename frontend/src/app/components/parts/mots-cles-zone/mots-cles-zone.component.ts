@@ -257,7 +257,7 @@ export class MotsClesZoneComponent implements OnDestroy{
   
     if (isCtrlPressed) {
       const targetKeyword = event.container.data?.[event.currentIndex];
-      if (targetKeyword && targetKeyword.id_mot_cle !== draggedKeyword.id_mot_cle) {
+      if (targetKeyword && targetKeyword.id_mot_cle !== draggedKeyword.id_mot_cle && this.modeAnalyse()) {
         this.mergeKeywords(draggedKeyword, targetKeyword);
         return;
       }
@@ -292,7 +292,7 @@ export class MotsClesZoneComponent implements OnDestroy{
         }
 
       }
-      console.log(this.disable());
+     
     } else {
       // Duplication avec MAJ
       const alreadyInSameCategory = draggedKeyword.categorie.id_nomenclature === targetCategory.id_nomenclature;
