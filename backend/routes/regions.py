@@ -1,6 +1,5 @@
 from models.models import db
-from flask import request, jsonify, current_app
-from models.models import *
+from flask import request, jsonify
 from schemas.metier import *
 from routes import bp
 from configs.logger_config import logger

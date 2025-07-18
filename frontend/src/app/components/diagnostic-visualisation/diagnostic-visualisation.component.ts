@@ -114,7 +114,6 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
           diag: this.diagnosticService.get(id, slugValue),
           themes: this.nomenclatureService.getAllByType('thème'),
         }).subscribe(({ diag, themes }) => {
-          console.log(diag);
           this.diagnostic.set(diag);
           this.diag = this.diagnostic();
           this.themes.set(themes);
@@ -230,7 +229,6 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   //Navigation et mise en cache
   navigate= (path:string,diagnostic:Diagnostic):void =>{
     localStorage.setItem("pageDiagnostic",this.router.url);
-    console.log(this.router.url);
     this.siteService.navigateAndCache(path,diagnostic);
   }
 

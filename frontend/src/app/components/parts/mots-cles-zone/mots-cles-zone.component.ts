@@ -358,7 +358,6 @@ export class MotsClesZoneComponent implements OnDestroy{
       reponse.question!.indications="Sans indicateur";
       reponse.valeur_reponse = this.noResponse();
       reponse.mots_cles = this.motsClesReponse();
-      console.log(this.motsClesReponse());
       reponse.acteur = new Acteur();
       reponse.acteur.id_acteur = this.id_acteur();
       for (let i=0;i<reponse.mots_cles.length;i++){
