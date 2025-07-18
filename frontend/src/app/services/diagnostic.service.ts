@@ -11,7 +11,7 @@ import { GraphMotsCles } from '@app/models/graph-mots-cles';
 import { GraphMoy } from '@app/models/graph-moy.model';
 import { GraphRadar } from '@app/models/graph-radar.model';
 import { GraphRepartition } from '@app/models/graph-repartition.model';
-import { Observable, map } from 'rxjs';
+import { Observable, map, shareReplay } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -27,6 +27,7 @@ export class DiagnosticService {
     //Récupère les diags en fonction des sites
     getAllBySites(array:any): Observable<Diagnostic[]> {
       return this.http.post<IDiagnostic[]>(this.GET_ALL_URL+"-site",array).pipe(
+        shareReplay(1),
         map(diagnosticJsonArray => {
           return diagnosticJsonArray.map<Diagnostic>(
             diagnosticJson => Diagnostic.fromJson(diagnosticJson)
@@ -38,6 +39,7 @@ export class DiagnosticService {
     //Récupère les données des histogrammes
     getAverageByQuestion(id_diagnostic:number): Observable<GraphMoy[]>{
       return this.http.get<IGraphMoy[]>(this.GET_ALL_URL+"/charts/average/"+id_diagnostic).pipe(
+        shareReplay(1),
         map(graphiquesJsonArray => {
           return graphiquesJsonArray.map<GraphMoy>(
             graphJson => GraphMoy.fromJson(graphJson)
@@ -49,6 +51,7 @@ export class DiagnosticService {
     //Récupère les données des camemberts
     getRepartition(id_diagnostic:number): Observable<GraphRepartition[]>{
       return this.http.get<IGraphRepartition[]>(this.GET_ALL_URL+"/charts/repartition/"+id_diagnostic).pipe(
+        shareReplay(1),
         map(graphiquesJsonArray => {
           return graphiquesJsonArray.map<GraphRepartition>(
             graphJson => GraphRepartition.fromJson(graphJson)
@@ -60,6 +63,7 @@ export class DiagnosticService {
     //Récupère les données des radars
     getRadars(id_diagnostic:number): Observable<GraphRadar[]>{
       return this.http.get<IGraphRadar[]>(this.GET_ALL_URL+"/charts/radars/"+id_diagnostic).pipe(
+        shareReplay(1),
         map(graphiquesJsonArray => {
           return graphiquesJsonArray.map<GraphRadar>(
             graphJson => GraphRadar.fromJson(graphJson)
@@ -70,11 +74,13 @@ export class DiagnosticService {
 
     //Récupère les différentes structures des acteurs
     getStructures(id: number): Observable<any> {
-      return this.http.get<any>(this.BASE_URL + '/structures/' + id ).pipe();
+
+      return this.http.get<any>(this.BASE_URL + '/structures/' + id ).pipe(shareReplay(1));
     }
 
     getOccurencesKeyWords(id_diagnostic:number): Observable<GraphMotsCles[]>{
       return this.http.get<IGraphMotsCles[]>(this.BASE_URL+"/mots-cles/"+id_diagnostic).pipe(
+        shareReplay(1),
         map(graphiquesJsonArray => {
           return graphiquesJsonArray.map<GraphMotsCles>(
             graphJson => GraphMotsCles.fromJson(graphJson)
@@ -86,6 +92,7 @@ export class DiagnosticService {
     //Récupère un diag
     get(id: number,slug:string): Observable<Diagnostic> {
       return this.http.get<IDiagnostic>(this.BASE_URL + '/' + id + '/' + slug ).pipe(
+        shareReplay(1),
         map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
       );
     }

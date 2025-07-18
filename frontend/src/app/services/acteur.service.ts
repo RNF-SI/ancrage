@@ -1,4 +1,4 @@
-import { Observable, map } from 'rxjs';
+import { Observable, map, shareReplay } from 'rxjs';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Acteur } from '@app/models/acteur.model';
@@ -17,6 +17,7 @@ export class ActeurService {
   //Récupère les acteurs en fonction des sites
   getAllBySItes(json:any): Observable<Acteur[]> {
     return this.http.post<IActeur[]>(this.GET_ALL_URL+'/sites',json).pipe(
+      shareReplay(1),
       map(acteurJsonArray => {
         return acteurJsonArray.map<Acteur>(
           acteurJson => Acteur.fromJson(acteurJson)
@@ -36,6 +37,7 @@ export class ActeurService {
   //Récupère un acteur
   get(id: number,slug:string): Observable<Acteur> {
     return this.http.get<IActeur>(this.BASE_URL + id + '/'+ slug).pipe(
+      shareReplay(1),
       map(acteurJson => Acteur.fromJson(acteurJson))
     );
   }

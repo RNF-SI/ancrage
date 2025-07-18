@@ -4,7 +4,7 @@ import { IMotCle } from '@app/interfaces/mot_cle.interface';
 import { INomenclature } from '@app/interfaces/nomenclature.interface';
 import { MotCle } from '@app/models/mot-cle.model';
 import { Nomenclature } from '@app/models/nomenclature.model';
-import { Observable, map } from 'rxjs';
+import { Observable, map, shareReplay } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -20,6 +20,7 @@ export class NomenclatureService {
     getAllByType(mnemonique:string,id_acteur?:number): Observable<Nomenclature[]> {
       if (id_acteur){
         return this.http.get<INomenclature[]>(this.GET_ALL_URL+'/'+mnemonique + '/'+id_acteur).pipe(
+          shareReplay(1),
           map(nomenclatureJsonArray => {
             return nomenclatureJsonArray.map<Nomenclature>(
               nomenclatureJson => Nomenclature.fromJson(nomenclatureJson)
@@ -28,6 +29,7 @@ export class NomenclatureService {
         );
       }else{
         return this.http.get<INomenclature[]>(this.GET_ALL_URL+'/'+mnemonique).pipe(
+          shareReplay(1),
           map(nomenclatureJsonArray => {
             return nomenclatureJsonArray.map<Nomenclature>(
               nomenclatureJson => Nomenclature.fromJson(nomenclatureJson)

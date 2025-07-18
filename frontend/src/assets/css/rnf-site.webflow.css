@@ -1380,6 +1380,7 @@
 
 .text-telecharger {
   margin-left: 0.5vw;
+  margin-bottom: 5%;
 }
 
 .picto-telecharger {
@@ -1774,7 +1775,7 @@
 }
 
 .formation-inner-text.formation.one.intro {
-  height: 3vw;
+
   margin-right: 2vw;
   -webkit-box-align: end;
   -webkit-align-items: flex-end;

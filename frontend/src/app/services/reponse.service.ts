@@ -21,13 +21,13 @@ export class ReponseService {
 
   //Enregistre les réponses sauf afom
   updateAllButAfom(array:Reponse[]): Observable<Nomenclature[]> {
-       return this.http.post<INomenclature[]>(this.GET_ALL_URL+'/objets',array).pipe(
-                 map(nomenclatureJsonArray => {
-                   return nomenclatureJsonArray.map<Nomenclature>(
-                     nomenclatureJson => Nomenclature.fromJson(nomenclatureJson)
-                   )
-                 })
-               );
+    return this.http.post<INomenclature[]>(this.GET_ALL_URL+'/objets',array).pipe(
+      map(nomenclatureJsonArray => {
+        return nomenclatureJsonArray.map<Nomenclature>(
+          nomenclatureJson => Nomenclature.fromJson(nomenclatureJson)
+        )
+      })
+    );
   }
 
   updateAfom(reponse:Reponse): Observable<MotCle[]> {

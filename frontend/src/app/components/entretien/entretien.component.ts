@@ -124,6 +124,7 @@ export class EntretienComponent implements OnDestroy{
             }
           });
           this.reponses.push(reponse);
+          
         }
       });
     });
@@ -134,7 +135,8 @@ export class EntretienComponent implements OnDestroy{
         this.patchForm(this.reponses);
       });
       
-    }          
+    }
+            
   }
   //Envoie les données récupérées au formulaire
   patchForm(reponses:Reponse[]){
@@ -144,7 +146,11 @@ export class EntretienComponent implements OnDestroy{
       setTimeout(() => {
         this.hideWarnings(reponses,i);
       }, 0);
-      
+      this.formGroup.get(`question_${reponses[i].question?.id_question}`)?.valueChanges
+          .subscribe((idNomenclature: number) => {
+            const cr = reponses[i].question?.choixReponses?.find(c => c.id_nomenclature === idNomenclature);
+            this.createReponse(reponses[i].question?.id_question!, cr);
+          }); 
     }
 
   }

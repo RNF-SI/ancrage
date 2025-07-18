@@ -530,6 +530,8 @@ def get_afoms_par_mot_cle_et_diagnostic(id_diagnostic):
                     }
                 }
             })
+            motcle_obj.nombre = row.nombre
+            db.session.commit()
 
     return jsonify(data)   
 

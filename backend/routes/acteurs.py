@@ -4,6 +4,7 @@ from models.models import *
 from schemas.metier import *
 from routes import bp, now, slugify, uuid
 from configs.logger_config import logger
+from routes.reponses import verifDatesEntretien
 
 @bp.route('/acteur/<id_acteur>/<slug>', methods=['GET', 'PUT'])
 def acteurMethods(id_acteur, slug):
@@ -11,22 +12,22 @@ def acteurMethods(id_acteur, slug):
     acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
 
     if not acteur:
-        logger.info(f"❌ Aucun acteur trouvé avec l'ID {id_acteur}")
+        logger.info(f" Aucun acteur trouvé avec l'ID {id_acteur}")
         return jsonify({'error': 'Acteur non trouvé'}), 404
 
     if request.method == 'GET':
         if acteur.slug == slug:
-            logger.info("✅ Slug valide - récupération des données de l'acteur")
+            logger.info(" Slug valide - récupération des données de l'acteur")
             return getActeur(acteur)
         else:
-            logger.info("❌ Slug invalide")
+            logger.info(" Slug invalide")
             return jsonify({'error': 'Slug invalide'}), 400
 
     elif request.method == 'PUT':
         if acteur.slug == slug:
             logger.info("✏ Mise à jour de l'acteur...")
             data = request.get_json()
-            logger.info(f"📦 Données reçues : {data}")
+            logger.info(f" Données reçues : {data}")
             acteur = changeValuesActeur(acteur, data)
             acteur.modified_at = now
             acteur.modified_by = data['modified_by']
@@ -35,15 +36,15 @@ def acteurMethods(id_acteur, slug):
             logger.info(f"💾 Modifications enregistrées pour l'acteur {id_acteur}")
             return getActeur(acteur)
         else:
-            logger.info("❌ Slug invalide pour mise à jour")
+            logger.info(" Slug invalide pour mise à jour")
             return jsonify({'error': 'Slug invalide'}), 400
 
 @bp.route('/acteur/', methods=['POST'])
 def postActeur():
     if request.method == 'POST':
-        logger.info("📥 Création d'un nouvel acteur")
+        logger.info(" Création d'un nouvel acteur")
         data = request.get_json()
-        logger.info(f"📦 Données reçues : {data}")
+        logger.info(f" Données reçues : {data}")
 
         acteur = Acteur()
         acteur = changeValuesActeur(acteur, data)
@@ -86,6 +87,7 @@ def changeStateInterview(id_acteur, id_statut):
     db.session.add(acteur)
     db.session.commit()
     logger.info(f"✅ Statut mis à jour pour l'acteur {id_acteur}")
+    verifDatesEntretien(acteur.diagnostic.id_diagnostic)
     return getActeur(acteur)
 
 @bp.route('/acteurs/sites', methods=['POST'])
@@ -141,11 +143,11 @@ def changeValuesActeur(acteur, data):
 
     for cat in acteur.categories[:]:
         if cat.id_nomenclature not in new_cat_ids:
-            logger.info(f"🗑 Retrait de la catégorie {cat.id_nomenclature}")
+            logger.info(f" Retrait de la catégorie {cat.id_nomenclature}")
             acteur.categories.remove(cat)
 
     for cat_id in new_cat_ids - current_cats:
-        logger.info(f"➕ Ajout de la catégorie {cat_id}")
+        logger.info(f" Ajout de la catégorie {cat_id}")
         join = Nomenclature.query.filter_by(id_nomenclature=cat_id).first()
         acteur.categories.append(join)
 

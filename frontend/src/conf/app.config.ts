@@ -10,7 +10,8 @@ export const AppConfig = {
     "SEARCH_ITEMS_ROUTE": "",
     "SEARCH_PREFIXE": "",
     "SEARCH_PLACEHOLDER": "",
-    "contact": "thomas.arles@rnfrance.org",
+    "contact": "ancrage@rnfrance.org",
+    "datesFormation":"8 au 10 décembre 2025 à DIJON (21)",
     "menucompte": [
         {
             "texte": "Déconnexion",

@@ -215,7 +215,8 @@ def enregistrer_reponse_acteur(reponse_objet):
         nouveau_mc = MotCle(
             nom=nom,
             diagnostic_id=diagnostic_id,
-            categorie_id=categorie_id
+            categorie_id=categorie_id,
+            nombre=1
         )
         db.session.add(nouveau_mc)
         db.session.flush()
@@ -237,7 +238,8 @@ def enregistrer_reponse_acteur(reponse_objet):
             nouvel_enfant = MotCle(
                 nom=nom_enfant,
                 diagnostic_id=diag_id_enfant,
-                mots_cles_groupe_id=parent_mc.id_mot_cle
+                mots_cles_groupe_id=parent_mc.id_mot_cle,
+                nombre=1
             )
             db.session.add(nouvel_enfant)
             db.session.flush()
@@ -265,7 +267,7 @@ def enregistrer_reponse_acteur(reponse_objet):
 
     diagnostic_id = acteur.diagnostic_id
     mots_cles_repartis = getRepartitionMotsCles(diagnostic_id)
-
+  
     record_afoms(diagnostic_id,mots_cles_repartis)
 
 
@@ -290,8 +292,10 @@ def record_afoms(diagnostic_id,mots_cles_repartis):
             mot_cle_id=mot_cle.id_mot_cle,
             number=count
         )
-        db.session.add(afom)
-
+        if count > 0:
+            db.session.add(afom)
+        
+        
     db.session.commit()
     logger.info(f"Réponse et AFOM enregistrés pour le diagnostic ID {diagnostic_id}")
 
@@ -299,13 +303,13 @@ def record_afoms(diagnostic_id,mots_cles_repartis):
 def verifDatesEntretien(diagnostic_id):
     diagnostic = Diagnostic.query.filter_by(id_diagnostic=diagnostic_id).first()
    
-    listeTermines = []
-    for actor in diagnostic.acteurs:
-      
-        if actor.statut_entretien and actor.statut_entretien.libelle == 'Réalisé':
-            listeTermines.append(actor)
+    statuts_termines = {'Réalisé', 'Annulé', 'Reporté', 'Rétracté'}
+    listeTermines = [
+        actor for actor in diagnostic.acteurs
+        if actor.statut_entretien and actor.statut_entretien.libelle in statuts_termines
+    ]
 
-    logger.info(f"Nombre d'acteurs avec entretien 'Réalisé' : {len(listeTermines)}")
+    logger.info(f"Nombre d'acteurs avec entretien terminé : {len(listeTermines)}")
 
     if len(listeTermines) == 1:
         diagnostic.date_debut = now
@@ -350,8 +354,6 @@ def getRepartitionMotsCles(id_diagnostic):
 
 def verifCompleteStatus(id_acteur):
     nb_reponses = db.session.query(func.count(Reponse.id_reponse)).filter_by(acteur_id=id_acteur).scalar()
-    print("nombre réponses")
-    print(nb_reponses)
     isCCG = checkCCG(id_acteur)
 
     if isCCG:
@@ -363,8 +365,7 @@ def verifCompleteStatus(id_acteur):
             .filter(Nomenclature.libelle != "CCG")
             .scalar()
         )
-    print ("nombre questions")
-    print(count)
+ 
     nomenclatures = Nomenclature.query.filter_by(mnemonique="statut_entretien").all()
     
     statut_entretien_id=0
@@ -384,7 +385,7 @@ def verifCompleteStatus(id_acteur):
     acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
 
     if not acteur:
-        logger.info(f"❌ Aucun acteur trouvé avec l'ID {id_acteur}")
+        logger.info(f" Aucun acteur trouvé avec l'ID {id_acteur}")
     else:
         acteur.statut_entretien_id = statut_entretien_id
         db.session.add(acteur)
