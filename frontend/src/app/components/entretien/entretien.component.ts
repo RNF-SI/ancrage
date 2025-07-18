@@ -21,6 +21,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Acteur } from '@app/models/acteur.model';
 import { Question } from '@app/models/question.model';
 import { ToastrService } from 'ngx-toastr';
+import { StateService } from '@app/services/state.service';
 
 
 //Page de la saisie de l'entretien
@@ -56,12 +57,14 @@ export class EntretienComponent implements OnDestroy{
   actor:Acteur = new Acteur();
   isCCG = false;
   private toaster = inject(ToastrService);
+  private stateService = inject(StateService);
 
   constructor(){
     effect(() => {
-      this.previousPage = localStorage.getItem("previousPage")!;
-      this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
-      this.actor = JSON.parse(localStorage.getItem("acteur")!);
+      this.previousPage = this.stateService.getCurrentPreviousPage()!;
+      this.diagnostic = this.stateService.getCurrentDiagnostic()!;
+      this.actor = this.stateService.getCurrentActor();
+
       for (const cat of this.actor.categories!){
         if (cat.libelle === this.labels.ccgLabel){
           this.isCCG = true;

@@ -29,6 +29,7 @@ import { AlerteDatePublicationComponent } from '../alertes/alerte-date-publicati
 import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinner/loading-spinner.component';
 import { AlerteDesactivationDiagComponent } from '../alertes/alerte-desactivation-diag/alerte-desactivation-diag.component';
+import { StateService } from '@app/services/state.service';
 
 @Component({
     selector: 'app-diagnostic-visualisation',
@@ -89,18 +90,19 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   isLoading=true;
   index=0;
   private initDone = signal(false);
+  private stateService = inject(StateService);
 
   constructor() {
     effect(() => {
       const done = this.initDone();
       if (done) return;
-      if (localStorage.getItem("fromActor") === 'oui'){
+      if (this.stateService.getCurrentPageFromActor() === 'oui'){
         this.index=1;
-        localStorage.setItem("fromActor",'non');
+        this.stateService.setPageFromActor("non");
         
-        this.diagnostic.set(JSON.parse(localStorage.getItem("diagnostic")!));
+        this.diagnostic.set(this.stateService.getCurrentDiagnostic()!);
       }
-      this.previousPage.set(localStorage.getItem('previousPage')!);
+      this.previousPage.set(this.stateService.getCurrentPreviousPage()!);
       const { id_diagnostic, slug } = this.routeParams() as Params;
       const id = Number(id_diagnostic);
       const slugValue = slug as string;
@@ -228,7 +230,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   
   //Navigation et mise en cache
   navigate= (path:string,diagnostic:Diagnostic):void =>{
-    localStorage.setItem("pageDiagnostic",this.router.url);
+    this.stateService.setPageDiagnostic(this.router.url);
     this.siteService.navigateAndCache(path,diagnostic);
   }
 

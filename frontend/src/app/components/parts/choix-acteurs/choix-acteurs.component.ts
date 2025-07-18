@@ -28,6 +28,7 @@ import { Site } from '@app/models/site.model';
 import { SiteService } from '@app/services/sites.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AlerteDiagnosticComponent } from '@app/components/alertes/alerte-diagnostic/alerte-diagnostic.component';
+import { StateService } from '@app/services/state.service';
 
 //Tableau des acteurs
 @Component({
@@ -65,7 +66,7 @@ export class ChoixActeursComponent implements OnDestroy{
   private dialog = inject(MatDialog);
   no_creation = input<boolean>(false);
   private fb = inject(FormBuilder);
-
+  private stateService = inject(StateService);
   private siteSub?:Subscription; 
   private diagSub?:Subscription;
   private departementService = inject(DepartementService);
@@ -83,13 +84,13 @@ export class ChoixActeursComponent implements OnDestroy{
 
   constructor(){
     effect(() => {
-      this.previousPage = localStorage.getItem("previousPage")!;
-      /* this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!) as Diagnostic; */
+      this.previousPage = this.stateService.getCurrentPreviousPage()!;
+      
       this.acteurs.set(this.actors());
       if (this.diagnostic().id_diagnostic > 0){
         this.diag.set(this.diagnostic());
       }else{
-        this.diag.set(JSON.parse(localStorage.getItem("diagnostic")!) as Diagnostic);
+        this.diag.set(this.stateService.getCurrentDiagnostic()!);
       }
  
       this.formGroup = this.fb.group({
@@ -353,9 +354,9 @@ export class ChoixActeursComponent implements OnDestroy{
   }
 
   navigate= (path:string,diagnostic:Diagnostic,acteur?:Acteur):void =>{
-    localStorage.setItem("fromActor","oui");
-    localStorage.setItem("acteur",JSON.stringify(acteur));
-    localStorage.setItem("pageDiagnostic",this.router.url);
+    this.stateService.setPageFromActor("oui");
+    this.stateService.setActor(acteur!);
+    this.stateService.setPageDiagnostic(this.router.url);
     this.siteService.navigateAndCache(path,diagnostic);
   }
   
@@ -375,10 +376,10 @@ export class ChoixActeursComponent implements OnDestroy{
   }
 
   getConfirmation(message:string,diag:Diagnostic,no_creation?:boolean){
-        this.previousPage = localStorage.getItem("previousPage")!;
+        this.previousPage = this.stateService.getCurrentPreviousPage();
      
         if (!no_creation){
-          localStorage.setItem("fromActor","oui");
+          this.stateService.setPageFromActor("oui");
         }
         if(diag.id_diagnostic > 0){
           this.dialog.open(AlerteDiagnosticComponent, {

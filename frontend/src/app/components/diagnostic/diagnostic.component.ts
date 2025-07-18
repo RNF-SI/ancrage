@@ -24,6 +24,7 @@ import { Moment } from 'moment';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinner/loading-spinner.component';
 import { ToastrService } from 'ngx-toastr';
+import { StateService } from '@app/services/state.service';
 
 registerLocaleData(localeFr);
 
@@ -69,7 +70,6 @@ export class DiagnosticComponent implements OnDestroy{
   private diagnosticsService = inject(DiagnosticService);
   private siteService = inject(SiteService);
   private authService = inject(AuthService);
-  private dialog = inject(MatDialog);
   private router = inject(Router);
   no_creation=true;
   user_id=0;
@@ -95,14 +95,15 @@ export class DiagnosticComponent implements OnDestroy{
   routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
   isLoading=true;
   private toaster = inject(ToastrService);
+  private stateService = inject(StateService);
 
   constructor() {
     effect(() => {
-      let diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);
+      let diagnostic:Diagnostic = this.stateService.getCurrentDiagnostic()!
       this.titleDiagnostic = this.titleCreateDiag;
-      this.previousPage = localStorage.getItem("previousPage")!;
+      this.previousPage = this.stateService.getCurrentPreviousPage()
       this.user = this.authService.getCurrentUser();
-      localStorage.setItem("pageDiagCreation",this.router.url);
+      this.stateService.setPageCreationDiag(this.router.url);
       const { id_diagnostic, slug } = this.routeParams() as Params;
       const id = Number(id_diagnostic);
       const slugValue = slug as string;
@@ -201,7 +202,7 @@ export class DiagnosticComponent implements OnDestroy{
 
   //Message de confirmation
   getConfirmation(message:string,diag:Diagnostic){
-      this.previousPage = localStorage.getItem("previousPage")!;
+      this.stateService.setPreviousPage(this.router.url);
       
       if(diag.id_diagnostic > 0){
         this.toaster.success(message);

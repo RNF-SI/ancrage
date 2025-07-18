@@ -23,6 +23,7 @@ import { SiteService } from '@app/services/sites.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinner/loading-spinner.component';
+import { StateService } from '@app/services/state.service';
 
 //Composant pour crééer ou modifier un acteur
 @Component({
@@ -67,7 +68,8 @@ export class ActeurComponent implements OnDestroy{
   filteredTowns: Commune[] = [];
   labels = new Labels();
   title = "";
-  diagnostic = signal<Diagnostic>(JSON.parse(localStorage.getItem("diagnostic")!));
+  private stateService = inject(StateService);
+  diagnostic = signal<Diagnostic>(JSON.parse(this.stateService.getCurrentPageDiagnostic()!));
   previousPage = "";
   isLoading=true;
   pageDiagnostic = "";
@@ -78,10 +80,11 @@ export class ActeurComponent implements OnDestroy{
   readonly prenom = computed(() => this.formGroup.get('prenom')?.value ?? '');
   readonly fonction = computed(() => this.formGroup.get('fonction')?.value ?? '');
   readonly structure = computed(() => this.formGroup.get('structure')?.value ?? '');
+  
 
   constructor() {
     effect(() => {
-      this.pageDiagnostic = localStorage.getItem("pageDiagnostic")!;
+      this.pageDiagnostic = this.stateService.getCurrentPageDiagnostic();
       const { id_acteur, slug } = this.routeParams() as Params;
       const id = Number(id_acteur);
       const slugValue = slug as string;
@@ -200,7 +203,7 @@ export class ActeurComponent implements OnDestroy{
   //Alerte de confirmation
   getConfirmation(message:string,actor:Acteur){
     
-    this.previousPage = localStorage.getItem("previousPage")!;
+    this.previousPage = this.stateService.getCurrentPreviousPage()!;
     this.diagnostic().acteurs.push(actor);
     
     if(actor.id_acteur > 0){
@@ -228,7 +231,7 @@ export class ActeurComponent implements OnDestroy{
   //Navigation et mise en cache du diagnostic
   navigate(path:string,diagnostic:Diagnostic){
 
-    localStorage.setItem("fromActor","oui");
+    this.stateService.setPageFromActor("oui");
     this.siteService.navigateAndCache(path,diagnostic);
   }
 
