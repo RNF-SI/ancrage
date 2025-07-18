@@ -19,17 +19,6 @@ export class ReponseService {
   private BASE_URL = environment.flask_server+'reponse';
   private http = inject(HttpClient);
 
-  //Enregistre les réponses sauf afom
-  updateAllButAfom(array:Reponse[]): Observable<Nomenclature[]> {
-    return this.http.post<INomenclature[]>(this.GET_ALL_URL+'/objets',array).pipe(
-      map(nomenclatureJsonArray => {
-        return nomenclatureJsonArray.map<Nomenclature>(
-          nomenclatureJson => Nomenclature.fromJson(nomenclatureJson)
-        )
-      })
-    );
-  }
-
   updateAfom(reponse:Reponse): Observable<MotCle[]> {
     return this.http.post<IMotCle[]>(this.BASE_URL+'/objet',reponse).pipe(
       map(kwJsonArray => {
