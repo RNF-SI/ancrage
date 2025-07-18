@@ -3,28 +3,11 @@ from flask import request
 from models.models import *
 from schemas.metier import *
 from routes import bp, now, func,jsonify
-from routes.nomenclatures import getAllNomenclaturesByType
 from routes.mot_cle import getKeywordsByActor
 from configs.logger_config import logger
 from routes.functions import checkCCG
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.exc import SQLAlchemyError
 
-
-@bp.route('/reponses/objets', methods=['POST'])
-def enregistrer_reponses_depuis_objets():
-    data = request.get_json()
-    logger.info("Réception des données de réponses depuis objets")
-
-    if not isinstance(data, list):
-        logger.warning("Format invalide : données non listées")
-        return {"message": "Format invalide"}, 400
-
-    enregistrer_reponses_acteur_depuis_objets(data)
-    acteur_id = data[0].get('acteur', {}).get('id_acteur')
-    logger.info(f"Retour des nomenclatures pour l'acteur ID {acteur_id}")
-
-    return getAllNomenclaturesByType("thème_question", acteur_id)
 
 @bp.route('/reponse', methods=['POST'])
 def enregistrer_reponse_id():
@@ -44,71 +27,6 @@ def enregistrer_reponse_depuis_objet():
 
     return getKeywordsByActor(acteur_id)
 
-def enregistrer_reponses_acteur_depuis_objets(reponses_objets):
-    if not reponses_objets:
-        logger.warning("Aucune réponse fournie")
-        return
-
-    try:
-        acteur_data = reponses_objets[0]['acteur']
-        acteur_id = acteur_data['id_acteur']
-    except (KeyError, IndexError, TypeError):
-        logger.error("Impossible d'extraire l'identifiant de l'acteur.")
-        return
-
-    acteur = Acteur.query.get(acteur_id)
-    if not acteur:
-        logger.error(f"Acteur avec id {acteur_id} introuvable.")
-        return
-
-    logger.info(f"Traitement des réponses pour l'acteur ID {acteur_id}")
-
-    questions_ids_envoyees = set()
-
-    try:
-        for item in reponses_objets:
-            try:
-                question_id = item['question']['id_question']
-                valeur_reponse_id = item['valeur_reponse']['id_nomenclature']
-                commentaires = item.get('commentaires', "")
-            except (KeyError, TypeError):
-                logger.warning("Réponse mal formée ignorée")
-                continue
-
-            if not valeur_reponse_id or valeur_reponse_id <= 0:
-                continue
-
-            questions_ids_envoyees.add(question_id)
-            
-            stmt = insert(Reponse).values(
-                acteur_id=acteur_id,
-                question_id=question_id,
-                valeur_reponse_id=valeur_reponse_id,
-                commentaires=commentaires
-            ).on_conflict_do_update(
-                index_elements=['acteur_id', 'question_id'],
-                set_={
-                    'valeur_reponse_id': valeur_reponse_id,
-                    'commentaires': commentaires
-                }
-            )
-            db.session.execute(stmt)
-
-        # Suppression des réponses non présentes dans l'objet reçu
-        reponses_existantes = Reponse.query.filter_by(acteur_id=acteur_id).all()
-        for r in reponses_existantes:
-            if r.question_id not in questions_ids_envoyees:
-                db.session.delete(r)
-
-        db.session.commit()
-        logger.info(f"Réponses enregistrées pour l'acteur ID {acteur_id}. Vérification des dates entretien…")
-        
-        verifCompleteStatus(acteur_id)
-        verifDatesEntretien(acteur.diagnostic.id_diagnostic)
-
-    except SQLAlchemyError as e:
-        db.session.rollback()
-        logger.error(f"Erreur SQLAlchemy pendant l'enregistrement des réponses : {e}")
 
 def enregistrer_reponse(reponses_objets):
     if not reponses_objets:

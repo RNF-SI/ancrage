@@ -39,7 +39,7 @@ class Departement(db.Model):
     id_dep = db.Column(VARCHAR(24))
     nom_dep = db.Column(VARCHAR(30))
     insee_dep = db.Column(VARCHAR(255),unique=True)
-    insee_reg = db.Column(VARCHAR(255),db.ForeignKey('t_regions.insee_reg'))
+    insee_reg = db.Column(VARCHAR(255),db.ForeignKey('t_regions.insee_reg', ondelete="CASCADE"))
     sites = db.relationship('Site', secondary='cor_site_departement', back_populates='departements')
     region = db.relationship('Region', back_populates='departements')
     communes = db.relationship(
@@ -59,7 +59,7 @@ class Commune(db.Model):
     population = db.Column(db.Integer)
     insee_can = db.Column(VARCHAR(5))
     insee_arr = db.Column(VARCHAR(2))
-    insee_dep = db.Column(VARCHAR(3),db.ForeignKey('t_departement.insee_dep'))
+    insee_dep = db.Column(VARCHAR(3),db.ForeignKey('t_departement.insee_dep',ondelete="CASCADE"))
     departement = db.relationship('Departement', back_populates='communes')
     insee_reg = db.Column(VARCHAR(2))
     code_epci = db.Column(VARCHAR(20))
@@ -74,7 +74,7 @@ class Site(db.Model):
     position_y = db.Column(db.String, nullable=False)
     diagnostics = db.relationship('Diagnostic', secondary='cor_sites_diagnostics', back_populates='sites')
     id_inpn = db.Column(db.String)
-    type_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
+    type_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature',ondelete="CASCADE"))
     type = db.relationship('Nomenclature', foreign_keys=[type_id])
     habitats = db.relationship('Nomenclature', secondary='cor_site_habitat', back_populates='sites')
     departements = db.relationship('Departement', secondary='cor_site_departement', back_populates='sites')
@@ -114,7 +114,7 @@ class Document(db.Model):
     __tablename__ = 't_documents'
     id_document = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String, nullable=False)
-    diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
+    diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic',ondelete="CASCADE"))
 
 class Acteur(db.Model):
     __tablename__ = 't_acteurs'
@@ -124,9 +124,9 @@ class Acteur(db.Model):
     fonction = db.Column(db.String)
     telephone = db.Column(db.String)
     mail = db.Column(db.String)
-    commune_id = db.Column(db.Integer, db.ForeignKey('t_communes.id_commune'))
+    commune_id = db.Column(db.Integer, db.ForeignKey('t_communes.id_commune',ondelete="CASCADE"))
     structure = db.Column(db.String)
-    diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
+    diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic',ondelete="CASCADE"))
     diagnostic = db.relationship('Diagnostic', back_populates='acteurs')
     created_at = db.Column(db.DateTime)
     modified_at = db.Column(db.DateTime)
@@ -135,11 +135,11 @@ class Acteur(db.Model):
     commune = db.relationship("Commune", backref="acteurs")
     categories = db.relationship('Nomenclature', secondary='cor_categorie_acteur', back_populates='acteurs_c')
     reponses = db.relationship('Reponse', back_populates='acteur')
-    statut_entretien_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
-    profil_cognitif_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
+    statut_entretien_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature',ondelete="CASCADE"))
+    profil_cognitif_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature',ondelete="CASCADE"))
     profil = db.relationship('Nomenclature', foreign_keys=[profil_cognitif_id], back_populates='acteurs_p')
     statut_entretien = db.relationship('Nomenclature', foreign_keys=[statut_entretien_id], back_populates='acteurs_se')
-    acteur_origine_id = db.Column(db.Integer, db.ForeignKey('t_acteurs.id_acteur'))
+    acteur_origine_id = db.Column(db.Integer, db.ForeignKey('t_acteurs.id_acteur',ondelete="CASCADE"))
     acteur_origine = db.relationship('Acteur', remote_side=[id_acteur], backref='acteurs_issus')
     is_copy = db.Column(db.Boolean, default=False)
     slug = db.Column(db.String)
@@ -168,7 +168,7 @@ class Question(db.Model):
     libelle = db.Column(db.String)
     indications = db.Column(db.String)
     reponses = db.relationship('Reponse', back_populates='question')
-    theme_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
+    theme_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature',ondelete="CASCADE"))
     theme = db.relationship('Nomenclature', foreign_keys=[theme_id])
     libelle_graphique = db.Column(db.String)
     ordre = db.Column(db.Integer)
@@ -180,7 +180,7 @@ class Question(db.Model):
         secondaryjoin=lambda: Nomenclature.id_nomenclature == choix_reponses.c.nomenclature_id,
         backref='questions_ayant_cette_reponse'
     )
-    theme_question_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
+    theme_question_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature',ondelete="CASCADE"))
     theme_question = db.relationship('Nomenclature', foreign_keys=[theme_question_id])
 
 
@@ -191,12 +191,12 @@ class Reponse(db.Model):
     )
 
     id_reponse = db.Column(db.Integer, primary_key=True)
-    valeur_reponse_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
+    valeur_reponse_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature',ondelete="CASCADE"))
     valeur_reponse = db.relationship('Nomenclature', foreign_keys=[valeur_reponse_id])
-    question_id = db.Column(db.Integer, db.ForeignKey('t_questions.id_question'))
+    question_id = db.Column(db.Integer, db.ForeignKey('t_questions.id_question',ondelete="CASCADE"))
     question = db.relationship('Question', foreign_keys=[question_id])
     mots_cles = db.relationship('MotCle', secondary='cor_reponses_mots_cles', back_populates='reponses')
-    acteur_id = db.Column(db.Integer, db.ForeignKey('t_acteurs.id_acteur'))
+    acteur_id = db.Column(db.Integer, db.ForeignKey('t_acteurs.id_acteur',ondelete="CASCADE"))
     acteur = db.relationship('Acteur', foreign_keys=[acteur_id])
     commentaires = db.Column(db.String)
     
@@ -211,11 +211,11 @@ class MotCle(db.Model):
     id_mot_cle = db.Column(db.Integer, primary_key=True,autoincrement=True)
     nom = db.Column(db.String)  
     reponses = db.relationship('Reponse', secondary='cor_reponses_mots_cles', back_populates='mots_cles')
-    categorie_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature'))
+    categorie_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature',ondelete="CASCADE"))
     categorie = db.relationship('Nomenclature', foreign_keys=[categorie_id])
-    mots_cles_groupe_id = db.Column(db.Integer, db.ForeignKey('t_mots_cles.id_mot_cle'))
+    mots_cles_groupe_id = db.Column(db.Integer, db.ForeignKey('t_mots_cles.id_mot_cle',ondelete="CASCADE"))
     mots_cles_groupe = db.relationship('MotCle', remote_side=[id_mot_cle], backref='mots_cles_issus')
-    diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic'))
+    diagnostic_id = db.Column(db.Integer, db.ForeignKey('t_diagnostics.id_diagnostic',ondelete="CASCADE"))
     diagnostic = db.relationship('Diagnostic', foreign_keys=[diagnostic_id])
     is_actif = db.Column(db.Boolean, default=True) 
     nombre = db.Column(db.Integer)
@@ -239,7 +239,7 @@ class Nomenclature(db.Model):
 class Afom(db.Model):
     __tablename__ = 't_afom'
     id_afom = db.Column('id_afom', db.Integer, primary_key=True)
-    mot_cle_id = db.Column(db.Integer, db.ForeignKey('t_mots_cles.id_mot_cle'))
+    mot_cle_id = db.Column(db.Integer, db.ForeignKey('t_mots_cles.id_mot_cle',ondelete="CASCADE"))
     mot_cle = db.relationship('MotCle', foreign_keys=[mot_cle_id])
     number = db.Column(db.Integer)
 
