@@ -69,7 +69,7 @@ export class ActeurComponent implements OnDestroy{
   labels = new Labels();
   title = "";
   private stateService = inject(StateService);
-  diagnostic = signal<Diagnostic>(JSON.parse(this.stateService.getCurrentPageDiagnostic()!));
+  diagnostic = signal<Diagnostic>(this.stateService.getCurrentDiagnostic()!);
   previousPage = "";
   isLoading=true;
   pageDiagnostic = "";
