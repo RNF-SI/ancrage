@@ -11,6 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { ToastrService } from 'ngx-toastr';
 import { Labels } from '@app/utils/labels';
+import { MatOptionModule } from '@angular/material/core';
 
 //Popup qui apparaît à la fusion de deux mots-clés
 @Component({

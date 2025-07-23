@@ -85,8 +85,10 @@ export class SiteService {
 			diagnostic.acteurs[i].reponses = [];
 			
 		}
+
 		this.stateService.clearDiagnostic();
 		this.stateService.setDiagnostic(diagnostic);
+
 		
 		if (!nocache){
 			this.stateService.setPreviousPage(this.router.url);
