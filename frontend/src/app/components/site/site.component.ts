@@ -21,6 +21,8 @@ import { AlerteSiteComponent } from '../alertes/alerte-site/alerte-site.componen
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { Labels } from '@app/utils/labels';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { StateService } from '@app/services/state.service';
+import { LogarithmicScale } from 'chart.js';
 
 //Modifie ou crée un site
 @Component({
@@ -72,12 +74,13 @@ export class SiteComponent implements OnDestroy{
   showMap=true;
   mapInstanceKey = Date.now();
   routeParams = toSignal(this.route.params, { initialValue: {} });
+  private stateService = inject(StateService);
 
   constructor() {
     effect(() => {
       this.mapInstanceKey = Date.now();
       this.user_id.set(this.authService.getCurrentUser().id_role);
-      this.diagnostic = JSON.parse(localStorage.getItem("diagnostic")!);    
+      this.diagnostic = this.stateService.getCurrentDiagnostic()!;    
       
       const { id_site, slug } = this.routeParams() as Params;
       
@@ -91,7 +94,7 @@ export class SiteComponent implements OnDestroy{
       //Modification
       if (id && slugValue) {
         const site$ = this.siteService.get(this.id_site(),this.slug());
-        this.previousPage = localStorage.getItem("previousPage")!;
+        this.previousPage = this.stateService.getCurrentPreviousPage();
         forkJoin([habitats$, statuts$, site$,departements$]).subscribe(([habitats, statuts, site,departements]) => {
           this.uniqueHabitats.set(habitats);
           this.uniqueStatuts.set(statuts);
@@ -119,7 +122,7 @@ export class SiteComponent implements OnDestroy{
           this.titleSite = this.titleModif;
         });
       } else {
-        this.previousPage = localStorage.getItem("pageDiagCreation")!;
+        this.previousPage = this.stateService.getCurrentPageCreationDiag();
         //Création
         forkJoin([/* habitats$, */ statuts$,departements$]).subscribe(([/* habitats, */ statuts,departements]) => {
           /* this.uniqueHabitats = habitats; */
@@ -166,7 +169,11 @@ export class SiteComponent implements OnDestroy{
   //Affiche le message de confirmation
   getConfirmation(message:string,site:Site,page:string){
     this.diagnostic.sites.push(site);
-    this.previousPage = localStorage.getItem(page)!;
+    if(page === "pageDiagnostic"){
+
+    }else{
+      this.previousPage = this.stateService.getCurrentPreviousPage();
+    }
     this.dialog.open(AlerteSiteComponent, {
       data: {
         title: this.titleSite,

@@ -51,7 +51,9 @@ with app.app_context():
     # Ajout de 3 types de site (mnemonique = 'statut')
     types_sites = []
     types_labels = [
-        "Réserve naturelle",
+        "Réserve naturelle régionale",
+        "Réserve naturelle nationale",
+        "Réserve naturelle corse",
         "Parc Naturel National",
         "Parc Naturel Régional",
         "Espace CEN",
@@ -78,7 +80,7 @@ with app.app_context():
         "Partenaires, gestionnaires et techniciens",
         "Riverains, élus et usagers locaux",
         "Acteurs économiques",
-        "Membres du CCG"
+        "Membres ou participants au CCG"
     ]
 
     cat_short_labels = [
@@ -114,6 +116,30 @@ with app.app_context():
         "Menaces",
         "Non classés"
     ]
+
+    themes_questions = [
+        "Le site",
+        "Les sources d'information",
+        "La fréquence de visite",
+        "Les actions mises en place",
+        "L'organisme gestionnaire du site",
+        "Les effets liés à l'existence du site",
+        "La nature des liens",
+        "Spécifique à l'instance de gouvernance",
+        "Changement climatique et biodiversité",
+        "Conclusion",
+
+    ]
+
+    for i, lib in enumerate(themes_questions):
+        ca = Nomenclature(
+            libelle=lib,
+            value=i,
+            mnemonique="thème_question"
+        )
+        db.session.add(ca)
+        profils.append(ca)    
+
 
     for i, (lib, lib2) in enumerate(zip(categorie_labels, cat_short_labels)):
         c = Nomenclature(

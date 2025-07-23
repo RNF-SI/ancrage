@@ -5,6 +5,7 @@ import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/materia
 import { Acteur } from '@app/models/acteur.model';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { SiteService } from '@app/services/sites.service';
+import { StateService } from '@app/services/state.service';
 import { Labels } from '@app/utils/labels';
 
 //Alerte de confirmation à la modification ou à la création d'un acteur
@@ -28,9 +29,10 @@ export class AlerteActeurComponent {
     ) {}
     
     private siteService = inject(SiteService);
+    private stateService = inject(StateService);
   
     navigate(path:string,diagnostic:Diagnostic){
-      localStorage.setItem("fromActor","oui");
+      this.stateService.setPageFromActor("oui");
       this.siteService.navigateAndCache(path,diagnostic,undefined,true);
       this.dialogRef.close(this.data.acteur);
     }

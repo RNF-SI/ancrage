@@ -6,6 +6,7 @@ import { ISite } from '@app/interfaces/site.interface';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
 import { Diagnostic } from '@app/models/diagnostic.model';
+import { StateService } from './state.service';
 
 @Injectable({
 	providedIn: 'root'
@@ -17,6 +18,7 @@ export class SiteService {
 	private BASE_URL = environment.flask_server+'site/';
 	private http = inject(HttpClient);
 	private router = inject(Router);
+	private stateService = inject(StateService);
 	
 	//Récupère tous les sites
 	getAll(): Observable<Site[]> {
@@ -83,14 +85,13 @@ export class SiteService {
 			diagnostic.acteurs[i].reponses = [];
 			
 		}
-		localStorage.removeItem("diagnostic");
-		localStorage.setItem("diagnostic",JSON.stringify(diagnostic));
-		if (!nocache){
-			localStorage.setItem("previousPage", this.router.url);
-		}
+
+		this.stateService.clearDiagnostic();
+		this.stateService.setDiagnostic(diagnostic);
+
 		
 		if (!nocache){
-			localStorage.setItem("previousPage", this.router.url);
+			this.stateService.setPreviousPage(this.router.url);
 		}
 	
 		this.router.navigate([path]);

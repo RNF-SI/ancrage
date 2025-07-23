@@ -26,6 +26,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { Labels } from "@app/utils/labels";
 import { MatExpansionModule } from '@angular/material/expansion';
 import { AuthService } from "@app/home-rnf/services/auth-service.service";
+import { StateService } from "@app/services/state.service";
 
 @Component({
   selector: 'app-sites-diagnostics-view',
@@ -109,6 +110,7 @@ export class SitesDiagnosticsViewComponent {
   mapInstanceKey = Date.now();
   readonly showMoreInfo = "Afficher les détails";
   readonly modify = "Modifier"
+  private stateService = inject(StateService)
 
   constructor() {
 
@@ -125,9 +127,8 @@ export class SitesDiagnosticsViewComponent {
       this.user_id.set(user.id_role);
       this.id_organisme.set(user.id_organisme);
       this.btnForDiagnosticsLbl.set(this.btnToShowDiagnosticsLbl);
-      localStorage.removeItem("diagnostic");
-      localStorage.removeItem("fromActor");
-      localStorage.setItem("previousPage", this.router.url);
+      this.stateService.clearAll();
+      this.stateService.setPreviousPage(this.router.url);
     });
   }
 
