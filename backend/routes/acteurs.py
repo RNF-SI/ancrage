@@ -126,6 +126,24 @@ def getAllActeursByUSer(created_by):
     usersObj = schema.dump(acteurs)
     return jsonify(usersObj)
 
+@bp.route('/acteur/disable/<int:id_acteur>/<slug>', methods=['PUT'])
+def disableActeur(id_acteur, slug):
+    acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
+
+    if not acteur:
+        logger.warning(f"❌ Aucun acteur trouvé pour l'ID {id_acteur}")
+        return jsonify({'error': 'Acteur non trouvé'}), 404
+    
+    if acteur.slug == slug:
+        acteur.is_disabled = True
+        db.session.add(acteur)
+        db.session.commit()
+        acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
+        return getActeur(acteur)
+    else:
+        logger.warning(f"❌ Slug invalide pour mise à jour de l'acteur {id_acteur}")
+        return jsonify({'error': 'Slug invalide'}), 400
+
 def changeValuesActeur(acteur, data):
     logger.info("🔄 Mise à jour des valeurs de l'acteur à partir des données fournies")
     acteur.nom = data['nom']
