@@ -92,7 +92,8 @@
                   [hideFilters]="hideFilters"
                   [formGroup]="formGroup"
                   [diagnostic]="diag"
-                  [no_creation]="true">
+                  [no_creation]="true"
+                  (delete)="removeActeur($event)">
                 </app-choix-acteurs>
   
                 @if (!diagnostic().is_read_only) {

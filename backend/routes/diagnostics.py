@@ -150,7 +150,7 @@ def getAveragebyQuestion(id_diagnostic):
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
         .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
         .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic)
+        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False)
         .group_by(
             Theme.id_nomenclature,
             Question.id_question,
@@ -195,7 +195,7 @@ def get_reponses_par_theme(id_diagnostic):
         .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
         .join(Question, Reponse.question_id == Question.id_question)
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic)
+        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False)
         .group_by(Theme.id_nomenclature, Question.id_question, ValeurReponse.value, ValeurReponse.libelle)
         .order_by(Theme.id_nomenclature,Question.id_question, ValeurReponse.value)
         .all()
@@ -258,7 +258,7 @@ def get_scores(id_diagnostic):
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
         .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
         .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic)
+        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False)
         .group_by(Theme.id_nomenclature,Question.id_question,Question.libelle_graphique,Categorie.libelle,Theme.libelle)
         .order_by(Theme.id_nomenclature,Question.id_question)
         .all()

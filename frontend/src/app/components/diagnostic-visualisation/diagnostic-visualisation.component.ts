@@ -133,6 +133,11 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
     });
   }
 
+
+  removeActeur(acteur: Acteur) {
+    this.actors.update(list => list.filter(a => a.id_acteur !== acteur.id_acteur));
+  }
+
   //Cache ou affiche le menu en fonction de l'onglet choisi
   onTabChange(event: MatTabChangeEvent) {
     

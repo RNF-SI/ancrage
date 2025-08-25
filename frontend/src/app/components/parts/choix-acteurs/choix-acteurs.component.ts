@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, input, Input, OnDestroy, signal } from '@angular/core';
+import { Component, effect, inject, input, Input, OnDestroy, output, signal } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -82,6 +82,7 @@ export class ChoixActeursComponent implements OnDestroy{
   acteurs = signal<Acteur[]>([]);
   @Input({ required: true }) formGroup!: FormGroup;
   router = inject(Router);
+  delete = output<Acteur>();
 
   constructor(){
     effect(() => {
@@ -249,18 +250,16 @@ export class ChoixActeursComponent implements OnDestroy{
   openAlertDisable(acteur:Acteur){
       const dialogRef = this.dialog.open(AlerteSuppressionActeurComponent, {
         data: {
-          title: "Supprimer le diagnostic",
+          title: "Supprimer l'acteur'",
           acteur:acteur,
-          message: "Vous êtes sur le point de supprimer ce diagnostic. Etes-vous sûr-e de vouloir continuer ?"
+          message: "Vous êtes sur le point de supprimer cet acteur. Etes-vous sûr-e de vouloir continuer ?"
           
         }
       });
 
       dialogRef.afterClosed().subscribe(acteur => {
         if (acteur) {
-          const updated = this.acteurs().filter(a => a.id_acteur !== acteur.id_acteur);
-          this.acteurs.set(updated);
-          this.diagnostic().acteurs = this.acteurs();
+          this.delete.emit(acteur);
         }
       });
       
