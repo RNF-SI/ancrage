@@ -109,7 +109,7 @@ def getAllActeursBySites():
             logger.info("ℹ Aucun diagnostic trouvé pour ces sites")
             return jsonify([]), 200
 
-        acteurs = Acteur.query.filter(Acteur.diagnostic_id.in_(ids_diagnostics)).all()
+        acteurs = Acteur.query.filter(Acteur.diagnostic_id.in_(ids_diagnostics)).filter_by(is_deleted=False).all()
         logger.info(f"👥 Nombre d'acteurs trouvés : {len(acteurs)}")
         schema = ActeurSchema(many=True)
         return jsonify(schema.dump(acteurs)), 200
@@ -135,7 +135,7 @@ def disableActeur(id_acteur, slug):
         return jsonify({'error': 'Acteur non trouvé'}), 404
     
     if acteur.slug == slug:
-        acteur.is_disabled = True
+        acteur.is_deleted = True
         db.session.add(acteur)
         db.session.commit()
         acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
@@ -153,6 +153,8 @@ def changeValuesActeur(acteur, data):
     acteur.mail = data['mail']
     acteur.commune_id = data['commune']['id_commune']
     acteur.structure = data['structure']
+    acteur.is_deleted=False
+    
     if 'profil' in data and data['profil']:
         acteur.profil_cognitif_id = data['profil']['id_nomenclature']
 

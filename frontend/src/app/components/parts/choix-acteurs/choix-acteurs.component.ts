@@ -29,6 +29,7 @@ import { SiteService } from '@app/services/sites.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AlerteDiagnosticComponent } from '@app/components/alertes/alerte-diagnostic/alerte-diagnostic.component';
 import { StateService } from '@app/services/state.service';
+import { AlerteSuppressionActeurComponent } from '@app/components/alertes/alerte-suppression-acteur/alerte-suppression-acteur.component';
 
 //Tableau des acteurs
 @Component({
@@ -243,6 +244,26 @@ export class ChoixActeursComponent implements OnDestroy{
         
       }
     });
+  }
+
+  openAlertDisable(acteur:Acteur){
+      const dialogRef = this.dialog.open(AlerteSuppressionActeurComponent, {
+        data: {
+          title: "Supprimer le diagnostic",
+          acteur:acteur,
+          message: "Vous êtes sur le point de supprimer ce diagnostic. Etes-vous sûr-e de vouloir continuer ?"
+          
+        }
+      });
+
+      dialogRef.afterClosed().subscribe(acteur => {
+        if (acteur) {
+          const updated = this.acteurs().filter(a => a.id_acteur !== acteur.id_acteur);
+          this.acteurs.set(updated);
+          this.diagnostic().acteurs = this.acteurs();
+        }
+      });
+      
   }
   
   //Affiche l'alerte avec les infos supplémentaires

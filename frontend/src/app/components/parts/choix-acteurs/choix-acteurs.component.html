@@ -122,6 +122,9 @@
                   <button mat-icon-button type="button" (click)="navigate('/entretien/' + actor.id_acteur + '/' + actor.slug, diag(),actor)" [matTooltip]="labels.goToInterview">
                     <fa-icon [icon]="['fas', 'file-lines']"></fa-icon>
                   </button>
+                  <button mat-icon-button type="button" (click)="openAlertDisable(actor)" [matTooltip]="labels.goToInterview">
+                    <fa-icon [icon]="['fas', 'trash']"></fa-icon>
+                  </button>
                   @if (actor.statut_entretien?.libelle !== 'Réalisé' && actor.statut_entretien?.libelle !== 'En cours') {
                     <button mat-icon-button type="button" (click)="openAlert(actor)" [matTooltip]="labels.modifyStateInterview">
                       <fa-icon [icon]="['fas', 's']"></fa-icon>

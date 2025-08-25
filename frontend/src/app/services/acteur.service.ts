@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Acteur } from '@app/models/acteur.model';
 import { IActeur } from '@app/interfaces/acteur.interface';
 import { environment } from 'src/environments/environment';
+import { MAT_RANGE_DATE_SELECTION_MODEL_FACTORY } from '@angular/material/datepicker';
 
 @Injectable({
   providedIn: 'root'
@@ -70,6 +71,12 @@ export class ActeurService {
       const textB = b.nom.toUpperCase();
       return textA.localeCompare(textB);
     });
+  }
+
+  disableActor(actor:Acteur): Observable<Acteur> {
+      return this.http.put<IActeur>(this.BASE_URL + 'disable/' + actor.id_acteur + '/' + actor.slug, actor.toJson()).pipe(
+        map(acteurJson => Acteur.fromJson(acteurJson))
+      );
   }
 
 

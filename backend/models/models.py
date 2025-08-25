@@ -143,6 +143,7 @@ class Acteur(db.Model):
     acteur_origine = db.relationship('Acteur', remote_side=[id_acteur], backref='acteurs_issus')
     is_copy = db.Column(db.Boolean, default=False)
     slug = db.Column(db.String)
+    is_deleted = db.Column(db.Boolean, default=False)
 
 acteur_categorie = db.Table(
     'cor_categorie_acteur',

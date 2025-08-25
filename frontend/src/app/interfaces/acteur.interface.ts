@@ -22,4 +22,5 @@ export interface IActeur {
     created_by:number;
     modified_by:number;
     slug:string;
+    is_deleted:boolean;
 }
