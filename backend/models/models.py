@@ -235,7 +235,7 @@ class Nomenclature(db.Model):
     questions_th = db.relationship('Question',  back_populates='theme_question',foreign_keys='Question.theme_question_id')
     mots_cles = db.relationship('MotCle', back_populates='categorie')
     libelle_court = db.Column(db.String)
-   
+    ordre = db.Column(db.Integer)
 
 class Afom(db.Model):
     __tablename__ = 't_afom'

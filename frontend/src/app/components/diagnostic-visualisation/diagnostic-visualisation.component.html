@@ -134,6 +134,14 @@
               <app-graphiques [diagnostic]="diagnostic()"></app-graphiques>
             </div>
           </mat-tab>
+          <mat-tab label="Export">
+            <div class="p-3">
+              <app-tableau-export 
+                [acteurs]="diagnostic().acteurs"
+                [diagnostic]="diagnostic()"
+              ></app-tableau-export>
+            </div>
+          </mat-tab>
         </mat-tab-group>
       }
       

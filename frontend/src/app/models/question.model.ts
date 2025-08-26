@@ -11,6 +11,7 @@ export class Question {
     theme?:Nomenclature;
     indications:string="";
     choixReponses?:Nomenclature[];
+    metrique = 0;
 
     /** Copie profonde de l'objet */
     copy(): Question {
@@ -23,6 +24,7 @@ export class Question {
         copy.reponses = this.reponses?.map(r => r.copy()) || [];
         copy.indications = this.indications;
         copy.choixReponses = this.choixReponses?.map(cr => cr.copy()) || [];
+        copy.metrique = this.metrique;
         return copy;
     }
 
@@ -37,6 +39,7 @@ export class Question {
         question.reponses = (data.reponses || []).map(r => Reponse.fromJson(r));
         question.indications = data.indications;
         question.choixReponses = Array.isArray(data.choixReponses) ? data.choixReponses.map(cr => Nomenclature.fromJson(cr)) : [];
+        question.metrique = data.metrique;
         return question;
     }
 

@@ -19,3 +19,7 @@ mat-radio-group{
     grid-template-columns: 0% 100%; /* ou 3fr 6fr 3fr */
     gap: 1rem;
 }
+
+.commentaire{
+    width:100%;
+}

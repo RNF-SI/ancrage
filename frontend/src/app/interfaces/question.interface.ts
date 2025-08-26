@@ -10,4 +10,5 @@ export interface IQuestion {
     theme?:Nomenclature;
     indications:string;
     choixReponses?:Nomenclature[];
+    metrique:number;
 }

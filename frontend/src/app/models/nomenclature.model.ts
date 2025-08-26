@@ -11,6 +11,7 @@ export class Nomenclature {
 	mnemonique: string = "";
 	questions?:Question[];
 	mots_cles?:MotCle[];
+	ordre?:number;
 
 	/** Copie profonde */
 	copy(): Nomenclature {
@@ -22,6 +23,7 @@ export class Nomenclature {
 		copy.mnemonique = this.mnemonique;
 		copy.questions = this.questions?.map(q => q.copy()) || [];
 		copy.mots_cles = this.mots_cles?.map(mc => mc.copy()) || [];
+		copy.ordre = this.ordre;
 		return copy;
 	}
 
@@ -37,6 +39,7 @@ export class Nomenclature {
 		nom.mnemonique = data.mnemonique;
 		nom.questions = (data.questions || []).map(q => Question.fromJson(q));
 		nom.mots_cles = (data.mots_cles || []).map(mc => MotCle.fromJson(mc));
+		nom.ordre = data.ordre;
 		return nom;
 	}
 

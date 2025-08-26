@@ -1,0 +1,36 @@
+<table>
+  <thead>
+    <tr>
+      <th>Individu</th>  
+      @for (cat of categories(); track cat.id_nomenclature) {
+        <th>groupe{{cat.ordre}}</th>
+      }
+      @for (q of questions(); track q.id_question) {
+        <th>metrique{{q.metrique}}</th>
+      }
+    </tr>
+  </thead>
+  <tbody>
+    @for (act of acteurs(); track act.id_acteur;) {
+      <tr>
+        <td>acteur{{$index+1}}</td>
+        <!-- Colonnes catégories -->
+        @for (cat of categories(); track cat.id_nomenclature) {
+          <td>
+            {{ getCategory(act, cat.id_nomenclature) }}
+          </td>
+        }
+
+        <!-- Colonnes questions -->
+        @for (q of questions(); track q.id_question) {
+          <td>
+            {{ getReponse(act, q.id_question) }}
+          </td>
+        }
+      </tr>
+    }
+  </tbody>
+</table>
+<button mat-raised-button type="button" (click)="exportCsv()">
+    {{ labels.exportCSV }}
+</button>
