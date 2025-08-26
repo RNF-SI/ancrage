@@ -3,10 +3,10 @@
     <tr>
       <th>Individu</th>  
       @for (cat of categories(); track cat.id_nomenclature) {
-        <th>groupe{{cat.ordre}}</th>
+        <th>{{cat.libelle}}</th>
       }
       @for (q of questions(); track q.id_question) {
-        <th>metrique{{q.metrique}}</th>
+        <th>{{q.libelle}}</th>
       }
     </tr>
   </thead>

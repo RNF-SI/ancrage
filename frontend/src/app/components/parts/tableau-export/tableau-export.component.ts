@@ -43,9 +43,9 @@ export class TableauExportComponent {
     });
   }
 
-  getReponse(act: Acteur, id_question: number): number {
+  getReponse(act: Acteur, id_question: number): number | string{
     const rep = act.reponses?.find(r => r.question?.id_question === id_question);
-    return rep ? rep.valeur_reponse.value : 0;
+    return rep ? rep.valeur_reponse.value : 'NULL';
   }
 
   getCategory(act: Acteur, id_nomenclature: number){
@@ -54,51 +54,50 @@ export class TableauExportComponent {
   }
 
   exportCsv() {
-    console.log(this.acteurs());
     const rows: string[][] = [];
   
     // ---- Ligne d’en-tête ----
     const header = [
-      ...this.categories().map(c => `groupe${c.ordre}`),
-      ...this.questions().map(q => `metrique${q.metrique}`)
+      'Individu',
+      ...this.categories().map(c => `${c.libelle}`),
+      ...this.questions().map(q => `${q.libelle}`)
     ];
     rows.push(header);
   
     // ---- Lignes pour chaque acteur ----
-    for (const act of this.acteurs()) {
+    this.acteurs().forEach((act, index) => {
       const row: string[] = [];
   
-      // Colonnes catégories (0/1)
+      // Colonne "Individu"
+      row.push(`acteur${index + 1}`);
+  
+      // Colonnes catégories
       for (const cat of this.categories()) {
-        const hasCat = act.categories?.some(
-          (cate: any) => cate.id_nomenclature === cat.id_nomenclature
-        );
-        row.push(hasCat ? '1' : '0');
+        row.push(String(this.getCategory(act, cat.id_nomenclature)));
       }
   
-      // Colonnes questions (valeurs ou vide)
+      // Colonnes questions
       for (const q of this.questions()) {
-        const rep = act.reponses?.find(
-          (r: any) => r.question?.id_question === q.id_question
-        );
-        row.push(rep ? String(rep.valeur_reponse.value) : '0');
+        row.push(String(this.getReponse(act, q.id_question)));
       }
   
       rows.push(row);
-    }
+    });
   
     // ---- Conversion en CSV ----
-    const csvContent = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const csvContent = rows.map(r => r.map(v => `"${v}"`).join(';')).join('\n'); 
+
   
     // ---- Téléchargement ----
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=UTF-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'export-'+this.diagnostic().nom+'.csv';
+    a.download = 'export-'+this.diagnostic().nom+'-.csv';
     a.click();
     URL.revokeObjectURL(url);
   }
+  
 
 }
 
