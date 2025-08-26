@@ -1,0 +1,47 @@
+<div id="selectors" class="text-center">
+    <form [formGroup]="formGroup" (submit)="sendParameters($event)" class="col-center">
+        <mat-form-field appearance="fill">
+            <mat-label>{{ labels.questions }}</mat-label>
+            <mat-select multiple="true"  formControlName="questions">
+                @for (q of questions(); track q.id_question) {
+                    <mat-option [value]="q">{{q.libelle}}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+            <mat-label>{{ labels.actors }}</mat-label>
+            <mat-select multiple="true"  formControlName="acteurs">
+                @for (act of acteurs(); track act.id_acteur) {
+                    <mat-option [value]="act">{{ act.prenom }} {{act.nom}}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="accent-select">
+            <mat-label>{{ labels.chooseCategories }}</mat-label>
+            <mat-select  multiple="true" formControlName="categories">
+                @for (cat of categories(); track cat.id_nomenclature) {
+                    <mat-option [value]="cat">{{ cat.libelle }}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+            <mat-label>{{ labels.mode }}</mat-label>
+            <mat-select formControlName = "mode">
+                @for (type of modes; track type) {
+                <mat-option [value]="type">{{ type }}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+
+        <button id="btnToReinitialize" mat-raised-button>
+            {{ labels.reinitialization }}
+        </button>
+
+        <button type="submit" mat-raised-button>
+            {{ labels.send }}
+        </button>
+    </form>
+</div>

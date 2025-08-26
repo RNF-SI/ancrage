@@ -13,6 +13,7 @@ import { Labels } from '@app/utils/labels';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTabsModule } from '@angular/material/tabs';
+import { GraphiquesPersonnalisationComponent } from "./graphiques-personnalisation/graphiques-personnalisation.component";
 
 //Composant qui affcihe les graphiques
 
@@ -25,7 +26,7 @@ export interface RadarChart {
   selector: 'app-graphiques',
   templateUrl: './graphiques.component.html',
   styleUrls: ['./graphiques.component.css'],
-  imports:[CommonModule,MatTabsModule,NgChartsModule,MatButtonModule]
+  imports: [CommonModule, MatTabsModule, NgChartsModule, MatButtonModule, GraphiquesPersonnalisationComponent]
 })
 export class GraphiquesComponent {
   @Input('diagnostic') 

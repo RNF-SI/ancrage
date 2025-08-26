@@ -116,6 +116,15 @@ def getAllActeursBySites():
     else:
         logger.info("❌ Champ 'id_sites' manquant")
         return jsonify({'error': "Champ 'id_sites' requis"}), 400
+    
+
+@bp.route('/acteurs/diagnostic/<int:id_diagnostic>', methods=['GET'])
+def getAllActeursByDiag(id_diagnostic):
+    acteurs = Acteur.query.filter_by(diagnostic_id=id_diagnostic).all()
+    schema = ActeurLiteSchema(many=True)
+    return jsonify(schema.dump(acteurs)), 200
+
+
 
 @bp.route('/acteurs/<created_by>', methods=['GET'])
 def getAllActeursByUSer(created_by):
