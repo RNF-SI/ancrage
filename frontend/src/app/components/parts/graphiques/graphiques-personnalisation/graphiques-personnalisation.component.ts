@@ -18,7 +18,7 @@ import { NomenclatureService } from '@app/services/nomenclature.service';
 import { QuestionService } from '@app/services/question.service';
 import { Labels } from '@app/utils/labels';
 import { forkJoin } from 'rxjs';
-import { ChartData } from 'chart.js';
+import { ChartData, ChartOptions, RadialLinearScaleOptions } from 'chart.js';
 import { GraphRadar } from '@app/models/graph-radar.model';
 import { GraphRepartition } from '@app/models/graph-repartition.model';
 
@@ -66,6 +66,30 @@ export class GraphiquesPersonnalisationComponent {
   chartDataRepartition = signal<{ [question: string]: ChartData<'pie'> }>({});
   colorPalette = ['#0072B2', '#E69F00', '#009E73', '#F0E442', '#CC79A7', '#D55E00', '#999999'];
   groupedData = signal<{ [question: string]: GraphRepartition[] }>({});
+  radarCharts = signal<{ theme: string; data: ChartData<'radar'> }[]>([]);
+  radarChartOptions: ChartOptions<'radar'> = {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' },
+        title: { display: false }
+      },
+      scales: {
+        r: {
+          min: 1,
+          max: 5,
+          beginAtZero: false,
+          ticks: {
+            stepSize: 1,
+            callback: (val: string | number) => val.toString()
+          },
+          pointLabels: {
+            font: {
+              size: 14
+            }
+          }
+        } as unknown as RadialLinearScaleOptions
+      }
+    };
 
   constructor(){
     effect(() => {
@@ -93,16 +117,17 @@ export class GraphiquesPersonnalisationComponent {
       forkJoin({
         graphs$: this.diagnosticService.getAverageByQuestionParams(this.parameters),
         repartitions$: this.diagnosticService.getRepartitionParams(this.parameters),
+        radars$: this.diagnosticService.getRadarsParams(this.parameters)
        
-      }).subscribe(({ graphs$, repartitions$}) => {
+      }).subscribe(({ graphs$, repartitions$, radars$}) => {
         console.log(repartitions$);
-        this.getCharts(graphs$,repartitions$);
+        this.getCharts(graphs$,repartitions$,radars$);
       });
 
       
   }
 
-  private getCharts(graphs:GraphMoy[],repartitions:GraphRepartition[]): void {
+  private getCharts(graphs:GraphMoy[],repartitions:GraphRepartition[],radars:GraphRadar[]): void {
       const normalize = (str: string) => str.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/’/g, "'").trim();
       const LABELS_TO_EXCLUDE = ["attentes", "Sentiment d'être concerné"].map(normalize);
   
@@ -169,9 +194,6 @@ export class GraphiquesPersonnalisationComponent {
         }
         this.chartDataRepartition.set(chartRepartition); 
   
-        /* this.data.set(motsCles);
-        this.groupByCategorie();
-  
         const radarMap = new Map<string, GraphRadar[]>();
         for (const r of radars) {
           const theme = r.theme || 'Sans thème';
@@ -197,7 +219,7 @@ export class GraphiquesPersonnalisationComponent {
           return { theme, data: { labels, datasets } };
         });
   
-        this.radarCharts.set(radarData); */
+        this.radarCharts.set(radarData);
       
     }
 

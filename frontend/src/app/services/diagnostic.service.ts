@@ -95,6 +95,17 @@ export class DiagnosticService {
       );
     }
 
+    getRadarsParams(params:Parameters): Observable<GraphRadar[]>{
+      return this.http.put<IGraphRadar[]>(this.BASE_URL+"/params/charts/radars",params.toJson()).pipe(
+        shareReplay(1),
+        map(graphiquesJsonArray => {
+          return graphiquesJsonArray.map<GraphRadar>(
+            graphJson => GraphRadar.fromJson(graphJson)
+          )
+        })
+      );
+    }
+
     //Récupère les différentes structures des acteurs
     getStructures(id: number): Observable<any> {
 

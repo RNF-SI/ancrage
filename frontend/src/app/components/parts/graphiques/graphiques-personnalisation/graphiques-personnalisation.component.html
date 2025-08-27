@@ -51,7 +51,7 @@
                 <h2 class="text-center">{{ themeEntry.theme }}</h2>
           
                 
-                  <!-- @for (chart of radarCharts(); track chart) {
+                  @for (chart of radarCharts(); track chart) {
                     @if (chart.theme === themeEntry.theme) {
                       <div>
                         <canvas class="graph-radar-{{ chart.theme }}" baseChart
@@ -64,7 +64,7 @@
                         </button>
                       </div>
                     }
-                  } -->
+                  }
                 
           
                 @for (chart of themeEntry.charts; track chart) {
