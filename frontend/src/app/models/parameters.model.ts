@@ -2,11 +2,13 @@ import { IParameters } from "@app/interfaces/parameters.interface";
 import { Acteur } from "./acteur.model";
 import { Nomenclature } from "./nomenclature.model";
 import { Question } from "./question.model";
+import { Diagnostic } from "./diagnostic.model";
 
 export class Parameters {
     questions:Question[] = [];
     categories:Nomenclature[] = [];
     acteurs:Acteur[] = [];
+    diagnostic:Diagnostic = new Diagnostic();
     mode = "";
 
     /** Copie profonde de l'objet */
@@ -16,6 +18,7 @@ export class Parameters {
             copy.categories = this.categories?.map(c => c.copy()) || [];
             copy.acteurs = this.acteurs?.map(a => a.copy()) || [];
             copy.mode = this.mode;
+            copy.diagnostic = this.diagnostic.copy();
     
             return copy;
         }
@@ -27,6 +30,7 @@ export class Parameters {
             parameters.categories = (data.categories || []).map(c => Nomenclature.fromJson(c));
             parameters.acteurs = (data.acteurs || []).map(a => Acteur.fromJson(a));
             parameters.mode = data.mode;
+            parameters.diagnostic = Diagnostic.fromJson(data.diagnostic);
     
             return parameters;
         }
@@ -38,7 +42,7 @@ export class Parameters {
                 questions: this.questions ? this.questions.map(q => q.toJson()) : [],
                 categories: this.categories ? this.categories.map(c => c.toJson()) : [],
                 acteurs: this.acteurs ? this.acteurs.map(c => c.toJson()) : [],
-                
+                diagnostic: this.diagnostic.toJson()
             };
         }
 }

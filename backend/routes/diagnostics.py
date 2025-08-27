@@ -217,6 +217,130 @@ def get_reponses_par_theme(id_diagnostic):
 
     return jsonify(output)
 
+@bp.route('/diagnostic/params/charts/average',methods=['PUT'])
+def getAveragebyQuestionParams():
+
+    data = request.get_json()
+    id_diagnostic = data['diagnostic']['id_diagnostic']
+    acteurs = data['acteurs']
+    act_ids=[]
+    for act in acteurs:
+        act_ids.append(act['id_acteur'])
+      
+    categories = data['categories']
+    cat_ids=[]
+    for cat in categories:
+        cat_ids.append(cat['id_nomenclature'])
+
+    questions = data['questions']
+    quest_ids=[]
+    for quest in questions:
+        quest_ids.append(quest['id_question'])
+        print(quest['id_question'])
+    # Aliases pour les différentes utilisations de Nomenclature
+    ValeurReponse = aliased(Nomenclature)     # tn
+    Categorie = aliased(Nomenclature)         # tn3
+    Theme = aliased(Nomenclature)             # tn4
+
+    
+    query = (
+        db.session.query(
+            Theme.libelle.label("theme"),
+            Theme.id_nomenclature.label("theme_id"),
+            Question.id_question.label("id_question"),
+            Question.libelle_graphique.label("question"),
+            Categorie.libelle_court.label("categorie_acteur"),
+            func.avg(ValeurReponse.value).label("moyenne_score")
+        )
+        .select_from(Diagnostic)  
+        .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
+        .join(Reponse, Acteur.id_acteur == Reponse.acteur_id)
+        .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
+        .join(Question, Reponse.question_id == Question.id_question)
+        .join(Theme, Question.theme_id == Theme.id_nomenclature)
+        .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
+        .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
+        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.id_question.in_(quest_ids),Acteur.id_acteur.in_(act_ids))
+        .group_by(
+            Theme.id_nomenclature,
+            Question.id_question,
+            Categorie.id_nomenclature
+        )
+        .order_by(Theme.id_nomenclature,Question.id_question)
+    )
+
+    results = query.all()
+    data = [
+        {
+            "theme": r.theme,
+            "question": r.question,
+            "categorie": r.categorie_acteur,
+            "moyenne": float(r.moyenne_score),
+            "id_question":r.id_question,
+            "theme_id":r.theme_id
+        }
+        for r in results
+    ]
+    return jsonify(data)
+
+@bp.route("/diagnostic/params/charts/repartition", methods=["PUT"])
+def get_reponses_par_themeParams():
+
+    data = request.get_json()
+    id_diagnostic = data['diagnostic']['id_diagnostic']
+    acteurs = data['acteurs']
+    act_ids=[]
+    for act in acteurs:
+        act_ids.append(act['id_acteur'])
+        print(act['id_acteur'])
+    
+    questions = data['questions']
+    quest_ids=[]
+    for quest in questions:
+        quest_ids.append(quest['id_question'])
+        print(quest['id_question'])
+
+    ValeurReponse = aliased(Nomenclature)
+    Theme = aliased(Nomenclature)
+
+    results = (
+        db.session.query(
+            Theme.libelle.label("theme"),
+            Theme.id_nomenclature.label("theme_id"),
+            Question.libelle_graphique.label("question"),
+            Question.id_question.label("id_question"),
+            ValeurReponse.libelle.label("reponse"),
+            func.count(Reponse.id_reponse).label("nombre"),
+            ValeurReponse.value.label("valeur")
+        )
+        .select_from(Diagnostic)  
+        .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
+        .join(Reponse, Acteur.id_acteur == Reponse.acteur_id)
+        .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
+        .join(Question, Reponse.question_id == Question.id_question)
+        .join(Theme, Question.theme_id == Theme.id_nomenclature)
+        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.id_question.in_(quest_ids),Acteur.id_acteur.in_(act_ids))
+        .group_by(Theme.id_nomenclature, Question.id_question, ValeurReponse.value, ValeurReponse.libelle)
+        .order_by(Theme.id_nomenclature,Question.id_question, ValeurReponse.value)
+        .all()
+    )
+
+    # transformer en liste de dicts
+    output = [
+        {
+            "theme": r.theme,
+            "question": r.question,
+            "reponse": r.reponse,
+            "nombre": r.nombre,
+            "valeur": r.valeur,
+            "id_question":r.id_question,
+            "theme_id":r.theme_id
+        }
+        for r in results
+    ]
+
+    return jsonify(output)
+
 @bp.route('/diagnostic/structures/<int:id_diagnostic>', methods=['GET'])
 def get_structures_by_diagnostic(id_diagnostic):
 

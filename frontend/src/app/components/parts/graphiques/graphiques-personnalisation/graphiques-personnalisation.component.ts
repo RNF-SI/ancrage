@@ -4,17 +4,23 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { AvgPerQuestion } from '@app/interfaces/avg-per-question.interface';
 import { Acteur } from '@app/models/acteur.model';
-import { Departement } from '@app/models/departement.model';
+import { NgChartsModule } from 'ng2-charts';
 import { Diagnostic } from '@app/models/diagnostic.model';
+import { GraphMoy } from '@app/models/graph-moy.model';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { Parameters } from '@app/models/parameters.model';
 import { Question } from '@app/models/question.model';
 import { ActeurService } from '@app/services/acteur.service';
+import { DiagnosticService } from '@app/services/diagnostic.service';
 import { NomenclatureService } from '@app/services/nomenclature.service';
 import { QuestionService } from '@app/services/question.service';
 import { Labels } from '@app/utils/labels';
 import { forkJoin } from 'rxjs';
+import { ChartData } from 'chart.js';
+import { GraphRadar } from '@app/models/graph-radar.model';
+import { GraphRepartition } from '@app/models/graph-repartition.model';
 
 @Component({
   selector: 'app-graphiques-personnalisation',
@@ -25,7 +31,8 @@ import { forkJoin } from 'rxjs';
     MatInputModule,
     FormsModule,
     MatButtonModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NgChartsModule
   ],
   templateUrl: './graphiques-personnalisation.component.html',
   styleUrl: './graphiques-personnalisation.component.css'
@@ -38,20 +45,27 @@ export class GraphiquesPersonnalisationComponent {
   private acteurService = inject(ActeurService);
   private nomenclatureService = inject(NomenclatureService);
   private questionService = inject(QuestionService);
+  private diagnosticService = inject(DiagnosticService);
   diagnostic = input<Diagnostic>(new Diagnostic());
   labels = new Labels();
   chosenActors:Acteur[]=[];
   chosenCategories:Nomenclature[] = [];
   parameters = new Parameters();
   private fb = inject(FormBuilder);
+  chartDataByQuestion = signal<AvgPerQuestion[]>([]);
+  themeIdToName: { [theme_id: number]: string } = {};
   formGroup = this.fb.group({
     
     questions: this.fb.control<Question[]>([], [Validators.required]),
     acteurs: this.fb.control<Acteur[]>([], [Validators.required]),
     categories: this.fb.control<Nomenclature[]>([], []),  
     mode :['', [Validators.required]],
-    
+    diagnostic: [this.diagnostic(),[Validators.required]]
   });
+  chartDataByThemeSorted = signal<{ theme_id: number; theme: string; charts: AvgPerQuestion[] }[]>([]);
+  chartDataRepartition = signal<{ [question: string]: ChartData<'pie'> }>({});
+  colorPalette = ['#0072B2', '#E69F00', '#009E73', '#F0E442', '#CC79A7', '#D55E00', '#999999'];
+  groupedData = signal<{ [question: string]: GraphRepartition[] }>({});
 
   constructor(){
     effect(() => {
@@ -63,7 +77,7 @@ export class GraphiquesPersonnalisationComponent {
       }).subscribe(({ cats$, acteurs$,questions$ }) => {
         this.nomenclatureService.sortByOrder(cats$);
         this.categories.set(cats$);
-        this.acteurService.sortByNameAndSelected(this.acteurs())
+        this.acteurService.sortByNameAndSelected(this.acteurs());
         this.acteurs.set(acteurs$);
         this.questions.set(questions$);
       });
@@ -75,6 +89,131 @@ export class GraphiquesPersonnalisationComponent {
       event.preventDefault();
         
       this.parameters = Object.assign(new Parameters(),this.formGroup.value);
-      console.log(this.parameters);
+      this.parameters.diagnostic = this.diagnostic();
+      forkJoin({
+        graphs$: this.diagnosticService.getAverageByQuestionParams(this.parameters),
+        repartitions$: this.diagnosticService.getRepartitionParams(this.parameters),
+       
+      }).subscribe(({ graphs$, repartitions$}) => {
+        console.log(repartitions$);
+        this.getCharts(graphs$,repartitions$);
+      });
+
+      
   }
+
+  private getCharts(graphs:GraphMoy[],repartitions:GraphRepartition[]): void {
+      const normalize = (str: string) => str.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/’/g, "'").trim();
+      const LABELS_TO_EXCLUDE = ["attentes", "Sentiment d'être concerné"].map(normalize);
+  
+    /*     if (graphs.length === 0 || repartitions.length === 0 || radars.length === 0){
+          this.has_data_graphs = false;
+          this.message += this.message_graphs;
+        }
+        if(motsCles.length === 0){
+          this.has_data_afom = false;
+          this.message += this.message_afom;
+        } */
+        const grouped = new Map<string, GraphMoy[]>();
+        for (const entry of graphs) {
+          const label = normalize(entry.question ?? '');
+          if (!LABELS_TO_EXCLUDE.includes(label)) {
+            if (!grouped.has(entry.question)) grouped.set(entry.question, []);
+            grouped.get(entry.question)!.push(entry);
+          }
+        }
+        const avgData = Array.from(grouped.entries()).map(([question, data]) => {
+          const sorted = data.sort((a, b) => a.categorie.localeCompare(b.categorie));
+          const theme_id = sorted[0]?.theme_id || 0;
+          const theme = sorted[0]?.theme || 'Autres';
+          this.themeIdToName[theme_id] = theme;
+          return {
+            id_question: sorted[0]?.id_question,
+            question,
+            theme_id,
+            chart: {
+              labels: sorted.map(d => d.categorie),
+              datasets: [{ label: 'Score moyen', data: sorted.map(d => d.moyenne), backgroundColor: '#4CAF50' }]
+            },
+            chartOptions: {
+              responsive: true,
+              scales: {
+                y: { beginAtZero: true, min: 1, max: 5, ticks: { stepSize: 1 } }
+              }
+            }
+          } satisfies AvgPerQuestion;
+        });
+        this.chartDataByQuestion.set(avgData);
+  
+        const themeSorted = Object.entries(this.themeIdToName).map(([id, name]) => ({
+          theme_id: +id,
+          theme: name,
+          charts: avgData.filter(a => a.theme_id === +id)
+        })).sort((a, b) => a.theme_id - b.theme_id);
+        this.chartDataByThemeSorted.set(themeSorted);
+  
+        const repartitionGrouped: { [q: string]: GraphRepartition[] } = {};
+        for (const r of repartitions) {
+          if (!repartitionGrouped[r.question]) repartitionGrouped[r.question] = [];
+          repartitionGrouped[r.question].push(r);
+        }
+        this.groupedData.set(repartitionGrouped);
+  
+        const chartRepartition: { [question: string]: ChartData<'pie'> } = {};
+        for (const question in repartitionGrouped) {
+          const responses = repartitionGrouped[question].filter(r => !LABELS_TO_EXCLUDE.includes(normalize(r.reponse || '')));
+          const labels = responses.map(r => r.reponse);
+          const data = responses.map(r => r.nombre);
+          const backgroundColors = labels.map((_, i) => this.colorPalette[i % this.colorPalette.length]);
+          chartRepartition[question] = { labels, datasets: [{ data, backgroundColor: backgroundColors }] };
+        }
+        this.chartDataRepartition.set(chartRepartition); 
+  
+        /* this.data.set(motsCles);
+        this.groupByCategorie();
+  
+        const radarMap = new Map<string, GraphRadar[]>();
+        for (const r of radars) {
+          const theme = r.theme || 'Sans thème';
+          if (!radarMap.has(theme)) radarMap.set(theme, []);
+          radarMap.get(theme)!.push(r);
+        }
+  
+        const radarData = Array.from(radarMap.entries()).map(([theme, entries]) => {
+          const filtered = entries.filter(e => !LABELS_TO_EXCLUDE.includes(normalize(e.libelle_graphique || '')));
+          const labels = [...new Set(filtered.map(e => e.libelle_graphique))];
+          const categories = [...new Set(entries.map(e => e.categorie || 'Sans catégorie'))];
+          const datasets = categories.map((cat, i) => {
+            const data = labels.map(label => entries.find(e => e.categorie === cat && e.libelle_graphique === label)?.score || 0);
+            const color = this.colorPalette[i % this.colorPalette.length];
+            return {
+              label: cat,
+              data,
+              borderColor: color,
+              backgroundColor: color + '66',
+              pointBackgroundColor: color
+            };
+          });
+          return { theme, data: { labels, datasets } };
+        });
+  
+        this.radarCharts.set(radarData); */
+      
+    }
+
+    exportChart(classe:string,titre:string) {
+      const canvas = document.querySelector("."+classe) as HTMLCanvasElement;
+      const image = canvas.toDataURL('image/png');
+      
+      // Création du lien pour téléchargement
+      const link = document.createElement('a');
+      link.href = image;
+      link.download = titre+'.png';
+      link.click();
+    }
+
+      getChartData(question: string): ChartData<'pie'> {
+        console.log(this.chartDataRepartition());
+        return this.chartDataRepartition()[question];
+      }
 }

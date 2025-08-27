@@ -11,4 +11,5 @@ export interface IQuestion {
     indications:string;
     choixReponses?:Nomenclature[];
     metrique:number;
+    libelle_graphique:string;
 }

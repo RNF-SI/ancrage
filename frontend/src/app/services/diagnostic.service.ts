@@ -11,6 +11,7 @@ import { GraphMotsCles } from '@app/models/graph-mots-cles';
 import { GraphMoy } from '@app/models/graph-moy.model';
 import { GraphRadar } from '@app/models/graph-radar.model';
 import { GraphRepartition } from '@app/models/graph-repartition.model';
+import { Parameters } from '@app/models/parameters.model';
 import { Observable, map, shareReplay } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
@@ -48,9 +49,31 @@ export class DiagnosticService {
       );
     }
 
+    getAverageByQuestionParams(params:Parameters): Observable<GraphMoy[]>{
+      return this.http.put<IGraphMoy[]>(this.BASE_URL+"/params/charts/average",params.toJson()).pipe(
+        shareReplay(1),
+        map(graphiquesJsonArray => {
+          return graphiquesJsonArray.map<GraphMoy>(
+            graphJson => GraphMoy.fromJson(graphJson)
+          )
+        })
+      );
+    }
+
     //Récupère les données des camemberts
     getRepartition(id_diagnostic:number): Observable<GraphRepartition[]>{
       return this.http.get<IGraphRepartition[]>(this.GET_ALL_URL+"/charts/repartition/"+id_diagnostic).pipe(
+        shareReplay(1),
+        map(graphiquesJsonArray => {
+          return graphiquesJsonArray.map<GraphRepartition>(
+            graphJson => GraphRepartition.fromJson(graphJson)
+          )
+        })
+      );
+    }
+
+    getRepartitionParams(params:Parameters): Observable<GraphRepartition[]>{
+      return this.http.put<IGraphRepartition[]>(this.BASE_URL+"/params/charts/repartition",params.toJson()).pipe(
         shareReplay(1),
         map(graphiquesJsonArray => {
           return graphiquesJsonArray.map<GraphRepartition>(

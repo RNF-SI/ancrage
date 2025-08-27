@@ -60,7 +60,7 @@ export class TableauExportComponent {
     const header = [
       'Individu',
       ...this.categories().map(c => `${c.libelle}`),
-      ...this.questions().map(q => `${q.libelle}`)
+      ...this.questions().map(q => `${q.libelle_graphique}`)
     ];
     rows.push(header);
   
