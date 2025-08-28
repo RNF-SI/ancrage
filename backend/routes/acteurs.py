@@ -109,13 +109,22 @@ def getAllActeursBySites():
             logger.info("ℹ Aucun diagnostic trouvé pour ces sites")
             return jsonify([]), 200
 
-        acteurs = Acteur.query.filter(Acteur.diagnostic_id.in_(ids_diagnostics)).all()
+        acteurs = Acteur.query.filter(Acteur.diagnostic_id.in_(ids_diagnostics)).filter_by(is_deleted=False).all()
         logger.info(f"👥 Nombre d'acteurs trouvés : {len(acteurs)}")
         schema = ActeurSchema(many=True)
         return jsonify(schema.dump(acteurs)), 200
     else:
         logger.info("❌ Champ 'id_sites' manquant")
         return jsonify({'error': "Champ 'id_sites' requis"}), 400
+    
+
+@bp.route('/acteurs/diagnostic/<int:id_diagnostic>', methods=['GET'])
+def getAllActeursByDiag(id_diagnostic):
+    acteurs = Acteur.query.filter_by(diagnostic_id=id_diagnostic).all()
+    schema = ActeurLiteSchema(many=True)
+    return jsonify(schema.dump(acteurs)), 200
+
+
 
 @bp.route('/acteurs/<created_by>', methods=['GET'])
 def getAllActeursByUSer(created_by):
@@ -126,6 +135,24 @@ def getAllActeursByUSer(created_by):
     usersObj = schema.dump(acteurs)
     return jsonify(usersObj)
 
+@bp.route('/acteur/disable/<int:id_acteur>/<slug>', methods=['PUT'])
+def disableActeur(id_acteur, slug):
+    acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
+
+    if not acteur:
+        logger.warning(f"❌ Aucun acteur trouvé pour l'ID {id_acteur}")
+        return jsonify({'error': 'Acteur non trouvé'}), 404
+    
+    if acteur.slug == slug:
+        acteur.is_deleted = True
+        db.session.add(acteur)
+        db.session.commit()
+        acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
+        return getActeur(acteur)
+    else:
+        logger.warning(f"❌ Slug invalide pour mise à jour de l'acteur {id_acteur}")
+        return jsonify({'error': 'Slug invalide'}), 400
+
 def changeValuesActeur(acteur, data):
     logger.info("🔄 Mise à jour des valeurs de l'acteur à partir des données fournies")
     acteur.nom = data['nom']
@@ -135,6 +162,8 @@ def changeValuesActeur(acteur, data):
     acteur.mail = data['mail']
     acteur.commune_id = data['commune']['id_commune']
     acteur.structure = data['structure']
+    acteur.is_deleted=False
+    
     if 'profil' in data and data['profil']:
         acteur.profil_cognitif_id = data['profil']['id_nomenclature']
 

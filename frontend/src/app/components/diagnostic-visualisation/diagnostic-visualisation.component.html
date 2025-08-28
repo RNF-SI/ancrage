@@ -92,7 +92,8 @@
                   [hideFilters]="hideFilters"
                   [formGroup]="formGroup"
                   [diagnostic]="diag"
-                  [no_creation]="true">
+                  [no_creation]="true"
+                  (delete)="removeActeur($event)">
                 </app-choix-acteurs>
   
                 @if (!diagnostic().is_read_only) {
@@ -133,6 +134,22 @@
               <app-graphiques [diagnostic]="diagnostic()"></app-graphiques>
             </div>
           </mat-tab>
+          <mat-tab label="Graphiques personnalisés">
+            <div class="p-3">
+              <app-graphiques-personnalisation
+                [diagnostic]="diagnostic()"
+              ></app-graphiques-personnalisation>  
+            </div>
+          </mat-tab>
+          <mat-tab label="Export">
+            <div class="p-3">
+              <app-tableau-export 
+                [acteurs]="diagnostic().acteurs"
+                [diagnostic]="diagnostic()"
+              ></app-tableau-export>
+            </div>
+          </mat-tab>
+
         </mat-tab-group>
       }
       

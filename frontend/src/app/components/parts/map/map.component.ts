@@ -85,8 +85,26 @@ export class MapComponent implements AfterViewInit,OnDestroy {
         this.alreadyRendered = true;
       }
     });
+
+    effect(() => {
+      this.refreshMarkers(this.actors());
+    });
   }
 
+  private refreshMarkers(acteurs: Acteur[]) {
+      if (!this.map) return;
+
+      this.markerClusterGroup?.clearLayers();
+
+      this.actors().forEach(acteur => {
+        if (acteur.commune.latitude && acteur.commune.longitude) {
+          const marker = L.marker([parseFloat(acteur.commune.latitude), parseFloat(acteur.commune.longitude)])
+            .bindPopup(`${acteur.nom} ${acteur.prenom}`);
+          this.markerClusterGroup?.addLayer(marker);
+        }
+      });
+  }
+  
 
   ngAfterViewInit(): void {
     const waitForContainer = () => {

@@ -30,13 +30,32 @@ import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinner/loading-spinner.component';
 import { AlerteDesactivationDiagComponent } from '../alertes/alerte-desactivation-diag/alerte-desactivation-diag.component';
 import { StateService } from '@app/services/state.service';
+import { TableauExportComponent } from "../parts/tableau-export/tableau-export.component";
+import { GraphiquesPersonnalisationComponent } from '../parts/graphiques/graphiques-personnalisation/graphiques-personnalisation.component';
 
 @Component({
     selector: 'app-diagnostic-visualisation',
     templateUrl: './diagnostic-visualisation.component.html',
     styleUrls: ['./diagnostic-visualisation.component.css'],
     standalone:true,
-    imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent, MenuLateralComponent, TableauStructuresComponent, TableauStructuresComponent, MapComponent, MotsClesZoneComponent,MatMomentDateModule,LoadingSpinnerComponent]
+    imports: [
+      ChoixActeursComponent,
+      CommonModule, 
+      MatButtonModule, 
+      GraphiquesComponent, 
+      GraphiquesComponent, 
+      MatTabsModule, 
+      MenuLateralComponent, 
+      MenuLateralComponent, 
+      TableauStructuresComponent, 
+      TableauStructuresComponent, 
+      MapComponent, 
+      MotsClesZoneComponent, 
+      MatMomentDateModule, 
+      LoadingSpinnerComponent, 
+      TableauExportComponent,
+      GraphiquesPersonnalisationComponent
+    ]
 })
 export class DiagnosticVisualisationComponent implements OnDestroy{
 
@@ -131,6 +150,11 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
         });
       }
     });
+  }
+
+
+  removeActeur(acteur: Acteur) {
+    this.actors.update(list => list.filter(a => a.id_acteur !== acteur.id_acteur));
   }
 
   //Cache ou affiche le menu en fonction de l'onglet choisi
@@ -273,7 +297,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
 
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'acteurs - '+this.diagnostic().nom+'.csv';
+    link.download = 'acteurs - ' + this.diagnostic().nom+'.csv';
     link.click();
   }
 
@@ -282,6 +306,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
     this.diagSubscription?.unsubscribe();
     this.docsSubscription?.unsubscribe();
     this.docReadSub?.unsubscribe();
+    this.docDeleteSub?.unsubscribe();
   }
 
   //Affiche la popup pour saisir la date de publication

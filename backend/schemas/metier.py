@@ -93,9 +93,13 @@ class DiagnosticSchema(SQLAlchemyAutoSchema):
         include_relationships = True
         load_instance = True
         
-    acteurs = fields.Nested(lambda: ActeurSchema, many=True, exclude=('diagnostic',))
+    acteurs = fields.Method("get_active_actors")
     documents = fields.Nested(lambda: DocumentSchema, many=True, exclude=("diagnostic",))
     sites = fields.Nested(lambda: SiteFromDiagSchema, many=True, exclude=('diagnostics',))
+
+    def get_active_actors(self, obj):
+        active_actors = [d for d in obj.acteurs if not d.is_deleted]
+        return ActeurSchema(many=True, exclude=('diagnostic',)).dump(active_actors)
 
 
 class DiagnosticLiteSchema(SQLAlchemyAutoSchema):
@@ -163,6 +167,7 @@ class ActeurLiteSchema(SQLAlchemyAutoSchema):
         load_instance = True
         exclude = ('diagnostic',)
     commune = fields.Nested(lambda: CommuneSchema, exclude=())
+    categories = fields.Nested(lambda: NomenclatureLightSchema, many=True, exclude=("mots_cles",))
 
 class ReponseSchema(SQLAlchemyAutoSchema):
     class Meta:

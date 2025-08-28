@@ -10,4 +10,6 @@ export interface IQuestion {
     theme?:Nomenclature;
     indications:string;
     choixReponses?:Nomenclature[];
+    metrique:number;
+    libelle_graphique:string;
 }

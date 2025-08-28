@@ -80,4 +80,11 @@ export class Labels {
     message = "Message";
     send = "Envoyer";
     requiredMail = "L'adresse email est requise."
+    actors = "Acteurs";
+    mode = "Mode";
+    reinitialization = "Rénitialisation";
+    customization = "Personnalisation des graphiques";
+    questions = "Questions";
+    writeTitle = "Donner un titre";
+    validate = "Valider";
 }

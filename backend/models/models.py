@@ -143,6 +143,7 @@ class Acteur(db.Model):
     acteur_origine = db.relationship('Acteur', remote_side=[id_acteur], backref='acteurs_issus')
     is_copy = db.Column(db.Boolean, default=False)
     slug = db.Column(db.String)
+    is_deleted = db.Column(db.Boolean, default=False)
 
 acteur_categorie = db.Table(
     'cor_categorie_acteur',
@@ -234,7 +235,7 @@ class Nomenclature(db.Model):
     questions_th = db.relationship('Question',  back_populates='theme_question',foreign_keys='Question.theme_question_id')
     mots_cles = db.relationship('MotCle', back_populates='categorie')
     libelle_court = db.Column(db.String)
-   
+    ordre = db.Column(db.Integer)
 
 class Afom(db.Model):
     __tablename__ = 't_afom'

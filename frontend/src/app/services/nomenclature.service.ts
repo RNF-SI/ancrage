@@ -55,5 +55,13 @@ export class NomenclatureService {
           return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
         })
     }
+
+    sortByOrder(objArray:Nomenclature[]){
+      objArray.sort(function(a, b) {
+        var textA = a.ordre!;
+        var textB = b.ordre!;
+        return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+      })
+  }
     
 }

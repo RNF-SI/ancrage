@@ -3,6 +3,6 @@ export interface IGraphRepartition {
     question:string;
     reponse:string;
     theme:string;
-    valeur:number;
+    score:number;
     id_question:number;
 }

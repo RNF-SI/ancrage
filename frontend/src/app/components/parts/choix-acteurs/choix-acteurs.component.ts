@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, input, Input, OnDestroy, signal } from '@angular/core';
+import { Component, effect, inject, input, Input, OnDestroy, output, signal } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -29,6 +29,7 @@ import { SiteService } from '@app/services/sites.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AlerteDiagnosticComponent } from '@app/components/alertes/alerte-diagnostic/alerte-diagnostic.component';
 import { StateService } from '@app/services/state.service';
+import { AlerteSuppressionActeurComponent } from '@app/components/alertes/alerte-suppression-acteur/alerte-suppression-acteur.component';
 
 //Tableau des acteurs
 @Component({
@@ -81,6 +82,7 @@ export class ChoixActeursComponent implements OnDestroy{
   acteurs = signal<Acteur[]>([]);
   @Input({ required: true }) formGroup!: FormGroup;
   router = inject(Router);
+  delete = output<Acteur>();
 
   constructor(){
     effect(() => {
@@ -243,6 +245,24 @@ export class ChoixActeursComponent implements OnDestroy{
         
       }
     });
+  }
+
+  openAlertDisable(acteur:Acteur){
+      const dialogRef = this.dialog.open(AlerteSuppressionActeurComponent, {
+        data: {
+          title: "Supprimer l'acteur'",
+          acteur:acteur,
+          message: "Vous êtes sur le point de supprimer cet acteur. Etes-vous sûr-e de vouloir continuer ?"
+          
+        }
+      });
+
+      dialogRef.afterClosed().subscribe(acteur => {
+        if (acteur) {
+          this.delete.emit(acteur);
+        }
+      });
+      
   }
   
   //Affiche l'alerte avec les infos supplémentaires
