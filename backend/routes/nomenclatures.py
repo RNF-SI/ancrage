@@ -4,6 +4,7 @@ from models.models import *
 from schemas.metier import *
 from routes import bp,joinedload,aliased,and_
 from routes.functions import checkCCG
+from configs.logger_config import logger
 
 @bp.route('/nomenclature/<int:id_nomenclature>', methods=['GET','PUT','DELETE'])
 def nomenclatureMethods(id_nomenclature):
@@ -30,11 +31,18 @@ def getAllNomenclatures():
         usersObj = schema.dump(nomenclatures)
         return jsonify(usersObj)
 
-@bp.route('/nomenclatures/<mnemonique>', defaults={'id_acteur': None},methods=['GET'])
+
+
+@bp.route('/nomenclatures/<mnemonique>', defaults={'id_acteur': None}, methods=['GET'])
 @bp.route('/nomenclatures/<mnemonique>/<int:id_acteur>', methods=['GET'])
-def getAllNomenclaturesByType(mnemonique,id_acteur):
-    
+def getAllNomenclaturesByType(mnemonique, id_acteur):
+    logger.info("➡️  Route /nomenclatures appelée", extra={
+        "mnemonique": mnemonique,
+        "id_acteur": id_acteur
+    })
+
     if mnemonique == "thème" and id_acteur:
+        logger.info("📂 Cas: thème avec id_acteur", extra={"id_acteur": id_acteur})
 
         ValeurNomenclature = aliased(Nomenclature)
         Categorie = aliased(Nomenclature)
@@ -53,35 +61,27 @@ def getAllNomenclaturesByType(mnemonique,id_acteur):
             .outerjoin(Categorie, MotCle.categorie)
             .outerjoin(MotCleAlias, MotCle.mots_cles_groupe)
             .options(
-                joinedload(Nomenclature.questions)
-                    .joinedload(Question.reponses)
-                    .joinedload(Reponse.valeur_reponse),
-
-                joinedload(Nomenclature.questions)
-                    .joinedload(Question.reponses)
-                    .joinedload(Reponse.acteur),
-
-                joinedload(Nomenclature.questions)
-                    .joinedload(Question.reponses)
-                    .joinedload(Reponse.mots_cles)
-                    .joinedload(MotCle.categorie),
-
-                joinedload(Nomenclature.questions)
-                    .joinedload(Question.reponses)
-                    .joinedload(Reponse.mots_cles)
-                    .joinedload(MotCle.mots_cles_groupe),
-
-                # 👇 Chargement des réponses possibles
-                joinedload(Nomenclature.questions)
-                    .joinedload(Question.choixReponses)
+                joinedload(Nomenclature.questions).joinedload(Question.reponses).joinedload(Reponse.valeur_reponse),
+                joinedload(Nomenclature.questions).joinedload(Question.reponses).joinedload(Reponse.acteur),
+                joinedload(Nomenclature.questions).joinedload(Question.reponses).joinedload(Reponse.mots_cles).joinedload(MotCle.categorie),
+                joinedload(Nomenclature.questions).joinedload(Question.reponses).joinedload(Reponse.mots_cles).joinedload(MotCle.mots_cles_groupe),
+                joinedload(Nomenclature.questions).joinedload(Question.choixReponses)
             )
             .order_by(Nomenclature.id_nomenclature)
             .all()
         )
-                        
-        return traitementThemeQuestions(nomenclatures,id_acteur)
-    
+
+        logger.info("✅ Requête exécutée", extra={
+            "mnemonique": mnemonique,
+            "id_acteur": id_acteur,
+            "nb_nomenclatures": len(nomenclatures),
+            "ids": [n.id_nomenclature for n in nomenclatures[:5]]
+        })
+
+        return traitementThemeQuestions(nomenclatures, id_acteur)
+
     elif mnemonique == "thème":
+        logger.info("📂 Cas: thème sans id_acteur")
 
         ValeurNomenclature = aliased(Nomenclature)
         Categorie = aliased(Nomenclature)
@@ -100,45 +100,39 @@ def getAllNomenclaturesByType(mnemonique,id_acteur):
             .outerjoin(Categorie, MotCle.categorie)
             .outerjoin(MotCleAlias, MotCle.mots_cles_groupe)
             .options(
-                joinedload(Nomenclature.questions)
-                    .joinedload(Question.reponses)
-                    .joinedload(Reponse.valeur_reponse),
-
-                joinedload(Nomenclature.questions)
-                    .joinedload(Question.reponses)
-                    .joinedload(Reponse.acteur),
-
-                joinedload(Nomenclature.questions)
-                    .joinedload(Question.reponses)
-                    .joinedload(Reponse.mots_cles)
-                    .joinedload(MotCle.categorie),
-
-                joinedload(Nomenclature.questions)
-                    .joinedload(Question.reponses)
-                    .joinedload(Reponse.mots_cles)
-                    .joinedload(MotCle.mots_cles_groupe),
-
-                # 👇 Chargement des réponses possibles
-                joinedload(Nomenclature.questions)
-                    .joinedload(Question.choixReponses)
+                joinedload(Nomenclature.questions).joinedload(Question.reponses).joinedload(Reponse.valeur_reponse),
+                joinedload(Nomenclature.questions).joinedload(Question.reponses).joinedload(Reponse.acteur),
+                joinedload(Nomenclature.questions).joinedload(Question.reponses).joinedload(Reponse.mots_cles).joinedload(MotCle.categorie),
+                joinedload(Nomenclature.questions).joinedload(Question.reponses).joinedload(Reponse.mots_cles).joinedload(MotCle.mots_cles_groupe),
+                joinedload(Nomenclature.questions).joinedload(Question.choixReponses)
             )
             .order_by(Nomenclature.id_nomenclature)
             .all()
         )
-                        
-        return traitementThemeQuestions(nomenclatures,id_acteur)
-    
+
+        logger.info("✅ Requête exécutée", extra={
+            "mnemonique": mnemonique,
+            "id_acteur": id_acteur,
+            "nb_nomenclatures": len(nomenclatures),
+            "ids": [n.id_nomenclature for n in nomenclatures[:5]]
+        })
+
+        return traitementThemeQuestions(nomenclatures, id_acteur)
+
     elif mnemonique == "thème_question":
+        logger.info("📂 Cas: thème_question", extra={"id_acteur": id_acteur})
         isCCG = checkCCG(id_acteur)
+        logger.info("🔍 checkCCG", extra={"id_acteur": id_acteur, "isCCG": isCCG})
+
+        ValeurNomenclature = aliased(Nomenclature)
+        Categorie = aliased(Nomenclature)
+        MotCleAlias = aliased(MotCle)
+
         if isCCG:
-            ValeurNomenclature = aliased(Nomenclature)
-            Categorie = aliased(Nomenclature)
-            MotCleAlias = aliased(MotCle)
-
             nomenclatures = (
                 db.session.query(Nomenclature)
-                .filter(Nomenclature.mnemonique == "thème_question") 
-                .join(Nomenclature.questions_th)  
+                .filter(Nomenclature.mnemonique == "thème_question")
+                .join(Nomenclature.questions_th)
                 .outerjoin(Reponse, and_(
                     Reponse.question_id == Question.id_question,
                     Reponse.acteur_id == id_acteur
@@ -148,41 +142,31 @@ def getAllNomenclaturesByType(mnemonique,id_acteur):
                 .outerjoin(Categorie, MotCle.categorie)
                 .outerjoin(MotCleAlias, MotCle.mots_cles_groupe)
                 .options(
-                    joinedload(Nomenclature.questions_th)
-                        .joinedload(Question.reponses)
-                        .joinedload(Reponse.valeur_reponse),
-
-                    joinedload(Nomenclature.questions_th)
-                        .joinedload(Question.reponses)
-                        .joinedload(Reponse.acteur),
-
-                    joinedload(Nomenclature.questions_th)
-                        .joinedload(Question.reponses)
-                        .joinedload(Reponse.mots_cles)
-                        .joinedload(MotCle.categorie),
-
-                    joinedload(Nomenclature.questions_th)
-                        .joinedload(Question.reponses)
-                        .joinedload(Reponse.mots_cles)
-                        .joinedload(MotCle.mots_cles_groupe),
-
-                    joinedload(Nomenclature.questions_th)
-                        .joinedload(Question.choixReponses)
+                    joinedload(Nomenclature.questions_th).joinedload(Question.reponses).joinedload(Reponse.valeur_reponse),
+                    joinedload(Nomenclature.questions_th).joinedload(Question.reponses).joinedload(Reponse.acteur),
+                    joinedload(Nomenclature.questions_th).joinedload(Question.reponses).joinedload(Reponse.mots_cles).joinedload(MotCle.categorie),
+                    joinedload(Nomenclature.questions_th).joinedload(Question.reponses).joinedload(Reponse.mots_cles).joinedload(MotCle.mots_cles_groupe),
+                    joinedload(Nomenclature.questions_th).joinedload(Question.choixReponses)
                 )
                 .order_by(Nomenclature.id_nomenclature)
                 .all()
             )
 
+            logger.info("✅ Requête thème_question (CCG) exécutée", extra={
+                "nb_nomenclatures": len(nomenclatures),
+                "ids": [n.id_nomenclature for n in nomenclatures[:5]]
+            })
+
             return traitementParThemeQuestions(nomenclatures, id_acteur)
+
         else:
-            ValeurNomenclature = aliased(Nomenclature)
-            Categorie = aliased(Nomenclature)
-            MotCleAlias = aliased(MotCle)
-
             nomenclatures = (
                 db.session.query(Nomenclature)
-                .filter(Nomenclature.mnemonique == "thème_question",Nomenclature.libelle != "Spécifique à l'instance de gouvernance") 
-                .join(Nomenclature.questions_th)  
+                .filter(
+                    Nomenclature.mnemonique == "thème_question",
+                    Nomenclature.libelle != "Spécifique à l'instance de gouvernance"
+                )
+                .join(Nomenclature.questions_th)
                 .outerjoin(Reponse, and_(
                     Reponse.question_id == Question.id_question,
                     Reponse.acteur_id == id_acteur
@@ -192,36 +176,38 @@ def getAllNomenclaturesByType(mnemonique,id_acteur):
                 .outerjoin(Categorie, MotCle.categorie)
                 .outerjoin(MotCleAlias, MotCle.mots_cles_groupe)
                 .options(
-                    joinedload(Nomenclature.questions_th)
-                        .joinedload(Question.reponses)
-                        .joinedload(Reponse.valeur_reponse),
-
-                    joinedload(Nomenclature.questions_th)
-                        .joinedload(Question.reponses)
-                        .joinedload(Reponse.acteur),
-
-                    joinedload(Nomenclature.questions_th)
-                        .joinedload(Question.reponses)
-                        .joinedload(Reponse.mots_cles)
-                        .joinedload(MotCle.categorie),
-
-                    joinedload(Nomenclature.questions_th)
-                        .joinedload(Question.reponses)
-                        .joinedload(Reponse.mots_cles)
-                        .joinedload(MotCle.mots_cles_groupe),
-
-                    joinedload(Nomenclature.questions_th)
-                        .joinedload(Question.choixReponses)
+                    joinedload(Nomenclature.questions_th).joinedload(Question.reponses).joinedload(Reponse.valeur_reponse),
+                    joinedload(Nomenclature.questions_th).joinedload(Question.reponses).joinedload(Reponse.acteur),
+                    joinedload(Nomenclature.questions_th).joinedload(Question.reponses).joinedload(Reponse.mots_cles).joinedload(MotCle.categorie),
+                    joinedload(Nomenclature.questions_th).joinedload(Question.reponses).joinedload(Reponse.mots_cles).joinedload(MotCle.mots_cles_groupe),
+                    joinedload(Nomenclature.questions_th).joinedload(Question.choixReponses)
                 )
                 .order_by(Nomenclature.id_nomenclature)
                 .all()
             )
+
+            logger.info("✅ Requête thème_question (sans CCG) exécutée", extra={
+                "nb_nomenclatures": len(nomenclatures),
+                "ids": [n.id_nomenclature for n in nomenclatures[:5]]
+            })
+
             return traitementParThemeQuestions(nomenclatures, id_acteur)
+
     else:
+        logger.info("📂 Cas: générique", extra={"mnemonique": mnemonique})
+
         nomenclatures = Nomenclature.query.filter_by(mnemonique=mnemonique).all()
+
+        logger.info("✅ Requête générique exécutée", extra={
+            "mnemonique": mnemonique,
+            "nb_nomenclatures": len(nomenclatures),
+            "ids": [n.id_nomenclature for n in nomenclatures[:5]]
+        })
+
         schema = NomenclatureSchema(many=True)
         nomenclatures_data = schema.dump(nomenclatures)
         return jsonify(nomenclatures_data)
+
             
 def getNomenclature(nomenclature):
     schema = NomenclatureSchema(many=False)
