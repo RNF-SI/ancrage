@@ -5,7 +5,7 @@ export class GraphRepartition {
     question = "";
     reponse= "";
     theme = "";
-    valeur = 0;
+    score = 0;
     id_question=0;
 
     static fromJson(data: IGraphRepartition): GraphRepartition {
@@ -15,7 +15,7 @@ export class GraphRepartition {
             graph.question = data.question;
             graph.nombre = data.nombre;
             graph.reponse = data.reponse;
-            graph.valeur = graph.valeur;
+            graph.score = data.score;
             graph.id_question = graph.id_question;
     
             return graph;

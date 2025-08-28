@@ -59,7 +59,6 @@ export class GraphiquesPersonnalisationComponent {
     questions: this.fb.control<Question[]>([], [Validators.required]),
     acteurs: this.fb.control<Acteur[]>([], [Validators.required]),
     categories: this.fb.control<Nomenclature[]>([], []),  
-    mode :['', [Validators.required]],
     diagnostic: [this.diagnostic(),[Validators.required]]
   });
   chartDataByThemeSorted = signal<{ theme_id: number; theme: string; charts: AvgPerQuestion[] }[]>([]);
@@ -67,6 +66,7 @@ export class GraphiquesPersonnalisationComponent {
   colorPalette = ['#0072B2', '#E69F00', '#009E73', '#F0E442', '#CC79A7', '#D55E00', '#999999'];
   groupedData = signal<{ [question: string]: GraphRepartition[] }>({});
   radarCharts = signal<{ theme: string; data: ChartData<'radar'> }[]>([]);
+  private colorMap = new Map<string, string>();
   radarChartOptions: ChartOptions<'radar'> = {
       responsive: true,
       plugins: {
@@ -107,6 +107,25 @@ export class GraphiquesPersonnalisationComponent {
       });
 
     });
+
+    effect(() =>{
+   
+      this.formGroup.get('categories')?.valueChanges.subscribe(selectedCategories => {
+        
+        if (!selectedCategories) return;
+    
+        // on suppose que chaque catégorie a un id_nomenclature
+        const selectedCategoryIds = selectedCategories.map((c: Nomenclature) => c.id_nomenclature);
+        console.log(selectedCategoryIds);
+        // filtre les acteurs dont la catégorie est incluse
+        const matchedActeurs = this.acteurs().filter(act =>
+          act.categories?.some(cat => selectedCategoryIds.includes(cat.id_nomenclature))
+        );
+        console.log(matchedActeurs);
+        // met à jour le formControl des acteurs
+        this.formGroup.get('acteurs')?.setValue(matchedActeurs);
+      });
+    });
   }
 
   sendParameters(event: Event){
@@ -130,15 +149,7 @@ export class GraphiquesPersonnalisationComponent {
   private getCharts(graphs:GraphMoy[],repartitions:GraphRepartition[],radars:GraphRadar[]): void {
       const normalize = (str: string) => str.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/’/g, "'").trim();
       const LABELS_TO_EXCLUDE = ["attentes", "Sentiment d'être concerné"].map(normalize);
-  
-    /*     if (graphs.length === 0 || repartitions.length === 0 || radars.length === 0){
-          this.has_data_graphs = false;
-          this.message += this.message_graphs;
-        }
-        if(motsCles.length === 0){
-          this.has_data_afom = false;
-          this.message += this.message_afom;
-        } */
+
         const grouped = new Map<string, GraphMoy[]>();
         for (const entry of graphs) {
           const label = normalize(entry.question ?? '');
@@ -185,14 +196,24 @@ export class GraphiquesPersonnalisationComponent {
         this.groupedData.set(repartitionGrouped);
   
         const chartRepartition: { [question: string]: ChartData<'pie'> } = {};
+
         for (const question in repartitionGrouped) {
-          const responses = repartitionGrouped[question].filter(r => !LABELS_TO_EXCLUDE.includes(normalize(r.reponse || '')));
+          const responses = repartitionGrouped[question]
+            .filter(r => !LABELS_TO_EXCLUDE.includes(normalize(r.reponse || '')));
+          
           const labels = responses.map(r => r.reponse);
           const data = responses.map(r => r.nombre);
-          const backgroundColors = labels.map((_, i) => this.colorPalette[i % this.colorPalette.length]);
-          chartRepartition[question] = { labels, datasets: [{ data, backgroundColor: backgroundColors }] };
+
+          // couleur basée sur le score
+          const backgroundColors = responses.map(r => this.colorPalette[r.score]);
+
+          chartRepartition[question] = { 
+            labels, 
+            datasets: [{ data, backgroundColor: backgroundColors }] 
+          };
         }
-        this.chartDataRepartition.set(chartRepartition); 
+
+        this.chartDataRepartition.set(chartRepartition);
   
         const radarMap = new Map<string, GraphRadar[]>();
         for (const r of radars) {
@@ -212,8 +233,8 @@ export class GraphiquesPersonnalisationComponent {
               label: cat,
               data,
               borderColor: color,
-              backgroundColor: color + '66',
-              pointBackgroundColor: color
+              backgroundColor: 'transparent',
+              fill: false
             };
           });
           return { theme, data: { labels, datasets } };
@@ -234,8 +255,20 @@ export class GraphiquesPersonnalisationComponent {
       link.click();
     }
 
-      getChartData(question: string): ChartData<'pie'> {
-        console.log(this.chartDataRepartition());
-        return this.chartDataRepartition()[question];
+    getChartData(question: string): ChartData<'pie'> {
+      console.log(this.chartDataRepartition());
+      return this.chartDataRepartition()[question];
+    }
+
+    selectActors(){
+      
+    }
+
+    private getColorForLabel(label: string): string {
+      if (!this.colorMap.has(label)) {
+        const nextColor = this.colorPalette[this.colorMap.size % this.colorPalette.length];
+        this.colorMap.set(label, nextColor);
       }
+      return this.colorMap.get(label)!;
+    }
 }

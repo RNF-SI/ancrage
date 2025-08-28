@@ -31,4 +31,15 @@ export class QuestionService {
         })
       );
   }
+
+  getAllWithLimit(limit:number): Observable<Question[]> {
+    return this.http.get<IQuestion[]>(this.GET_ALL_URL+"/"+limit).pipe(
+      shareReplay(1),
+      map(questionsJsonArray => {
+        return questionsJsonArray.map<Question>(
+          questionJson => Question.fromJson(questionJson)
+        )
+      })
+    );
+}
 }

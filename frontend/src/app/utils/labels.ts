@@ -85,4 +85,5 @@ export class Labels {
     reinitialization = "Rénitialisation";
     customization = "Personnalisation des graphiques";
     questions = "questions";
+    writeTitle = "Donner un titre";
 }

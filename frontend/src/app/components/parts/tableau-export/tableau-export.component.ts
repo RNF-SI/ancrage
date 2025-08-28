@@ -32,7 +32,7 @@ export class TableauExportComponent {
 
       forkJoin({
         cats$: this.nomenclatureService.getAllByType("categorie"),
-        questions$: this.questionService.getAll(),
+        questions$: this.questionService.getAllWithLimit(25),
       }).subscribe(({ cats$, questions$ }) => {
         this.nomenclatureService.sortByOrder(cats$);
         this.categories.set(cats$);

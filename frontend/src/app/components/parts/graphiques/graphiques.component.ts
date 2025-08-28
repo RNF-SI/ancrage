@@ -13,7 +13,7 @@ import { Labels } from '@app/utils/labels';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTabsModule } from '@angular/material/tabs';
-import { GraphiquesPersonnalisationComponent } from "./graphiques-personnalisation/graphiques-personnalisation.component";
+
 
 //Composant qui affcihe les graphiques
 
@@ -26,7 +26,7 @@ export interface RadarChart {
   selector: 'app-graphiques',
   templateUrl: './graphiques.component.html',
   styleUrls: ['./graphiques.component.css'],
-  imports: [CommonModule, MatTabsModule, NgChartsModule, MatButtonModule, GraphiquesPersonnalisationComponent]
+  imports: [CommonModule, MatTabsModule, NgChartsModule, MatButtonModule]
 })
 export class GraphiquesComponent {
   @Input('diagnostic') 
@@ -101,6 +101,7 @@ export class GraphiquesComponent {
       this.diagnosticService.getRadars(id_diagnostic),
       this.diagnosticService.getOccurencesKeyWords(id_diagnostic)
     ]).subscribe(([graphs, repartitions, radars, motsCles]) => {
+      console.log(repartitions);
       if (graphs.length === 0 || repartitions.length === 0 || radars.length === 0){
         this.has_data_graphs = false;
         this.message += this.message_graphs;
@@ -155,13 +156,23 @@ export class GraphiquesComponent {
       this.groupedData.set(repartitionGrouped);
 
       const chartRepartition: { [question: string]: ChartData<'pie'> } = {};
+
       for (const question in repartitionGrouped) {
-        const responses = repartitionGrouped[question].filter(r => !LABELS_TO_EXCLUDE.includes(normalize(r.reponse || '')));
+        const responses = repartitionGrouped[question]
+          .filter(r => !LABELS_TO_EXCLUDE.includes(normalize(r.reponse || '')));
+        
         const labels = responses.map(r => r.reponse);
         const data = responses.map(r => r.nombre);
-        const backgroundColors = labels.map((_, i) => this.colorPalette[i % this.colorPalette.length]);
-        chartRepartition[question] = { labels, datasets: [{ data, backgroundColor: backgroundColors }] };
+      
+        // couleur basée sur le score
+        const backgroundColors = responses.map(r => this.colorPalette[r.score]);
+
+        chartRepartition[question] = { 
+          labels, 
+          datasets: [{ data, backgroundColor: backgroundColors }] 
+        };
       }
+
       this.chartDataRepartition.set(chartRepartition);
 
       this.data.set(motsCles);
@@ -185,8 +196,8 @@ export class GraphiquesComponent {
             label: cat,
             data,
             borderColor: color,
-            backgroundColor: color + '66',
-            pointBackgroundColor: color
+            backgroundColor: 'transparent',
+            fill: false  
           };
         });
         return { theme, data: { labels, datasets } };

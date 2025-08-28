@@ -31,13 +31,31 @@ import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinne
 import { AlerteDesactivationDiagComponent } from '../alertes/alerte-desactivation-diag/alerte-desactivation-diag.component';
 import { StateService } from '@app/services/state.service';
 import { TableauExportComponent } from "../parts/tableau-export/tableau-export.component";
+import { GraphiquesPersonnalisationComponent } from '../parts/graphiques/graphiques-personnalisation/graphiques-personnalisation.component';
 
 @Component({
     selector: 'app-diagnostic-visualisation',
     templateUrl: './diagnostic-visualisation.component.html',
     styleUrls: ['./diagnostic-visualisation.component.css'],
     standalone:true,
-    imports: [ChoixActeursComponent, CommonModule, MatButtonModule, GraphiquesComponent, GraphiquesComponent, MatTabsModule, MenuLateralComponent, MenuLateralComponent, TableauStructuresComponent, TableauStructuresComponent, MapComponent, MotsClesZoneComponent, MatMomentDateModule, LoadingSpinnerComponent, TableauExportComponent]
+    imports: [
+      ChoixActeursComponent,
+      CommonModule, 
+      MatButtonModule, 
+      GraphiquesComponent, 
+      GraphiquesComponent, 
+      MatTabsModule, 
+      MenuLateralComponent, 
+      MenuLateralComponent, 
+      TableauStructuresComponent, 
+      TableauStructuresComponent, 
+      MapComponent, 
+      MotsClesZoneComponent, 
+      MatMomentDateModule, 
+      LoadingSpinnerComponent, 
+      TableauExportComponent,
+      GraphiquesPersonnalisationComponent
+    ]
 })
 export class DiagnosticVisualisationComponent implements OnDestroy{
 

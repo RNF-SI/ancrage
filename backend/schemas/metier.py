@@ -167,6 +167,7 @@ class ActeurLiteSchema(SQLAlchemyAutoSchema):
         load_instance = True
         exclude = ('diagnostic',)
     commune = fields.Nested(lambda: CommuneSchema, exclude=())
+    categories = fields.Nested(lambda: NomenclatureLightSchema, many=True, exclude=("mots_cles",))
 
 class ReponseSchema(SQLAlchemyAutoSchema):
     class Meta:

@@ -150,7 +150,7 @@ def getAveragebyQuestion(id_diagnostic):
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
         .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
         .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False)
+        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "")
         .group_by(
             Theme.id_nomenclature,
             Question.id_question,
@@ -195,7 +195,7 @@ def get_reponses_par_theme(id_diagnostic):
         .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
         .join(Question, Reponse.question_id == Question.id_question)
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False)
+        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "")
         .group_by(Theme.id_nomenclature, Question.id_question, ValeurReponse.value, ValeurReponse.libelle)
         .order_by(Theme.id_nomenclature,Question.id_question, ValeurReponse.value)
         .all()
@@ -208,7 +208,7 @@ def get_reponses_par_theme(id_diagnostic):
             "question": r.question,
             "reponse": r.reponse,
             "nombre": r.nombre,
-            "valeur": r.valeur,
+            "score": r.valeur,
             "id_question":r.id_question,
             "theme_id":r.theme_id
         }
@@ -226,11 +226,6 @@ def getAveragebyQuestionParams():
     act_ids=[]
     for act in acteurs:
         act_ids.append(act['id_acteur'])
-      
-    categories = data['categories']
-    cat_ids=[]
-    for cat in categories:
-        cat_ids.append(cat['id_nomenclature'])
 
     questions = data['questions']
     quest_ids=[]
@@ -260,7 +255,7 @@ def getAveragebyQuestionParams():
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
         .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
         .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.id_question.in_(quest_ids),Acteur.id_acteur.in_(act_ids))
+        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "",Question.id_question.in_(quest_ids),Acteur.id_acteur.in_(act_ids))
         .group_by(
             Theme.id_nomenclature,
             Question.id_question,
@@ -317,7 +312,7 @@ def get_reponses_par_themeParams():
         .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
         .join(Question, Reponse.question_id == Question.id_question)
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.id_question.in_(quest_ids),Acteur.id_acteur.in_(act_ids))
+        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "",Question.id_question.in_(quest_ids),Acteur.id_acteur.in_(act_ids))
         .group_by(Theme.id_nomenclature, Question.id_question, ValeurReponse.value, ValeurReponse.libelle)
         .order_by(Theme.id_nomenclature,Question.id_question, ValeurReponse.value)
         .all()
@@ -330,7 +325,7 @@ def get_reponses_par_themeParams():
             "question": r.question,
             "reponse": r.reponse,
             "nombre": r.nombre,
-            "valeur": r.valeur,
+            "score": r.valeur,
             "id_question":r.id_question,
             "theme_id":r.theme_id
         }
@@ -380,7 +375,7 @@ def get_scores(id_diagnostic):
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
         .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
         .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False)
+        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "",)
         .group_by(Theme.id_nomenclature,Question.id_question,Question.libelle_graphique,Categorie.libelle,Theme.libelle)
         .order_by(Theme.id_nomenclature,Question.id_question)
         .all()
@@ -439,7 +434,7 @@ def get_scoresParams():
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
         .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
         .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.id_question.in_(quest_ids),Acteur.id_acteur.in_(act_ids))
+        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "",Question.id_question.in_(quest_ids),Acteur.id_acteur.in_(act_ids))
         .group_by(Theme.id_nomenclature,Question.id_question,Question.libelle_graphique,Categorie.libelle,Theme.libelle)
         .order_by(Theme.id_nomenclature,Question.id_question)
         .all()
@@ -717,7 +712,6 @@ def get_afoms_par_mot_cle_et_diagnostic(id_diagnostic):
     return jsonify(data)   
 
 def deleteActors(diagnostic_id):
-     
     Acteur.query.filter(
         Acteur.diagnostic_id == diagnostic_id,
         Acteur.is_copy == True

@@ -20,11 +20,15 @@ def get_question_without_relations(libelle):
     questionObj = schema.dump(question)
     return jsonify(questionObj)  
 
-@bp.route('/questions', methods=['GET'])
-def get_questions():
-    questions = Question.query.filter(Question.metrique <= 25).order_by(Question.metrique).all()
+@bp.route('/questions', defaults={'limit': None} ,methods=['GET'])
+@bp.route('/questions/<int:limit>', methods=['GET'])
+def get_questions(limit):
+    if limit:
+        questions = Question.query.filter(Question.indications != "",Question.metrique <= limit).order_by(Question.metrique).all()
+    else:
+        questions = Question.query.filter(Question.indications != "").order_by(Question.metrique).all()
 
     schema = QuestionSchema(many=True,exclude = ("reponses", "theme", "choixReponses", "theme_question"))
 
     questionObj = schema.dump(questions)
-    return jsonify(questionObj)  
+    return jsonify(questionObj)
