@@ -84,6 +84,7 @@ export class Labels {
     mode = "Mode";
     reinitialization = "Rénitialisation";
     customization = "Personnalisation des graphiques";
-    questions = "questions";
+    questions = "Questions";
     writeTitle = "Donner un titre";
+    validate = "Valider";
 }

@@ -21,6 +21,8 @@ import { forkJoin } from 'rxjs';
 import { ChartData, ChartOptions, RadialLinearScaleOptions } from 'chart.js';
 import { GraphRadar } from '@app/models/graph-radar.model';
 import { GraphRepartition } from '@app/models/graph-repartition.model';
+import { AlerteTitreComponent } from '@app/components/alertes/alerte-titre/alerte-titre.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-graphiques-personnalisation',
@@ -66,7 +68,7 @@ export class GraphiquesPersonnalisationComponent {
   colorPalette = ['#0072B2', '#E69F00', '#009E73', '#F0E442', '#CC79A7', '#D55E00', '#999999'];
   groupedData = signal<{ [question: string]: GraphRepartition[] }>({});
   radarCharts = signal<{ theme: string; data: ChartData<'radar'> }[]>([]);
-  private colorMap = new Map<string, string>();
+  dialog = inject(MatDialog);
   radarChartOptions: ChartOptions<'radar'> = {
       responsive: true,
       plugins: {
@@ -116,12 +118,12 @@ export class GraphiquesPersonnalisationComponent {
     
         // on suppose que chaque catégorie a un id_nomenclature
         const selectedCategoryIds = selectedCategories.map((c: Nomenclature) => c.id_nomenclature);
-        console.log(selectedCategoryIds);
+    
         // filtre les acteurs dont la catégorie est incluse
         const matchedActeurs = this.acteurs().filter(act =>
           act.categories?.some(cat => selectedCategoryIds.includes(cat.id_nomenclature))
         );
-        console.log(matchedActeurs);
+       
         // met à jour le formControl des acteurs
         this.formGroup.get('acteurs')?.setValue(matchedActeurs);
       });
@@ -139,7 +141,6 @@ export class GraphiquesPersonnalisationComponent {
         radars$: this.diagnosticService.getRadarsParams(this.parameters)
        
       }).subscribe(({ graphs$, repartitions$, radars$}) => {
-        console.log(repartitions$);
         this.getCharts(graphs$,repartitions$,radars$);
       });
 
@@ -245,30 +246,24 @@ export class GraphiquesPersonnalisationComponent {
     }
 
     exportChart(classe:string,titre:string) {
-      const canvas = document.querySelector("."+classe) as HTMLCanvasElement;
+      const canvas = document.querySelector("."+ classe) as HTMLCanvasElement;
       const image = canvas.toDataURL('image/png');
-      
+      const dialogRef = this.dialog.open(AlerteTitreComponent);
+      dialogRef.afterClosed().subscribe(titreGraph=>{
+        
+        const link = document.createElement('a');
+        link.href = image;
+        link.download = titre+'-'+titreGraph+'.png';
+        link.click();
+      });
+    
       // Création du lien pour téléchargement
-      const link = document.createElement('a');
-      link.href = image;
-      link.download = titre+'.png';
-      link.click();
+      
     }
 
     getChartData(question: string): ChartData<'pie'> {
-      console.log(this.chartDataRepartition());
+ 
       return this.chartDataRepartition()[question];
     }
 
-    selectActors(){
-      
-    }
-
-    private getColorForLabel(label: string): string {
-      if (!this.colorMap.has(label)) {
-        const nextColor = this.colorPalette[this.colorMap.size % this.colorPalette.length];
-        this.colorMap.set(label, nextColor);
-      }
-      return this.colorMap.get(label)!;
-    }
 }

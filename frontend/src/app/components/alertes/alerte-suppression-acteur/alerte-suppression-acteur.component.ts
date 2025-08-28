@@ -33,7 +33,6 @@ export class AlerteSuppressionActeurComponent {
   disable(){
     this.actorService.disableActor(this.data.acteur).subscribe(acteur =>{
       const path = '/diagnostic-visualisation/'+acteur.diagnostic?.id_diagnostic+'/'+acteur.diagnostic?.slug;
-      console.log(path);
       this.router.navigate([path]);
       this.dialogRef.close(acteur);
     })

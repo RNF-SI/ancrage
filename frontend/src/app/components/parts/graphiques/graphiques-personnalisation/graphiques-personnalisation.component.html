@@ -2,7 +2,7 @@
     <form [formGroup]="formGroup" (submit)="sendParameters($event)" class="col-center">
         <mat-form-field appearance="fill" class="select">
             <mat-label>{{ labels.questions }}</mat-label>
-            <mat-select multiple="true"  formControlName="questions" (selectionChange) ="selectActors()">
+            <mat-select multiple="true"  formControlName="questions">
                 @for (q of questions(); track q.id_question) {
                     <mat-option [value]="q">{{q.libelle_graphique}}</mat-option>
                 }
@@ -42,7 +42,7 @@
                 <h2 class="text-center">{{ themeEntry.theme }}</h2>
           
                 
-                  @for (chart of radarCharts(); track chart) {
+                  <!-- @for (chart of radarCharts(); track chart) {
                     @if (chart.theme === themeEntry.theme) {
                       <div>
                         <canvas class="graph-radar-{{ chart.theme }}" baseChart
@@ -55,12 +55,12 @@
                         </button>
                       </div>
                     }
-                  }
+                  } -->
                 
           
                 @for (chart of themeEntry.charts; track chart) {
                   <div class="mb-4" [attr.id]="'question-' + chart.id_question">
-                    <h3 class="text-center">{{ chart.question }}</h3>
+                    <h3 class="text-center">{{ chart.question }} ({{formGroup.get('acteurs')?.value?.length}} acteurs)</h3>
                     <div class="grid-6-6">
                       <div class="col-span-6 d-flex flex-column align-items-center justify-content-center">
                         <canvas class="graph{{ chart.id_question }}" baseChart

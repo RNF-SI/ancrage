@@ -101,7 +101,6 @@ export class GraphiquesComponent {
       this.diagnosticService.getRadars(id_diagnostic),
       this.diagnosticService.getOccurencesKeyWords(id_diagnostic)
     ]).subscribe(([graphs, repartitions, radars, motsCles]) => {
-      console.log(repartitions);
       if (graphs.length === 0 || repartitions.length === 0 || radars.length === 0){
         this.has_data_graphs = false;
         this.message += this.message_graphs;
