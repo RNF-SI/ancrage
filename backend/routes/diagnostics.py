@@ -150,7 +150,7 @@ def getAveragebyQuestion(id_diagnostic):
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
         .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
         .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "",ValeurReponse.libelle != "N'a pas exprimé de réponse claire")
+        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "")
         .group_by(
             Theme.id_nomenclature,
             Question.id_question,
@@ -195,7 +195,7 @@ def get_reponses_par_theme(id_diagnostic):
         .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
         .join(Question, Reponse.question_id == Question.id_question)
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "",ValeurReponse.libelle != "N'a pas exprimé de réponse claire")
+        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "")
         .group_by(Theme.id_nomenclature, Question.id_question, ValeurReponse.value, ValeurReponse.libelle)
         .order_by(Theme.id_nomenclature,Question.id_question, ValeurReponse.value)
         .all()
@@ -232,10 +232,25 @@ def getAveragebyQuestionParams():
     for quest in questions:
         quest_ids.append(quest['id_question'])
         print(quest['id_question'])
+
+    is_displayed = data['is_displayed']
     # Aliases pour les différentes utilisations de Nomenclature
     ValeurReponse = aliased(Nomenclature)     # tn
     Categorie = aliased(Nomenclature)         # tn3
     Theme = aliased(Nomenclature)             # tn4
+
+
+    filters = [
+        Diagnostic.id_diagnostic == id_diagnostic,
+        Acteur.is_deleted == False,
+        Question.indications != "",
+        Question.id_question.in_(quest_ids),
+        Acteur.id_acteur.in_(act_ids)
+    ]
+
+
+    if not is_displayed:
+        filters.append(ValeurReponse.libelle != "N'a pas exprimé de réponse claire")
 
     
     query = (
@@ -255,7 +270,7 @@ def getAveragebyQuestionParams():
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
         .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
         .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "",Question.id_question.in_(quest_ids),Acteur.id_acteur.in_(act_ids),ValeurReponse.libelle != "N'a pas exprimé de réponse claire")
+        .filter(*filters)
         .group_by(
             Theme.id_nomenclature,
             Question.id_question,
@@ -292,9 +307,22 @@ def get_reponses_par_themeParams():
     quest_ids=[]
     for quest in questions:
         quest_ids.append(quest['id_question'])
+    
+    is_displayed = data['is_displayed']
 
     ValeurReponse = aliased(Nomenclature)
     Theme = aliased(Nomenclature)
+
+    filters = [
+        Diagnostic.id_diagnostic == id_diagnostic,
+        Acteur.is_deleted == False,
+        Question.indications != "",
+        Question.id_question.in_(quest_ids),
+        Acteur.id_acteur.in_(act_ids)
+    ]
+
+    if not is_displayed:
+        filters.append(ValeurReponse.libelle != "N'a pas exprimé de réponse claire")
 
     results = (
         db.session.query(
@@ -312,7 +340,7 @@ def get_reponses_par_themeParams():
         .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
         .join(Question, Reponse.question_id == Question.id_question)
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "",Question.id_question.in_(quest_ids),Acteur.id_acteur.in_(act_ids),ValeurReponse.libelle != "N'a pas exprimé de réponse claire")
+        .filter(*filters) 
         .group_by(Theme.id_nomenclature, Question.id_question, ValeurReponse.value, ValeurReponse.libelle)
         .order_by(Theme.id_nomenclature,Question.id_question, ValeurReponse.value)
         .all()
@@ -375,7 +403,7 @@ def get_scores(id_diagnostic):
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
         .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
         .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "",ValeurReponse.libelle != "N'a pas exprimé de réponse claire")
+        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "")
         .group_by(Theme.id_nomenclature,Question.id_question,Question.libelle_graphique,Categorie.libelle,Theme.libelle)
         .order_by(Theme.id_nomenclature,Question.id_question)
         .all()
@@ -434,7 +462,7 @@ def get_scoresParams():
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
         .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
         .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
-        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "",Question.id_question.in_(quest_ids),Acteur.id_acteur.in_(act_ids),ValeurReponse.libelle != "N'a pas exprimé de réponse claire")
+        .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "",Question.id_question.in_(quest_ids),Acteur.id_acteur.in_(act_ids))
         .group_by(Theme.id_nomenclature,Question.id_question,Question.libelle_graphique,Categorie.libelle,Theme.libelle)
         .order_by(Theme.id_nomenclature,Question.id_question)
         .all()

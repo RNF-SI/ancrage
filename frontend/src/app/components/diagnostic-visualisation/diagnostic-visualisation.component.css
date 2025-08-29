@@ -30,4 +30,9 @@
     gap: 1rem;
   }
 
+  .block{
+    display: block;
+    margin-top: 2%;
+  }
+
  

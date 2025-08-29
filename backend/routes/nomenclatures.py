@@ -80,44 +80,7 @@ def getAllNomenclaturesByType(mnemonique, id_acteur):
 
         return traitementThemeQuestions(nomenclatures, id_acteur)
 
-    elif mnemonique == "thème":
-        logger.info("📂 Cas: thème sans id_acteur")
-
-        ValeurNomenclature = aliased(Nomenclature)
-        Categorie = aliased(Nomenclature)
-        MotCleAlias = aliased(MotCle)
-
-        nomenclatures = (
-            db.session.query(Nomenclature)
-            .filter(Nomenclature.mnemonique == "thème")
-            .join(Nomenclature.questions)
-            .outerjoin(Reponse, and_(
-                Reponse.question_id == Question.id_question,
-                Reponse.acteur_id == id_acteur
-            ))
-            .outerjoin(ValeurNomenclature, Reponse.valeur_reponse_id == ValeurNomenclature.id_nomenclature)
-            .outerjoin(Reponse.mots_cles)
-            .outerjoin(Categorie, MotCle.categorie)
-            .outerjoin(MotCleAlias, MotCle.mots_cles_groupe)
-            .options(
-                joinedload(Nomenclature.questions).joinedload(Question.reponses).joinedload(Reponse.valeur_reponse),
-                joinedload(Nomenclature.questions).joinedload(Question.reponses).joinedload(Reponse.acteur),
-                joinedload(Nomenclature.questions).joinedload(Question.reponses).joinedload(Reponse.mots_cles).joinedload(MotCle.categorie),
-                joinedload(Nomenclature.questions).joinedload(Question.reponses).joinedload(Reponse.mots_cles).joinedload(MotCle.mots_cles_groupe),
-                joinedload(Nomenclature.questions).joinedload(Question.choixReponses)
-            )
-            .order_by(Nomenclature.id_nomenclature)
-            .all()
-        )
-
-        logger.info("✅ Requête exécutée", extra={
-            "mnemonique": mnemonique,
-            "id_acteur": id_acteur,
-            "nb_nomenclatures": len(nomenclatures),
-            "ids": [n.id_nomenclature for n in nomenclatures[:5]]
-        })
-
-        return traitementThemeQuestions(nomenclatures, id_acteur)
+    
 
     elif mnemonique == "thème_question":
         logger.info("📂 Cas: thème_question", extra={"id_acteur": id_acteur})
@@ -207,7 +170,86 @@ def getAllNomenclaturesByType(mnemonique, id_acteur):
         schema = NomenclatureSchema(many=True)
         nomenclatures_data = schema.dump(nomenclatures)
         return jsonify(nomenclatures_data)
+    
+@bp.route('/nomenclatures/thème/diag/<int:id_diagnostic>', methods=['GET'])
+def getThemes(id_diagnostic):        
+    logger.info("📂 Cas: thème sans id_acteur mais avec id_diagnostic")
 
+    ValeurNomenclature = aliased(Nomenclature)
+    Categorie = aliased(Nomenclature)
+    MotCleAlias = aliased(MotCle)
+    if id_diagnostic:
+        try:
+            nomenclatures = (
+                db.session.query(Nomenclature)
+                .filter(Nomenclature.mnemonique == "thème")
+                .join(Nomenclature.questions)
+                .outerjoin(
+                    Reponse,
+                    and_(
+                        Reponse.question_id == Question.id_question,
+                        
+                    ),
+                )
+                .outerjoin(
+                    ValeurNomenclature,
+                    Reponse.valeur_reponse_id == ValeurNomenclature.id_nomenclature,
+                )
+                .outerjoin(Reponse.mots_cles)
+                .outerjoin(Categorie, MotCle.categorie)
+                .outerjoin(MotCleAlias, MotCle.mots_cles_groupe)
+                .outerjoin(
+                    Acteur, Acteur.id_acteur == Reponse.acteur_id
+                )
+                .outerjoin(
+                    Diagnostic,
+                    and_(
+                        Diagnostic.id_diagnostic == Acteur.diagnostic_id,
+                        Diagnostic.id_diagnostic == id_diagnostic,
+                    ),
+                )
+                .options(
+                    joinedload(Nomenclature.questions)
+                    .joinedload(Question.reponses)
+                    .joinedload(Reponse.valeur_reponse),
+                    joinedload(Nomenclature.questions)
+                    .joinedload(Question.reponses)
+                    .joinedload(Reponse.acteur),
+                    joinedload(Nomenclature.questions)
+                    .joinedload(Question.reponses)
+                    .joinedload(Reponse.mots_cles)
+                    .joinedload(MotCle.categorie),
+                    joinedload(Nomenclature.questions)
+                    .joinedload(Question.reponses)
+                    .joinedload(Reponse.mots_cles)
+                    .joinedload(MotCle.mots_cles_groupe),
+                    joinedload(Nomenclature.questions).joinedload(Question.choixReponses),
+                )
+                .order_by(Nomenclature.id_nomenclature)
+                .all()
+            )
+
+            logger.info(
+                "✅ Requête exécutée",
+                extra={
+                    "mnemonique": "thème",
+                    "id_diagnostic":id_diagnostic,
+                    "nb_nomenclatures": len(nomenclatures),
+                    "ids": [n.id_nomenclature for n in nomenclatures[:5]],
+                },
+            )
+
+        except Exception as e:
+            logger.exception(
+                "❌ Erreur lors de l'exécution de la requête",
+                extra={
+                    "mnemonique": "thème",
+                    "id_diagnostic":id_diagnostic,
+                },
+            )
+            raise 
+
+        return traitementThemeQuestions(nomenclatures, id_diagnostic)
             
 def getNomenclature(nomenclature):
     schema = NomenclatureSchema(many=False)

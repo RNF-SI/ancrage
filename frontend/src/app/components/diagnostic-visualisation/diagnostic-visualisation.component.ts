@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, ViewChild,signal, effect } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ViewChild,signal, effect, input } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
@@ -30,8 +30,12 @@ import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinner/loading-spinner.component';
 import { AlerteDesactivationDiagComponent } from '../alertes/alerte-desactivation-diag/alerte-desactivation-diag.component';
 import { StateService } from '@app/services/state.service';
-import { TableauExportComponent } from "../parts/tableau-export/tableau-export.component";
 import { GraphiquesPersonnalisationComponent } from '../parts/graphiques/graphiques-personnalisation/graphiques-personnalisation.component';
+import { Question } from '@app/models/question.model';
+import { QuestionService } from '@app/services/question.service';
+import { ActeurService } from '@app/services/acteur.service';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 @Component({
     selector: 'app-diagnostic-visualisation',
@@ -52,8 +56,7 @@ import { GraphiquesPersonnalisationComponent } from '../parts/graphiques/graphiq
       MapComponent, 
       MotsClesZoneComponent, 
       MatMomentDateModule, 
-      LoadingSpinnerComponent, 
-      TableauExportComponent,
+      LoadingSpinnerComponent,
       GraphiquesPersonnalisationComponent
     ]
 })
@@ -110,6 +113,10 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   index=0;
   private initDone = signal(false);
   private stateService = inject(StateService);
+  categories = signal<Nomenclature[]>([]);
+  questions = signal<Question[]>([]);
+  private questionService = inject(QuestionService)
+  private acteurService = inject(ActeurService);
 
   constructor() {
     effect(() => {
@@ -133,11 +140,14 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   
         forkJoin({
           diag: this.diagnosticService.get(id, slugValue),
-          themes: this.nomenclatureService.getAllByType('thème'),
-        }).subscribe(({ diag, themes }) => {
+          themes: this.nomenclatureService.getThemes(id),
+          cats$: this.nomenclatureService.getAllByType("categorie"),
+          questions$: this.questionService.getAllWithLimit(25),
+        }).subscribe(({ diag, themes,cats$, questions$ }) => {
           this.diagnostic.set(diag);
           this.diag = this.diagnostic();
           this.themes.set(themes);
+          console.log(themes);
           this.actors.set(this.diagnostic().acteurs);
           const user = this.authService.getCurrentUser();
           this.id_role.set(user.id_role);
@@ -147,6 +157,11 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   
           this.is_read_only.set(isReadOnly);
           this.isLoading=false;
+
+          this.nomenclatureService.sortByOrder(cats$);
+          this.categories.set(cats$);
+          this.acteurService.sortByNameAndSelected(this.actors());
+          this.questions.set(questions$);
         });
       }
     });
@@ -330,6 +345,57 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
     this.docDeleteSub = this.diagnosticService.deleteDocument(document).subscribe(diag =>{
       this.diagnostic.set(diag);
     })
+  }
+
+  getReponse(act: Acteur, id_question: number): number | string{
+    const rep = act.reponses?.find(r => r.question?.id_question === id_question);
+    return rep ? rep.valeur_reponse.value : 'NULL';
+  }
+
+  getCategory(act: Acteur, id_nomenclature: number){
+    const acteur = act.categories?.some(cate => cate.id_nomenclature === id_nomenclature) ? 1: 0
+    return acteur;
+  }
+
+  exportXls() {
+    const rows: any[][] = [];
+
+    // ---- Ligne d’en-tête ----
+    const header = [
+      'Individu',
+      ...this.categories().map(c => `${c.libelle}`),
+      ...this.questions().map(q => `${q.libelle_graphique}`)
+    ];
+    rows.push(header);
+  
+    // ---- Lignes pour chaque acteur ----
+    this.actors().forEach((act, index) => {
+      const row: any[] = [];
+  
+      row.push(`acteur${index + 1}`);
+  
+      // Catégories
+      for (const cat of this.categories()) {
+        row.push(this.getCategory(act, cat.id_nomenclature));
+      }
+  
+      // Réponses
+      for (const q of this.questions()) {
+        row.push(this.getReponse(act, q.id_question));
+      }
+  
+      rows.push(row);
+    });
+  
+    // ---- Création d’un workbook Excel ----
+    const worksheet = XLSX.utils.aoa_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Export');
+  
+    // ---- Génération du fichier ----
+    const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    saveAs(new Blob([wbout], { type: 'application/octet-stream' }), 
+      'export-' + this.diagnostic().nom + '.xlsx');
   }
 
 }

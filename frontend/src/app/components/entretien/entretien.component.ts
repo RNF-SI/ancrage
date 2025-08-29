@@ -30,7 +30,17 @@ import { StateService } from '@app/services/state.service';
     templateUrl: './entretien.component.html',
     styleUrls: ['./entretien.component.css'],
     standalone:true,
-    imports: [CommonModule, MatRadioModule, ReactiveFormsModule, MatRadioModule, MatButtonModule, MenuLateralComponent, FontAwesomeModule, MotsClesZoneComponent, MatTabsModule]
+    imports: [
+      CommonModule, 
+      MatRadioModule, 
+      ReactiveFormsModule, 
+      MatRadioModule, 
+      MatButtonModule, 
+      MenuLateralComponent, 
+      FontAwesomeModule, 
+      MotsClesZoneComponent, 
+      MatTabsModule
+    ]
 })
 export class EntretienComponent implements OnDestroy{
  
@@ -96,7 +106,7 @@ export class EntretienComponent implements OnDestroy{
   }
 
   isChoixVisible(q: Question, cr: Nomenclature): boolean {
-    const isSansReponse = cr.libelle === 'Sans réponse';
+    const isSansReponse = cr.libelle === 'Réponse avec commentaire';
     const sansReponseAutorise = q.indications === "Sans indicateur" ? true : false;
     return !isSansReponse || (isSansReponse && sansReponseAutorise);
   }
@@ -229,7 +239,7 @@ export class EntretienComponent implements OnDestroy{
     }else if (valeurId !== this.noResponse().id_nomenclature && valeurId > 0 || reponse!.question?.indications === "Sans indicateur") {
       warnElement?.classList.add('invisible');
     }
-    if (cr?.libelle !== "Sans réponse"){
+    if (cr?.libelle !== "Réponse avec commentaire"){
       this.submit(reponse);
     }
     

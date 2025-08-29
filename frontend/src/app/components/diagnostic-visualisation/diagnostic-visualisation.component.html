@@ -52,6 +52,8 @@
                   </button>
                 </div>
               }
+
+             
               @if (diagnostic().created_by === id_role()) {
                 <div class="upload-zone" matRipple [class.dragover]="dragOver"
                   (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
@@ -62,7 +64,7 @@
                   </button>
                 </div>
                 <button mat-raised-button color="primary" (click)="uploadFiles()" [disabled]="!files.length">
-                  Envoyer
+                  {{labels.send}}
                 </button>
                 @if (files.length) {
                   <ul>
@@ -71,6 +73,10 @@
                     }
                   </ul>
                 }
+
+                <button mat-raised-button type="button" (click)="exportXls()" class="block">
+                  {{ labels.exportXLS }}
+                </button>
                 <div id="delete-button">
                   <button mat-raised-button color="warn" (click)="openAlertDisable()" >{{labels.delete}}</button>
 
@@ -141,14 +147,7 @@
               ></app-graphiques-personnalisation>  
             </div>
           </mat-tab>
-          <mat-tab label="Export">
-            <div class="p-3">
-              <app-tableau-export 
-                [acteurs]="diagnostic().acteurs"
-                [diagnostic]="diagnostic()"
-              ></app-tableau-export>
-            </div>
-          </mat-tab>
+          
 
         </mat-tab-group>
       }
