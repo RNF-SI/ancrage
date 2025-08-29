@@ -266,4 +266,10 @@ export class GraphiquesPersonnalisationComponent {
       return this.chartDataRepartition()[question];
     }
 
+    reinitialize(){
+      this.formGroup.get('categories')?.setValue([]);
+      this.formGroup.get('acteurs')?.setValue([]);
+      this.formGroup.get('questions')?.setValue([]);
+    }
+
 }

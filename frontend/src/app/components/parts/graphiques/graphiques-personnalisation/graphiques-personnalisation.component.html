@@ -1,5 +1,6 @@
 <div id="selectors" class="text-center">
     <form [formGroup]="formGroup" (submit)="sendParameters($event)" class="col-center">
+        
         <mat-form-field appearance="fill" class="select">
             <mat-label>{{ labels.questions }}</mat-label>
             <mat-select multiple="true"  formControlName="questions">
@@ -27,7 +28,7 @@
             </mat-select>
         </mat-form-field>
 
-        <button id="btnToReinitialize" mat-raised-button>
+        <button id="btnToReinitialize" mat-raised-button (click)="reinitialize()" type="button">
             {{ labels.reinitialization }}
         </button>
 
