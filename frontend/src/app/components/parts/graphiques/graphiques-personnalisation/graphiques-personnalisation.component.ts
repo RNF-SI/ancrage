@@ -19,10 +19,11 @@ import { QuestionService } from '@app/services/question.service';
 import { Labels } from '@app/utils/labels';
 import { forkJoin } from 'rxjs';
 import { ChartData, ChartOptions, RadialLinearScaleOptions } from 'chart.js';
-import { GraphRadar } from '@app/models/graph-radar.model';
 import { GraphRepartition } from '@app/models/graph-repartition.model';
 import { AlerteTitreComponent } from '@app/components/alertes/alerte-titre/alerte-titre.component';
 import { MatDialog } from '@angular/material/dialog';
+import { AuthService } from '@app/home-rnf/services/auth-service.service';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 @Component({
   selector: 'app-graphiques-personnalisation',
@@ -34,7 +35,8 @@ import { MatDialog } from '@angular/material/dialog';
     FormsModule,
     MatButtonModule,
     ReactiveFormsModule,
-    NgChartsModule
+    NgChartsModule,
+    MatSlideToggleModule
   ],
   templateUrl: './graphiques-personnalisation.component.html',
   styleUrl: './graphiques-personnalisation.component.css'
@@ -48,6 +50,8 @@ export class GraphiquesPersonnalisationComponent {
   private nomenclatureService = inject(NomenclatureService);
   private questionService = inject(QuestionService);
   private diagnosticService = inject(DiagnosticService);
+  private authService = inject(AuthService);
+  id_user = 0;
   diagnostic = input<Diagnostic>(new Diagnostic());
   labels = new Labels();
   chosenActors:Acteur[]=[];
@@ -61,7 +65,8 @@ export class GraphiquesPersonnalisationComponent {
     questions: this.fb.control<Question[]>([], [Validators.required]),
     acteurs: this.fb.control<Acteur[]>([], [Validators.required]),
     categories: this.fb.control<Nomenclature[]>([], []),  
-    diagnostic: [this.diagnostic(),[Validators.required]]
+    diagnostic: [this.diagnostic(),[Validators.required]],
+    is_displayed: [false]
   });
   chartDataByThemeSorted = signal<{ theme_id: number; theme: string; charts: AvgPerQuestion[] }[]>([]);
   chartDataRepartition = signal<{ [question: string]: ChartData<'pie'> }>({});
@@ -128,6 +133,12 @@ export class GraphiquesPersonnalisationComponent {
         this.formGroup.get('acteurs')?.setValue(matchedActeurs);
       });
     });
+
+    effect(() =>{
+   
+      this.id_user = this.authService.getCurrentUser().id_role;
+      console.log(this.id_user);
+    });
   }
 
   sendParameters(event: Event){
@@ -137,17 +148,16 @@ export class GraphiquesPersonnalisationComponent {
       this.parameters.diagnostic = this.diagnostic();
       forkJoin({
         graphs$: this.diagnosticService.getAverageByQuestionParams(this.parameters),
-        repartitions$: this.diagnosticService.getRepartitionParams(this.parameters),
-        radars$: this.diagnosticService.getRadarsParams(this.parameters)
+        repartitions$: this.diagnosticService.getRepartitionParams(this.parameters)
        
-      }).subscribe(({ graphs$, repartitions$, radars$}) => {
-        this.getCharts(graphs$,repartitions$,radars$);
+      }).subscribe(({ graphs$, repartitions$}) => {
+        this.getCharts(graphs$,repartitions$);
       });
 
       
   }
 
-  private getCharts(graphs:GraphMoy[],repartitions:GraphRepartition[],radars:GraphRadar[]): void {
+  private getCharts(graphs:GraphMoy[],repartitions:GraphRepartition[]): void {
       const normalize = (str: string) => str.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/’/g, "'").trim();
       const LABELS_TO_EXCLUDE = ["attentes", "Sentiment d'être concerné"].map(normalize);
 
@@ -216,33 +226,7 @@ export class GraphiquesPersonnalisationComponent {
 
         this.chartDataRepartition.set(chartRepartition);
   
-        const radarMap = new Map<string, GraphRadar[]>();
-        for (const r of radars) {
-          const theme = r.theme || 'Sans thème';
-          if (!radarMap.has(theme)) radarMap.set(theme, []);
-          radarMap.get(theme)!.push(r);
-        }
-  
-        const radarData = Array.from(radarMap.entries()).map(([theme, entries]) => {
-          const filtered = entries.filter(e => !LABELS_TO_EXCLUDE.includes(normalize(e.libelle_graphique || '')));
-          const labels = [...new Set(filtered.map(e => e.libelle_graphique))];
-          const categories = [...new Set(entries.map(e => e.categorie || 'Sans catégorie'))];
-          const datasets = categories.map((cat, i) => {
-            const data = labels.map(label => entries.find(e => e.categorie === cat && e.libelle_graphique === label)?.score || 0);
-            const color = this.colorPalette[i % this.colorPalette.length];
-            return {
-              label: cat,
-              data,
-              borderColor: color,
-              backgroundColor: 'transparent',
-              fill: false
-            };
-          });
-          return { theme, data: { labels, datasets } };
-        });
-  
-        this.radarCharts.set(radarData);
-      
+        
     }
 
     exportChart(classe:string,titre:string) {

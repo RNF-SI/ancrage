@@ -41,6 +41,7 @@ export class Labels {
     showMoreInfo = "Informations complémentaires";
     exportPNG = "Exporter en PNG";
     exportCSV = "Exporter en CSV";
+    exportXLS = "Exporter en XLS";
     slug="Slug";
     files="Fichiers joints";
     interviewPrompt = "Saisir les entretiens";

@@ -7,6 +7,7 @@ export class Parameters {
     questions:Question[] = [];
     acteurs:Acteur[] = [];
     diagnostic:Diagnostic = new Diagnostic();
+    is_displayed = false;
 
     /** Copie profonde de l'objet */
         copy(): Parameters {
@@ -14,6 +15,7 @@ export class Parameters {
             copy.questions = this.questions?.map(q => q.copy()) || [];
             copy.acteurs = this.acteurs?.map(a => a.copy()) || [];
             copy.diagnostic = this.diagnostic.copy();
+            copy.is_displayed = this.is_displayed;
     
             return copy;
         }
@@ -24,6 +26,7 @@ export class Parameters {
             parameters.questions = (data.questions || []).map(q => Question.fromJson(q));
             parameters.acteurs = (data.acteurs || []).map(a => Acteur.fromJson(a));
             parameters.diagnostic = Diagnostic.fromJson(data.diagnostic);
+            parameters.is_displayed = data.is_displayed;
     
             return parameters;
         }

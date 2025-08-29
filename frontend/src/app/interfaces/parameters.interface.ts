@@ -6,4 +6,5 @@ export interface IParameters {
     questions:Question[];
     acteurs:Acteur[];
     diagnostic:Diagnostic;
+    is_displayed:boolean;
 }

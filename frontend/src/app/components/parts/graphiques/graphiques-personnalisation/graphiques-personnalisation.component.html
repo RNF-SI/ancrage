@@ -1,94 +1,85 @@
-<div id="selectors" class="text-center">
-    <form [formGroup]="formGroup" (submit)="sendParameters($event)" class="col-center">
-        
-        <mat-form-field appearance="fill" class="select">
-            <mat-label>{{ labels.questions }}</mat-label>
-            <mat-select multiple="true"  formControlName="questions">
-                @for (q of questions(); track q.id_question) {
-                    <mat-option [value]="q">{{q.libelle_graphique}}</mat-option>
-                }
-            </mat-select>
-        </mat-form-field>
 
-        <mat-form-field appearance="fill" class="select">
-          <mat-label>{{ labels.chooseCategories }}</mat-label>
-          <mat-select  multiple="true" formControlName="categories">
-              @for (cat of categories(); track cat.id_nomenclature) {
-                  <mat-option [value]="cat">{{ cat.libelle }}</mat-option>
-              }
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="fill" class="select">
-            <mat-label>{{ labels.actors }}</mat-label>
-            <mat-select multiple="true"  formControlName="acteurs">
-                @for (act of acteurs(); track act.id_acteur) {
-                    <mat-option [value]="act">{{ act.prenom }} {{act.nom}}</mat-option>
-                }
-            </mat-select>
-        </mat-form-field>
-
-        <button id="btnToReinitialize" mat-raised-button (click)="reinitialize()" type="button">
-            {{ labels.reinitialization }}
-        </button>
-
-        <button type="submit" mat-raised-button>
-            {{ labels.send }}
-        </button>
-
-        
-        @for (themeEntry of chartDataByThemeSorted(); track themeEntry) {
-            @if (themeEntry.theme != 'AFOM') {
-              <div class="mb-5">
-                <h2 class="text-center">{{ themeEntry.theme }}</h2>
-          
-                
-                  <!-- @for (chart of radarCharts(); track chart) {
-                    @if (chart.theme === themeEntry.theme) {
-                      <div>
-                        <canvas class="graph-radar-{{ chart.theme }}" baseChart
-                                [data]="chart.data"
-                                [type]="'radar'"
-                                [options]="radarChartOptions">
-                        </canvas>
-                        <button mat-raised-button (click)="exportChart('graph-radar-' + chart.theme, chart.theme)">
-                          {{ labels.exportPNG }}
-                        </button>
-                      </div>
-                    }
-                  } -->
-                
-          
-                @for (chart of themeEntry.charts; track chart) {
-                  <div class="mb-4" [attr.id]="'question-' + chart.id_question">
-                    <h3 class="text-center">{{ chart.question }} ({{formGroup.get('acteurs')?.value?.length}} acteurs)</h3>
-                    <div class="grid-6-6">
-                      <div class="col-span-6 d-flex flex-column align-items-center justify-content-center">
-                        <canvas class="graph{{ chart.id_question }}" baseChart
-                                [data]="chart.chart"
-                                [options]="chart.chartOptions"
-                                chartType="bar">
-                        </canvas>
-                        <button mat-raised-button (click)="exportChart('graph' + chart.id_question, chart.question + '-score')">
-                          {{ labels.exportPNG }}
-                        </button>
-                      </div>
-          
-                      <div class="col-span-6 d-flex flex-column align-items-center justify-content-center">
-                        <h4 class="text-center">Répartition des réponses</h4>
-                        <canvas class="graph-rep{{ chart.id_question }}" baseChart
-                                [data]="getChartData(chart.question)"
-                                [type]="'pie'">
-                        </canvas>
-                        <button mat-raised-button (click)="exportChart('graph-rep' + chart.id_question, chart.question + '-repartition')">
-                          {{ labels.exportPNG }}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                }
-              </div>
+<form [formGroup]="formGroup" (submit)="sendParameters($event)" class="col-center">
+  <div id="selectors" class="text-center">
+    <mat-form-field appearance="fill" class="select">
+        <mat-label>{{ labels.questions }}</mat-label>
+        <mat-select multiple="true"  formControlName="questions">
+            @for (q of questions(); track q.id_question) {
+                <mat-option [value]="q">{{q.libelle_graphique}}</mat-option>
             }
+        </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="select">
+      <mat-label>{{ labels.chooseCategories }}</mat-label>
+      <mat-select  multiple="true" formControlName="categories">
+          @for (cat of categories(); track cat.id_nomenclature) {
+              <mat-option [value]="cat">{{ cat.libelle }}</mat-option>
           }
-    </form>
-</div>
+      </mat-select>
+    </mat-form-field>
+    @if(diagnostic().created_by == id_user){
+      <mat-form-field appearance="fill" class="select">
+        <mat-label>{{ labels.actors }}</mat-label>
+        <mat-select multiple="true"  formControlName="acteurs">
+            @for (act of acteurs(); track act.id_acteur) {
+                <mat-option [value]="act">{{ act.prenom }} {{act.nom}}</mat-option>
+            }
+        </mat-select>
+      </mat-form-field>
+    }
+  </div>
+  <mat-slide-toggle class="slider-perso" color="primary" formControlName="is_displayed">
+    Afficher la réponse "N'a pas exprimé de réponse claire"
+  </mat-slide-toggle>
+  
+  <div class= "buttons">
+    <button id="btnToReinitialize" mat-raised-button (click)="reinitialize()" type="button">
+      {{ labels.reinitialization }}
+    </button>
+
+    <button type="submit" mat-raised-button>
+        {{ labels.send }}
+    </button>
+  </div>
+  
+  
+</form>
+@for (themeEntry of chartDataByThemeSorted(); track themeEntry) {
+    @if (themeEntry.theme != 'AFOM') {
+      <div class="mb-5">
+        <h2 class="text-center">{{ themeEntry.theme }}</h2>
+  
+        @for (chart of themeEntry.charts; track chart) {
+          <div class="mb-4" [attr.id]="'question-' + chart.id_question">
+            <h3 class="text-center">{{ chart.question }} ({{formGroup.get('acteurs')?.value?.length}} acteurs)</h3>
+            <div class="grid-6-6">
+              <div class="col-span-6 d-flex flex-column align-items-center justify-content-center">
+                <canvas class="graph{{ chart.id_question }}" baseChart
+                        [data]="chart.chart"
+                        [options]="chart.chartOptions"
+                        chartType="bar">
+                </canvas>
+                <button mat-raised-button (click)="exportChart('graph' + chart.id_question, chart.question + '-score')">
+                  {{ labels.exportPNG }}
+                </button>
+              </div>
+  
+              <div class="col-span-6 d-flex flex-column align-items-center justify-content-center">
+                <h4 class="text-center">Répartition des réponses</h4>
+                <canvas class="graph-rep{{ chart.id_question }}" baseChart
+                        [data]="getChartData(chart.question)"
+                        [type]="'pie'">
+                </canvas>
+                <button mat-raised-button (click)="exportChart('graph-rep' + chart.id_question, chart.question + '-repartition')">
+                  {{ labels.exportPNG }}
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+    
+
