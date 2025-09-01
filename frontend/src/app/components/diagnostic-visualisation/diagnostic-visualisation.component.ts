@@ -140,7 +140,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   
         forkJoin({
           diag: this.diagnosticService.get(id, slugValue),
-          themes: this.nomenclatureService.getThemes(id),
+          themes: this.nomenclatureService.getAllByType('thème'),
           cats$: this.nomenclatureService.getAllByType("categorie"),
           questions$: this.questionService.getAllWithLimit(25),
         }).subscribe(({ diag, themes,cats$, questions$ }) => {

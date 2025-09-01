@@ -28,7 +28,7 @@ export class Reponse {
         /** Création depuis un JSON brut (avec reconversion des objets internes et dates) */
         static fromJson(data: IReponse): Reponse {
             const reponse = new Reponse();
-    
+            if (!reponse) return reponse;
             reponse.id_reponse = data.id_reponse;
             reponse.valeur_reponse = data.valeur_reponse ? Nomenclature.fromJson(data.valeur_reponse) : new Nomenclature();
             reponse.mots_cles = (data.mots_cles || []).map(mc => MotCle.fromJson(mc));
