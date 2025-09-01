@@ -31,19 +31,27 @@ export class Question {
         return copy;
     }
 
-    /** Création depuis un JSON brut (avec reconversion des objets internes et dates) */
     static fromJson(data: IQuestion): Question {
         const question = new Question();
-
+    
         question.id_question = data.id_question;
         question.libelle = data.libelle;
         question.theme = data.theme ? Nomenclature.fromJson(data.theme) : new Nomenclature();
         question.acteurs = (data.acteurs || []).map(a => Acteur.fromJson(a));
-        question.reponses = (data.reponses || []).map(r => Reponse.fromJson(r));
+    
+        // ✅ sécurisation + mapping correct
+        question.reponses = Array.isArray(data.reponses) 
+            ? data.reponses.map(r => Reponse.fromJson(r)) 
+            : [];
+    
         question.indications = data.indications;
-        question.choixReponses = Array.isArray(data.choixReponses) ? data.choixReponses.map(cr => Nomenclature.fromJson(cr)) : [];
+        question.choixReponses = Array.isArray(data.choixReponses) 
+            ? data.choixReponses.map(cr => Nomenclature.fromJson(cr)) 
+            : [];
+    
         question.metrique = data.metrique;
-        question.libelle_graphique =  data.libelle_graphique;
+        question.libelle_graphique = data.libelle_graphique;
+    
         return question;
     }
 
