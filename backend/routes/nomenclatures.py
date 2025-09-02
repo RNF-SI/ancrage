@@ -170,15 +170,6 @@ def getAllNomenclaturesByType(mnemonique, id_acteur):
         schema = NomenclatureSchema(many=True)
         nomenclatures_data = schema.dump(nomenclatures)
         return jsonify(nomenclatures_data)
-    
-@bp.route('/nomenclatures/thème/diag/<int:id_diagnostic>', methods=['GET'])
-def getThemes(id_diagnostic):        
-    logger.info("📂 Cas: thème sans id_acteur mais avec id_diagnostic")
-
-    nomenclatures = Nomenclature.query.filter_by(mnemonique="thème").all()
-    schema = NomenclatureSchema(many=True)
-    nomenclatures_data = schema.dump(nomenclatures)
-    return jsonify(nomenclatures_data)
             
 def getNomenclature(nomenclature):
     schema = NomenclatureSchema(many=False)
