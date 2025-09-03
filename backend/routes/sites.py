@@ -28,7 +28,7 @@ def siteMethods(id_site, slug):
             data = request.get_json()
             logger.info(f"✏ Mise à jour du site {id_site} avec données : {data}")
             site = changeValuesSite(site, data)
-            site.modified_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            site.modified_at = datetime.now(datetime.UTC).strftime('%Y-%m-%d %H:%M:%S')
             site.modified_by = data['modified_by']
 
             db.session.commit()
@@ -50,15 +50,20 @@ def siteMethods(id_site, slug):
 
 @bp.route('/site/', methods=['POST'])
 def postSite():
+    
     if request.method == 'POST': 
         data = request.get_json()
+        if not data:
+            logger.warning("❌ Données JSON invalides")
+            return jsonify({'error': 'Données JSON invalides'}), 400
+        
         logger.info(f"📥 Création d'un nouveau site avec données : {data}")
 
         site = Site()
         site = changeValuesSite(site, data)
         myuuid = uuid.uuid4()
         site.slug = slugify(site.nom) + '-' + str(myuuid)
-        site.created_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        site.created_at = datetime.now(datetime.UTC).strftime('%Y-%m-%d %H:%M:%S')
         site.created_by = data['created_by']
 
         db.session.add(site)

@@ -9,6 +9,9 @@ from configs.logger_config import logger
 @bp.route('/nomenclature/<int:id_nomenclature>', methods=['GET','PUT','DELETE'])
 def nomenclatureMethods(id_nomenclature):
     nomenclature = Nomenclature.query.filter_by(id_nomenclature=id_nomenclature).first()
+    if not nomenclature:
+        logger.warning(f"Nomenclature ID={id_nomenclature} non trouvée")
+        return jsonify({'error': 'Nomenclature non trouvée'}), 404
     
     if request.method == 'GET':
 

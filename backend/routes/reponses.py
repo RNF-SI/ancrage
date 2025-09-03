@@ -230,9 +230,9 @@ def verifDatesEntretien(diagnostic_id):
     logger.info(f"Nombre d'acteurs avec entretien terminé : {len(listeTermines)}")
 
     if len(listeTermines) == 1:
-        diagnostic.date_debut = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        diagnostic.date_debut = datetime.now(datetime.UTC).strftime('%Y-%m-%d %H:%M:%S')
     if len(listeTermines) == len(diagnostic.acteurs):
-        diagnostic.date_fin = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        diagnostic.date_fin = datetime.now(datetime.UTC).strftime('%Y-%m-%d %H:%M:%S')
 
     db.session.add(diagnostic)
     db.session.commit()
