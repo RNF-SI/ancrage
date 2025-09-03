@@ -182,7 +182,8 @@ export class SiteComponent implements OnDestroy{
         labels: this.labels,
         diagnostic:this.diagnostic,
         previousPage:this.previousPage
-      }
+      },
+      disableClose: true 
     });
   }
   navigate(path:string,diagnostic:Diagnostic){

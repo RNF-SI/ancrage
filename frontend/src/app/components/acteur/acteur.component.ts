@@ -215,7 +215,8 @@ export class ActeurComponent implements OnDestroy{
           labels: this.labels,
           diagnostic:this.diagnostic(),
           previousPage:this.pageDiagnostic
-        }
+        },
+        disableClose: true 
       });
 
       dialogRef.afterClosed().subscribe(actor => {
