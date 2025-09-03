@@ -2,7 +2,7 @@ from models.models import db
 from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
-from routes import bp, datetime, slugify, uuid
+from routes import bp, datetime, slugify, uuid, timezone
 from configs.logger_config import logger
 from routes.reponses import verifDatesEntretien
 
@@ -29,7 +29,7 @@ def acteurMethods(id_acteur, slug):
             data = request.get_json()
             logger.info(f" Données reçues : {data}")
             acteur = changeValuesActeur(acteur, data)
-            acteur.modified_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            acteur.modified_at = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
             acteur.modified_by = data['modified_by']
 
             db.session.commit()
@@ -71,7 +71,7 @@ def postActeur():
         - Profil ID  : {acteur.profil_cognitif_id}
         """)
 
-        acteur.created_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        acteur.created_at = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         myuuid = uuid.uuid4()
         acteur.slug = slugify(acteur.nom) + '-' + str(myuuid)
         acteur.created_by = data.get('created_by', 'unknown')
@@ -96,7 +96,7 @@ def changeStateInterview(id_acteur, id_statut):
         return jsonify({'error': 'Acteur non trouvé'}), 404
 
     acteur.statut_entretien_id = id_statut
-    acteur.modified_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    acteur.modified_at = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
     acteur.modified_by = data['modified_by']
 
     db.session.add(acteur)
