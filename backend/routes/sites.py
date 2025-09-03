@@ -3,7 +3,7 @@ from flask import request, jsonify
 from sqlalchemy.orm import contains_eager
 from models.models import *
 from schemas.metier import *
-from routes import bp, now, slugify, uuid
+from routes import bp, datetime, slugify, uuid
 from configs.logger_config import logger
 
 @bp.route('/site/<int:id_site>/<string:slug>', methods=['GET','PUT','DELETE'])
@@ -28,7 +28,7 @@ def siteMethods(id_site, slug):
             data = request.get_json()
             logger.info(f"✏ Mise à jour du site {id_site} avec données : {data}")
             site = changeValuesSite(site, data)
-            site.modified_at = now
+            site.modified_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
             site.modified_by = data['modified_by']
 
             db.session.commit()
@@ -58,7 +58,7 @@ def postSite():
         site = changeValuesSite(site, data)
         myuuid = uuid.uuid4()
         site.slug = slugify(site.nom) + '-' + str(myuuid)
-        site.created_at = now
+        site.created_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         site.created_by = data['created_by']
 
         db.session.add(site)

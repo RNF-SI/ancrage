@@ -2,7 +2,7 @@
 from models.models import *
 from schemas.metier import *
 from sqlalchemy.orm import aliased
-from routes import bp,now, slugify, uuid,func,request,jsonify
+from routes import bp,datetime, slugify, uuid,func,request,jsonify
 from datetime import datetime
 from configs.logger_config import logger
 
@@ -31,7 +31,7 @@ def diagnosticMethods(id_diagnostic, slug):
                     logger.info(f" - ID: {acteur.get('id_acteur')}, Nom: {acteur.get('nom')}")
 
             diagnostic = changeValuesDiagnostic(diagnostic, data)
-            diagnostic.modified_at = now
+            diagnostic.modified_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
             raw_date = data.get('date_rapport')
             if raw_date is not None:
                 date_rapport = datetime.strptime(raw_date, '%d/%m/%Y')
@@ -80,7 +80,7 @@ def postDiagnostic():
 
     diagnostic = Diagnostic()
     diagnostic.nom=data['nom']
-    diagnostic.created_at = now
+    diagnostic.created_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     diagnostic.created_by = data['created_by']
     diagnostic.identite_createur = data['identite_createur']
     myuuid = uuid.uuid4()
@@ -525,7 +525,7 @@ def changeValuesDiagnostic(diagnostic,data):
                     mail=a.mail,
                     commune_id=a.commune_id,
                     structure=a.structure,
-                    created_at=now,
+                    created_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
                     created_by=data['created_by'],
                     diagnostic_id=diagnostic.id_diagnostic,
                     categories=a.categories,
