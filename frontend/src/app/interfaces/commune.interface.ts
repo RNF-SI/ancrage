@@ -12,5 +12,5 @@ export interface ICommune {
     departement:Departement;
     latitude?:string;
     longitude?:string;
-    code_postal?:string;
+    code_dpt?:string;
 }

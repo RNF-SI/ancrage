@@ -32,7 +32,7 @@ class DepartementSchema(SQLAlchemyAutoSchema):
 class CommuneSchema(SQLAlchemyAutoSchema):
     geom = fields.Method("get_geom")
     departement = fields.Nested(lambda: DepartementSchema, exclude=("communes",))
-    code_postal = fields.Method("get_code_postal")
+    code_dpt = fields.Method("get_code_dpt")
 
     class Meta:
         model = Commune
@@ -43,17 +43,15 @@ class CommuneSchema(SQLAlchemyAutoSchema):
         # Retourne un GeoJSON à partir de la géométrie PostGIS
         return db.session.scalar(obj.geom.ST_AsGeoJSON()) if obj.geom else None
     
-    def get_code_postal(self, obj):
+    def get_code_dpt(self, obj):
         # Génère le code postal à partir du code INSEE
         if obj.insee_com and len(obj.insee_com) >= 2:
             # Les 2 premiers chiffres du code INSEE correspondent au département
             dept_code = obj.insee_com[:2]
             # Pour la plupart des départements, on ajoute "000" pour former le code postal
             # Exceptions pour les départements d'outre-mer et autres cas spéciaux
-            if dept_code in ['97', '98']:  # DOM-TOM
-                return f"{dept_code}{obj.insee_com[2:]}0"
-            else:
-                return f"{dept_code}000"
+           
+            return dept_code
         return None
 
 

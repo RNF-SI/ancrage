@@ -153,7 +153,7 @@ export class ActeurComponent implements OnDestroy{
     return this.uniqueTowns
       .filter(t => {
         const nomMatch = this._normalize(t.nom_com).includes(normalizedInput);
-        const codePostalMatch = t.code_postal && this._normalize(t.code_postal).includes(normalizedInput);
+        const codePostalMatch = t.code_dpt && this._normalize(t.code_dpt).includes(normalizedInput);
         const inseeMatch = this._normalize(t.insee_com).includes(normalizedInput);
         return nomMatch || codePostalMatch || inseeMatch;
       })
@@ -162,7 +162,7 @@ export class ActeurComponent implements OnDestroy{
 
   //Autocomplétion
   displayFn(commune: Commune): string {
-    return commune?.nom_com + "("+commune.code_postal+")" || '';
+    return commune?.nom_com + " ("+commune.code_dpt+")" || '';
   }
 
   //Enregistrement du formulaire
