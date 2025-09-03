@@ -121,7 +121,7 @@ export class ActeurComponent implements OnDestroy{
 
     effect(() => {
       const value = this.communeValue();
-      const filterValue = typeof value === 'string' ? value : value?.nom_com || '';
+      const filterValue = typeof value === 'string' ? value : value?.nom_com + "(" + value?.insee_com + ")" || '';
       this.filteredTowns = this._filter(filterValue);
     });
   }
@@ -151,13 +151,18 @@ export class ActeurComponent implements OnDestroy{
     const normalizedInput = this._normalize(filterValue);
   
     return this.uniqueTowns
-      .filter(t => this._normalize(t.nom_com).includes(normalizedInput))
+      .filter(t => {
+        const nomMatch = this._normalize(t.nom_com).includes(normalizedInput);
+        const codePostalMatch = t.code_dpt && this._normalize(t.code_dpt).includes(normalizedInput);
+        const inseeMatch = this._normalize(t.insee_com).includes(normalizedInput);
+        return nomMatch || codePostalMatch || inseeMatch;
+      })
       .slice(0, 30);
   }
 
   //Autocomplétion
   displayFn(commune: Commune): string {
-    return commune?.nom_com || '';
+    return commune?.nom_com + " ("+commune.code_dpt+")" || '';
   }
 
   //Enregistrement du formulaire
@@ -215,7 +220,8 @@ export class ActeurComponent implements OnDestroy{
           labels: this.labels,
           diagnostic:this.diagnostic(),
           previousPage:this.pageDiagnostic
-        }
+        },
+        disableClose: true 
       });
 
       dialogRef.afterClosed().subscribe(actor => {

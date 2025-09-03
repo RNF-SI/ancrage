@@ -3,10 +3,10 @@ from flask import request, jsonify
 from sqlalchemy.orm import contains_eager
 from models.models import *
 from schemas.metier import *
-from routes import bp, now, slugify, uuid
+from routes import bp, datetime, slugify, uuid
 from configs.logger_config import logger
 
-@bp.route('/site/<id_site>/<slug>', methods=['GET','PUT','DELETE'])
+@bp.route('/site/<int:id_site>/<string:slug>', methods=['GET','PUT','DELETE'])
 def siteMethods(id_site, slug):
     logger.info(f"🔍 Requête {request.method} pour le site {id_site} avec slug '{slug}'")
     site = Site.query.filter_by(id_site=id_site).first()
@@ -28,7 +28,7 @@ def siteMethods(id_site, slug):
             data = request.get_json()
             logger.info(f"✏ Mise à jour du site {id_site} avec données : {data}")
             site = changeValuesSite(site, data)
-            site.modified_at = now
+            site.modified_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
             site.modified_by = data['modified_by']
 
             db.session.commit()
@@ -36,6 +36,16 @@ def siteMethods(id_site, slug):
             return getSite(site)
         else:
             logger.warning("❌ Slug invalide pour mise à jour")
+            return jsonify({'error': 'Slug invalide'}), 400
+    else:
+        if id_site and slug == site.slug:
+            print(id_site)
+            db.session.delete(site)
+            db.session.commit()
+            logger.info(f"🗑 Site {id_site} supprimé")
+            return '', 204
+        else:
+            logger.warning("❌ Slug invalide pour suppression")
             return jsonify({'error': 'Slug invalide'}), 400
 
 @bp.route('/site/', methods=['POST'])
@@ -48,7 +58,7 @@ def postSite():
         site = changeValuesSite(site, data)
         myuuid = uuid.uuid4()
         site.slug = slugify(site.nom) + '-' + str(myuuid)
-        site.created_at = now
+        site.created_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         site.created_by = data['created_by']
 
         db.session.add(site)

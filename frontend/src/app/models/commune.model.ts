@@ -13,6 +13,7 @@ export class Commune implements ICommune{
     departement:Departement = new Departement();
     latitude?:string;
     longitude?:string;
+    code_dpt?:string;
 
       /** Copie profonde de l'objet */
       copy(): Commune {
@@ -28,6 +29,7 @@ export class Commune implements ICommune{
         copy.departement = this.departement.copy();
         copy.latitude = this.latitude;
         copy.longitude = this.longitude;
+        copy.code_dpt = this.code_dpt;
 
         return copy;
     }
@@ -46,6 +48,7 @@ export class Commune implements ICommune{
         commune.departement = Departement.fromJson(data.departement);
         commune.latitude = data.latitude;
         commune.longitude = data.longitude;
+        commune.code_dpt = data.code_dpt;
 
         return commune;
     }
