@@ -6,7 +6,7 @@ from routes import bp,datetime, slugify, uuid,func,request,jsonify, timezone
 from datetime import datetime
 from configs.logger_config import logger
 
-@bp.route('/diagnostic/<int:id_diagnostic>/<slug>', methods=['GET','PUT'])
+@bp.route('/diagnostic/<int:id_diagnostic>/<slug>', methods=['GET','PUT','DELETE'])
 def diagnosticMethods(id_diagnostic, slug):
     diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
 
@@ -42,6 +42,16 @@ def diagnosticMethods(id_diagnostic, slug):
             return getDiagnostic(diagnostic)
         else:
             logger.warning(f"❌ Slug invalide pour mise à jour du diagnostic {id_diagnostic}")
+            return jsonify({'error': 'Slug invalide'}), 400
+    
+    else:
+        if diagnostic.slug == slug:
+            db.session.delete(diagnostic)
+            db.session.commit()
+            logger.info(f"🗑 Diagnostic {id_diagnostic} supprimé")
+            return '', 204
+        else:
+            logger.warning("❌ Slug invalide pour suppression")
             return jsonify({'error': 'Slug invalide'}), 400
         
 @bp.route('/diagnostic/disable/<int:id_diagnostic>/<slug>', methods=['PUT'])

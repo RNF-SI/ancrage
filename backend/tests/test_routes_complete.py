@@ -1,6 +1,7 @@
-import pytest
-from models.models import db, Site, Commune, Region, Departement, Acteur, Nomenclature
-from schemas.metier import SiteSchema, CommuneSchema, RegionSchema, DepartementSchema, ActeurSchema, NomenclatureSchema
+import io
+from models.models import db, Site, Commune, Region, Departement, Acteur, Nomenclature, Document
+from schemas.metier import SiteSchema
+from unittest.mock import patch, MagicMock
 from flask import jsonify
 import json
 
@@ -160,6 +161,76 @@ class TestActeurs:
             response = client.delete(f"/acteur/{acteur.id_acteur}/{acteur.slug}")
             assert response.status_code == 204
 
+class Diagnostic:
+    """Tests pour les routes des diagnostics"""
+    
+    def test_get_diagnostic_not_found(self, client):
+        """Test récupération d'un acteur inexistant"""
+        response = client.get("/diagnostic/99999/invalid-slug")
+        assert response.status_code == 404
+
+    def test_get_diagnostic_invalid_slug(self, client):
+        """Test récupération d'un acteur avec slug invalide"""
+        diag = Diagnostic.query.first()
+        if diag:
+            response = client.get(f"/diagnostic/{diag.id_diagnostic}/invalid-slug")
+            assert response.status_code == 400
+
+    def test_get_diagnostic_by_id(self, client):
+        """Test récupération d'un acteur par ID"""
+        diagnostic = Diagnostic.query.first()
+        if diagnostic:
+            response = client.get(f"/diagnostic/{diagnostic.id_diagnostic}/{diagnostic.slug}")
+            assert response.status_code == 200
+            data = response.get_json()
+            assert data["id_diagnostic"] == diagnostic.id_diagnostic
+
+            response = client.post("/diagnostic", json=data)
+            assert response.status_code == 200
+            data = response.get_json()
+            assert data["nom"] == diagnostic.nom
+
+            data["nom"] = "Test"
+            response = client.put(f"/diagnostic/{diagnostic.id_diagnostic}/{diagnostic.slug}", json=data)
+            assert response.status_code == 200
+            data = response.get_json()
+            assert data["nom"] == "Test"
+
+            documents = [
+                {"nom": "fichier1.txt", "diagnostic": {"id_diagnostic": diagnostic.id_diagnostic}},
+                {"nom": "fichier2.txt", "diagnostic": {"id_diagnostic": diagnostic.id_diagnostic}},
+            ]
+
+            # Simuler deux fichiers en mémoire
+            data = {
+                "documents": json.dumps(documents),
+                "files": [
+                    (io.BytesIO(b"contenu fichier 1"), "fichier1.txt"),
+                    (io.BytesIO(b"contenu fichier 2"), "fichier2.txt"),
+                ],
+            }
+
+            response = client.post(
+                "/diagnostic/upload",
+                data=data,
+                content_type="multipart/form-data",
+            )
+
+            assert response.status_code == 200
+            resp_json = response.get_json()
+            assert resp_json is not None
+            assert resp_json["id_diagnostic"] == diagnostic.id_diagnostic
+
+            response = client.get('/diagnostic/uploads/fichier1.txt')
+            assert response.status_code == 200
+
+            document = Document.query.filter_by(nom='fichier1.txt')
+            response = client.delete(f"/diagnostic/document/delete/{document.id_document}")
+            assert response.status_code == 204
+
+            response = client.delete(f"/diagnostic/{diagnostic.id_diagnostic}/{diagnostic.slug}")
+            assert response.status_code == 204
+
 
 class TestNomenclatures:
     """Tests pour les routes des nomenclatures"""
@@ -191,6 +262,33 @@ class TestNomenclatures:
         assert response.status_code == 200
         data = response.get_json()
         assert isinstance(data, list)
+
+class TestMail:
+    def test_send_mail_success(self,client):
+        payload = {
+            "token": "fake-token",
+            "expediteur": "user@test.com",
+            "nom": "Jean Dupont",
+            "objet": "Test objet",
+            "message": "Ceci est un message test"
+        }
+
+        # Mock `requests.post` pour reCAPTCHA
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"success": True, "score": 0.9}
+
+        with patch("routes.mail.requests.post", return_value=mock_response) as mock_post:
+            with patch("configs.mail_config.mail.send") as mock_send:
+                response = client.post("/mail/send", json=payload)
+
+        assert response.status_code == 200
+        assert response.get_json()["message"] == "Email envoyé avec succès"
+
+        # Vérifie que reCAPTCHA a été appelé
+        mock_post.assert_called_once()
+
+        # Vérifie que le mail a été envoyé
+        mock_send.assert_called_once()
 
 
 class TestErrorHandling:
