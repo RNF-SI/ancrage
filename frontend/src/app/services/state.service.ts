@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { Router } from '@angular/router';
 import { Acteur } from '@app/models/acteur.model';

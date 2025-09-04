@@ -4,9 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { Acteur } from '@app/models/acteur.model';
-import { Diagnostic } from '@app/models/diagnostic.model';
 import { ActeurService } from '@app/services/acteur.service';
-import { DiagnosticService } from '@app/services/diagnostic.service';
 import { Labels } from '@app/utils/labels';
 
 @Component({

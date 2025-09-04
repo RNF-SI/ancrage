@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, ViewChild,signal, effect, input } from '@angular/core';
+import { Component, inject, OnDestroy, ViewChild,signal, effect } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
@@ -47,11 +47,8 @@ import { saveAs } from 'file-saver';
       CommonModule, 
       MatButtonModule, 
       GraphiquesComponent, 
-      GraphiquesComponent, 
       MatTabsModule, 
       MenuLateralComponent, 
-      MenuLateralComponent, 
-      TableauStructuresComponent, 
       TableauStructuresComponent, 
       MapComponent, 
       MotsClesZoneComponent, 

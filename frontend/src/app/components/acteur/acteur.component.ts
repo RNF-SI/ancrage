@@ -30,7 +30,19 @@ import { StateService } from '@app/services/state.service';
     selector: 'app-acteur',
     templateUrl: './acteur.component.html',
     styleUrls: ['./acteur.component.css'],
-    imports: [CommonModule, MatFormFieldModule, ReactiveFormsModule, MatSelectModule, FormsModule, MatInputModule, MatAutocompleteModule, MatButtonModule, MatProgressSpinnerModule,LoadingSpinnerComponent]
+    imports: [
+      CommonModule, 
+      MatFormFieldModule, 
+      ReactiveFormsModule, 
+      MatSelectModule, 
+      FormsModule, 
+      MatInputModule, 
+      MatAutocompleteModule, 
+      MatButtonModule, 
+      MatProgressSpinnerModule,
+      LoadingSpinnerComponent
+    ]
+
 })
 export class ActeurComponent implements OnDestroy{
   

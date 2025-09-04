@@ -1,4 +1,4 @@
-import { Component, effect, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, OnDestroy, signal } from '@angular/core';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { CommonModule } from '@angular/common';
@@ -22,14 +22,22 @@ import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { Labels } from '@app/utils/labels';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { StateService } from '@app/services/state.service';
-import { LogarithmicScale } from 'chart.js';
 
 //Modifie ou crée un site
 @Component({
     selector: 'app-site',
     templateUrl: './site.component.html',
     styleUrls: ['./site.component.css'],
-    imports: [MatInputModule, MatFormFieldModule, CommonModule, FormsModule, MatSelectModule, MatButtonModule, MapComponent, ReactiveFormsModule]
+    imports: [
+      MatInputModule, 
+      MatFormFieldModule, 
+      CommonModule, 
+      FormsModule, 
+      MatSelectModule, 
+      MatButtonModule, 
+      MapComponent, 
+      ReactiveFormsModule
+    ]
 })
 export class SiteComponent implements OnDestroy{
   
