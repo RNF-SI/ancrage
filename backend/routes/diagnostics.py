@@ -71,18 +71,7 @@ def disableDiagnostic(id_diagnostic, slug):
     else:
         logger.warning(f"❌ Slug invalide pour mise à jour du diagnostic {id_diagnostic}")
         return jsonify({'error': 'Slug invalide'}), 400
-    
-def print_diagnostic(diagnostic):
-    logger.info("🔍 Diagnostic :")
-    logger.info(f"  ID              : {diagnostic.id_diagnostic}")
-    logger.info(f"  Nom             : {diagnostic.nom}")
-    logger.info(f"  Date début      : {diagnostic.date_debut}")
-    logger.info(f"  Date fin        : {diagnostic.date_fin}")
-    logger.info(f"  Date rapport    : {diagnostic.date_rapport}")
-    logger.info(f"  Créé par        : {diagnostic.created_by}")
-    logger.info(f"  Est en lecture seule : {diagnostic.is_read_only}")
-    logger.info(f"  Sites associés  : {[site.id_site for site in diagnostic.sites]}")
-    logger.info(f"  Acteurs associés: {[acteur.id_acteur for acteur in diagnostic.acteurs]}")
+
 
 @bp.route('/diagnostic',methods=['POST'])
 def postDiagnostic():
@@ -175,7 +164,7 @@ def getAveragebyQuestion(id_diagnostic):
             "theme": r.theme,
             "question": r.question,
             "categorie": r.categorie_acteur,
-            "moyenne": float(r.moyenne_score),
+            "moyenne": float(r.moyenne_score) if r.moyenne_score is not None else 0,
             "id_question":r.id_question,
             "theme_id":r.theme_id
         }
@@ -241,7 +230,7 @@ def getAveragebyQuestionParams():
     quest_ids=[]
     for quest in questions:
         quest_ids.append(quest['id_question'])
-        print(quest['id_question'])
+   
 
     is_displayed = data['is_displayed']
     # Aliases pour les différentes utilisations de Nomenclature
@@ -295,7 +284,7 @@ def getAveragebyQuestionParams():
             "theme": r.theme,
             "question": r.question,
             "categorie": r.categorie_acteur,
-            "moyenne": float(r.moyenne_score),
+            "moyenne": float(r.moyenne_score) if r.moyenne_score is not None else 0,
             "id_question":r.id_question,
             "theme_id":r.theme_id
         }

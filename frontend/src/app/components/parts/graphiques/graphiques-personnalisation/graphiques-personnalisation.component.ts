@@ -137,7 +137,7 @@ export class GraphiquesPersonnalisationComponent {
     effect(() =>{
    
       this.id_user = this.authService.getCurrentUser().id_role;
-      console.log(this.id_user);
+  
     });
   }
 

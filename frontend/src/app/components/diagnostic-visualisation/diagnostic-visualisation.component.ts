@@ -147,7 +147,6 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
           this.diagnostic.set(diag);
           this.diag = this.diagnostic();
           this.themes.set(themes);
-          console.log(themes);
           this.actors.set(this.diagnostic().acteurs);
           const user = this.authService.getCurrentUser();
           this.id_role.set(user.id_role);

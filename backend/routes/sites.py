@@ -39,7 +39,6 @@ def siteMethods(id_site, slug):
             return jsonify({'error': 'Slug invalide'}), 400
     else:
         if id_site and slug == site.slug:
-            print(id_site)
             db.session.delete(site)
             db.session.commit()
             logger.info(f"🗑 Site {id_site} supprimé")

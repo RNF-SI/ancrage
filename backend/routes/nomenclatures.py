@@ -356,7 +356,10 @@ def traitementParThemeQuestions(nomenclatures, id_acteur):
                 "id_question": q.id_question,
                 "libelle": q.libelle,
                 "indications": q.indications,
-                "choixReponses": sorted(reponses_possibles, key=lambda x: x["value"]),
+                "choixReponses": sorted(
+                    reponses_possibles,
+                    key=lambda x: (x["value"] is not None, x["value"] if x["value"] is not None else "")
+                ),
                 "reponses": [reponse_acteur] if reponse_acteur else []
             })
 

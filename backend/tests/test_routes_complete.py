@@ -17,10 +17,6 @@ class TestSites:
         site_data.pop("slug", None)
         # Faire la requête POST avec les données JSON
         response = client.post("/site/", json=site_data)
-
-        print("status:", response.status_code)
-        print("data:", response.get_json())
-
         assert response.status_code == 200
 
         new_site = response.get_json()
@@ -289,6 +285,23 @@ class TestMail:
 
         # Vérifie que le mail a été envoyé
         mock_send.assert_called_once()
+
+class TestQuestions:
+    def test_question_libelle(self,client):
+        response = client.get('/question/Atouts%20-%20Faiblesses%20-%20Opportunités%20-%20Menaces')
+        assert response.status_code == 200
+
+    def test_all_questions(self,client):
+        response = client.get('/questions')
+        assert response.status_code == 200
+
+    def test_question_without_libelle(self,client):
+        response = client.get('question/')
+        assert response.status_code == 404
+
+    def test_question_with_wrong_label(self,client):
+        response = client.get('/question/wrong')
+        assert response.status_code == 404
 
 
 class TestErrorHandling:

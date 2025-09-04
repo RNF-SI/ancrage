@@ -40,7 +40,6 @@ def acteurMethods(id_acteur, slug):
             return jsonify({'error': 'Slug invalide'}), 400
     else:
         if acteur.slug == slug:
-            print(id_acteur)
             db.session.delete(acteur)
             db.session.commit()
             logger.info(f"🗑 Acteur {id_acteur} supprimé")
