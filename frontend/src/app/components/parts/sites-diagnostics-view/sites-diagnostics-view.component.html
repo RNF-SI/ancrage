@@ -3,7 +3,7 @@
     <div class="col-left"></div>
 
     <div class="col-center">
-      <button mat-raised-button id="creaBtn" color="accent" (click)="navigate('/diagnostic', diagnostic())">
+      <button mat-raised-button id="creaBtn" color="accent" (click)="navigate('/diagnostic/create', diagnostic())">
         {{ titleBtnCreaDiag() }}
       </button>
       <button mat-icon-button [matTooltip]="infobulleCreaDiagFromScratch()" aria-label="Info création" color="accent">
@@ -88,7 +88,7 @@
                     </button>
                   }
                   <button mat-raised-button class="directBtn" color="accent"
-                          (click)="navigate('/diagnostic', diagnostic(), site)">
+                          (click)="navigate('/diagnostic/create', diagnostic(), site)">
                     {{ titleBtnCreaDiag() }}
                   </button>
                   <button mat-icon-button [matTooltip]="infobulleCreaDiagFromSite()"

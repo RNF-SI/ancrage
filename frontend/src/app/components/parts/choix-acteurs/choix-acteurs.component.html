@@ -48,7 +48,7 @@
                 <fa-icon [icon]="['fas', 'info']"></fa-icon>
               </button>
               <span *ngIf="no_creation()">
-                <button mat-raised-button type="button" class="otherInfosBtn" (click)="navigate('/acteur/' + actor.id_acteur + '/' + actor.slug, diag()); $event.stopPropagation()">
+                <button mat-raised-button type="button" class="otherInfosBtn" (click)="navigate('/acteur/' + actor.id_acteur + '/' + actor.slug+'/update', diag()); $event.stopPropagation()">
                   <fa-icon [icon]="['fas', 'pen']"></fa-icon>
                 </button>
               </span>
@@ -116,7 +116,7 @@
                   <fa-icon [icon]="['fas', 'info']"></fa-icon>
                 </button>
                 @if (!diag().is_read_only) {
-                  <button mat-icon-button type="button" (click)="navigate('/acteur/' + actor.id_acteur + '/' + actor.slug, diag())" [matTooltip]="labels.modifyActor">
+                  <button mat-icon-button type="button" (click)="navigate('/acteur/' + actor.id_acteur + '/' + actor.slug + '/update', diag())" [matTooltip]="labels.modifyActor">
                     <fa-icon [icon]="['fas', 'pen']"></fa-icon>
                   </button>
                   <button mat-icon-button type="button" (click)="navigate('/entretien/' + actor.id_acteur + '/' + actor.slug, diag(),actor)" [matTooltip]="labels.goToInterview">

@@ -28,6 +28,6 @@
 
 <mat-dialog-actions>
     <button mat-raised-button color="accent" type="button" (click)="navigate(data.previousPage,data.diagnostic)">{{data.labels.btnPreviousStepLabel}}</button>
-    <button mat-raised-button (click)="navigate('site',data.diagnostic)" color="accent">{{data.labels.createAnotherSite}}</button>
-    <button mat-raised-button (click)="navigate('site/'+data.site.id_site+'/'+data.site.slug,data.diagnostic)" color="accent">{{data.labels.correctSite}}</button>
+    <button mat-raised-button (click)="navigate('site/create',data.diagnostic)" color="accent">{{data.labels.createAnotherSite}}</button>
+    <button mat-raised-button (click)="navigate('site/'+data.site.id_site+'/'+data.site.slug +'/update',data.diagnostic)" color="accent">{{data.labels.correctSite}}</button>
 </mat-dialog-actions>
