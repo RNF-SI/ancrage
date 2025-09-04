@@ -239,10 +239,13 @@ export class ActeurComponent implements OnDestroy{
         disableClose: true 
       });
 
-      dialogRef.afterClosed().subscribe(actor => {
-        if (actor) {
+      dialogRef.afterClosed().subscribe(acteur => {
+        if (acteur.is_creation ) {
     
           this.actor.set(new Acteur());
+          this.patchValue();
+        }else{
+          this.actor.set(actor);
           this.patchValue();
         }
       });

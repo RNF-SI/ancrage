@@ -32,8 +32,12 @@ export class AlerteActeurComponent {
     private stateService = inject(StateService);
   
     navigate(path:string,diagnostic:Diagnostic){
+      if (path.includes("create")){
+        this.data.acteur.is_creation = true;
+      }
       this.stateService.setPageFromActor("oui");
       this.siteService.navigateAndCache(path,diagnostic,undefined,true);
+      
       this.dialogRef.close(this.data.acteur);
     }
     close(){

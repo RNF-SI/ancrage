@@ -117,16 +117,7 @@ export class SiteComponent implements OnDestroy{
           );
           this.site().type = this.uniqueStatuts().find(stat => stat.id_nomenclature === this.site().type?.id_nomenclature) || this.site().type;
   
-          this.formGroup.patchValue({
-            id_site: this.site().id_site,
-            nom: this.site().nom,
-            /* habitats: this.site.habitats, */
-            departements: this.site().departements,
-            type: this.site().type,
-            position_y: this.site().position_y,
-            position_x: this.site().position_x,
-            slug: this.site().slug
-          });
+          this.patchvalue();
           this.titleSite = this.titleModif;
         });
       } else {
@@ -140,6 +131,19 @@ export class SiteComponent implements OnDestroy{
         });
       }
       
+    });
+  }
+
+  patchvalue(){
+    this.formGroup.patchValue({
+      id_site: this.site().id_site > 0 ? this.site().id_site :0,
+      nom: this.site().nom,
+      /* habitats: this.site.habitats, */
+      departements: this.site().departements,
+      type: this.site().type.id_nomenclature > 0 ? this.site().type :null,
+      position_y: this.site().position_y,
+      position_x: this.site().position_x,
+      slug: this.site().slug
     });
   }
  
@@ -182,7 +186,7 @@ export class SiteComponent implements OnDestroy{
     }else{
       this.previousPage = this.stateService.getCurrentPreviousPage();
     }
-    this.dialog.open(AlerteSiteComponent, {
+    const dialogRef = this.dialog.open(AlerteSiteComponent, {
       data: {
         title: this.titleSite,
         message: message,
@@ -193,6 +197,20 @@ export class SiteComponent implements OnDestroy{
       },
       disableClose: true 
     });
+
+    dialogRef.afterClosed().subscribe(site => {
+  
+      if (site.is_creation ) {
+  
+        this.site.set(new Site());
+        this.patchvalue();
+        
+      }else{
+        this.site.set(site)
+        this.patchvalue();
+      }
+    });
+
   }
   navigate(path:string,diagnostic:Diagnostic){
     this.siteService.navigateAndCache(path,diagnostic,undefined,true);

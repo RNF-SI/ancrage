@@ -25,6 +25,7 @@ export class Acteur implements IActeur{
     reponses?:Reponse[];
     slug = "";
     is_deleted = false;
+    is_creation = false;
 
     /** Copie profonde de l'objet */
     copy(): Acteur {
