@@ -45,7 +45,7 @@ def uploaded_file(filename):
     upload_folder = current_app.config['UPLOAD_FOLDER']
     full_path = os.path.join(upload_folder, filename)
 
-    logger.info("Recherche fichier :", full_path)
+    logger.info(f"Recherche fichier :{full_path}")
 
     if not os.path.exists(full_path):
         return f"Fichier non trouvé : {filename}", 404
