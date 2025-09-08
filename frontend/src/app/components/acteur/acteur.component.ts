@@ -30,7 +30,19 @@ import { StateService } from '@app/services/state.service';
     selector: 'app-acteur',
     templateUrl: './acteur.component.html',
     styleUrls: ['./acteur.component.css'],
-    imports: [CommonModule, MatFormFieldModule, ReactiveFormsModule, MatSelectModule, FormsModule, MatInputModule, MatAutocompleteModule, MatButtonModule, MatProgressSpinnerModule,LoadingSpinnerComponent]
+    imports: [
+      CommonModule, 
+      MatFormFieldModule, 
+      ReactiveFormsModule, 
+      MatSelectModule, 
+      FormsModule, 
+      MatInputModule, 
+      MatAutocompleteModule, 
+      MatButtonModule, 
+      MatProgressSpinnerModule,
+      LoadingSpinnerComponent
+    ]
+
 })
 export class ActeurComponent implements OnDestroy{
   
@@ -147,22 +159,25 @@ export class ActeurComponent implements OnDestroy{
     return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   }
   
+  //Filtrage amélioré pour rechercher par nom, code département ou code INSEE
   private _filter(filterValue: string): Commune[] {
     const normalizedInput = this._normalize(filterValue);
   
     return this.uniqueTowns
       .filter(t => {
         const nomMatch = this._normalize(t.nom_com).includes(normalizedInput);
-        const codePostalMatch = t.code_dpt && this._normalize(t.code_dpt).includes(normalizedInput);
+        const codeDptMatch = t.code_dpt && this._normalize(t.code_dpt).includes(normalizedInput);
         const inseeMatch = this._normalize(t.insee_com).includes(normalizedInput);
-        return nomMatch || codePostalMatch || inseeMatch;
+        return nomMatch || codeDptMatch || inseeMatch;
       })
       .slice(0, 30);
   }
 
-  //Autocomplétion
+  //Autocomplétion - Affichage amélioré avec code département
   displayFn(commune: Commune): string {
-    return commune?.nom_com + " ("+commune.code_dpt+")" || '';
+    if (!commune) return '';
+    const codeDpt = commune.code_dpt || '';
+    return `${commune.nom_com} (${codeDpt})`;
   }
 
   //Enregistrement du formulaire
@@ -224,10 +239,13 @@ export class ActeurComponent implements OnDestroy{
         disableClose: true 
       });
 
-      dialogRef.afterClosed().subscribe(actor => {
-        if (actor) {
+      dialogRef.afterClosed().subscribe(acteur => {
+        if (acteur.is_creation ) {
     
           this.actor.set(new Acteur());
+          this.patchValue();
+        }else{
+          this.actor.set(actor);
           this.patchValue();
         }
       });

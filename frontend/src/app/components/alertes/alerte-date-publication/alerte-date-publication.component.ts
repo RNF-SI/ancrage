@@ -22,7 +22,17 @@ import { DateAdapter } from '@angular/material/core';
     selector: 'app-alerte-date-publication',
     templateUrl: './alerte-date-publication.component.html',
     styleUrls: ['./alerte-date-publication.component.css'],
-    imports: [MatButtonModule, MatDatepickerModule, MatFormFieldModule, FormsModule, MatInputModule, MatMomentDateModule, MatDialogModule, FontAwesomeModule, MatTooltipModule],
+    imports: [
+      MatButtonModule, 
+      MatDatepickerModule, 
+      MatFormFieldModule, 
+      FormsModule, 
+      MatInputModule, 
+      MatMomentDateModule, 
+      MatDialogModule, 
+      FontAwesomeModule, 
+      MatTooltipModule
+    ],
     standalone:true
 })
 export class AlerteDatePublicationComponent implements OnInit,OnDestroy{

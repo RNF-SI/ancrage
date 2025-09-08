@@ -31,9 +31,11 @@ export class AlerteSiteComponent {
   private siteService = inject(SiteService);
 
   navigate(path:string,diagnostic:Diagnostic){
-    
+    if (path.includes("create")){
+      this.data.site.is_creation = true;
+    }
     this.siteService.navigateAndCache(path,diagnostic,undefined,true);
-    this.dialogRef.close();
+    this.dialogRef.close(this.data.site);
   }
 
   close(){

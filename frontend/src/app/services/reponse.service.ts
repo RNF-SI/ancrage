@@ -3,8 +3,6 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Reponse } from '@app/models/reponse.model';
 import { environment } from 'src/environments/environment';
-import { Nomenclature } from '@app/models/nomenclature.model';
-import { INomenclature } from '@app/interfaces/nomenclature.interface';
 import { MotCle } from '@app/models/mot-cle.model';
 import { IMotCle } from '@app/interfaces/mot_cle.interface';
 import { IReponse } from '@app/interfaces/reponse.interface';
@@ -15,7 +13,6 @@ import { IReponse } from '@app/interfaces/reponse.interface';
 })
 export class ReponseService {
 
-  private GET_ALL_URL = environment.flask_server+'reponses';
   private BASE_URL = environment.flask_server+'reponse';
   private http = inject(HttpClient);
 

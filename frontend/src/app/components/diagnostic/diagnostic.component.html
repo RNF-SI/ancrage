@@ -47,7 +47,7 @@
                   <p>{{ site.nom }}, {{ site.type.libelle }}</p>
                 }
       
-                <button mat-raised-button color="accent" type="button" (click)="navigate('/site', diagnostic())">
+                <button mat-raised-button color="accent" type="button" (click)="navigate('/site/create', diagnostic())">
                   {{ btnCreateSiteLabel }}
                 </button>
                 <button mat-raised-button color="accent" (click)="navigate(previousPage, diagnostic())">

@@ -11,14 +11,21 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { ToastrService } from 'ngx-toastr';
 import { Labels } from '@app/utils/labels';
-import { MatOptionModule } from '@angular/material/core';
 
 //Popup qui apparaît à la fusion de deux mots-clés
 @Component({
     selector: 'app-alerte-groupe-mots-cles',
     templateUrl: './alerte-groupe-mots-cles.component.html',
     styleUrls: ['./alerte-groupe-mots-cles.component.css'],
-    imports: [MatButtonModule, CommonModule, MatDialogModule, MatSelectModule, FormsModule, MatFormFieldModule, MatInputModule]
+    imports: [
+      MatButtonModule, 
+      CommonModule, 
+      MatDialogModule, 
+      MatSelectModule, 
+      FormsModule, 
+      MatFormFieldModule, 
+      MatInputModule
+    ]
 })
 export class AlerteGroupeMotsClesComponent{
   constructor(

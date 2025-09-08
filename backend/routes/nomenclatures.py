@@ -9,6 +9,9 @@ from configs.logger_config import logger
 @bp.route('/nomenclature/<int:id_nomenclature>', methods=['GET','PUT','DELETE'])
 def nomenclatureMethods(id_nomenclature):
     nomenclature = Nomenclature.query.filter_by(id_nomenclature=id_nomenclature).first()
+    if not nomenclature:
+        logger.warning(f"Nomenclature ID={id_nomenclature} non trouvée")
+        return jsonify({'error': 'Nomenclature non trouvée'}), 404
     
     if request.method == 'GET':
 
@@ -353,7 +356,10 @@ def traitementParThemeQuestions(nomenclatures, id_acteur):
                 "id_question": q.id_question,
                 "libelle": q.libelle,
                 "indications": q.indications,
-                "choixReponses": sorted(reponses_possibles, key=lambda x: x["value"]),
+                "choixReponses": sorted(
+                    reponses_possibles,
+                    key=lambda x: (x["value"] is not None, x["value"] if x["value"] is not None else "")
+                ),
                 "reponses": [reponse_acteur] if reponse_acteur else []
             })
 

@@ -168,7 +168,11 @@ export class GraphiquesComponent {
 
         chartRepartition[question] = { 
           labels, 
-          datasets: [{ data, backgroundColor: backgroundColors }] 
+          datasets: [{ 
+            data, 
+            backgroundColor: backgroundColors,
+            hoverBackgroundColor: backgroundColors
+           }] 
         };
       }
 

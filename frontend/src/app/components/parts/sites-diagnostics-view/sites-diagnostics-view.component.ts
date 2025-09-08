@@ -1,19 +1,11 @@
 import { CommonModule } from "@angular/common";
-import {
-  Component,
-  computed,
-  effect,
-  inject,
-  input,
-  OnDestroy,
-  signal
-} from "@angular/core";
+import { Component, computed, effect, inject, input, signal } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { Site } from "@app/models/site.model";
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router } from "@angular/router";
 import { SiteService } from "@app/services/sites.service";
 import { Diagnostic } from "@app/models/diagnostic.model";
 import { MapComponent } from "../map/map.component";
@@ -24,12 +16,12 @@ import { FormsModule } from "@angular/forms";
 import { AlerteVisualisationSiteComponent } from "../../alertes/alerte-visualisation-site/alerte-visualisation-site.component";
 import { MatDialog } from "@angular/material/dialog";
 import { Labels } from "@app/utils/labels";
-import { MatExpansionModule } from '@angular/material/expansion';
+import { MatExpansionModule } from "@angular/material/expansion";
 import { AuthService } from "@app/home-rnf/services/auth-service.service";
 import { StateService } from "@app/services/state.service";
 
 @Component({
-  selector: 'app-sites-diagnostics-view',
+  selector: "app-sites-diagnostics-view",
   standalone: true,
   imports: [
     CommonModule,
@@ -43,17 +35,20 @@ import { StateService } from "@app/services/state.service";
     MatSelectModule,
     MatInputModule,
     FormsModule,
-    MatExpansionModule
+    MatExpansionModule,
   ],
-  templateUrl: './sites-diagnostics-view.component.html',
-  styleUrls: ['./sites-diagnostics-view.component.css']
+  templateUrl: "./sites-diagnostics-view.component.html",
+  styleUrls: ["./sites-diagnostics-view.component.css"],
 })
 export class SitesDiagnosticsViewComponent {
-
   readonly sites = input<Site[]>([]);
   readonly titleBtnCreaDiag = input("Nouveau diagnostic");
-  readonly infobulleCreaDiagFromSite = input("Le site indiqué sur cette ligne sera présélectionné lors de la création du diagnostic.");
-  readonly infobulleCreaDiagFromScratch = input("Utilisez ce bouton si le diagnostic comprend plusieurs sites ou si le site ciblé n'est pas dans la liste ci-dessous.");
+  readonly infobulleCreaDiagFromSite = input(
+    "Le site indiqué sur cette ligne sera présélectionné lors de la création du diagnostic."
+  );
+  readonly infobulleCreaDiagFromScratch = input(
+    "Utilisez ce bouton si le diagnostic comprend plusieurs sites ou si le site ciblé n'est pas dans la liste ci-dessous."
+  );
   readonly title = input("");
   readonly diagnostic = input<Diagnostic>(new Diagnostic());
 
@@ -61,8 +56,9 @@ export class SitesDiagnosticsViewComponent {
   private authService = inject(AuthService);
   private dialog = inject(MatDialog);
   private router = inject(Router);
+  private stateService = inject(StateService);
 
-  displayedColumns = ['nom', 'regions', 'departements', 'type', 'choix'];
+  displayedColumns = ["nom", "regions", "departements", "type", "choix"];
 
   readonly sitesOriginal = signal<Site[]>([]);
   readonly selectedDepartement = signal("");
@@ -70,28 +66,68 @@ export class SitesDiagnosticsViewComponent {
   readonly selectedType = signal("");
   readonly searchSiteName = signal("");
 
-  readonly filteredSiteList = computed(() => {
-    const search = this.searchSiteName().toLowerCase();
-    return this.sitesSelected().filter(site =>
-      site.nom.toLowerCase().includes(search)
-    );
+  /**
+   * Fully reactive selection based on filters (département / région / type)
+   */
+  readonly sitesSelected = computed(() => {
+    const dep = this.selectedDepartement();
+    const reg = this.selectedRegion();
+    const type = this.selectedType();
+
+    const list = this.sitesOriginal();
+    return list.filter((site) => {
+      const matchDep = !dep || site.departements?.some((d) => d.nom_dep === dep);
+      const matchReg = !reg || site.departements?.some((d) => d.region?.nom_reg === reg);
+      const matchType = !type || site.type?.libelle === type;
+      return matchDep && matchReg && matchType;
+    });
   });
 
-  readonly sitesSelected = signal<Site[]>([]);
+  /**
+   * Name search layered on top of the main selection; accent-insensitive
+   */
+  readonly filteredSiteList = computed(() => {
+    const q = this.searchSiteName();
+    if (!q) return this.sitesSelected();
 
-  readonly uniqueDepartements = computed(() =>
-    Array.from(new Set(this.sitesOriginal().flatMap(s => s.departements.map(d => d.nom_dep)))).sort()
-  );
+    const search = q
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "");
 
-  readonly uniqueRegions = computed(() =>
-    Array.from(new Set(this.sitesOriginal().flatMap(s => s.departements.map(d => d.region.nom_reg)))).sort()
-  );
+    return this.sitesSelected().filter((site) => {
+      const nom = (site.nom ?? "").toLowerCase();
+      const normalized = nom.normalize("NFD").replace(/\p{Diacritic}/gu, "");
+      return normalized.includes(search);
+    });
+  });
 
-  readonly uniqueTypes = computed(() =>
-    Array.from(new Set(this.sitesOriginal().map(s => s.type?.libelle).filter(Boolean as any))).sort()
-  );
+  /**
+   * Unique lists for filter dropdowns (no empty strings)
+   */
+  readonly uniqueDepartements = computed(() => {
+    const all = this
+      .sitesOriginal()
+      .flatMap((s) => s.departements?.map((d) => d.nom_dep) ?? []);
+    const vals = all.filter((v): v is string => !!v && v.trim() !== "");
+    return Array.from(new Set(vals)).sort();
+  });
 
-  readonly reinitialisation = 'Réinitialiser';
+  readonly uniqueRegions = computed(() => {
+    const all = this
+      .sitesOriginal()
+      .flatMap((s) => s.departements?.map((d) => d.region?.nom_reg) ?? []);
+    const vals = all.filter((v): v is string => !!v && v.trim() !== "");
+    return Array.from(new Set(vals)).sort();
+  });
+
+  readonly uniqueTypes = computed(() => {
+    const all = this.sitesOriginal().map((s) => s.type?.libelle);
+    const vals = all.filter((v): v is string => !!v && v.trim() !== "");
+    return Array.from(new Set(vals)).sort();
+  });
+
+  readonly reinitialisation = "Réinitialiser";
   readonly btnToChooseLabel = "Choisir";
   readonly btnNewSiteLabel = "Nouveau site";
   readonly btnToChooseActors = "Choix des acteurs";
@@ -109,19 +145,20 @@ export class SitesDiagnosticsViewComponent {
 
   mapInstanceKey = Date.now();
   readonly showMoreInfo = "Afficher les détails";
-  readonly modify = "Modifier"
-  private stateService = inject(StateService)
+  readonly modify = "Modifier";
 
   constructor() {
-
+    // Initialize & keep sitesOriginal sorted whenever input sites changes
     effect(() => {
-      if (this.sites().length > 0) {
-        this.siteService.sortByName(this.sites());
-        this.sitesOriginal.set(this.sites());
-        this.sitesSelected.set(this.sites());
+      const inputSites = this.sites();
+      if (inputSites.length > 0) {
+        const arr = [...inputSites];
+        this.siteService.sortByName(arr); // assumes in-place sort of the copy
+        this.sitesOriginal.set(arr);
       }
     });
 
+    // Init user context & navigation state (runs once)
     effect(() => {
       const user = this.authService.getCurrentUser();
       this.user_id.set(user.id_role);
@@ -132,19 +169,9 @@ export class SitesDiagnosticsViewComponent {
     });
   }
 
+  // Kept for template compatibility: filtering is now fully reactive
   applyFilters() {
-    const dep = this.selectedDepartement();
-    const reg = this.selectedRegion();
-    const type = this.selectedType();
-
-    const filtered = this.sitesOriginal().filter(site => {
-      const matchDep = !dep || site.departements.some(d => d.nom_dep === dep);
-      const matchReg = !reg || site.departements.some(d => d.region.nom_reg === reg);
-      const matchType = !type || site.type?.libelle === type;
-      return matchDep && matchReg && matchType;
-    });
-
-    this.sitesSelected.set(filtered);
+    // no-op: computed(sitesSelected) reacts to selected* signals
   }
 
   resetFilters() {
@@ -152,18 +179,19 @@ export class SitesDiagnosticsViewComponent {
     this.selectedRegion.set("");
     this.selectedType.set("");
     this.searchSiteName.set("");
-    this.sitesSelected.set(this.sitesOriginal());
   }
 
   onSearchChange(value: string) {
-    this.searchSiteName.set(value);
+    this.searchSiteName.set(value ?? "");
   }
 
   navigate(path: string, diagnostic: Diagnostic, site?: Site) {
-    let diagToStore = diagnostic;
-    diagToStore.created_by = this.user_id();
-    diagToStore.id_organisme = this.id_organisme();
-    
+    // Avoid mutating the @Input() instance; clone into a fresh Diagnostic
+    const diagToStore = Object.assign(new Diagnostic(), diagnostic, {
+      created_by: this.user_id(),
+      id_organisme: this.id_organisme(),
+    });
+
     this.siteService.navigateAndCache(path, diagToStore, site);
   }
 
@@ -172,9 +200,8 @@ export class SitesDiagnosticsViewComponent {
       data: {
         site,
         labels: this.labels,
-        can_edit: this.user_id() === site.created_by
-      }
+        can_edit: this.user_id() === site.created_by,
+      },
     });
   }
-
 }

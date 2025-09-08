@@ -19,7 +19,14 @@ import { Subscription } from 'rxjs';
     selector: 'app-alerte-statut-entretien',
     templateUrl: './alerte-statut-entretien.component.html',
     styleUrls: ['./alerte-statut-entretien.component.css'],
-    imports: [CommonModule, MatDialogModule, MatButtonModule, MatFormFieldModule, ReactiveFormsModule, MatSelectModule]
+    imports: [
+      CommonModule, 
+      MatDialogModule, 
+      MatButtonModule, 
+      MatFormFieldModule, 
+      ReactiveFormsModule, 
+      MatSelectModule
+    ]
 })
 export class AlerteStatutEntretienComponent implements OnDestroy{
   constructor(

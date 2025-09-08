@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy } from '@angular/core';
 import {CommonModule, Location} from '@angular/common';
 import { AppConfig } from 'src/conf/app.config';
 import { Labels } from '@app/utils/labels';
@@ -9,14 +9,23 @@ import { MatInputModule } from '@angular/material/input';
 import { MailService } from '@app/services/mail.service';
 import { Subscription } from 'rxjs';
 import { Mail } from '@app/models/mail.model';
-import { RECAPTCHA_V3_SITE_KEY, ReCaptchaV3Service, RecaptchaFormsModule, RecaptchaV3Module } from "ng-recaptcha-2";
+import { ReCaptchaV3Service, RecaptchaFormsModule, RecaptchaV3Module } from "ng-recaptcha-2";
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
     selector: 'app-contact',
     templateUrl: './contact.component.html',
     styleUrls: ['./contact.component.css'],
-    imports:[ReactiveFormsModule,MatFormFieldModule,MatButtonModule,MatInputModule,CommonModule,MatError,RecaptchaV3Module,RecaptchaFormsModule],
+    imports:[
+      ReactiveFormsModule,
+      MatFormFieldModule,
+      MatButtonModule,
+      MatInputModule,
+      CommonModule,
+      MatError,
+      RecaptchaV3Module,
+      RecaptchaFormsModule
+    ],
     
 })
 export class ContactComponent implements OnDestroy{

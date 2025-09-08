@@ -19,6 +19,7 @@ export class Site implements ISite {
 	modified_by: number = 0;
 	selected=false;
 	slug="";
+	is_creation=false;
 
 	copy(): Site {
 		const copy = new Site();

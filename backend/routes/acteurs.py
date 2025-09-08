@@ -2,11 +2,11 @@ from models.models import db
 from flask import request, jsonify
 from models.models import *
 from schemas.metier import *
-from routes import bp, datetime, slugify, uuid
+from routes import bp, datetime, slugify, uuid, timezone
 from configs.logger_config import logger
 from routes.reponses import verifDatesEntretien
 
-@bp.route('/acteur/<id_acteur>/<slug>', methods=['GET', 'PUT'])
+@bp.route('/acteur/<id_acteur>/<slug>', methods=['GET', 'PUT','DELETE'])
 def acteurMethods(id_acteur, slug):
     logger.info(f"🔍 Requête {request.method} pour l'acteur {id_acteur} avec slug '{slug}'")
     acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
@@ -29,7 +29,7 @@ def acteurMethods(id_acteur, slug):
             data = request.get_json()
             logger.info(f" Données reçues : {data}")
             acteur = changeValuesActeur(acteur, data)
-            acteur.modified_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            acteur.modified_at = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
             acteur.modified_by = data['modified_by']
 
             db.session.commit()
@@ -38,6 +38,16 @@ def acteurMethods(id_acteur, slug):
         else:
             logger.info(" Slug invalide pour mise à jour")
             return jsonify({'error': 'Slug invalide'}), 400
+    else:
+        if acteur.slug == slug:
+            db.session.delete(acteur)
+            db.session.commit()
+            logger.info(f"🗑 Acteur {id_acteur} supprimé")
+            return '', 204
+        else:
+            logger.warning("❌ Slug invalide pour suppression")
+            return jsonify({'error': 'Slug invalide'}), 400
+
 
 @bp.route('/acteur/', methods=['POST'])
 def postActeur():
@@ -60,11 +70,15 @@ def postActeur():
         - Profil ID  : {acteur.profil_cognitif_id}
         """)
 
-        acteur.created_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        acteur.created_at = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         myuuid = uuid.uuid4()
         acteur.slug = slugify(acteur.nom) + '-' + str(myuuid)
         acteur.created_by = data.get('created_by', 'unknown')
-        acteur.diagnostic_id = data['diagnostic']['id_diagnostic']
+        # Gérer le cas où diagnostic est None
+        if data.get('diagnostic') is not None:
+            acteur.diagnostic_id = data['diagnostic']['id_diagnostic']
+        else:
+            acteur.diagnostic_id = None
         db.session.add(acteur)
         db.session.commit()
         logger.info(f"✅ Acteur créé avec ID {acteur.id_acteur} et slug {acteur.slug}")
@@ -81,7 +95,7 @@ def changeStateInterview(id_acteur, id_statut):
         return jsonify({'error': 'Acteur non trouvé'}), 404
 
     acteur.statut_entretien_id = id_statut
-    acteur.modified_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    acteur.modified_at = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
     acteur.modified_by = data['modified_by']
 
     db.session.add(acteur)

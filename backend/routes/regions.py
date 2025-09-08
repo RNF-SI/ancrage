@@ -9,6 +9,10 @@ def regionMethods(id_region):
     region = Region.query.filter_by(id_region=id_region).first()
     logger.info(f"Requête sur la région ID={id_region} : {region}")
 
+    if not region:
+        logger.warning(f"Région ID={id_region} non trouvée")
+        return jsonify({'error': 'Région non trouvée'}), 404
+
     if request.method == 'GET':
         logger.info("Méthode GET appelée pour /region/<id_region>")
         return getRegion(region)

@@ -2,11 +2,11 @@
 from models.models import *
 from schemas.metier import *
 from sqlalchemy.orm import aliased
-from routes import bp,datetime, slugify, uuid,func,request,jsonify
+from routes import bp,datetime, slugify, uuid,func,request,jsonify, timezone
 from datetime import datetime
 from configs.logger_config import logger
 
-@bp.route('/diagnostic/<int:id_diagnostic>/<slug>', methods=['GET','PUT'])
+@bp.route('/diagnostic/<int:id_diagnostic>/<slug>', methods=['GET','PUT','DELETE'])
 def diagnosticMethods(id_diagnostic, slug):
     diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
 
@@ -31,7 +31,7 @@ def diagnosticMethods(id_diagnostic, slug):
                     logger.info(f" - ID: {acteur.get('id_acteur')}, Nom: {acteur.get('nom')}")
 
             diagnostic = changeValuesDiagnostic(diagnostic, data)
-            diagnostic.modified_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            diagnostic.modified_at = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
             raw_date = data.get('date_rapport')
             if raw_date is not None:
                 date_rapport = datetime.strptime(raw_date, '%d/%m/%Y')
@@ -42,6 +42,16 @@ def diagnosticMethods(id_diagnostic, slug):
             return getDiagnostic(diagnostic)
         else:
             logger.warning(f"❌ Slug invalide pour mise à jour du diagnostic {id_diagnostic}")
+            return jsonify({'error': 'Slug invalide'}), 400
+    
+    else:
+        if diagnostic.slug == slug:
+            db.session.delete(diagnostic)
+            db.session.commit()
+            logger.info(f"🗑 Diagnostic {id_diagnostic} supprimé")
+            return '', 204
+        else:
+            logger.warning("❌ Slug invalide pour suppression")
             return jsonify({'error': 'Slug invalide'}), 400
         
 @bp.route('/diagnostic/disable/<int:id_diagnostic>/<slug>', methods=['PUT'])
@@ -61,18 +71,7 @@ def disableDiagnostic(id_diagnostic, slug):
     else:
         logger.warning(f"❌ Slug invalide pour mise à jour du diagnostic {id_diagnostic}")
         return jsonify({'error': 'Slug invalide'}), 400
-    
-def print_diagnostic(diagnostic):
-    logger.info("🔍 Diagnostic :")
-    logger.info(f"  ID              : {diagnostic.id_diagnostic}")
-    logger.info(f"  Nom             : {diagnostic.nom}")
-    logger.info(f"  Date début      : {diagnostic.date_debut}")
-    logger.info(f"  Date fin        : {diagnostic.date_fin}")
-    logger.info(f"  Date rapport    : {diagnostic.date_rapport}")
-    logger.info(f"  Créé par        : {diagnostic.created_by}")
-    logger.info(f"  Est en lecture seule : {diagnostic.is_read_only}")
-    logger.info(f"  Sites associés  : {[site.id_site for site in diagnostic.sites]}")
-    logger.info(f"  Acteurs associés: {[acteur.id_acteur for acteur in diagnostic.acteurs]}")
+
 
 @bp.route('/diagnostic',methods=['POST'])
 def postDiagnostic():
@@ -80,7 +79,7 @@ def postDiagnostic():
 
     diagnostic = Diagnostic()
     diagnostic.nom=data['nom']
-    diagnostic.created_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    diagnostic.created_at = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
     diagnostic.created_by = data['created_by']
     diagnostic.identite_createur = data['identite_createur']
     myuuid = uuid.uuid4()
@@ -165,7 +164,7 @@ def getAveragebyQuestion(id_diagnostic):
             "theme": r.theme,
             "question": r.question,
             "categorie": r.categorie_acteur,
-            "moyenne": float(r.moyenne_score),
+            "moyenne": float(r.moyenne_score) if r.moyenne_score is not None else 0,
             "id_question":r.id_question,
             "theme_id":r.theme_id
         }
@@ -231,7 +230,7 @@ def getAveragebyQuestionParams():
     quest_ids=[]
     for quest in questions:
         quest_ids.append(quest['id_question'])
-        print(quest['id_question'])
+   
 
     is_displayed = data['is_displayed']
     # Aliases pour les différentes utilisations de Nomenclature
@@ -285,7 +284,7 @@ def getAveragebyQuestionParams():
             "theme": r.theme,
             "question": r.question,
             "categorie": r.categorie_acteur,
-            "moyenne": float(r.moyenne_score),
+            "moyenne": float(r.moyenne_score) if r.moyenne_score is not None else 0,
             "id_question":r.id_question,
             "theme_id":r.theme_id
         }
@@ -525,7 +524,7 @@ def changeValuesDiagnostic(diagnostic,data):
                     mail=a.mail,
                     commune_id=a.commune_id,
                     structure=a.structure,
-                    created_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+                    created_at = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
                     created_by=data['created_by'],
                     diagnostic_id=diagnostic.id_diagnostic,
                     categories=a.categories,

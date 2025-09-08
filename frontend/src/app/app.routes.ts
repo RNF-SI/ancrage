@@ -33,15 +33,15 @@ export const routes: Routes = [{
     { path: '', component: IndexComponent },
     { path: 'diagnostics-liste', component: DiagosticsListeComponent, canActivate: [authGuard] },
     { path: 'mes-diagnostics', component: MesDiagnosticsComponent, canActivate: [authGuard] },
-    { path: 'site', component: SiteComponent, canActivate: [authGuard] },
-    { path: 'site/:id_site/:slug', component: SiteComponent, canActivate: [authGuard] },
+    { path: 'site/create', component: SiteComponent, canActivate: [authGuard] },
+    { path: 'site/:id_site/:slug/update', component: SiteComponent, canActivate: [authGuard] },
     { path: 'site-ls/:id_site/:slug', component: SiteLsComponent, canActivate: [authGuard] },
     { path: 'choix-acteurs/:id_diagnostic/:slug', component: ChoixActeursComponent, canActivate: [authGuard] },
-    { path: 'diagnostic', component: DiagnosticComponent, canActivate: [authGuard] },
-    { path: 'diagnostic/:id_diagnostic/:slug', component: DiagnosticComponent, canActivate: [authGuard] },
+    { path: 'diagnostic/create', component: DiagnosticComponent, canActivate: [authGuard] },
+    { path: 'diagnostic/:id_diagnostic/:slug/update', component: DiagnosticComponent, canActivate: [authGuard] },
     { path: 'diagnostic-visualisation/:id_diagnostic/:slug', component: DiagnosticVisualisationComponent, canActivate: [authGuard] },
-    { path: 'acteur', component: ActeurComponent, canActivate: [authGuard] },
-    { path: 'acteur/:id_acteur/:slug', component: ActeurComponent, canActivate: [authGuard] },
-    { path: 'entretien/:id_acteur/:slug', component: EntretienComponent, canActivate: [authGuard] }
+    { path: 'acteur/create', component: ActeurComponent, canActivate: [authGuard] },
+    { path: 'acteur/:id_acteur/:slug/update', component: ActeurComponent, canActivate: [authGuard] },
+    { path: 'entretien/:id_acteur/:slug/update', component: EntretienComponent, canActivate: [authGuard] }
   ]
 }];

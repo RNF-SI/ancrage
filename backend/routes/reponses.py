@@ -2,7 +2,7 @@ from models.models import db
 from flask import request
 from models.models import *
 from schemas.metier import *
-from routes import bp,datetime, func,jsonify
+from routes import bp,datetime, func,jsonify, timezone
 from routes.mot_cle import getKeywordsByActor
 from configs.logger_config import logger
 from routes.functions import checkCCG
@@ -230,9 +230,9 @@ def verifDatesEntretien(diagnostic_id):
     logger.info(f"Nombre d'acteurs avec entretien terminé : {len(listeTermines)}")
 
     if len(listeTermines) == 1:
-        diagnostic.date_debut = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        diagnostic.date_debut = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
     if len(listeTermines) == len(diagnostic.acteurs):
-        diagnostic.date_fin = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        diagnostic.date_fin = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
 
     db.session.add(diagnostic)
     db.session.commit()

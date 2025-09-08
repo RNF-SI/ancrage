@@ -31,9 +31,9 @@ export class NavigationService {
     this.stateService.setPreviousPage(this.router.url);
 
     if (actorId && slug) {
-      this.router.navigate(['/acteur', actorId, slug]);
+      this.router.navigate(['/acteur', actorId, slug,'update']);
     } else {
-      this.router.navigate(['/acteur']);
+      this.router.navigate(['/acteur/create']);
     }
   }
 
@@ -47,9 +47,9 @@ export class NavigationService {
     this.stateService.setPreviousPage(this.router.url);
 
     if (siteId && slug) {
-      this.router.navigate(['/site', siteId, slug]);
+      this.router.navigate(['/site', siteId, slug,'update']);
     } else {
-      this.router.navigate(['/site']);
+      this.router.navigate(['/site/create']);
     }
   }
 
@@ -60,9 +60,9 @@ export class NavigationService {
     this.stateService.setPreviousPage(this.router.url);
 
     if (diagnosticId && slug) {
-      this.router.navigate(['/diagnostic', diagnosticId, slug]);
+      this.router.navigate(['/diagnostic', diagnosticId, slug,'update']);
     } else {
-      this.router.navigate(['/diagnostic']);
+      this.router.navigate(['/diagnostic/create']);
     }
   }
 
@@ -71,7 +71,7 @@ export class NavigationService {
    */
   navigateToDiagnosticView(diagnosticId: number, slug: string): void {
     this.stateService.setPageDiagnostic(this.router.url);
-    this.router.navigate(['/diagnostic-view', diagnosticId, slug]);
+    this.router.navigate(['/diagnostic-visualisation', diagnosticId, slug]);
   }
 
   /**

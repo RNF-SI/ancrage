@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, ViewChild,signal, effect, input } from '@angular/core';
+import { Component, inject, OnDestroy, ViewChild,signal, effect } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
@@ -47,11 +47,8 @@ import { saveAs } from 'file-saver';
       CommonModule, 
       MatButtonModule, 
       GraphiquesComponent, 
-      GraphiquesComponent, 
       MatTabsModule, 
       MenuLateralComponent, 
-      MenuLateralComponent, 
-      TableauStructuresComponent, 
       TableauStructuresComponent, 
       MapComponent, 
       MotsClesZoneComponent, 
@@ -147,7 +144,6 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
           this.diagnostic.set(diag);
           this.diag = this.diagnostic();
           this.themes.set(themes);
-          console.log(themes);
           this.actors.set(this.diagnostic().acteurs);
           const user = this.authService.getCurrentUser();
           this.id_role.set(user.id_role);

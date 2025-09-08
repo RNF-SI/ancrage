@@ -38,5 +38,4 @@ def send_mail():
         return jsonify({"message": "Email envoyé avec succès"}), 200
 
     except Exception as e:
-        print(f"[ERREUR ENVOI MAIL] {e}")
         return jsonify({"error": "Erreur lors de l'envoi du mail"}), 500

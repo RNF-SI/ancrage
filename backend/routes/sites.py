@@ -3,7 +3,7 @@ from flask import request, jsonify
 from sqlalchemy.orm import contains_eager
 from models.models import *
 from schemas.metier import *
-from routes import bp, datetime, slugify, uuid
+from routes import bp, datetime, slugify, uuid, timezone
 from configs.logger_config import logger
 
 @bp.route('/site/<int:id_site>/<string:slug>', methods=['GET','PUT','DELETE'])
@@ -28,7 +28,7 @@ def siteMethods(id_site, slug):
             data = request.get_json()
             logger.info(f"✏ Mise à jour du site {id_site} avec données : {data}")
             site = changeValuesSite(site, data)
-            site.modified_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            site.modified_at = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
             site.modified_by = data['modified_by']
 
             db.session.commit()
@@ -39,7 +39,6 @@ def siteMethods(id_site, slug):
             return jsonify({'error': 'Slug invalide'}), 400
     else:
         if id_site and slug == site.slug:
-            print(id_site)
             db.session.delete(site)
             db.session.commit()
             logger.info(f"🗑 Site {id_site} supprimé")
@@ -50,15 +49,20 @@ def siteMethods(id_site, slug):
 
 @bp.route('/site/', methods=['POST'])
 def postSite():
+    
     if request.method == 'POST': 
         data = request.get_json()
+        if not data:
+            logger.warning("❌ Données JSON invalides")
+            return jsonify({'error': 'Données JSON invalides'}), 400
+        
         logger.info(f"📥 Création d'un nouveau site avec données : {data}")
 
         site = Site()
         site = changeValuesSite(site, data)
         myuuid = uuid.uuid4()
         site.slug = slugify(site.nom) + '-' + str(myuuid)
-        site.created_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        site.created_at = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         site.created_by = data['created_by']
 
         db.session.add(site)

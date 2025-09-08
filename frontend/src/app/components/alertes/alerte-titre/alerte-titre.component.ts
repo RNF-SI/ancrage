@@ -9,7 +9,14 @@ import { Labels } from '@app/utils/labels';
 
 @Component({
   selector: 'app-alerte-titre',
-  imports: [MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, FormsModule,CommonModule],
+  imports: [
+    MatDialogModule, 
+    MatButtonModule, 
+    MatFormFieldModule, 
+    MatInputModule, 
+    FormsModule,
+    CommonModule
+  ],
   templateUrl: './alerte-titre.component.html',
   styleUrl: './alerte-titre.component.css'
 })

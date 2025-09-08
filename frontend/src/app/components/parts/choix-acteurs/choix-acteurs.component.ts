@@ -36,7 +36,21 @@ import { AlerteSuppressionActeurComponent } from '@app/components/alertes/alerte
     selector: 'app-choix-acteurs',
     templateUrl: './choix-acteurs.component.html',
     styleUrls: ['./choix-acteurs.component.css'],
-    imports: [CommonModule, MatTableModule, MatCheckboxModule, FormsModule, MatSelectModule, MatFormFieldModule, MatButtonModule, RouterModule, ReactiveFormsModule, FontAwesomeModule, MatListModule, MatCardModule, MatTooltipModule]
+    imports: [
+      CommonModule, 
+      MatTableModule, 
+      MatCheckboxModule, 
+      FormsModule, 
+      MatSelectModule, 
+      MatFormFieldModule, 
+      MatButtonModule, 
+      RouterModule, 
+      ReactiveFormsModule, 
+      FontAwesomeModule, 
+      MatListModule, 
+      MatCardModule, 
+      MatTooltipModule
+    ]
 })
 export class ChoixActeursComponent implements OnDestroy{
   

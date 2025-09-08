@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, Inject, OnDestroy, OnInit } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
@@ -18,7 +17,15 @@ import { firstValueFrom, Subscription } from 'rxjs';
     selector: 'app-alerte-mots-cles',
     templateUrl: './alerte-mots-cles.component.html',
     styleUrls: ['./alerte-mots-cles.component.css'],
-    imports: [CommonModule, MatDialogModule, MatButtonModule, FontAwesomeModule, MatFormFieldModule, MatInputModule, FormsModule]
+    imports: [
+      CommonModule, 
+      MatDialogModule, 
+      MatButtonModule, 
+      FontAwesomeModule, 
+      MatFormFieldModule, 
+      MatInputModule, 
+      FormsModule
+    ]
 })
 export class AlerteMotsClesComponent implements OnInit, OnDestroy{
   constructor(
