@@ -119,7 +119,7 @@
                   <button mat-icon-button type="button" (click)="navigate('/acteur/' + actor.id_acteur + '/' + actor.slug + '/update', diag())" [matTooltip]="labels.modifyActor">
                     <fa-icon [icon]="['fas', 'pen']"></fa-icon>
                   </button>
-                  <button mat-icon-button type="button" (click)="navigate('/entretien/' + actor.id_acteur + '/' + actor.slug, diag(),actor)" [matTooltip]="labels.goToInterview">
+                  <button mat-icon-button type="button" (click)="navigate('/entretien/' + actor.id_acteur + '/' + actor.slug+ '/update', diag(),actor)" [matTooltip]="labels.goToInterview">
                     <fa-icon [icon]="['fas', 'file-lines']"></fa-icon>
                   </button>
                   <button mat-icon-button type="button" (click)="openAlertDisable(actor)" [matTooltip]="labels.delete">
