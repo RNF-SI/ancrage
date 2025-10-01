@@ -44,7 +44,6 @@ def send_mail():
         msg = Message(
             subject=f"[Contact RNF] {objet}",
             recipients=[destinataire],
-            sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
             body=f"Message de {nom} <{expediteur}> :\n\n{message}"
         )
 
