@@ -9,7 +9,7 @@ def send_mail():
     data = request.get_json() or {}
     
     token = data.get("token")
-    logger.info("data=%s, token=%s", data, token)
+    logger.info("data=%s, token=%s", data)
 
     if not token:
         logger.error("Token captcha manquant")
