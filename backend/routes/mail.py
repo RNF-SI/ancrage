@@ -11,7 +11,7 @@ def send_mail():
     token = data.get("token")
     logger.info("data=%s, token=%s", data, token)
 
-    """ if not token:
+    if not token:
         logger.error("Token captcha manquant")
         return jsonify({"error": "Token captcha manquant"}), 400
 
@@ -29,7 +29,7 @@ def send_mail():
         return jsonify({"error": "Vérification reCAPTCHA impossible"}), 500
 
     if not result.get("success") or result.get("score", 0) < 0.5:
-        return jsonify({"error": "Échec reCAPTCHA"}), 403 """
+        return jsonify({"error": "Échec reCAPTCHA"}), 403
 
     try:
         destinataire = current_app.config.get("MAIL_DEFAULT_RECEIVER")
