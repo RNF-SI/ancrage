@@ -5,7 +5,7 @@ export const AppConfig = {
     "appName": "Ancrage",
     "appTitle": "Ancrage Territorial",
     "appSubTitle": "Boîte à outils de diagnostic",
-    "creditHeaderImage": "Etang du Moulin Neuf, Plounérin - © C. Le Gac",
+    "creditHeaderImage": "",
     "SEARCH_INPUT": false,
     "SEARCH_ITEMS_ROUTE": "",
     "SEARCH_PREFIXE": "",
