@@ -37,4 +37,5 @@ def send_mail():
         return jsonify({"message": "Email envoyé avec succès"}), 200
 
     except Exception as e:
+        logger.error(e)
         return jsonify({"error": "Erreur lors de l'envoi du mail"}), 500
