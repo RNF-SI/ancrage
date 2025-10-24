@@ -7,15 +7,17 @@ from routes.mot_cle import getKeywordsByActor
 from configs.logger_config import logger
 from routes.functions import checkCCG
 from sqlalchemy.dialects.postgresql import insert
+from pypnusershub.decorators import check_auth
 
-
+@check_auth(1)
 @bp.route('/reponse', methods=['POST'])
 def enregistrer_reponse_id():
     data = request.get_json()
     logger.info("Réception des données de réponses depuis objets")
 
     return enregistrer_reponse(data)
-    
+
+@check_auth(1)    
 @bp.route('/reponse/objet', methods=['POST'])
 def enregistrer_reponse_depuis_objet():
     data = request.get_json()
@@ -27,7 +29,7 @@ def enregistrer_reponse_depuis_objet():
 
     return getKeywordsByActor(acteur_id)
 
-
+@check_auth(1)
 def enregistrer_reponse(reponses_objets):
     if not reponses_objets:
         logger.warning("Aucune réponse fournie")

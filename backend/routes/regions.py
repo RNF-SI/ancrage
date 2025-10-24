@@ -3,7 +3,9 @@ from flask import request, jsonify
 from schemas.metier import *
 from routes import bp
 from configs.logger_config import logger
+from pypnusershub.decorators import check_auth
 
+@check_auth(1)
 @bp.route('/region/<id_region>', methods=['GET','PUT','DELETE'])
 def regionMethods(id_region):
     region = Region.query.filter_by(id_region=id_region).first()
@@ -32,6 +34,7 @@ def regionMethods(id_region):
         logger.info("Suppression effectuée")
         return {"success": "Suppression terminée"}
 
+@check_auth(1)
 @bp.route('/region',methods=['POST'])
 def postRegion():
     if request.method == 'POST': 
@@ -44,6 +47,7 @@ def postRegion():
         logger.info(f"Nouvelle région créée : {region}")
         return getRegion(region)
 
+@check_auth(1)
 @bp.route('/regions',methods=['GET'])
 def getAllRegions():
     if request.method == 'GET': 
@@ -53,6 +57,7 @@ def getAllRegions():
         usersObj = schema.dump(regions)
         return jsonify(usersObj)
 
+@check_auth(1)
 @bp.route('/regions/<mnemonique>',methods=['GET'])
 def getAllRegionsByUSer(mnemonique):
     if request.method == 'GET': 

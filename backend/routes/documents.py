@@ -3,7 +3,9 @@ from schemas.metier import *
 from routes.diagnostics import getDiagnostic
 from routes import bp,request,json,current_app,secure_filename,send_from_directory,NotFound
 from configs.logger_config import logger,os
+from pypnusershub.decorators import check_auth
 
+@check_auth(1)
 @bp.route('/diagnostic/upload', methods=['POST'])
 def create_documents():
     documents = json.loads(request.form['documents'])
@@ -39,6 +41,7 @@ def create_documents():
     diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
     return getDiagnostic(diagnostic)
 
+
 @bp.route('/diagnostic/uploads/<path:filename>')
 def uploaded_file(filename):
     filename = secure_filename(filename)
@@ -52,6 +55,7 @@ def uploaded_file(filename):
 
     return send_from_directory(upload_folder, filename)
 
+@check_auth(1)
 @bp.route('/diagnostic/document/delete/<int:id_document>', methods=['DELETE'])
 def delete_document(id_document):
     # Récupération de l'entrée en base

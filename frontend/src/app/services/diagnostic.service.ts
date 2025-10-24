@@ -23,11 +23,13 @@ export class DiagnosticService {
     private GET_ALL_URL = environment.flask_server+ 'diagnostics';
     private BASE_URL = environment.flask_server+ 'diagnostic';
     private http = inject(HttpClient);
-    
+    private token = localStorage.getItem('tk_id_token');
   
     //Récupère les diags en fonction des sites
     getAllBySites(array:any): Observable<Diagnostic[]> {
-      return this.http.post<IDiagnostic[]>(this.GET_ALL_URL+"-site",array).pipe(
+      return this.http.post<IDiagnostic[]>(this.GET_ALL_URL+"-site",array,{
+        headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
         shareReplay(1),
         map(diagnosticJsonArray => {
           return diagnosticJsonArray.map<Diagnostic>(
@@ -39,7 +41,9 @@ export class DiagnosticService {
 
     //Récupère les données des histogrammes
     getAverageByQuestion(id_diagnostic:number): Observable<GraphMoy[]>{
-      return this.http.get<IGraphMoy[]>(this.GET_ALL_URL+"/charts/average/"+id_diagnostic).pipe(
+      return this.http.get<IGraphMoy[]>(this.GET_ALL_URL+"/charts/average/"+id_diagnostic,{
+        headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
         shareReplay(1),
         map(graphiquesJsonArray => {
           return graphiquesJsonArray.map<GraphMoy>(
@@ -50,7 +54,9 @@ export class DiagnosticService {
     }
 
     getAverageByQuestionParams(params:Parameters): Observable<GraphMoy[]>{
-      return this.http.put<IGraphMoy[]>(this.BASE_URL+"/params/charts/average",params.toJson()).pipe(
+      return this.http.put<IGraphMoy[]>(this.BASE_URL+"/params/charts/average",params.toJson(),{
+        headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
         shareReplay(1),
         map(graphiquesJsonArray => {
           return graphiquesJsonArray.map<GraphMoy>(
@@ -62,7 +68,9 @@ export class DiagnosticService {
 
     //Récupère les données des camemberts
     getRepartition(id_diagnostic:number): Observable<GraphRepartition[]>{
-      return this.http.get<IGraphRepartition[]>(this.GET_ALL_URL+"/charts/repartition/"+id_diagnostic).pipe(
+      return this.http.get<IGraphRepartition[]>(this.GET_ALL_URL+"/charts/repartition/"+id_diagnostic,{
+        headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
         shareReplay(1),
         map(graphiquesJsonArray => {
           return graphiquesJsonArray.map<GraphRepartition>(
@@ -73,7 +81,9 @@ export class DiagnosticService {
     }
 
     getRepartitionParams(params:Parameters): Observable<GraphRepartition[]>{
-      return this.http.put<IGraphRepartition[]>(this.BASE_URL+"/params/charts/repartition",params.toJson()).pipe(
+      return this.http.put<IGraphRepartition[]>(this.BASE_URL+"/params/charts/repartition",params.toJson(),{
+        headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
         shareReplay(1),
         map(graphiquesJsonArray => {
           return graphiquesJsonArray.map<GraphRepartition>(
@@ -85,7 +95,9 @@ export class DiagnosticService {
 
     //Récupère les données des radars
     getRadars(id_diagnostic:number): Observable<GraphRadar[]>{
-      return this.http.get<IGraphRadar[]>(this.GET_ALL_URL+"/charts/radars/"+id_diagnostic).pipe(
+      return this.http.get<IGraphRadar[]>(this.GET_ALL_URL+"/charts/radars/"+id_diagnostic,{
+        headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
         shareReplay(1),
         map(graphiquesJsonArray => {
           return graphiquesJsonArray.map<GraphRadar>(
@@ -96,7 +108,9 @@ export class DiagnosticService {
     }
 
     getRadarsParams(params:Parameters): Observable<GraphRadar[]>{
-      return this.http.put<IGraphRadar[]>(this.BASE_URL+"/params/charts/radars",params.toJson()).pipe(
+      return this.http.put<IGraphRadar[]>(this.BASE_URL+"/params/charts/radars",params.toJson(),{
+        headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
         shareReplay(1),
         map(graphiquesJsonArray => {
           return graphiquesJsonArray.map<GraphRadar>(
@@ -113,7 +127,9 @@ export class DiagnosticService {
     }
 
     getOccurencesKeyWords(id_diagnostic:number): Observable<GraphMotsCles[]>{
-      return this.http.get<IGraphMotsCles[]>(this.BASE_URL+"/mots-cles/"+id_diagnostic).pipe(
+      return this.http.get<IGraphMotsCles[]>(this.BASE_URL+"/mots-cles/"+id_diagnostic,{
+        headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
         shareReplay(1),
         map(graphiquesJsonArray => {
           return graphiquesJsonArray.map<GraphMotsCles>(
@@ -125,7 +141,9 @@ export class DiagnosticService {
 
     //Récupère un diag
     get(id: number,slug:string): Observable<Diagnostic> {
-      return this.http.get<IDiagnostic>(this.BASE_URL + '/' + id + '/' + slug ).pipe(
+      return this.http.get<IDiagnostic>(this.BASE_URL + '/' + id + '/' + slug,{
+        headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
         shareReplay(1),
         map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
       );
@@ -133,21 +151,27 @@ export class DiagnosticService {
   
     //Ajout
     add(diagnostic: Diagnostic): Observable<Diagnostic> {
-      return this.http.post<IDiagnostic>(this.BASE_URL, diagnostic.toJson()).pipe(
+      return this.http.post<IDiagnostic>(this.BASE_URL, diagnostic.toJson(),{
+        headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
         map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
       );
     }
   
     //Mise à jour
     update(diagnostic: Diagnostic): Observable<Diagnostic> {
-      return this.http.put<IDiagnostic>(this.BASE_URL + '/' + diagnostic.id_diagnostic + '/' + diagnostic.slug, diagnostic.toJson()).pipe(
+      return this.http.put<IDiagnostic>(this.BASE_URL + '/' + diagnostic.id_diagnostic + '/' + diagnostic.slug, diagnostic.toJson(),{
+        headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
         map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
       );
     }
     
     //Envoie les fichiers au serveur
     sendFiles(formData:FormData){
-      return this.http.post<IDiagnostic>(this.BASE_URL + '/upload' ,formData).pipe(
+      return this.http.post<IDiagnostic>(this.BASE_URL + '/upload' ,formData,{
+        headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
         map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
       );
     }
@@ -161,7 +185,9 @@ export class DiagnosticService {
 
     updateAfom(listeAfoms:GraphMotsCles[]): Observable<GraphMotsCles[]> {
       
-      return this.http.post<IGraphMotsCles[]>(this.BASE_URL + '/afom/update', listeAfoms).pipe(
+      return this.http.post<IGraphMotsCles[]>(this.BASE_URL + '/afom/update', listeAfoms,{
+        headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
         map(graphiquesJsonArray => {
           return graphiquesJsonArray.map<GraphMotsCles>(
             graphJson => GraphMotsCles.fromJson(graphJson)
@@ -171,13 +197,17 @@ export class DiagnosticService {
     }
 
     disableDiag(diagnostic:Diagnostic): Observable<Diagnostic> {
-      return this.http.put<IDiagnostic>(this.BASE_URL + '/disable/' + diagnostic.id_diagnostic + '/' + diagnostic.slug, diagnostic.toJson()).pipe(
+      return this.http.put<IDiagnostic>(this.BASE_URL + '/disable/' + diagnostic.id_diagnostic + '/' + diagnostic.slug, diagnostic.toJson(),{
+        headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
         map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
       );
     }
 
     deleteDocument(document:Document):Observable<Diagnostic> {
-      return this.http.delete<IDiagnostic>(this.BASE_URL+'/document/delete/'+document.id_document).pipe(
+      return this.http.delete<IDiagnostic>(this.BASE_URL+'/document/delete/'+document.id_document,{
+        headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
         map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
       )
     }

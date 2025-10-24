@@ -5,7 +5,9 @@ from schemas.metier import *
 from routes import bp
 from sqlalchemy.orm import raiseload
 from configs.logger_config import logger
+from pypnusershub.decorators import check_auth
 
+@check_auth(1)
 @bp.route('/question/<string:libelle>', methods=['GET'])
 def get_question_without_relations(libelle):
     if not libelle:
@@ -27,6 +29,7 @@ def get_question_without_relations(libelle):
     questionObj = schema.dump(question)
     return jsonify(questionObj)  
 
+@check_auth(1)
 @bp.route('/questions', defaults={'limit': None} ,methods=['GET'])
 @bp.route('/questions/<int:limit>', methods=['GET'])
 def get_questions(limit):

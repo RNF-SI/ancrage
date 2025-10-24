@@ -15,9 +15,12 @@ export class ReponseService {
 
   private BASE_URL = environment.flask_server+'reponse';
   private http = inject(HttpClient);
+  private token = localStorage.getItem('tk_id_token');
 
   updateAfom(reponse:Reponse): Observable<MotCle[]> {
-    return this.http.post<IMotCle[]>(this.BASE_URL+'/objet',reponse).pipe(
+    return this.http.post<IMotCle[]>(this.BASE_URL+'/objet',reponse,{
+      headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
       map(kwJsonArray => {
         return kwJsonArray.map<MotCle>(
           kwJson => MotCle.fromJson(kwJson)
@@ -27,7 +30,9 @@ export class ReponseService {
   }
 
   update(reponse:Reponse): Observable<Reponse> {
-    return this.http.post<IReponse>(this.BASE_URL,reponse).pipe(
+    return this.http.post<IReponse>(this.BASE_URL,reponse,{
+      headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
       map(reponse => {
            return Reponse.fromJson(reponse);
       })

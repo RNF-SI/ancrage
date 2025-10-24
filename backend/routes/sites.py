@@ -5,7 +5,9 @@ from models.models import *
 from schemas.metier import *
 from routes import bp, datetime, slugify, uuid, timezone
 from configs.logger_config import logger
+from pypnusershub.decorators import check_auth
 
+@check_auth(1)
 @bp.route('/site/<int:id_site>/<string:slug>', methods=['GET','PUT','DELETE'])
 def siteMethods(id_site, slug):
     logger.info(f"🔍 Requête {request.method} pour le site {id_site} avec slug '{slug}'")
@@ -47,6 +49,7 @@ def siteMethods(id_site, slug):
             logger.warning("❌ Slug invalide pour suppression")
             return jsonify({'error': 'Slug invalide'}), 400
 
+@check_auth(1)
 @bp.route('/site/', methods=['POST'])
 def postSite():
     
@@ -70,6 +73,7 @@ def postSite():
         logger.info(f"✅ Site créé avec ID {site.id_site} et slug {site.slug}")
         return getSite(site)
 
+@check_auth(1)
 @bp.route('/sites', methods=['GET'])
 def getAllSites():
     if request.method == 'GET': 
@@ -80,6 +84,7 @@ def getAllSites():
         logger.info(f"🔢 Nombre de sites retournés : {len(usersObj)}")
         return jsonify(usersObj)
 
+@check_auth(1)
 @bp.route('/sites/<created_by>', methods=['GET'])
 def getAllSitesByUSer(created_by):
     if request.method == 'GET': 

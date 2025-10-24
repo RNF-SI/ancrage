@@ -14,10 +14,13 @@ export class MotCleService {
 	private GET_ALL_URL = environment.flask_server+'mots_cles';
 	private BASE_URL = environment.flask_server+'mot_cle';
 	private http = inject(HttpClient);
+	private token = localStorage.getItem('tk_id_token');
 
 	//Récupère tous les motCles
 	getAllByDiag(id_diagnostic:number): Observable<MotCle[]> {
-		return this.http.get<IMotCle[]>(this.GET_ALL_URL +'/'+id_diagnostic ).pipe(
+		return this.http.get<IMotCle[]>(this.GET_ALL_URL +'/'+id_diagnostic,{
+			headers: { Authorization: `Bearer ${this.token}` }
+		  } ).pipe(
 			map(motCleJsonArray => {
 				return motCleJsonArray.map<MotCle>(
 					motCleJson => MotCle.fromJson(motCleJson)
@@ -27,7 +30,9 @@ export class MotCleService {
 	}
 
 	getKeywordsByActor(id_acteur:number): Observable<MotCle[]>{
-		  return this.http.get<IMotCle[]>(this.GET_ALL_URL+'/theme/'+id_acteur).pipe(
+		  return this.http.get<IMotCle[]>(this.GET_ALL_URL+'/theme/'+id_acteur,{
+			headers: { Authorization: `Bearer ${this.token}` }
+		  }).pipe(
 			map(nomenclatureJsonArray => {
 			  return nomenclatureJsonArray.map<MotCle>(
 				nomenclatureJson => MotCle.fromJson(nomenclatureJson)
@@ -39,13 +44,17 @@ export class MotCleService {
 	update(mot_cle:MotCle): Observable<MotCle> {
 		const route = this.BASE_URL + '/' + mot_cle.id_mot_cle;
 	   
-		return this.http.put<IMotCle>(route, mot_cle.toJson()).pipe(
+		return this.http.put<IMotCle>(route, mot_cle.toJson(),{
+			headers: { Authorization: `Bearer ${this.token}` }
+		  }).pipe(
 		  map(mot_cleJson => MotCle.fromJson(mot_cleJson))
 		);
 	}
 
 	add(mot_cle:MotCle): Observable<MotCle> {
-		return this.http.post<IMotCle>(this.BASE_URL, mot_cle.toJson()).pipe(
+		return this.http.post<IMotCle>(this.BASE_URL, mot_cle.toJson(),{
+			headers: { Authorization: `Bearer ${this.token}` }
+		  }).pipe(
 		  map(mcJson => MotCle.fromJson(mcJson))
 		);
 	}
@@ -61,7 +70,9 @@ export class MotCleService {
 
 	//Récupère un mot-clé
 	get(id:number): Observable<MotCle> {
-		return this.http.get<IMotCle>(this.BASE_URL + '/' + id).pipe(
+		return this.http.get<IMotCle>(this.BASE_URL + '/' + id,{
+			headers: { Authorization: `Bearer ${this.token}` }
+		  }).pipe(
 			map(motCleJson => MotCle.fromJson(motCleJson))
 		);
 	}

@@ -5,7 +5,9 @@ from schemas.metier import *
 from routes import bp,joinedload,aliased,and_
 from routes.functions import checkCCG
 from configs.logger_config import logger
+from pypnusershub.decorators import check_auth
 
+@check_auth(1)
 @bp.route('/nomenclature/<int:id_nomenclature>', methods=['GET','PUT','DELETE'])
 def nomenclatureMethods(id_nomenclature):
     nomenclature = Nomenclature.query.filter_by(id_nomenclature=id_nomenclature).first()
@@ -16,7 +18,8 @@ def nomenclatureMethods(id_nomenclature):
     if request.method == 'GET':
 
        return getNomenclature(nomenclature)
-    
+
+@check_auth(1)    
 @bp.route('/nomenclature/<string:valeur>', methods=['GET','PUT','DELETE'])
 def nomenclatureNoResponse(valeur):
     nomenclature = Nomenclature.query.filter_by(libelle=valeur).first()
@@ -25,6 +28,7 @@ def nomenclatureNoResponse(valeur):
 
        return getNomenclature(nomenclature)
 
+@check_auth(1)
 @bp.route('/nomenclatures',methods=['GET'])
 def getAllNomenclatures():
     if request.method == 'GET': 
@@ -34,8 +38,7 @@ def getAllNomenclatures():
         usersObj = schema.dump(nomenclatures)
         return jsonify(usersObj)
 
-
-
+@check_auth(1)
 @bp.route('/nomenclatures/<mnemonique>', defaults={'id_acteur': None}, methods=['GET'])
 @bp.route('/nomenclatures/<mnemonique>/<int:id_acteur>', methods=['GET'])
 def getAllNomenclaturesByType(mnemonique, id_acteur):

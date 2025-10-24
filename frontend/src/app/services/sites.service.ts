@@ -19,10 +19,13 @@ export class SiteService {
 	private http = inject(HttpClient);
 	private router = inject(Router);
 	private stateService = inject(StateService);
+	private token = localStorage.getItem('tk_id_token');
 	
 	//Récupère tous les sites
 	getAll(): Observable<Site[]> {
-		return this.http.get<ISite[]>(this.GET_ALL_URL).pipe(
+		return this.http.get<ISite[]>(this.GET_ALL_URL,{
+			headers: { Authorization: `Bearer ${this.token}` }
+			}).pipe(
 			shareReplay(1),
 			map(siteJsonArray => {
 				return siteJsonArray.map<Site>(
@@ -34,7 +37,9 @@ export class SiteService {
 
 	//Récupère tous les sites en fonction du créateur du diag
 	getAllByUser(user_id:number): Observable<Site[]> {
-		return this.http.get<ISite[]>(this.GET_ALL_URL+'/'+user_id).pipe(
+		return this.http.get<ISite[]>(this.GET_ALL_URL+'/'+user_id,{
+			headers: { Authorization: `Bearer ${this.token}` }
+			}).pipe(
 			shareReplay(1),
 			map(siteJsonArray => {
 				return siteJsonArray.map<Site>(
@@ -46,7 +51,9 @@ export class SiteService {
 
 	//Récupère un site
 	get(id:number,slug: string): Observable<Site> {
-		return this.http.get<ISite>(this.BASE_URL + id + '/' + slug).pipe(
+		return this.http.get<ISite>(this.BASE_URL + id + '/' + slug,{
+			headers: { Authorization: `Bearer ${this.token}` }
+			}).pipe(
 			shareReplay(1),
 			map(siteJson => Site.fromJson(siteJson))
 		);
@@ -54,7 +61,9 @@ export class SiteService {
 
 	//Ajout
 	add(site: Site): Observable<Site> {
-		return this.http.post<ISite>(this.BASE_URL, site.toJson()).pipe(
+		return this.http.post<ISite>(this.BASE_URL, site.toJson(),{
+			headers: { Authorization: `Bearer ${this.token}` }
+			}).pipe(
 			map(siteJson => Site.fromJson(siteJson))
 		);
 	}
@@ -62,7 +71,9 @@ export class SiteService {
 	//Mise à jour
 	update(site: Site): Observable<Site> {
 		const route = this.BASE_URL + site.id_site + '/' + site.slug;
-		return this.http.put<ISite>(route, site.toJson()).pipe(
+		return this.http.put<ISite>(route, site.toJson(),{
+			headers: { Authorization: `Bearer ${this.token}` }
+			}).pipe(
 			map(siteJson => Site.fromJson(siteJson))
 		);
 	}

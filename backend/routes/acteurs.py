@@ -5,7 +5,10 @@ from schemas.metier import *
 from routes import bp, datetime, slugify, uuid, timezone
 from configs.logger_config import logger
 from routes.reponses import verifDatesEntretien
+from pypnusershub.decorators import check_auth
 
+
+@check_auth(1)
 @bp.route('/acteur/<id_acteur>/<slug>', methods=['GET', 'PUT','DELETE'])
 def acteurMethods(id_acteur, slug):
     logger.info(f"🔍 Requête {request.method} pour l'acteur {id_acteur} avec slug '{slug}'")
@@ -48,7 +51,7 @@ def acteurMethods(id_acteur, slug):
             logger.warning("❌ Slug invalide pour suppression")
             return jsonify({'error': 'Slug invalide'}), 400
 
-
+@check_auth(1)
 @bp.route('/acteur/', methods=['POST'])
 def postActeur():
     if request.method == 'POST':
@@ -84,6 +87,7 @@ def postActeur():
         logger.info(f"✅ Acteur créé avec ID {acteur.id_acteur} et slug {acteur.slug}")
         return getActeur(acteur)
 
+@check_auth(1)
 @bp.route('/acteur/state/<id_acteur>/<id_statut>', methods=['PUT'])
 def changeStateInterview(id_acteur, id_statut):
     logger.info(f"🔁 Changement de statut de l'acteur {id_acteur} vers {id_statut}")
@@ -131,7 +135,7 @@ def getAllActeursBySites():
         logger.info("❌ Champ 'id_sites' manquant")
         return jsonify({'error': "Champ 'id_sites' requis"}), 400
     
-
+@check_auth(1)
 @bp.route('/acteurs/diagnostic/<int:id_diagnostic>', methods=['GET'])
 def getAllActeursByDiag(id_diagnostic):
     acteurs = Acteur.query.filter_by(diagnostic_id=id_diagnostic).all()
@@ -139,7 +143,7 @@ def getAllActeursByDiag(id_diagnostic):
     return jsonify(schema.dump(acteurs)), 200
 
 
-
+@check_auth(1)
 @bp.route('/acteurs/<created_by>', methods=['GET'])
 def getAllActeursByUSer(created_by):
     logger.info(f"📋 Récupération des acteurs créés par : {created_by}")
@@ -149,6 +153,8 @@ def getAllActeursByUSer(created_by):
     usersObj = schema.dump(acteurs)
     return jsonify(usersObj)
 
+
+@check_auth(1)
 @bp.route('/acteur/disable/<int:id_acteur>/<slug>', methods=['PUT'])
 def disableActeur(id_acteur, slug):
     acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
