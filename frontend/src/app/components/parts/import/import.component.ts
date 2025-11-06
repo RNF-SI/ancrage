@@ -16,6 +16,7 @@ import { Labels } from '@app/utils/labels';
 import { Subscription } from 'rxjs';
 import { Document } from '@app/models/document.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
+import { Acteur } from '@app/models/acteur.model';
 
 @Component({
   selector: 'app-import',
@@ -52,13 +53,11 @@ export class ImportComponent implements OnDestroy{
   uniqueTowns:Commune[] = [];
   private communeService = inject(CommuneService);
   private communeSub?:Subscription;
-  private docReadSub ?:Subscription;
-  private docsSubscription?:Subscription;
+  private importSubscription?:Subscription;
   private diagnosticService = inject(DiagnosticService);
   @Input() diagnostic = new Diagnostic();
-  files: File[] = [];
   dragOver = false;
-  file?:Blob;
+  file: File | null = null;
 
   constructor() {
     
@@ -104,6 +103,7 @@ export class ImportComponent implements OnDestroy{
   onDragOver(event: DragEvent) {
     event.preventDefault();
     this.dragOver = true;
+    
   }
   onDragLeave(event: DragEvent) {
     event.preventDefault();
@@ -112,69 +112,38 @@ export class ImportComponent implements OnDestroy{
   onDrop(event: DragEvent) {
     event.preventDefault();
     this.dragOver = false;
-    if (event.dataTransfer?.files) {
-      this.files = [];
-      this.files.push(...Array.from(event.dataTransfer.files));
+    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+      this.file = event.dataTransfer.files[0];
+      this.formGroup.get('file')?.setValue(this.file.name)
     }
   }
+  
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    if (input.files) {
-      this.files = [];
-      this.files.push(...Array.from(input.files));
+    if (input.files && input.files.length > 0) {
+      this.file = input.files[0];
+      this.formGroup.get('file')?.setValue(this.file.name)
     }
   }
-
-  //Télecharge le fichier
-  getFile(filename:string){
-    this.docReadSub = this.diagnosticService.downloadFile(filename).subscribe(file =>{
-      this.file=file;
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(this.file);
-      link.download = filename;
-      link.click();
-    });
-  }
-
-  //Envoie les fichiers au serveur
-  uploadFiles() { 
-    console.log(this.diagnostic);
-    const documents: Document[] = this.files.map(file => {
-      console.log(file);
-      const doc = new Document();
-      doc.nom = file.name;
-      doc.diagnostic = this.diagnostic;
-      return doc;
-    });
   
-    const formData = new FormData();
-  
-    // Ajout des fichiers
-    this.files.forEach(file => {
-      formData.append('files', file);
-    });
-  
-    // Ajout du JSON des documents
-    formData.append('documents', JSON.stringify(documents.map(d => d.toJson())));
-
-    this.docsSubscription = this.diagnosticService.sendFiles(formData).subscribe(diag =>{
-      this.diagnostic = diag;
-      this.formGroup.get('file')?.setValue(diag.documents![diag.documents!.length -1].nom);
-    });
-    
-    
-  }
 
 
   import(event: Event){
     event.preventDefault();
+    if(this.formGroup.valid){
+      let acteur = new Acteur();
+      acteur.commune = this.formGroup.get('commune')?.value!;
+      acteur.diagnostic = this.diagnostic;
+
+      this.importSubscription = this.diagnosticService.importData(this.file!,acteur).subscribe();
+    }
     
+
   }
 
   ngOnDestroy(): void {
     this.communeSub?.unsubscribe();
-    this.docReadSub?.unsubscribe();
-    this.docsSubscription?.unsubscribe();
+    this.importSubscription?.unsubscribe();
   }
 
 }

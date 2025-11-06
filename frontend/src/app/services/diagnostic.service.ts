@@ -1,10 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { IActeur } from '@app/interfaces/acteur.interface';
 import { IDiagnostic } from '@app/interfaces/diagnostic.interface';
 import { IGraphMoy } from '@app/interfaces/graph-moy.interface';
 import { IGraphRadar } from '@app/interfaces/graphradar.interface';
 import { IGraphMotsCles } from '@app/interfaces/igraph-mots-cles';
 import { IGraphRepartition } from '@app/interfaces/igraph-repartition';
+import { Acteur } from '@app/models/acteur.model';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { Document } from '@app/models/document.model';
 import { GraphMotsCles } from '@app/models/graph-mots-cles';
@@ -210,6 +212,23 @@ export class DiagnosticService {
       }).pipe(
         map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
       )
+    }
+
+    importData(file: File,acteur:Acteur): Observable<Acteur> {
+      const token = localStorage.getItem('tk_id_token');
+      const formData = new FormData();
+  
+      formData.append('file', file);
+      formData.append('acteur', JSON.stringify(acteur)); 
+
+      return this.http.post<IActeur>(this.BASE_URL+"/import-data", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+
+        }
+      }).pipe(
+        map(acteurJson => Acteur.fromJson(acteurJson))
+      );
     }
     
 }

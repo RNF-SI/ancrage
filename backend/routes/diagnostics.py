@@ -7,6 +7,7 @@ from datetime import datetime
 from configs.logger_config import logger
 from pypnusershub.decorators import check_auth
 import pandas as pd
+import json, re
 
 
 @check_auth(1)
@@ -752,11 +753,25 @@ def get_afoms_par_mot_cle_et_diagnostic(id_diagnostic):
 
     return jsonify(data)   
 
-@bp.route("/import-acteurs", methods=["POST"])
-def import_acteurs():
+@bp.route("/diagnostic/import-data", methods=["POST"])
+def import_data():
     file = request.files.get("file")
-    commune_id = request.form.get("commune")['id_commune']
-    diagnostic_id = request.form.get("diagnostic_id")
+    acteur_data = request.form.get('acteur')
+
+    if not acteur_data:
+        return jsonify({"error": "No acteur data provided"}), 400
+
+    try:
+        acteur_json = json.loads(acteur_data)
+      
+        commune_id = acteur_json.get('commune')['id_commune']
+        diagnostic_id = acteur_json.get('diagnostic')['id_diagnostic']
+        commune = Commune.query.get(commune_id)
+        diagnostic = Diagnostic.query.get(diagnostic_id)
+
+    except json.JSONDecodeError:
+        return jsonify({"error": "Invalid JSON in reserve"}), 400
+   
 
     
     if not file or not commune_id or not diagnostic_id:
@@ -764,8 +779,7 @@ def import_acteurs():
 
     df = pd.read_excel(file)
 
-    commune = Commune.query.get(commune_id)
-    diagnostic = Diagnostic.query.get(diagnostic_id)
+ 
     if not commune or not diagnostic:
         return jsonify({"error": "Commune ou diagnostic introuvable"}), 404
 
@@ -792,37 +806,44 @@ def import_acteurs():
 
         # Parcours des 5 groupes
         for i in range(1, 6):
-            col = f"groupe{i}"   # <-- adapter au vrai nom des colonnes dans l’Excel
+            col = f"groupe{i}"
+            print(group_mapping[i],acteur.nom) 
             if col in row and row[col] == 1:
                 cat = Nomenclature.query.filter_by(
                     mnemonique="categorie",
                     libelle=group_mapping[i]
                 ).first()
+                print("cat",cat.id_nomenclature)
                 if cat:
                     acteur.categories.append(cat)
 
-        # Pour chaque champ numérique -> question + réponse
         for col, val in row.items():
             if pd.api.types.is_numeric_dtype(type(val)) and not pd.isna(val):
-                # Récupérer/Créer la question
-                question = Question.query.filter_by(libelle=col).first()
-                if not question:
-                    question = Question(libelle=col, metrique=1)
-                    db.session.add(question)
-                    db.session.flush()
+                
+                # Extraire les chiffres de la colonne comme identifiant de metrique
+                if 'groupe' not in col:
+                    match = re.search(r'(\d+)', col)
+                    if not match:
+                        continue  # Ignore les colonnes non conformes
+                    
+                    metrique_num = int(match.group(1))
 
-                # Récupérer la nomenclature associée à la valeur (mnemonique="reponse_score")
-                rep_nom = Nomenclature.query.filter_by(
-                    mnemonique="reponse_score", value=int(val)
-                ).first()
+                    # Récupérer la question par la metrique (numéro)
+                    question = Question.query.filter_by(metrique=metrique_num).first()
 
-                if rep_nom:
-                    reponse = Reponse(
-                        acteur=acteur,
-                        question=question,
-                        valeur_reponse=rep_nom
-                    )
-                    db.session.add(reponse)
+                    
+                    # Récupérer la nomenclature associée à la valeur
+                    rep_nom = Nomenclature.query.filter_by(
+                        mnemonique="reponse_score", value=int(val)
+                    ).first()
+
+                    if rep_nom:
+                        reponse = Reponse(
+                            acteur=acteur,
+                            question=question,
+                            valeur_reponse=rep_nom
+                        )
+                        db.session.add(reponse)
 
         acteurs_crees.append({"id_acteur": acteur.id_acteur, "nom": acteur.nom})
 

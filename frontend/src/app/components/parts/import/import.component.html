@@ -27,7 +27,7 @@
                 <input type="text"
                        matInput
                        formControlName="file"
-                       placeholder="Fichier téléversé" required>
+                       placeholder="Fichier diagnostic" required>
                 
                 @if (formGroup.get('file')?.hasError('required')) {
                   <mat-error>{{ labels.uploadFile }}</mat-error>
@@ -42,18 +42,12 @@
                     {{ labels.chooseFile }}
                   </button>
             </div>
-                <button mat-raised-button color="primary" (click)="uploadFiles()" [disabled]="!files.length" type="button">
-                  {{labels.send}}
-                </button>
-                @if (files.length) {
-                  <ul>
-                    @for (file of files; track file) {
-                      <li>{{ file.name }}</li>
-                    }
-                  </ul>
-                }
-            
-           
+            <ul>
+              @if(file){
+                <li>{{ file.name }}</li>
+              }
+            </ul>
+                
             <button mat-raised-button id="btnNewSite" type="submit" color="warn">
               {{ labels.import }}
             </button>
