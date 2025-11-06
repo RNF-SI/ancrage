@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { filter } from 'rxjs';
@@ -20,7 +20,12 @@ const dynamicScripts = [
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.css'],
-    imports:[RouterModule,FontAwesomeModule,HomeRnfModule],
+    imports:[
+      RouterModule,
+      FontAwesomeModule,
+      HomeRnfModule,
+  
+    ],
     standalone:true
 })
 export class AppComponent implements OnInit{
@@ -28,13 +33,7 @@ export class AppComponent implements OnInit{
 
   loading = true;
   routerSubscription: any;
-
-  constructor(
-    private router: Router,
-   
-    ) {
-
-    }
+  private router = inject(Router);
 
 
   ngOnInit(): void {

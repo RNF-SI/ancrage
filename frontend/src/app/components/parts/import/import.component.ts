@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, Input, OnDestroy, signal } from '@angular/core';
+import { Component, computed, effect, inject, Input, OnDestroy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -11,10 +11,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { Commune } from '@app/models/commune.model';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { CommuneService } from '@app/services/commune.service';
-import { StateService } from '@app/services/state.service';
 import { Labels } from '@app/utils/labels';
 import { Subscription } from 'rxjs';
-import { Document } from '@app/models/document.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { Acteur } from '@app/models/acteur.model';
 import { ToastrService } from 'ngx-toastr';

@@ -45,6 +45,7 @@
     "ng-chartjs": "^0.2.8",
     "ng-recaptcha-2": "^15.0.3",
     "ng2-charts": "^3.1.2",
+    "ngx-matomo-client": "^7.1.0",
     "ngx-toastr": "^16.2.0",
     "rxjs": "~7.5.0",
     "supercluster": "^8.0.1",
