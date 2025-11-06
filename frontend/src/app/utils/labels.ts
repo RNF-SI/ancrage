@@ -67,6 +67,8 @@ export class Labels {
     requiredSite = "Au moins un site est requis.";
     dropFilesSelect = "Glissez vos fichiers ici ou cliquez pour sélectionner";
     chooseFiles = "Choisir des fichiers";
+    dropFileSelect = "Glissez votre fichier ici ou cliquez pour sélectionner";
+    chooseFile = "Choisir un fichier";
     download = "Télécharger";
     requiredDepartment = "Au moins un département est requis.";
     requiredLatitude = "Une latitude est requise.";
@@ -88,4 +90,6 @@ export class Labels {
     questions = "Questions";
     writeTitle = "Donner un titre";
     validate = "Valider";
+    import = "Importer";
+    uploadFile = "Vous devez téléverser un fichier."
 }

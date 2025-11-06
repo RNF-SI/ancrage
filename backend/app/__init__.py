@@ -4,7 +4,7 @@ from models.models import db
 from routes import bp
 from flask_migrate import Migrate
 from flask_cors import CORS
-from configs.mail_config import mail 
+from extensions import mail 
 
 def create_app():
     app = Flask(__name__)

@@ -10,7 +10,7 @@ export class Document {
             const copy = new Document();
             copy.id_document = this.id_document;
             copy.nom = this.nom;
-            copy.diagnostic = this.diagnostic?.copy() || new Diagnostic();
+            copy.diagnostic = this.diagnostic.copy();
     
             return copy;
     }
@@ -22,14 +22,14 @@ export class Document {
         if(!data) return document;
         document.id_document = data.id_document;
         document.nom = data.nom;
-        document.diagnostic = Diagnostic.fromJson(data.diagnostic!) || new Diagnostic();
+        document.diagnostic = Diagnostic.fromJson(data.diagnostic);
         return document;
     }
 
     toJson(): IDocument {
         const json: IDocument = {
             ...this,
-            region: this.diagnostic?.copy()
+            diagnostic: this.diagnostic.toJson()
 
         };
 

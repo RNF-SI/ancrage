@@ -5,13 +5,15 @@ export const AppConfig = {
     "appName": "Ancrage",
     "appTitle": "Ancrage Territorial",
     "appSubTitle": "Boîte à outils de diagnostic",
-    "creditHeaderImage": "",
+    "creditHeaderImage": "Brebis sur la réserve du Pinail. Photo : A. Menanteau",
     "SEARCH_INPUT": false,
     "SEARCH_ITEMS_ROUTE": "",
     "SEARCH_PREFIXE": "",
     "SEARCH_PLACEHOLDER": "",
     "contact": "ancrage@rnfrance.org",
     "datesFormation":"8 au 10 décembre 2025 à DIJON (21)",
+    "displayPartners":false,
+    "displayFooter":true,
     "menucompte": [
         {
             "texte": "Déconnexion",

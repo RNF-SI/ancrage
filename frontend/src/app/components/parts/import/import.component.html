@@ -1,0 +1,69 @@
+<div class="container">
+    <div class="grid grid-cols-12 gap-4">
+      <div class="col-span-2"></div>
+  
+      <div class="col-span-8">
+        
+          <form [formGroup]="formGroup" (submit)="import($event)">
+            
+    
+            <mat-form-field appearance="fill">
+              <input type="text"
+                     matInput
+                     formControlName="commune"
+                     [matAutocomplete]="auto"
+                     placeholder="Nom de la commune principale*" required>
+              <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+                @for (town of filteredTowns; track town) {
+                  <mat-option [value]="town">{{ displayFn(town) }}</mat-option>
+                }
+              </mat-autocomplete>
+              @if (formGroup.get('commune')?.hasError('required')) {
+                <mat-error>{{ labels.requiredTown }}</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+                <input type="text"
+                       matInput
+                       formControlName="file"
+                       placeholder="Fichier téléversé" required>
+                
+                @if (formGroup.get('file')?.hasError('required')) {
+                  <mat-error>{{ labels.uploadFile }}</mat-error>
+                }
+              </mat-form-field>
+
+            <div class="upload-zone" matRipple [class.dragover]="dragOver"
+                  (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
+                  <p>{{ labels.dropFileSelect }}</p>
+                  <input type="file" (change)="onFileSelected($event)" hidden #fileInput />
+                  <button mat-raised-button (click)="fileInput.click()" type="button">
+                    {{ labels.chooseFile }}
+                  </button>
+            </div>
+                <button mat-raised-button color="primary" (click)="uploadFiles()" [disabled]="!files.length" type="button">
+                  {{labels.send}}
+                </button>
+                @if (files.length) {
+                  <ul>
+                    @for (file of files; track file) {
+                      <li>{{ file.name }}</li>
+                    }
+                  </ul>
+                }
+            
+           
+            <button mat-raised-button id="btnNewSite" type="submit" color="warn">
+              {{ labels.import }}
+            </button>
+          </form>
+        
+  
+        
+      </div>
+  
+      <div class="col-span-2"></div>
+    </div>
+</div>
+  
