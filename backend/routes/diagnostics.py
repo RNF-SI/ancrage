@@ -848,7 +848,9 @@ def import_data():
         acteurs_crees.append({"id_acteur": acteur.id_acteur, "nom": acteur.nom})
 
     db.session.commit()
-    return jsonify({"message": f"{len(acteurs_crees)} acteurs créés", "acteurs": acteurs_crees})
+    schema = ActeurLiteSchema(many=False)
+    acteurObj = schema.dump(acteurs_crees[0])
+    return jsonify(acteurObj)
 
 def deleteActors(diagnostic_id):
     Acteur.query.filter(

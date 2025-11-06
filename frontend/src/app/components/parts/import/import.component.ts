@@ -17,6 +17,7 @@ import { Subscription } from 'rxjs';
 import { Document } from '@app/models/document.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { Acteur } from '@app/models/acteur.model';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-import',
@@ -58,6 +59,7 @@ export class ImportComponent implements OnDestroy{
   @Input() diagnostic = new Diagnostic();
   dragOver = false;
   file: File | null = null;
+  private toastService = inject(ToastrService);
 
   constructor() {
     
@@ -135,7 +137,11 @@ export class ImportComponent implements OnDestroy{
       acteur.commune = this.formGroup.get('commune')?.value!;
       acteur.diagnostic = this.diagnostic;
 
-      this.importSubscription = this.diagnosticService.importData(this.file!,acteur).subscribe();
+      this.importSubscription = this.diagnosticService.importData(this.file!,acteur).subscribe(res=>{
+        if (res instanceof Acteur){
+          this.toastService.success('Les données ont bien été importées. Rechargez la page.')
+        }
+      });
     }
     
 

@@ -9,3 +9,8 @@
   .upload-zone.dragover {
     background-color: #e3f2fd;
   }
+
+  mat-form-field{
+    display: block;
+    width:50%;
+  }
