@@ -8,6 +8,7 @@ from configs.logger_config import logger
 from pypnusershub.decorators import check_auth
 import pandas as pd
 import json, re
+from routes.reponses import verifCompleteStatus
 
 
 @check_auth(1)
@@ -803,17 +804,16 @@ def import_data():
             created_at=datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         )
         db.session.add(acteur)
-
+        db.session.flush()
         # Parcours des 5 groupes
         for i in range(1, 6):
             col = f"groupe{i}"
-            print(group_mapping[i],acteur.nom) 
+           
             if col in row and row[col] == 1:
                 cat = Nomenclature.query.filter_by(
                     mnemonique="categorie",
                     libelle=group_mapping[i]
                 ).first()
-                print("cat",cat.id_nomenclature)
                 if cat:
                     acteur.categories.append(cat)
 
@@ -844,7 +844,7 @@ def import_data():
                             valeur_reponse=rep_nom
                         )
                         db.session.add(reponse)
-
+        verifCompleteStatus(acteur.id_acteur)
         acteurs_crees.append({"id_acteur": acteur.id_acteur, "nom": acteur.nom})
 
     db.session.commit()
