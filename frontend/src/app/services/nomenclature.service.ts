@@ -15,11 +15,14 @@ export class NomenclatureService {
     private BASE_URL = environment.flask_server+'nomenclature/';
     private GET_ALL_URL = environment.flask_server+'nomenclatures';
     private http = inject(HttpClient);
+    private token = localStorage.getItem('tk_id_token');
   
     //Récupère les nomenclatures par mnemonique
     getAllByType(mnemonique:string,id_acteur?:number): Observable<Nomenclature[]> {
       if (id_acteur){
-        return this.http.get<INomenclature[]>(this.GET_ALL_URL+'/'+mnemonique + '/'+id_acteur).pipe(
+        return this.http.get<INomenclature[]>(this.GET_ALL_URL+'/'+mnemonique + '/'+id_acteur,{
+          headers: { Authorization: `Bearer ${this.token}` }
+          }).pipe(
           shareReplay(1),
           map(nomenclatureJsonArray => {
             return nomenclatureJsonArray.map<Nomenclature>(
@@ -28,7 +31,9 @@ export class NomenclatureService {
           })
         );
       }else{
-        return this.http.get<INomenclature[]>(this.GET_ALL_URL+'/'+mnemonique).pipe(
+        return this.http.get<INomenclature[]>(this.GET_ALL_URL+'/'+mnemonique,{
+          headers: { Authorization: `Bearer ${this.token}` }
+          }).pipe(
           shareReplay(1),
           map(nomenclatureJsonArray => {
             return nomenclatureJsonArray.map<Nomenclature>(
@@ -43,7 +48,9 @@ export class NomenclatureService {
     //Récupère la nomenclature "Sans réponse"
     getNoResponse(valeur:string): Observable<Nomenclature> {
         valeur = "Réponse%20avec%20commentaire";
-        return this.http.get<INomenclature>(this.BASE_URL + valeur).pipe(
+        return this.http.get<INomenclature>(this.BASE_URL + valeur,{
+          headers: { Authorization: `Bearer ${this.token}` }
+          }).pipe(
           map(nomJson => Nomenclature.fromJson(nomJson))
         );
     }

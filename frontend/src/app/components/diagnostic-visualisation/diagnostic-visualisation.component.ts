@@ -36,6 +36,7 @@ import { QuestionService } from '@app/services/question.service';
 import { ActeurService } from '@app/services/acteur.service';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import { ImportComponent } from "../parts/import/import.component";
 
 @Component({
     selector: 'app-diagnostic-visualisation',
@@ -43,19 +44,20 @@ import { saveAs } from 'file-saver';
     styleUrls: ['./diagnostic-visualisation.component.css'],
     standalone:true,
     imports: [
-      ChoixActeursComponent,
-      CommonModule, 
-      MatButtonModule, 
-      GraphiquesComponent, 
-      MatTabsModule, 
-      MenuLateralComponent, 
-      TableauStructuresComponent, 
-      MapComponent, 
-      MotsClesZoneComponent, 
-      MatMomentDateModule, 
-      LoadingSpinnerComponent,
-      GraphiquesPersonnalisationComponent
-    ]
+    ChoixActeursComponent,
+    CommonModule,
+    MatButtonModule,
+    GraphiquesComponent,
+    MatTabsModule,
+    MenuLateralComponent,
+    TableauStructuresComponent,
+    MapComponent,
+    MotsClesZoneComponent,
+    MatMomentDateModule,
+    LoadingSpinnerComponent,
+    GraphiquesPersonnalisationComponent,
+    ImportComponent
+]
 })
 export class DiagnosticVisualisationComponent implements OnDestroy{
 
@@ -226,7 +228,9 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
 
   //Envoie les fichiers au serveur
   uploadFiles() {
+    console.log(this.diagnostic());
     const documents: Document[] = this.files.map(file => {
+      console.log(file);
       const doc = new Document();
       doc.nom = file.name;
       doc.diagnostic = this.diagnostic();

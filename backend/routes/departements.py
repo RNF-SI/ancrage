@@ -4,7 +4,9 @@ from models.models import *
 from schemas.metier import *
 from routes import bp
 from configs.logger_config import logger
+from pypnusershub.decorators import check_auth
 
+@check_auth(1)
 @bp.route('/departement/<id_departement>', methods=['GET', 'PUT', 'DELETE'])
 def departementMethods(id_departement):
     logger.info(f"📍 Requête {request.method} sur le département ID={id_departement}")
@@ -33,6 +35,7 @@ def departementMethods(id_departement):
         logger.info(f"✅ Département ID={id_departement} supprimé")
         return {"success": "Suppression terminée"}
 
+@check_auth(1)
 @bp.route('/departement', methods=['POST'])
 def postDepartement():
     if request.method == 'POST':
@@ -45,6 +48,7 @@ def postDepartement():
         logger.info(f"✅ Nouveau département créé avec ID={departement.id_departement}")
         return getDepartement(departement)
 
+@check_auth(1)
 @bp.route('/departements', methods=['GET'])
 def getAllDepartements():
     if request.method == 'GET':
@@ -55,6 +59,7 @@ def getAllDepartements():
         logger.info(f"📦 {len(departements)} départements récupérés")
         return jsonify(departementsObj)
 
+@check_auth(1)
 @bp.route('/departements/<mnemonique>', methods=['GET'])
 def getAllDepartementsByUSer(mnemonique):
     if request.method == 'GET':

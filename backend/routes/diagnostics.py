@@ -5,7 +5,13 @@ from sqlalchemy.orm import aliased
 from routes import bp,datetime, slugify, uuid,func,request,jsonify, timezone
 from datetime import datetime
 from configs.logger_config import logger
+from pypnusershub.decorators import check_auth
+import pandas as pd
+import json, re
+from routes.reponses import verifCompleteStatus
 
+
+@check_auth(1)
 @bp.route('/diagnostic/<int:id_diagnostic>/<slug>', methods=['GET','PUT','DELETE'])
 def diagnosticMethods(id_diagnostic, slug):
     diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
@@ -54,6 +60,7 @@ def diagnosticMethods(id_diagnostic, slug):
             logger.warning("❌ Slug invalide pour suppression")
             return jsonify({'error': 'Slug invalide'}), 400
         
+@check_auth(1)        
 @bp.route('/diagnostic/disable/<int:id_diagnostic>/<slug>', methods=['PUT'])
 def disableDiagnostic(id_diagnostic, slug):
     diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
@@ -72,7 +79,7 @@ def disableDiagnostic(id_diagnostic, slug):
         logger.warning(f"❌ Slug invalide pour mise à jour du diagnostic {id_diagnostic}")
         return jsonify({'error': 'Slug invalide'}), 400
 
-
+@check_auth(1)
 @bp.route('/diagnostic',methods=['POST'])
 def postDiagnostic():
     data = request.get_json()
@@ -93,6 +100,7 @@ def postDiagnostic():
     db.session.commit()
     return getDiagnostic(diagnostic)
 
+@check_auth(1)
 @bp.route('/diagnostics',methods=['GET'])
 def getAllDiagnostics():
     if request.method == 'GET': 
@@ -101,7 +109,8 @@ def getAllDiagnostics():
         schema = DiagnosticSchema(many=True)
         usersObj = schema.dump(diagnostics)
         return jsonify(usersObj)
-    
+
+@check_auth(1)    
 @bp.route('/diagnostics-site', methods=['POST'])
 def getAllDiagnosticsBySites():
     data = request.get_json()
@@ -124,6 +133,7 @@ def getAllDiagnosticsBySites():
     schema = DiagnosticSchema(many=True)
     return jsonify(schema.dump(filtered_diagnostics))
 
+@check_auth(1)
 @bp.route('/diagnostics/charts/average/<id_diagnostic>')
 def getAveragebyQuestion(id_diagnostic):
     # Aliases pour les différentes utilisations de Nomenclature
@@ -172,6 +182,7 @@ def getAveragebyQuestion(id_diagnostic):
     ]
     return jsonify(data)
 
+@check_auth(1)
 @bp.route("/diagnostics/charts/repartition/<id_diagnostic>", methods=["GET"])
 def get_reponses_par_theme(id_diagnostic):
 
@@ -216,6 +227,7 @@ def get_reponses_par_theme(id_diagnostic):
 
     return jsonify(output)
 
+@check_auth(1)
 @bp.route('/diagnostic/params/charts/average',methods=['PUT'])
 def getAveragebyQuestionParams():
 
@@ -292,6 +304,7 @@ def getAveragebyQuestionParams():
     ]
     return jsonify(data)
 
+@check_auth(1)
 @bp.route("/diagnostic/params/charts/repartition", methods=["PUT"])
 def get_reponses_par_themeParams():
 
@@ -361,6 +374,7 @@ def get_reponses_par_themeParams():
 
     return jsonify(output)
 
+@check_auth(1)
 @bp.route('/diagnostic/structures/<int:id_diagnostic>', methods=['GET'])
 def get_structures_by_diagnostic(id_diagnostic):
 
@@ -376,6 +390,7 @@ def get_structures_by_diagnostic(id_diagnostic):
 
     return jsonify({'structures': structure_list})
 
+@check_auth(1)
 @bp.route("/diagnostics/charts/radars/<int:id_diagnostic>", methods=["GET"])
 def get_scores(id_diagnostic):
 
@@ -423,6 +438,7 @@ def get_scores(id_diagnostic):
 
     return jsonify(data)
 
+@check_auth(1)
 @bp.route("/diagnostic/params/charts/radars", methods=["PUT"])
 def get_scoresParams():
 
@@ -737,6 +753,104 @@ def get_afoms_par_mot_cle_et_diagnostic(id_diagnostic):
             db.session.commit()
 
     return jsonify(data)   
+
+@bp.route("/diagnostic/import-data", methods=["POST"])
+def import_data():
+    file = request.files.get("file")
+    acteur_data = request.form.get('acteur')
+
+    if not acteur_data:
+        return jsonify({"error": "No acteur data provided"}), 400
+
+    try:
+        acteur_json = json.loads(acteur_data)
+      
+        commune_id = acteur_json.get('commune')['id_commune']
+        diagnostic_id = acteur_json.get('diagnostic')['id_diagnostic']
+        commune = Commune.query.get(commune_id)
+        diagnostic = Diagnostic.query.get(diagnostic_id)
+
+    except json.JSONDecodeError:
+        return jsonify({"error": "Invalid JSON in reserve"}), 400
+   
+
+    
+    if not file or not commune_id or not diagnostic_id:
+        return jsonify({"error": "Paramètres manquants"}), 400
+
+    df = pd.read_excel(file)
+
+ 
+    if not commune or not diagnostic:
+        return jsonify({"error": "Commune ou diagnostic introuvable"}), 404
+
+    acteurs_crees = []
+
+    group_mapping = {
+        1: "Membres ou participants au CCG",
+        2: "Partenaires, gestionnaires et techniciens",
+        3: "Animation, pédagogie, tourisme et sensibilisation",
+        4: "Riverains, élus et usagers locaux",
+        5: "Acteurs économiques"
+    }
+
+    for idx, row in df.iterrows():
+        acteur = Acteur(
+            nom=f"Nom{idx+1}",
+            prenom=f"Prénom{idx+1}",
+            structure="Inconnue",
+            commune=commune,
+            diagnostic=diagnostic,
+            created_at=datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+        )
+        db.session.add(acteur)
+        db.session.flush()
+        # Parcours des 5 groupes
+        for i in range(1, 6):
+            col = f"groupe{i}"
+           
+            if col in row and row[col] == 1:
+                cat = Nomenclature.query.filter_by(
+                    mnemonique="categorie",
+                    libelle=group_mapping[i]
+                ).first()
+                if cat:
+                    acteur.categories.append(cat)
+
+        for col, val in row.items():
+            if pd.api.types.is_numeric_dtype(type(val)) and not pd.isna(val):
+                
+                # Extraire les chiffres de la colonne comme identifiant de metrique
+                if 'groupe' not in col:
+                    match = re.search(r'(\d+)', col)
+                    if not match:
+                        continue  # Ignore les colonnes non conformes
+                    
+                    metrique_num = int(match.group(1))
+
+                    # Récupérer la question par la metrique (numéro)
+                    question = Question.query.filter_by(metrique=metrique_num).first()
+
+                    
+                    # Récupérer la nomenclature associée à la valeur
+                    rep_nom = Nomenclature.query.filter_by(
+                        mnemonique="reponse_score", value=int(val)
+                    ).first()
+
+                    if rep_nom:
+                        reponse = Reponse(
+                            acteur=acteur,
+                            question=question,
+                            valeur_reponse=rep_nom
+                        )
+                        db.session.add(reponse)
+        verifCompleteStatus(acteur.id_acteur)
+        acteurs_crees.append({"id_acteur": acteur.id_acteur, "nom": acteur.nom})
+
+    db.session.commit()
+    schema = ActeurLiteSchema(many=False)
+    acteurObj = schema.dump(acteurs_crees[0])
+    return jsonify(acteurObj)
 
 def deleteActors(diagnostic_id):
     Acteur.query.filter(

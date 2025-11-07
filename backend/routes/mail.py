@@ -3,7 +3,9 @@ from configs.mail_config import mail,Message
 from routes import bp,current_app
 import requests
 from configs.logger_config import logger
+from pypnusershub.decorators import check_auth
 
+@check_auth(1)
 @bp.route("/mail/send", methods=["POST"])
 def send_mail():
     data = request.get_json() or {}

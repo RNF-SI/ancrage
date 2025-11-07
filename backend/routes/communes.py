@@ -4,7 +4,10 @@ from models.models import *
 from schemas.metier import *
 from routes import bp
 from configs.logger_config import logger
+from pypnusershub.decorators import check_auth
 
+
+@check_auth(1)
 @bp.route('/commune/<id_commune>', methods=['GET', 'PUT', 'DELETE'])
 def communeMethods(id_commune):
     logger.info(f"📍 Requête {request.method} sur la commune ID={id_commune}")
@@ -33,6 +36,7 @@ def communeMethods(id_commune):
         logger.info(f"✅ Commune ID={id_commune} supprimée")
         return {"success": "Suppression terminée"}
 
+@check_auth(1)
 @bp.route('/commune', methods=['POST'])
 def postCommune():
     if request.method == 'POST':
@@ -45,6 +49,7 @@ def postCommune():
         logger.info(f"✅ Nouvelle commune créée avec ID={commune.id_commune}")
         return getCommune(commune)
 
+@check_auth(1)
 @bp.route('/communes', methods=['GET'])
 def getAllCommunes():
     if request.method == 'GET':

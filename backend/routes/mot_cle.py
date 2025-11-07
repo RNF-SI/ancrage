@@ -3,7 +3,9 @@ from flask import request, jsonify
 from schemas.metier import MotCleSchema
 from routes import bp, joinedload
 from configs.logger_config import logger
+from pypnusershub.decorators import check_auth
 
+@check_auth(1)
 @bp.route('/mots_cles/<int:id_diagnostic>', methods=['GET'])
 def getAllMotCles(id_diagnostic):
     logger.info(f"📋 Requête GET - Mots-clés pour diagnostic ID={id_diagnostic}")
@@ -15,6 +17,7 @@ def getAllMotCles(id_diagnostic):
     usersObj = schema.dump(mot_cles)
     return jsonify(usersObj)
 
+@check_auth(1)
 @bp.route('/mots_cles/theme/<int:id_acteur>', methods=['GET'])
 def getKeywordsByActor(id_acteur):
     logger.info(f"📋 Requête GET - Mots-clés liés à l'acteur ID={id_acteur}")
@@ -32,6 +35,7 @@ def getKeywordsByActor(id_acteur):
     schema = MotCleSchema(many=True)
     return jsonify(schema.dump(mots_cles))
 
+@check_auth(1)
 @bp.route('/mot_cle/<int:id_mot_cle>', methods=['GET'])
 def get(id_mot_cle):
     
@@ -41,7 +45,7 @@ def get(id_mot_cle):
     mcObj = schema.dump(mot_cle)
     return jsonify(mcObj)
 
-
+@check_auth(1)
 @bp.route('/mot_cle/<int:id_mot_cle>', methods=['PUT'])
 def rename(id_mot_cle):
     
@@ -57,7 +61,8 @@ def rename(id_mot_cle):
         schema = MotCleSchema(many=False)
         mcObj = schema.dump(mot_cle)
         return jsonify(mcObj)
-    
+
+@check_auth(1)    
 @bp.route('/mot_cle', methods=['POST'])
 def create_mot_cle():
     data = request.get_json()
