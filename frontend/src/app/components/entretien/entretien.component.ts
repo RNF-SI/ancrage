@@ -120,7 +120,7 @@ export class EntretienComponent implements OnDestroy{
     this.afom = themes[themes.length-1];
     
     this.themes().forEach(theme => {
-      
+     
       theme.questions!.forEach(q => {
         controls[`question_${q.id_question}`] = this.fb.control(null);
         controls[`reponse_${q.id_question}`] = this.fb.control(null);

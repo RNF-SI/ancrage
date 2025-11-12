@@ -133,6 +133,7 @@ export class ActeurComponent implements OnDestroy{
 
     effect(() => {
       const value = this.communeValue();
+      console.log(value);
       const filterValue = typeof value === 'string' ? value : value?.nom_com + "(" + value?.insee_com + ")" || '';
       this.filteredTowns = this._filter(filterValue);
     });
