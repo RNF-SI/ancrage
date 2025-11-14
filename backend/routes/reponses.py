@@ -7,6 +7,7 @@ from routes.mot_cle import getKeywordsByActor
 from configs.logger_config import logger
 from routes.functions import checkCCG
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import selectinload, joinedload
 from pypnusershub.decorators import check_auth
 
 @check_auth(1)
@@ -73,20 +74,14 @@ def enregistrer_reponse(reponses_objets):
         }
     ).returning(Reponse)
 
-    db.session.execute(stmt)
+    # Utiliser le résultat de returning() au lieu de refaire une requête
+    result = db.session.execute(stmt).scalar_one()
     db.session.commit()
-    
-    result = db.session.query(Reponse).filter_by(
-        acteur_id=acteur_id,
-        question_id=question_id
-    ).first()
-   
     
     verifCompleteStatus(acteur_id)
     verifDatesEntretien(acteur.diagnostic.id_diagnostic)
     
     schema = ReponseSchema(many=False)
-    schema = ReponseSchema()
     return jsonify(schema.dump(result))
 
 def enregistrer_reponse_acteur(reponse_objet):
@@ -221,7 +216,13 @@ def record_afoms(diagnostic_id,mots_cles_repartis):
 
 
 def verifDatesEntretien(diagnostic_id):
-    diagnostic = Diagnostic.query.filter_by(id_diagnostic=diagnostic_id).first()
+    # Charger avec eager loading pour éviter les requêtes N+1
+    diagnostic = (
+        Diagnostic.query
+        .options(selectinload(Diagnostic.acteurs).joinedload(Acteur.statut_entretien))
+        .filter_by(id_diagnostic=diagnostic_id)
+        .first()
+    )
    
     statuts_termines = {'Réalisé', 'Annulé', 'Reporté', 'Rétracté'}
     listeTermines = [

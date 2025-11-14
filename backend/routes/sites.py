@@ -1,6 +1,6 @@
 from models.models import db
 from flask import request, jsonify
-from sqlalchemy.orm import contains_eager
+from sqlalchemy.orm import contains_eager, joinedload, selectinload
 from models.models import *
 from schemas.metier import *
 from routes import bp, datetime, slugify, uuid, timezone
@@ -78,7 +78,15 @@ def postSite():
 def getAllSites():
     if request.method == 'GET': 
         logger.info("📋 Récupération de tous les sites")
-        sites = Site.query.filter_by().all()
+        sites = (
+            Site.query
+            .options(
+                selectinload(Site.diagnostics),
+                selectinload(Site.departements).selectinload(Departement.region),
+                joinedload(Site.type)
+            )
+            .all()
+        )
         schema = SiteSchema(many=True)
         usersObj = schema.dump(sites)
         logger.info(f"🔢 Nombre de sites retournés : {len(usersObj)}")
@@ -115,15 +123,29 @@ def changeValuesSite(site, data):
             logger.info(f"🗑 Retrait du département {dept.id_departement} du site")
             site.departements.remove(dept)
 
-    for dept_id in new_dept_ids - current_depts:
-        logger.info(f"➕ Ajout du département {dept_id} au site")
-        join = Departement.query.filter_by(id_departement=dept_id).first()
-        site.departements.append(join)
+    # Optimisation : charger tous les départements en une seule requête
+    dept_ids_list = list(new_dept_ids - current_depts)
+    if dept_ids_list:
+        depts = Departement.query.filter(Departement.id_departement.in_(dept_ids_list)).all()
+        for dept in depts:
+            logger.info(f"➕ Ajout du département {dept.id_departement} au site")
+            site.departements.append(dept)
 
     return site
 
 def getSite(site):
     logger.info(f"📤 Sérialisation du site {site.id_site}")
+    # Recharger avec eager loading pour éviter les requêtes N+1
+    site = (
+        db.session.query(Site)
+        .options(
+            selectinload(Site.diagnostics),
+            selectinload(Site.departements).selectinload(Departement.region),
+            joinedload(Site.type)
+        )
+        .filter_by(id_site=site.id_site)
+        .first()
+    )
     schema = SiteSchema(many=False)
     siteObj = schema.dump(site)
     return jsonify(siteObj)

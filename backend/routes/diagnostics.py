@@ -1,7 +1,7 @@
 
 from models.models import *
 from schemas.metier import *
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, joinedload, selectinload
 from routes import bp,datetime, slugify, uuid,func,request,jsonify, timezone
 from datetime import datetime
 from configs.logger_config import logger
@@ -71,9 +71,8 @@ def disableDiagnostic(id_diagnostic, slug):
     
     if diagnostic.slug == slug:
         diagnostic.is_disabled = True
-        db.session.add(diagnostic)
         db.session.commit()
-        diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
+        # L'objet diagnostic est déjà en mémoire, pas besoin de recharger
         return getDiagnostic(diagnostic)
     else:
         logger.warning(f"❌ Slug invalide pour mise à jour du diagnostic {id_diagnostic}")
@@ -104,10 +103,20 @@ def postDiagnostic():
 @bp.route('/diagnostics',methods=['GET'])
 def getAllDiagnostics():
     if request.method == 'GET': 
+        # Ajout de pagination et eager loading
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
         
-        diagnostics = Diagnostic.query.filter_by().all()
+        diagnostics = (
+            Diagnostic.query
+            .options(
+                selectinload(Diagnostic.sites),
+                selectinload(Diagnostic.acteurs)
+            )
+            .paginate(page=page, per_page=per_page, error_out=False)
+        )
         schema = DiagnosticSchema(many=True)
-        usersObj = schema.dump(diagnostics)
+        usersObj = schema.dump(diagnostics.items)
         return jsonify(usersObj)
 
 @check_auth(1)    
@@ -514,13 +523,17 @@ def changeValuesDiagnostic(diagnostic,data):
     # Supprimer les sites en trop
     diagnostic.sites = [s for s in diagnostic.sites if s.id_site in new_site_ids]
 
-    # Ajouter les nouveaux sites manquants
-    for site_id in new_site_ids - current_site_ids:
-        site = Site.query.filter_by(id_site=site_id).first()
-        if site:
+    # Optimisation : charger tous les sites en une seule requête
+    site_ids_list = list(new_site_ids - current_site_ids)
+    if site_ids_list:
+        sites = Site.query.filter(Site.id_site.in_(site_ids_list)).all()
+        for site in sites:
             diagnostic.sites.append(site)
-        else:
-            logger.info(f"Site ID {site_id} not found in database.")
+        # Logger les sites non trouvés
+        found_ids = {s.id_site for s in sites}
+        not_found = set(site_ids_list) - found_ids
+        if not_found:
+            logger.info(f"Sites IDs non trouvés dans la base de données : {not_found}")
 
     if 'acteurs' in data:
         
@@ -869,6 +882,18 @@ def deleteActors(diagnostic_id):
     ).delete()
 
 def getDiagnostic(diagnostic):
+    # Recharger avec eager loading pour éviter les requêtes N+1
+    diagnostic = (
+        db.session.query(Diagnostic)
+        .options(
+            selectinload(Diagnostic.acteurs).joinedload(Acteur.commune),
+            selectinload(Diagnostic.acteurs).selectinload(Acteur.categories),
+            selectinload(Diagnostic.sites).selectinload(Site.departements),
+            selectinload(Diagnostic.documents)
+        )
+        .filter_by(id_diagnostic=diagnostic.id_diagnostic)
+        .first()
+    )
     schema = DiagnosticSchema(many=False)
     diagnosticObj = schema.dump(diagnostic)
     return jsonify(diagnosticObj)
