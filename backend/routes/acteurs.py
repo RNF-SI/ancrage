@@ -1,5 +1,6 @@
 from models.models import db
 from flask import request, jsonify
+from sqlalchemy.orm import joinedload, selectinload
 from models.models import *
 from schemas.metier import *
 from routes import bp, datetime, slugify, uuid, timezone
@@ -127,7 +128,19 @@ def getAllActeursBySites():
             logger.info("ℹ Aucun diagnostic trouvé pour ces sites")
             return jsonify([]), 200
 
-        acteurs = Acteur.query.filter(Acteur.diagnostic_id.in_(ids_diagnostics)).filter_by(is_deleted=False).all()
+        acteurs = (
+            Acteur.query
+            .filter(Acteur.diagnostic_id.in_(ids_diagnostics))
+            .filter_by(is_deleted=False)
+            .options(
+                joinedload(Acteur.commune).joinedload(Commune.departement),
+                selectinload(Acteur.categories),
+                selectinload(Acteur.reponses).joinedload(Reponse.valeur_reponse),
+                selectinload(Acteur.reponses).joinedload(Reponse.question),
+                joinedload(Acteur.diagnostic)
+            )
+            .all()
+        )
         logger.info(f"👥 Nombre d'acteurs trouvés : {len(acteurs)}")
         schema = ActeurSchema(many=True)
         return jsonify(schema.dump(acteurs)), 200
@@ -165,9 +178,8 @@ def disableActeur(id_acteur, slug):
     
     if acteur.slug == slug:
         acteur.is_deleted = True
-        db.session.add(acteur)
         db.session.commit()
-        acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
+        # L'objet acteur est déjà en mémoire, pas besoin de recharger
         return getActeur(acteur)
     else:
         logger.warning(f"❌ Slug invalide pour mise à jour de l'acteur {id_acteur}")
@@ -195,10 +207,13 @@ def changeValuesActeur(acteur, data):
             logger.info(f" Retrait de la catégorie {cat.id_nomenclature}")
             acteur.categories.remove(cat)
 
-    for cat_id in new_cat_ids - current_cats:
-        logger.info(f" Ajout de la catégorie {cat_id}")
-        join = Nomenclature.query.filter_by(id_nomenclature=cat_id).first()
-        acteur.categories.append(join)
+    # Optimisation : charger toutes les catégories en une seule requête
+    cat_ids_list = list(new_cat_ids - current_cats)
+    if cat_ids_list:
+        cats = Nomenclature.query.filter(Nomenclature.id_nomenclature.in_(cat_ids_list)).all()
+        for cat in cats:
+            logger.info(f" Ajout de la catégorie {cat.id_nomenclature}")
+            acteur.categories.append(cat)
 
     return acteur
 
