@@ -1,5 +1,6 @@
 import { CommonModule } from "@angular/common";
-import { Component, computed, effect, inject, input, signal } from "@angular/core";
+import { Component, computed, effect, inject, input, signal, OnDestroy, DestroyRef } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatTooltipModule } from "@angular/material/tooltip";
@@ -14,7 +15,7 @@ import { MatSelectModule } from "@angular/material/select";
 import { MatInputModule } from "@angular/material/input";
 import { FormsModule } from "@angular/forms";
 import { AlerteVisualisationSiteComponent } from "../../alertes/alerte-visualisation-site/alerte-visualisation-site.component";
-import { MatDialog } from "@angular/material/dialog";
+import { MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { Labels } from "@app/utils/labels";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { AuthService } from "@app/home-rnf/services/auth-service.service";
@@ -40,7 +41,7 @@ import { StateService } from "@app/services/state.service";
   templateUrl: "./sites-diagnostics-view.component.html",
   styleUrls: ["./sites-diagnostics-view.component.css"],
 })
-export class SitesDiagnosticsViewComponent {
+export class SitesDiagnosticsViewComponent implements OnDestroy {
   readonly sites = input<Site[]>([]);
   readonly titleBtnCreaDiag = input("Nouveau diagnostic");
   readonly infobulleCreaDiagFromSite = input(
@@ -57,6 +58,14 @@ export class SitesDiagnosticsViewComponent {
   private dialog = inject(MatDialog);
   private router = inject(Router);
   private stateService = inject(StateService);
+  private destroyRef = inject(DestroyRef);
+
+  // Références aux effets pour nettoyage explicite
+  private sitesEffectCleanup?: () => void;
+  private userEffectCleanup?: () => void;
+  
+  // Références aux dialogues ouverts pour nettoyage si nécessaire
+  private openDialogs: MatDialogRef<any>[] = [];
 
   displayedColumns = ["nom", "regions", "departements", "type", "choix"];
 
@@ -149,7 +158,7 @@ export class SitesDiagnosticsViewComponent {
 
   constructor() {
     // Initialize & keep sitesOriginal sorted whenever input sites changes
-    effect(() => {
+    const sitesEffectRef = effect(() => {
       const inputSites = this.sites();
       if (inputSites.length > 0) {
         const arr = [...inputSites];
@@ -157,9 +166,11 @@ export class SitesDiagnosticsViewComponent {
         this.sitesOriginal.set(arr);
       }
     });
+    // Stocker la fonction de nettoyage
+    this.sitesEffectCleanup = () => sitesEffectRef.destroy();
 
     // Init user context & navigation state (runs once)
-    effect(() => {
+    const userEffectRef = effect(() => {
       const user = this.authService.getCurrentUser();
       this.user_id.set(user.id_role);
       this.id_organisme.set(user.id_organisme);
@@ -167,6 +178,8 @@ export class SitesDiagnosticsViewComponent {
       this.stateService.clearAll();
       this.stateService.setPreviousPage(this.router.url);
     });
+    // Stocker la fonction de nettoyage
+    this.userEffectCleanup = () => userEffectRef.destroy();
   }
 
   // Kept for template compatibility: filtering is now fully reactive
@@ -196,12 +209,44 @@ export class SitesDiagnosticsViewComponent {
   }
 
   showSiteDetails(site: Site) {
-    this.dialog.open(AlerteVisualisationSiteComponent, {
+    const dialogRef = this.dialog.open(AlerteVisualisationSiteComponent, {
       data: {
         site,
         labels: this.labels,
         can_edit: this.user_id() === site.created_by,
       },
     });
+    
+    // Stocker la référence pour nettoyage si nécessaire
+    this.openDialogs.push(dialogRef);
+    
+    // Nettoyer automatiquement la référence quand le dialogue se ferme
+    dialogRef.afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        const index = this.openDialogs.indexOf(dialogRef);
+        if (index > -1) {
+          this.openDialogs.splice(index, 1);
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    // Nettoyer explicitement les effets
+    this.sitesEffectCleanup?.();
+    this.userEffectCleanup?.();
+    
+    // Fermer tous les dialogues ouverts si le composant est détruit
+    this.openDialogs.forEach(dialogRef => {
+      try {
+        if (dialogRef && dialogRef.componentInstance) {
+          dialogRef.close();
+        }
+      } catch (error) {
+        // Le dialogue peut déjà être fermé, ignorer l'erreur
+        console.debug('Dialog already closed:', error);
+      }
+    });
+    this.openDialogs = [];
   }
 }
