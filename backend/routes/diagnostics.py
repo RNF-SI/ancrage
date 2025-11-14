@@ -773,8 +773,6 @@ def import_data():
     except json.JSONDecodeError:
         return jsonify({"error": "Invalid JSON in reserve"}), 400
    
-
-    
     if not file or not commune_id or not diagnostic_id:
         return jsonify({"error": "Paramètres manquants"}), 400
 
@@ -795,10 +793,15 @@ def import_data():
     }
 
     for idx, row in df.iterrows():
+        myuuid = uuid.uuid4()
+        nom=f"Nom{idx+1}"
+        slug = slugify(nom) + '-' + str(myuuid)
         acteur = Acteur(
-            nom=f"Nom{idx+1}",
+            nom=nom,
             prenom=f"Prénom{idx+1}",
+            slug=slug,
             structure="Inconnue",
+            fonction='Inconnu',
             commune=commune,
             diagnostic=diagnostic,
             created_at=datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
@@ -820,22 +823,29 @@ def import_data():
         for col, val in row.items():
             if pd.api.types.is_numeric_dtype(type(val)) and not pd.isna(val):
                 
-                # Extraire les chiffres de la colonne comme identifiant de metrique
                 if 'groupe' not in col:
                     match = re.search(r'(\d+)', col)
                     if not match:
                         continue  # Ignore les colonnes non conformes
                     
                     metrique_num = int(match.group(1))
-
-                    # Récupérer la question par la metrique (numéro)
+             
+                    # Récupérer la question par la metrique
                     question = Question.query.filter_by(metrique=metrique_num).first()
+                 
+                    if not question:
+                        continue
 
-                    
-                    # Récupérer la nomenclature associée à la valeur
-                    rep_nom = Nomenclature.query.filter_by(
-                        mnemonique="reponse_score", value=int(val)
-                    ).first()
+                    # Rechercher la nomenclature correspondant à cette valeur
+                    rep_nom = (
+                        Nomenclature.query
+                        .join(Question.choixReponses)
+                        .filter(
+                            Question.id_question == question.id_question,
+                            Nomenclature.value == int(val)
+                        )
+                        .first()
+                    )
 
                     if rep_nom:
                         reponse = Reponse(

@@ -6,6 +6,7 @@ from routes import bp,joinedload,aliased,and_
 from routes.functions import checkCCG
 from configs.logger_config import logger
 from pypnusershub.decorators import check_auth
+from sqlalchemy.orm import selectinload
 
 @check_auth(1)
 @bp.route('/nomenclature/<int:id_nomenclature>', methods=['GET','PUT','DELETE'])
@@ -88,79 +89,116 @@ def getAllNomenclaturesByType(mnemonique, id_acteur):
 
     
 
-    elif mnemonique == "thème_question":
-        logger.info("📂 Cas: thème_question", extra={"id_acteur": id_acteur})
+    elif mnemonique == "thème_question" and id_acteur > 0:
+        logger.info("➡️ Route /nomenclatures/thème_question appelée", extra={"id_acteur": id_acteur})
+
         isCCG = checkCCG(id_acteur)
         logger.info("🔍 checkCCG", extra={"id_acteur": id_acteur, "isCCG": isCCG})
 
-        ValeurNomenclature = aliased(Nomenclature)
-        Categorie = aliased(Nomenclature)
-        MotCleAlias = aliased(MotCle)
+        # 1️⃣ Charger les thèmes/question selon le type d’acteur
+        query = Nomenclature.query.filter(Nomenclature.mnemonique == "thème_question")
+        if not isCCG:
+            query = query.filter(Nomenclature.libelle != "Spécifique à l'instance de gouvernance")
 
-        if isCCG:
-            nomenclatures = (
-                db.session.query(Nomenclature)
-                .filter(Nomenclature.mnemonique == "thème_question")
-                .join(Nomenclature.questions_th)
-                .outerjoin(Reponse, and_(
-                    Reponse.question_id == Question.id_question,
-                    Reponse.acteur_id == id_acteur
-                ))
-                .outerjoin(ValeurNomenclature, Reponse.valeur_reponse_id == ValeurNomenclature.id_nomenclature)
-                .outerjoin(Reponse.mots_cles)
-                .outerjoin(Categorie, MotCle.categorie)
-                .outerjoin(MotCleAlias, MotCle.mots_cles_groupe)
-                .options(
-                    joinedload(Nomenclature.questions_th).joinedload(Question.reponses).joinedload(Reponse.valeur_reponse),
-                    joinedload(Nomenclature.questions_th).joinedload(Question.reponses).joinedload(Reponse.acteur),
-                    joinedload(Nomenclature.questions_th).joinedload(Question.reponses).joinedload(Reponse.mots_cles).joinedload(MotCle.categorie),
-                    joinedload(Nomenclature.questions_th).joinedload(Question.reponses).joinedload(Reponse.mots_cles).joinedload(MotCle.mots_cles_groupe),
-                    joinedload(Nomenclature.questions_th).joinedload(Question.choixReponses)
-                )
-                .order_by(Nomenclature.id_nomenclature)
-                .all()
+        themes = (
+            query.options(
+                selectinload(Nomenclature.questions_th)
+                    .selectinload(Question.choixReponses),
+                selectinload(Nomenclature.questions_th)
+                    .selectinload(Question.theme_question)
             )
+            .order_by(Nomenclature.id_nomenclature)
+            .all()
+        )
 
-            logger.info("✅ Requête thème_question (CCG) exécutée", extra={
-                "nb_nomenclatures": len(nomenclatures),
-                "ids": [n.id_nomenclature for n in nomenclatures[:5]]
-            })
-
-            return traitementParThemeQuestions(nomenclatures, id_acteur)
-
-        else:
-            nomenclatures = (
-                db.session.query(Nomenclature)
-                .filter(
-                    Nomenclature.mnemonique == "thème_question",
-                    Nomenclature.libelle != "Spécifique à l'instance de gouvernance"
-                )
-                .join(Nomenclature.questions_th)
-                .outerjoin(Reponse, and_(
-                    Reponse.question_id == Question.id_question,
-                    Reponse.acteur_id == id_acteur
-                ))
-                .outerjoin(ValeurNomenclature, Reponse.valeur_reponse_id == ValeurNomenclature.id_nomenclature)
-                .outerjoin(Reponse.mots_cles)
-                .outerjoin(Categorie, MotCle.categorie)
-                .outerjoin(MotCleAlias, MotCle.mots_cles_groupe)
-                .options(
-                    joinedload(Nomenclature.questions_th).joinedload(Question.reponses).joinedload(Reponse.valeur_reponse),
-                    joinedload(Nomenclature.questions_th).joinedload(Question.reponses).joinedload(Reponse.acteur),
-                    joinedload(Nomenclature.questions_th).joinedload(Question.reponses).joinedload(Reponse.mots_cles).joinedload(MotCle.categorie),
-                    joinedload(Nomenclature.questions_th).joinedload(Question.reponses).joinedload(Reponse.mots_cles).joinedload(MotCle.mots_cles_groupe),
-                    joinedload(Nomenclature.questions_th).joinedload(Question.choixReponses)
-                )
-                .order_by(Nomenclature.id_nomenclature)
-                .all()
+        # 2️⃣ Charger uniquement les réponses liées à l’acteur
+        reponses_acteur = (
+            Reponse.query
+            .filter_by(acteur_id=id_acteur)
+            .options(
+                selectinload(Reponse.valeur_reponse),
+                selectinload(Reponse.mots_cles)
+                    .selectinload(MotCle.categorie),
+                selectinload(Reponse.mots_cles)
+                    .selectinload(MotCle.mots_cles_issus)
             )
+            .all()
+        )
 
-            logger.info("✅ Requête thème_question (sans CCG) exécutée", extra={
-                "nb_nomenclatures": len(nomenclatures),
-                "ids": [n.id_nomenclature for n in nomenclatures[:5]]
-            })
+        reponses_par_question = {r.question_id: r for r in reponses_acteur}
 
-            return traitementParThemeQuestions(nomenclatures, id_acteur)
+        # 3️⃣ Construire le résultat final
+        result = []
+        for theme in themes:
+            theme_data = {
+                "id_nomenclature": theme.id_nomenclature,
+                "libelle": theme.libelle,
+                "mnemonique": theme.mnemonique,
+                "questions": []
+            }
+
+            for q in sorted(theme.questions_th, key=lambda x: x.ordre or 0):
+                reponse_acteur = reponses_par_question.get(q.id_question)
+
+                question_data = {
+                    "id_question": q.id_question,
+                    "libelle": q.libelle,
+                    "indications": q.indications,
+                    "choixReponses": [
+                        {
+                            "id_nomenclature": val.id_nomenclature,
+                            "libelle": val.libelle,
+                            "value": val.value,
+                            "mnemonique": val.mnemonique
+                        }
+                        for val in sorted(q.choixReponses, key=lambda x: x.value or 0)
+                    ],
+                    "reponses": []
+                }
+
+                if reponse_acteur:
+                    question_data["reponses"].append({
+                        "id_reponse": reponse_acteur.id_reponse,
+                        "commentaires": reponse_acteur.commentaires,
+                        # 👇 Ajout du lien vers l’acteur
+                        "acteur": { "id_acteur": reponse_acteur.acteur_id },
+                        # 👇 Ajout du lien vers la question
+                        "question": {
+                            "id_question": q.id_question,
+                            "libelle": q.libelle,
+                            "indications": q.indications
+                        },
+                        "valeur_reponse": {
+                            "id_nomenclature": reponse_acteur.valeur_reponse.id_nomenclature,
+                            "libelle": reponse_acteur.valeur_reponse.libelle,
+                            "value": reponse_acteur.valeur_reponse.value,
+                            "mnemonique": reponse_acteur.valeur_reponse.mnemonique
+                        } if reponse_acteur.valeur_reponse else None,
+                        "mots_cles": [
+                            {
+                                "id_mot_cle": mc.id_mot_cle,
+                                "nom": mc.nom,
+                                "categorie": (
+                                    {
+                                        "id_nomenclature": mc.categorie.id_nomenclature,
+                                        "libelle": mc.categorie.libelle
+                                    } if mc.categorie else None
+                                ),
+                                "mots_cles_issus": [
+                                    {"id_mot_cle": mc_issu.id_mot_cle, "nom": mc_issu.nom}
+                                    for mc_issu in mc.mots_cles_issus
+                                ]
+                            }
+                            for mc in reponse_acteur.mots_cles
+                        ]
+                    })
+
+                theme_data["questions"].append(question_data)
+
+            result.append(theme_data)
+
+        logger.info("✅ %d thèmes renvoyés (isCCG=%s)", len(result), isCCG)
+        return jsonify(result)
 
     else:
         logger.info("📂 Cas: générique", extra={"mnemonique": mnemonique})

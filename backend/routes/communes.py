@@ -36,18 +36,6 @@ def communeMethods(id_commune):
         logger.info(f"✅ Commune ID={id_commune} supprimée")
         return {"success": "Suppression terminée"}
 
-@check_auth(1)
-@bp.route('/commune', methods=['POST'])
-def postCommune():
-    if request.method == 'POST':
-        data = request.get_json()
-        logger.info(f"📥 Création d'une nouvelle commune avec données : {data}")
-        commune = Commune()
-        commune = changeValuesCommune(commune, data)
-        db.session.add(commune)
-        db.session.commit()
-        logger.info(f"✅ Nouvelle commune créée avec ID={commune.id_commune}")
-        return getCommune(commune)
 
 @check_auth(1)
 @bp.route('/communes', methods=['GET'])

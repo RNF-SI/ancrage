@@ -114,13 +114,14 @@ export class EntretienComponent implements OnDestroy{
   prepareResults(themes:Nomenclature[],etats:Nomenclature[],noResponse:Nomenclature){
     this.reponses = [];
     this.themes.set(themes);
+    console.log(themes);
     this.etats.set(etats);
     this.noResponse.set(noResponse);
     const controls: { [key: string]: any } = {};
     this.afom = themes[themes.length-1];
     
     this.themes().forEach(theme => {
-      
+      console.log(theme);
       theme.questions!.forEach(q => {
         controls[`question_${q.id_question}`] = this.fb.control(null);
         controls[`reponse_${q.id_question}`] = this.fb.control(null);
@@ -132,6 +133,7 @@ export class EntretienComponent implements OnDestroy{
             
         
           q.reponses?.forEach(rep => {
+            console.log(rep);
             if (rep.acteur.id_acteur==this.id_acteur()){
               reponse = rep;
             }
@@ -144,9 +146,10 @@ export class EntretienComponent implements OnDestroy{
   
     this.formGroup = this.fb.group(controls);
     if (this.id_acteur() > 0){
-      Promise.resolve().then(() => {
+      /* Promise.resolve().then(() => { */
+        console.log(this.reponses);
         this.patchForm(this.reponses);
-      });
+      /* }); */
       
     }
             
@@ -154,6 +157,7 @@ export class EntretienComponent implements OnDestroy{
   //Envoie les données récupérées au formulaire
   patchForm(reponses:Reponse[]){
     for(let i = 0;i<reponses.length;i++){
+      console.log(reponses[i].question?.id_question,reponses[i].valeur_reponse.id_nomenclature,reponses[i].commentaires);
       this.formGroup.get(`question_${reponses[i].question?.id_question}`)?.setValue(reponses[i].valeur_reponse.id_nomenclature);
       this.formGroup.get(`reponse_${reponses[i].question?.id_question}`)?.setValue(reponses[i].commentaires);
       setTimeout(() => {
