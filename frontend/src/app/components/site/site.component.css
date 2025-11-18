@@ -1,0 +1,36 @@
+mat-form-field{
+    display:block !important;
+    width:50%;
+    margin:2%;
+}
+
+h2{
+    margin-top:1%;
+    margin-bottom:2%;
+    font-size:30px;
+    text-align: center;
+    font-weight: bold;
+}
+
+#boutons{
+    margin-bottom: 5%;
+    
+}
+
+#boutons div{
+    display: inline;
+    margin-right: 2%;
+}
+
+.grid-3-6-3 {
+    display: grid;
+    grid-template-columns: 10% 80% 10%; /* ou 3fr 6fr 3fr */
+    gap: 1rem;
+}
+
+.col-left,
+.col-center,
+.col-right {
+    background: #fff;
+    padding: 1rem;
+}

@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
-import { AuthService } from '@services/auth.service';
+import { Component, inject, OnInit } from '@angular/core';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { filter } from 'rxjs';
+import { HomeRnfModule } from './home-rnf/home-rnf.module';
 
 
 const dynamicScripts = [
@@ -16,36 +17,40 @@ const dynamicScripts = [
   ];
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.css'],
+    imports:[
+      RouterModule,
+      FontAwesomeModule,
+      HomeRnfModule,
+  
+    ],
+    standalone:true
 })
 export class AppComponent implements OnInit{
   title = 'RNF - Diagnostic d\'Ancrage Territorial';
 
   loading = true;
   routerSubscription: any;
-  
+  private router = inject(Router);
 
-  constructor(
-    private router: Router,
-    public _authService: AuthService,
-    ) {
-
-    }
 
   ngOnInit(): void {
     this.recallJsFuntions();
-    this.loading = false
+    this.loading = false;
+    
   }
 
 
   recallJsFuntions() {
-    this.loading = true
+    this.loading = true;
+    
     this.routerSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(event => {
         this.loadScript();
+        
         this.loading = false
       });
   }
@@ -55,7 +60,7 @@ export class AppComponent implements OnInit{
   }
 
   public loadScript() {
-    console.log("preparing to load…")
+    
     for (let i = 0; i < dynamicScripts.length; i++) {
       const node = document.createElement("script");
       node.src = dynamicScripts[i];
@@ -73,8 +78,6 @@ export class AppComponent implements OnInit{
   }
 
   // Signed In status
-  public get signedIn(): boolean {
-    return this._authService.authenticated || false;
-  }
+
 
 }

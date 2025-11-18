@@ -1,0 +1,16 @@
+mat-form-field{
+    display:block;
+    width:30%;
+    margin: 2%;;
+}
+
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+}
+
+button{
+    margin-right: 1%;
+}

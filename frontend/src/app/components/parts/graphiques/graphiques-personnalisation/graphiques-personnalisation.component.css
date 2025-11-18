@@ -1,0 +1,19 @@
+.select{
+    display:block;
+    width:50%;
+}
+
+.grid-6-6{
+    display: grid;
+    grid-template-columns: 50% 50%; /* ou 3fr 6fr 3fr */
+}
+
+.slider-perso{
+    margin:0;
+    display: block;
+    padding:0;
+}
+
+.buttons{
+    margin-top:2%;
+}

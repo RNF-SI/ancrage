@@ -1,0 +1,36 @@
+/* You can add global styles to this file, and also import other style files */
+@use 'styles/custom-theme.scss' as custom;
+@use 'conf/custom.scss' as conf;
+@use '@angular/material' as mat;
+
+// Les fichiers CSS externes doivent rester en @import :
+@import "assets/css/hand-made.css";
+@import "assets/css/normalize.css";
+@import "assets/css/webflow.css";
+@import "assets/css/rnf-site.webflow.css";
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+h2{
+    margin-top:1% !important;
+    margin-bottom:2%;
+    font-size:30px !important;
+    text-align: center;
+    font-weight: bold;
+}
+
+h3{
+    font-size: 24px !important;
+    font-weight: bold !important;
+    margin-top: 1%!important;
+}
+
+h4{
+    font-size: 20px !important;
+    font-weight: bold !important;
+    margin-top: 1%!important;
+}
+
+
+

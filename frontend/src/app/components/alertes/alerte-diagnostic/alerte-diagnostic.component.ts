@@ -1,0 +1,41 @@
+import { CommonModule } from '@angular/common';
+import { Component, Inject, inject } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { Diagnostic } from '@app/models/diagnostic.model';
+import { SiteService } from '@app/services/sites.service';
+import { Labels } from '@app/utils/labels';
+
+//Alerte à la création ou modification d'un diagnostic
+@Component({
+    selector: 'app-alerte-diagnostic',
+    templateUrl: './alerte-diagnostic.component.html',
+    styleUrls: ['./alerte-diagnostic.component.css'],
+    imports: [MatDialogModule, MatButtonModule, CommonModule],
+    
+})
+export class AlerteDiagnosticComponent {
+  constructor(
+        public dialogRef: MatDialogRef<AlerteDiagnosticComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: { 
+          title: string; 
+          message: string; 
+          labels :Labels;
+          diagnostic:Diagnostic;
+          previousPage:string;
+          no_creation:boolean;
+        }
+      ) {}
+      
+      private siteService = inject(SiteService);
+    
+    
+      navigate(path:string,diagnostic:Diagnostic){
+        
+        this.dialogRef.close();
+        this.siteService.navigateAndCache(path,diagnostic);
+      }
+      close(){
+        this.dialogRef.close();
+      }
+}

@@ -1,0 +1,75 @@
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { IMotCle } from '@app/interfaces/mot_cle.interface';
+import { INomenclature } from '@app/interfaces/nomenclature.interface';
+import { MotCle } from '@app/models/mot-cle.model';
+import { Nomenclature } from '@app/models/nomenclature.model';
+import { Observable, map, shareReplay } from 'rxjs';
+import { environment } from 'src/environments/environment';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class NomenclatureService {
+
+    private BASE_URL = environment.flask_server+'nomenclature/';
+    private GET_ALL_URL = environment.flask_server+'nomenclatures';
+    private http = inject(HttpClient);
+    private token = localStorage.getItem('tk_id_token');
+  
+    //Récupère les nomenclatures par mnemonique
+    getAllByType(mnemonique:string,id_acteur?:number): Observable<Nomenclature[]> {
+      if (id_acteur){
+        return this.http.get<INomenclature[]>(this.GET_ALL_URL+'/'+mnemonique + '/'+id_acteur,{
+          headers: { Authorization: `Bearer ${this.token}` }
+          }).pipe(
+          shareReplay(1),
+          map(nomenclatureJsonArray => {
+            return nomenclatureJsonArray.map<Nomenclature>(
+              nomenclatureJson => Nomenclature.fromJson(nomenclatureJson)
+            )
+          })
+        );
+      }else{
+        return this.http.get<INomenclature[]>(this.GET_ALL_URL+'/'+mnemonique,{
+          headers: { Authorization: `Bearer ${this.token}` }
+          }).pipe(
+          shareReplay(1),
+          map(nomenclatureJsonArray => {
+            return nomenclatureJsonArray.map<Nomenclature>(
+              nomenclatureJson => Nomenclature.fromJson(nomenclatureJson)
+            )
+          })
+        );
+      }
+     
+    }
+
+    //Récupère la nomenclature "Sans réponse"
+    getNoResponse(valeur:string): Observable<Nomenclature> {
+        valeur = "Réponse%20avec%20commentaire";
+        return this.http.get<INomenclature>(this.BASE_URL + valeur,{
+          headers: { Authorization: `Bearer ${this.token}` }
+          }).pipe(
+          map(nomJson => Nomenclature.fromJson(nomJson))
+        );
+    }
+
+  
+    sortByName(objArray:Nomenclature[]){
+        objArray.sort(function(a, b) {
+          var textA = a.libelle.toUpperCase();
+          var textB = b.libelle.toUpperCase();
+          return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+        })
+    }
+
+    sortByOrder(objArray:Nomenclature[]){
+      objArray.sort(function(a, b) {
+        var textA = a.ordre!;
+        var textB = b.ordre!;
+        return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+      })
+  }
+    
+}

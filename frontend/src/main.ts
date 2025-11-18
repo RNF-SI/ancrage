@@ -1,7 +1,41 @@
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+/// <reference types="@angular/localize" />
 
-import { AppModule } from './app/app.module';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { AppComponent } from './app/app.component';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideRouter } from '@angular/router';
+import { routes } from './app/app.routes'
+import { provideHttpClient } from '@angular/common/http';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faFacebook } from '@fortawesome/free-brands-svg-icons';
+import { provideToastr } from 'ngx-toastr';
+import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS } from '@angular/material-moment-adapter';
+import { DateAdapter, MAT_DATE_LOCALE, MAT_DATE_FORMATS } from '@angular/material/core';
+import { RECAPTCHA_V3_SITE_KEY } from "ng-recaptcha-2";
+import { provideMatomo, withRouter } from 'ngx-matomo-client';
 
+library.add(faFacebook)
 
-platformBrowserDynamic().bootstrapModule(AppModule)
-  .catch(err => console.error(err));
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideRouter(routes),
+    provideAnimations(),
+    provideHttpClient(), 
+    provideToastr(),
+    {
+      provide: DateAdapter,
+      useClass: MomentDateAdapter,
+      deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS]
+    },
+    { provide: MAT_DATE_FORMATS, useValue: MAT_MOMENT_DATE_FORMATS },
+    { provide: MAT_DATE_LOCALE, useValue: 'fr-FR' },
+    { provide: RECAPTCHA_V3_SITE_KEY, useValue: '6LdVGX0rAAAAAEtvEY2NkvUBuhRJ71lQ7ZkwbNX7' },
+    provideMatomo(
+      {
+        siteId: 8,
+        trackerUrl: 'https://matomo.reserves-naturelles.org',
+      },
+      withRouter(),
+    ),
+  ]
+}).catch(err => console.error(err));

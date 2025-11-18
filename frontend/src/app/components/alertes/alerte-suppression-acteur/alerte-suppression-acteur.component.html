@@ -1,0 +1,27 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+
+<mat-dialog-content>
+  <div><span>{{ data.message }}</span></div>
+
+  <div>
+    <b>{{ labels.nameLabel }}</b> :
+    <span>{{ data.acteur.nom }}</span>
+  </div>
+
+  <div>
+    <b>{{ labels.firstNameLabel }}</b> :
+    <span>{{ data.acteur.prenom }}</span>
+  </div>
+
+</mat-dialog-content>
+
+<mat-dialog-actions>
+<button mat-raised-button color="warn" type="button"
+    (click)="disable()">
+    {{ labels.delete }}
+</button>
+<button mat-raised-button color="accent" type="button"
+    (click)="close()">
+    {{ labels.cancel }}
+</button>
+</mat-dialog-actions>

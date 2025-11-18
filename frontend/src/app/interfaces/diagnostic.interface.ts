@@ -1,0 +1,23 @@
+import { Document } from "@app/models/document.model";
+import { IActeur } from "./acteur.interface";
+import { ISite } from "./site.interface";
+
+export interface IDiagnostic {
+    id_diagnostic: number;
+    nom: string;
+    date_debut_str?: string;
+    date_debut ?: Date;
+    date_fin: Date | undefined;
+    date_rapport ?:Date;
+    is_read_only:boolean;
+    id_organisme:number;
+    identite_createur:string;
+    sites?: ISite[];
+    acteurs:IActeur[];
+    created_at ?: Date;
+    created_at_str?: string;
+    modified_at: Date | undefined;
+    created_by: number;
+    slug:string;
+    documents?:Document[];
+}

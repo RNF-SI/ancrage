@@ -794,6 +794,12 @@
   width: 75%;
 }
 
+.logo-fv {
+  width: 7%;
+  margin:0;
+  padding: 0%;
+}
+
 .logo-sponso.rnf {
   width: 100%;
 }
@@ -1212,7 +1218,6 @@
 }
 
 .paragraph {
-  overflow: scroll;
   margin-top: 0vw;
   padding-right: 1vw;
   font-family: century-gothic, sans-serif;
@@ -1381,6 +1386,7 @@
 
 .text-telecharger {
   margin-left: 0.5vw;
+  margin-bottom: 5%;
 }
 
 .picto-telecharger {
@@ -1775,7 +1781,7 @@
 }
 
 .formation-inner-text.formation.one.intro {
-  height: 3vw;
+
   margin-right: 2vw;
   -webkit-box-align: end;
   -webkit-align-items: flex-end;
@@ -2311,7 +2317,7 @@
 }
 
 .contact-katia-line {
-  width: 12vw;
+  width: 36vw;
   height: 0.2vw;
   background-color: #9bd579;
 }
@@ -2372,8 +2378,9 @@
 .contact-headline-text {
   font-family: century-gothic, sans-serif;
   color: #b9b9b9;
-  font-size: 3.54vw;
+  font-size: 3.50vw;
   font-weight: 700;
+  line-height: initial;
 }
 
 .contact-line {
@@ -2515,7 +2522,7 @@
 }
 
 .paragraphe-etape {
-  overflow: scroll;
+  overflow-y: scroll;
   height: 24.5vw;
   margin-top: 2vw;
 }

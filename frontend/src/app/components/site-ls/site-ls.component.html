@@ -1,0 +1,22 @@
+<div class="container">
+    
+        
+        
+    <mat-card class="site-card">
+        <mat-card-header>
+        <mat-card-title>{{ site().nom }}</mat-card-title>
+        </mat-card-header>
+            
+        <mat-card-content>
+            <!-- <div><b>{{labels.housingLabel}}</b> : <span *ngFor="let hab of site.habitats">{{ hab.libelle }} </span></div> -->
+            <div><b>{{labels.statusLabel}}</b> : <span>{{ site().type.libelle }}</span></div>
+            <div><b>{{labels.departementLabel}}</b> : <span *ngFor="let dpt of siteLocal().departements">{{ dpt.nom_dep }} </span></div>
+        </mat-card-content>
+        <mat-card-actions>
+            <button mat-raised-button mat-dialog-close (click)="cancel()" color="accent">Fermer</button>
+        </mat-card-actions>
+    </mat-card>
+        
+        
+    
+</div>

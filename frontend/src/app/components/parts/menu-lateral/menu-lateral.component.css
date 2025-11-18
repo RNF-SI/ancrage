@@ -1,0 +1,22 @@
+.full-question {
+    white-space: normal;
+    word-break: break-word;
+    width: 100%;
+}
+
+.question{
+    cursor:pointer;
+    
+}
+
+.sticky-menu {
+    position: sticky;
+    top: 80px; /* adapte en fonction de ton header */
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+}
+
+mat-expansion-panel-header{
+    margin-top: 6%;
+    margin-bottom: 6%;
+}

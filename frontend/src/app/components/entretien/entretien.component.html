@@ -1,0 +1,73 @@
+<div class="container">
+  <div id="page" class="grid-3-9">
+    <div class="col-left">
+      <app-menu-lateral [themes]="themes()"></app-menu-lateral>
+    </div>
+
+    <div class="col-center">
+      <mat-tab-group (selectedTabChange)="onTabChange($event)">
+        <mat-tab label="Questions">
+          <div class="p-3">
+            <form [formGroup]="formGroup">
+              <h2>{{ title }}</h2>
+
+              @for (theme of themes(); track theme) {
+                @if (theme.libelle !== 'AFOM') {
+                  
+                  <h3>{{ theme.libelle }}</h3>
+
+                  @for (q of theme.questions; track q) {
+                    <div [attr.id]="'question-' + q.id_question">
+                      <h4 class="question_d_{{ q.id_question }}">
+                        {{ q.libelle }}
+                        <fa-icon class="warn warn_{{ q.id_question }}" [icon]="['fas', 'triangle-exclamation']"></fa-icon>
+                      </h4>
+
+                      <p><b>Réponses attendues : </b>{{ q.indications }}</p>
+
+                      <mat-radio-group [formControlName]="'question_' + q.id_question">
+                        @for (cr of q.choixReponses; track cr) {
+                          @if(isChoixVisible(q,cr)){
+                            <mat-radio-button [value]="cr.id_nomenclature">
+                              {{ cr.libelle }}
+                            </mat-radio-button>
+                          }
+                          
+                        }
+                      </mat-radio-group>
+
+                      @for (rep of getReponsesParQuestion(q.id_question); track rep) {
+                        <textarea class="commentaire"
+                          [formControlName]="'reponse_' + q.id_question"
+                          (focusout)="createReponse(q.id_question)">
+                        </textarea>
+                      }
+                    </div>
+                  }
+                }
+              }
+            </form>
+          </div>
+        </mat-tab>
+
+        <mat-tab label="AFOM">
+          <div class="p-3">
+            @if (true) {
+              <app-mots-cles-zone
+                #afom
+                [diagnostic]="diagnostic"
+                [id_acteur]="id_acteur()"
+                [noResponse]="noResponse()"
+                [reponses]="reponses">
+              </app-mots-cles-zone>
+            }
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+  </div>
+</div>
+
+<button mat-raised-button color="accent" type="button" (click)="navigate(previousPage, diagnostic)">
+  {{ labels.btnPreviousStepLabel }}
+</button>

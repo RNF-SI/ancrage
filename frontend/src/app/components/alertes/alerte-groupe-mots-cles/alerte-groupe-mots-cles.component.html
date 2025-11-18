@@ -1,0 +1,19 @@
+<mat-dialog-content>
+    <div><span>Groupement de mots-clés</span></div>
+    <mat-form-field appearance="fill">
+        <mat-label>Mot-clé</mat-label>
+        <input matInput placeholder="Entrez le nom du groupe de mots-clés" [(ngModel)]="keyword.nom">
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+        <mat-label>Catégories</mat-label>
+        <mat-select [(ngModel)]="keyword.categorie" [compareWith]="compareNomenclatures">
+          <mat-option *ngFor="let cat of data.categories" [value]="cat">{{ cat.libelle }}</mat-option>
+        </mat-select>
+    </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+    <button mat-raised-button color="accent" type="button" (click)="close()">{{labels.cancel}}</button>
+    <button mat-raised-button (click)="createGroup()" color="accent">{{labels.createGroup}}</button>
+    
+</mat-dialog-actions>

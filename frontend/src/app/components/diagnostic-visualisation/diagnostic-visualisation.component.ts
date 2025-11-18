@@ -1,0 +1,401 @@
+import { Component, inject, OnDestroy, ViewChild,signal, effect } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { FormBuilder, Validators } from '@angular/forms';
+import { MatTableDataSource } from '@angular/material/table';
+import { Acteur } from '@app/models/acteur.model';
+import { Departement } from '@app/models/departement.model';
+import { Diagnostic } from '@app/models/diagnostic.model';
+import { Nomenclature } from '@app/models/nomenclature.model';
+import { Site } from '@app/models/site.model';
+import { DiagnosticService } from '@app/services/diagnostic.service';
+import { forkJoin, Subscription } from 'rxjs';
+import { ActivatedRoute, Params, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { SiteService } from '@app/services/sites.service';
+import { MatButtonModule } from '@angular/material/button';
+import { Labels } from '@app/utils/labels';
+import { ChoixActeursComponent } from '../parts/choix-acteurs/choix-acteurs.component';
+import { GraphiquesComponent } from "../parts/graphiques/graphiques.component";
+import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
+import { NomenclatureService } from '@app/services/nomenclature.service';
+import { MenuLateralComponent } from "../parts/menu-lateral/menu-lateral.component";
+import { TableauStructuresComponent } from "../parts/tableau-structures/tableau-structures.component";
+import { Document } from '@app/models/document.model';
+import { MapComponent } from '../parts/map/map.component';
+import { MotsClesZoneComponent } from '../parts/mots-cles-zone/mots-cles-zone.component';
+import { AuthService } from '@app/home-rnf/services/auth-service.service';
+import { MatDialog } from '@angular/material/dialog';
+import { AlerteDatePublicationComponent } from '../alertes/alerte-date-publication/alerte-date-publication.component';
+import { MatMomentDateModule } from '@angular/material-moment-adapter';
+import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinner/loading-spinner.component';
+import { AlerteDesactivationDiagComponent } from '../alertes/alerte-desactivation-diag/alerte-desactivation-diag.component';
+import { StateService } from '@app/services/state.service';
+import { GraphiquesPersonnalisationComponent } from '../parts/graphiques/graphiques-personnalisation/graphiques-personnalisation.component';
+import { Question } from '@app/models/question.model';
+import { QuestionService } from '@app/services/question.service';
+import { ActeurService } from '@app/services/acteur.service';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import { ImportComponent } from "../parts/import/import.component";
+
+@Component({
+    selector: 'app-diagnostic-visualisation',
+    templateUrl: './diagnostic-visualisation.component.html',
+    styleUrls: ['./diagnostic-visualisation.component.css'],
+    standalone:true,
+    imports: [
+    ChoixActeursComponent,
+    CommonModule,
+    MatButtonModule,
+    GraphiquesComponent,
+    MatTabsModule,
+    MenuLateralComponent,
+    TableauStructuresComponent,
+    MapComponent,
+    MotsClesZoneComponent,
+    MatMomentDateModule,
+    LoadingSpinnerComponent,
+    GraphiquesPersonnalisationComponent,
+    ImportComponent
+]
+})
+export class DiagnosticVisualisationComponent implements OnDestroy{
+
+  diagnostic = signal<Diagnostic>(new Diagnostic());
+  actors = signal<Acteur[]>([]);
+  uniqueDiagnostics: Diagnostic[] = [];
+  selectedDiagnostic: Diagnostic = new Diagnostic();
+  uniqueCategories: Nomenclature[] = [];
+  uniqueDepartments: Departement[] = [];
+  selectedCategory: Nomenclature = new Nomenclature();
+  selectedDepartment: Departement = new Departement();
+  actorsSelected: MatTableDataSource<Acteur> = new MatTableDataSource<Acteur>();
+  uniqueActors: Acteur[] = [];
+  hideFilters=true;
+  previousPage = signal<string>('');
+  private fb = inject(FormBuilder);
+  private diagnosticService = inject(DiagnosticService);
+  private diagSubscription?:Subscription;
+  route = inject(ActivatedRoute);
+  private siteService = inject(SiteService);
+  private nomenclatureService = inject(NomenclatureService)
+  id_diagnostic = signal<number>(0);
+  labels = new Labels();
+  themes = signal<Nomenclature[]>([]);
+  private docsSubscription?:Subscription;
+  private docReadSub?:Subscription;
+  private docDeleteSub?:Subscription;
+  file?:Blob;
+  authService = inject(AuthService);
+  dialog = inject(MatDialog);
+  private router = inject(Router);
+  diag = new Diagnostic();
+
+  @ViewChild(MapComponent) mapComponent!: MapComponent;
+
+  formGroup = this.fb.group({
+      id_diagnostic: [0, [Validators.required]],
+      nom: ['', [Validators.required]],
+      sites: this.fb.control<Site[]>([], [Validators.required]),  
+      acteurs: this.fb.control<Acteur[]>([], [Validators.required]),
+      created_by: [0, [Validators.required]],
+      id_organisme: [0, [Validators.required]],
+      modified_by: [0, [Validators.required]],
+  });
+  slug = signal<string | null>(null);
+  files: File[] = [];
+  dragOver = false;
+  id_role = signal<number>(0);
+  is_read_only = signal<boolean>(false);
+  routeParams = toSignal(inject(ActivatedRoute).params, { initialValue: {} });
+  isLoading=true;
+  index=0;
+  private initDone = signal(false);
+  private stateService = inject(StateService);
+  categories = signal<Nomenclature[]>([]);
+  questions = signal<Question[]>([]);
+  private questionService = inject(QuestionService)
+  private acteurService = inject(ActeurService);
+
+  constructor() {
+    effect(() => {
+      const done = this.initDone();
+      if (done) return;
+      if (this.stateService.getCurrentPageFromActor() === 'oui'){
+        this.index=1;
+        this.stateService.setPageFromActor("non");
+        
+        this.diagnostic.set(this.stateService.getCurrentDiagnostic()!);
+      }
+      this.previousPage.set(this.stateService.getCurrentPreviousPage()!);
+      const { id_diagnostic, slug } = this.routeParams() as Params;
+      const id = Number(id_diagnostic);
+      const slugValue = slug as string;
+
+      if (id && slugValue) {
+        this.initDone.set(true);
+        this.id_diagnostic.set(id);
+        this.slug.set(slugValue);
+  
+        forkJoin({
+          diag: this.diagnosticService.get(id, slugValue),
+          themes: this.nomenclatureService.getAllByType('thème'),
+          cats$: this.nomenclatureService.getAllByType("categorie"),
+          questions$: this.questionService.getAllWithLimit(25),
+        }).subscribe(({ diag, themes,cats$, questions$ }) => {
+          this.diagnostic.set(diag);
+          this.diag = this.diagnostic();
+          this.themes.set(themes);
+          this.actors.set(this.diagnostic().acteurs);
+          const user = this.authService.getCurrentUser();
+          this.id_role.set(user.id_role);
+  
+          const isOwner = user.id_role === diag.created_by;
+          const isReadOnly = !isOwner || diag.is_read_only;
+  
+          this.is_read_only.set(isReadOnly);
+          this.isLoading=false;
+
+          this.nomenclatureService.sortByOrder(cats$);
+          this.categories.set(cats$);
+          this.acteurService.sortByNameAndSelected(this.actors());
+          this.questions.set(questions$);
+        });
+      }
+    });
+  }
+
+
+  removeActeur(acteur: Acteur) {
+    this.actors.update(list => list.filter(a => a.id_acteur !== acteur.id_acteur));
+  }
+
+  //Cache ou affiche le menu en fonction de l'onglet choisi
+  onTabChange(event: MatTabChangeEvent) {
+    
+    let menu = document.getElementById("menu");
+    let page = document.getElementById('page');
+    if (event.index === 3) { 
+    
+      if (menu?.className == "invisible"){
+        menu?.classList.remove("invisible");
+        menu?.classList.add("visible");
+      }
+      page?.classList.replace("one-column","grid-3-6");
+      
+    }else{
+      if (menu?.className == "visible"){
+        menu?.classList.remove("visible");
+        menu?.classList.add("invisible");
+        page?.classList.replace("grid-3-6","one-column");
+      }
+    }
+  }
+  
+  //Fonctions pour le drag & drop
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    this.dragOver = true;
+  }
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    this.dragOver = false;
+  }
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    this.dragOver = false;
+    if (event.dataTransfer?.files) {
+      this.files.push(...Array.from(event.dataTransfer.files));
+    }
+  }
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files) {
+      this.files.push(...Array.from(input.files));
+    }
+  }
+
+  //Télecharge le fichier
+  getFile(filename:string){
+    this.docReadSub = this.diagnosticService.downloadFile(filename).subscribe(file =>{
+      this.file=file;
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(this.file);
+      link.download = filename;
+      link.click();
+    });
+  }
+
+  //Envoie les fichiers au serveur
+  uploadFiles() {
+    console.log(this.diagnostic());
+    const documents: Document[] = this.files.map(file => {
+      console.log(file);
+      const doc = new Document();
+      doc.nom = file.name;
+      doc.diagnostic = this.diagnostic();
+      return doc;
+    });
+  
+    const formData = new FormData();
+  
+    // Ajout des fichiers
+    this.files.forEach(file => {
+      formData.append('files', file);
+    });
+  
+    // Ajout du JSON des documents
+    formData.append('documents', JSON.stringify(documents.map(d => d.toJson())));
+
+    this.docsSubscription = this.diagnosticService.sendFiles(formData).subscribe(diag =>{
+      this.diagnostic.set(diag);
+      this.files = [];
+    });
+    
+    
+  }
+
+  openAlertDisable(){
+    this.dialog.open(AlerteDesactivationDiagComponent, {
+      data: {
+        title: "Supprimer le diagnostic",
+        diagnostic:this.diagnostic(),
+        message: "Vous êtes sur le point de supprimer ce diagnostic. Etes-vous sûr-e de vouloir continuer ?"
+        
+      }
+    });
+    
+  }
+  
+  //Navigation et mise en cache
+  navigate= (path:string,diagnostic:Diagnostic):void =>{
+    this.stateService.setPageDiagnostic(this.router.url);
+    this.siteService.navigateAndCache(path,diagnostic);
+  }
+
+  //Exporte le tableau d'acteurs en fichier csv
+  exportCSV(){
+    let acteurs:Acteur[] = this.diagnostic().acteurs;
+    const separator = ';';
+    const headers = [
+      'id_acteur',
+      'nom',
+      'prenom',
+      'fonction',
+      'structure',
+      'mail',
+      'telephone',
+      'profil',
+      'commune',
+      'categories'
+    ];
+
+    const csvRows = [
+      headers.join(separator),
+      ...acteurs.map(a => [
+        a.id_acteur,
+        a.nom,
+        a.prenom,
+        a.fonction,
+        a.structure,
+        a.mail,
+        a.telephone,
+        a.profil?.libelle|| '',
+        a.commune?.nom_com || '',
+        (a.categories || []).map(c => c.libelle).join(', ')
+      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(separator))
+    ];
+
+    const csvContent = csvRows.join('\n');
+    const BOM = '\uFEFF';  // UTF-8 BOM
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'acteurs - ' + this.diagnostic().nom+'.csv';
+    link.click();
+  }
+
+  ngOnDestroy(): void {
+
+    this.diagSubscription?.unsubscribe();
+    this.docsSubscription?.unsubscribe();
+    this.docReadSub?.unsubscribe();
+    this.docDeleteSub?.unsubscribe();
+  }
+
+  //Affiche la popup pour saisir la date de publication
+  openAlertDate(){
+    const dialogRef = this.dialog.open(AlerteDatePublicationComponent, {
+              data: {
+                labels: this.labels,
+                diagnostic:this.diagnostic(),
+                previousPage:this.previousPage,
+                
+              }
+            });
+            dialogRef.afterClosed().subscribe(diagnostic => {
+              if (diagnostic) {
+                this.diagnostic = diagnostic;
+              }
+            });
+  }
+
+  deleteFile(document:Document){
+    this.docDeleteSub = this.diagnosticService.deleteDocument(document).subscribe(diag =>{
+      this.diagnostic.set(diag);
+    })
+  }
+
+  getReponse(act: Acteur, id_question: number): number | string{
+    const rep = act.reponses?.find(r => r.question?.id_question === id_question);
+    return rep ? rep.valeur_reponse.value : 'NULL';
+  }
+
+  getCategory(act: Acteur, id_nomenclature: number){
+    const acteur = act.categories?.some(cate => cate.id_nomenclature === id_nomenclature) ? 1: 0
+    return acteur;
+  }
+
+  exportXls() {
+    const rows: any[][] = [];
+
+    // ---- Ligne d’en-tête ----
+    const header = [
+      'Individu',
+      ...this.categories().map(c => `${c.libelle}`),
+      ...this.questions().map(q => `${q.libelle_graphique}`)
+    ];
+    rows.push(header);
+  
+    // ---- Lignes pour chaque acteur ----
+    this.actors().forEach((act, index) => {
+      const row: any[] = [];
+  
+      row.push(`acteur${index + 1}`);
+  
+      // Catégories
+      for (const cat of this.categories()) {
+        row.push(this.getCategory(act, cat.id_nomenclature));
+      }
+  
+      // Réponses
+      for (const q of this.questions()) {
+        row.push(this.getReponse(act, q.id_question));
+      }
+  
+      rows.push(row);
+    });
+  
+    // ---- Création d’un workbook Excel ----
+    const worksheet = XLSX.utils.aoa_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Export');
+  
+    // ---- Génération du fichier ----
+    const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    saveAs(new Blob([wbout], { type: 'application/octet-stream' }), 
+      'export-' + this.diagnostic().nom + '.xlsx');
+  }
+
+}

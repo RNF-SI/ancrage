@@ -1,0 +1,123 @@
+<div class="container">
+  <div class="grid-3-6-3">
+    <div class="col-left"></div>
+
+    <div class="col-center">
+      <button mat-raised-button id="creaBtn" color="accent" (click)="navigate('/diagnostic/create', diagnostic())">
+        {{ titleBtnCreaDiag() }}
+      </button>
+      <button mat-icon-button [matTooltip]="infobulleCreaDiagFromScratch()" aria-label="Info création" color="accent">
+        <fa-icon [icon]="['fas', 'question']"></fa-icon>
+      </button>
+    </div>
+
+    <div class="col-right"></div>
+  </div>
+
+  <div id="selectors" class="text-center">
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>Rechercher un site</mat-label>
+      <input
+        matInput
+        [value]="searchSiteName()"
+        (input)="onSearchChange($any($event.target).value)"
+        placeholder="Nom du site"
+      />
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>{{ labels.regionLabel }}</mat-label>
+      <mat-select [value]="selectedRegion()" (selectionChange)="selectedRegion.set($event.value); applyFilters()">
+        @for (reg of uniqueRegions(); track reg) {
+          <mat-option [value]="reg">{{ reg }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="accent-select">
+      <mat-label>{{ labels.departementLabel }}</mat-label>
+      <mat-select [value]="selectedDepartement()" (selectionChange)="selectedDepartement.set($event.value); applyFilters()">
+        @for (dep of uniqueDepartements(); track dep) {
+          <mat-option [value]="dep">{{ dep }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>{{ labels.statusLabel }}</mat-label>
+      <mat-select [value]="selectedType()" (selectionChange)="selectedType.set($event.value); applyFilters()">
+        @for (type of uniqueTypes(); track type) {
+          <mat-option [value]="type">{{ type }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <button id="btnToReinitialize" mat-raised-button (click)="resetFilters()">
+      {{ reinitialisation }}
+    </button>
+  </div>
+
+  <div class="grid-6-6">
+    <div>
+      <app-map [sites]="filteredSiteList()" [attr.key]="mapInstanceKey"></app-map>
+    </div>
+
+    <div>
+      <div id="diagnostics_liste">
+        <h2 class="text-center">{{ title() }}</h2>
+
+        <div class="mb-4">
+          <mat-accordion>
+            @for (site of filteredSiteList(); track site.id_site) {
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    {{ site.nom }}
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                
+                <div class="d-flex justify-content-between align-items-center my-2">
+                  <button mat-raised-button class="directBtn" 
+                          (click)="showSiteDetails(site)" [matTooltip]="showMoreInfo">
+                          <fa-icon [icon]="['fas', 'info']"></fa-icon>
+                  </button>
+                  @if(site.created_by === user_id()){
+                    <button mat-raised-button class="directBtn" 
+                    (click)="navigate('/site/'+site.id_site+'/'+site.slug, diagnostic(), site)" [matTooltip]="modify">
+                      <fa-icon [icon]="['fas', 'pen']"></fa-icon>
+                    </button>
+                  }
+                  <button mat-raised-button class="directBtn" color="accent"
+                          (click)="navigate('/diagnostic/create', diagnostic(), site)">
+                    {{ titleBtnCreaDiag() }}
+                  </button>
+                  <button mat-icon-button [matTooltip]="infobulleCreaDiagFromSite()"
+                          aria-label="Info création" color="accent">
+                    <fa-icon [icon]="['fas', 'question']"></fa-icon>
+                  </button>
+                </div>
+
+                <div class="mt-3">
+                  @for (diag of site.diagnostics; track diag.id_diagnostic) {
+                    <mat-card class="diagnostic-card my-2 white-shadow">
+                      <mat-card-subtitle>
+                        {{ diag.nom }} du {{ diag.created_at_str }}
+                      </mat-card-subtitle>
+
+                      <mat-card-actions class="text-end">
+                        <button mat-raised-button color="accent"
+                                (click)="navigate('/diagnostic-visualisation/' + diag.id_diagnostic + '/' + diag.slug, diagnostic())">
+                          Voir
+                        </button>
+                      </mat-card-actions>
+                    </mat-card>
+                  }
+                </div>
+              </mat-expansion-panel>
+            }
+          </mat-accordion>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,13 @@
+.fieldName{
+    display:block;
+    width:50%;
+}
+.date{
+    width:50%;
+}
+
+.grid-3-6-3 {
+    display: grid;
+    grid-template-columns: 10% 80% 10%; /* ou 3fr 6fr 3fr */
+    gap: 1rem;
+}

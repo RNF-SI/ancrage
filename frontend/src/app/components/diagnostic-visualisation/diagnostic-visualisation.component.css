@@ -1,0 +1,38 @@
+.upload-zone {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 16px;
+    transition: background-color 0.3s;
+  }
+  .upload-zone.dragover {
+    background-color: #e3f2fd;
+  }
+
+  .grid-3-6 {
+    display: grid;
+    grid-template-columns: 20% 80% ; /* ou 3fr 6fr 3fr */
+    gap: 1rem;
+  }
+
+  .buttons{
+    margin-top: 2%;
+  }
+
+  #delete-button{
+    margin-top:2%;
+  }
+
+  .one-column{
+    display: grid;
+    grid-template-columns: 0% 100% ; /* ou 3fr 6fr 3fr */
+    gap: 1rem;
+  }
+
+  .block{
+    display: block;
+    margin-top: 2%;
+  }
+
+ 

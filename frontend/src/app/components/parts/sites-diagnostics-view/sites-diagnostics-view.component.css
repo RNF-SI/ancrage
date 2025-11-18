@@ -1,0 +1,90 @@
+li{
+    list-style-type: none;
+}
+
+#diagnostics_liste{
+    margin-bottom: 2%;
+    
+}
+
+
+#creaBtn{
+    width:50%;
+    padding:1%;
+}
+.directBtn{
+    margin-right:1%;
+}
+#modBtn{
+    margin:1%;
+}
+
+.container{
+    margin-bottom: 1%;
+}
+
+tr > td {
+    width:80%;
+}
+
+#main_list{
+    font-size:18px;;
+}
+
+li{
+    margin-top:1%;
+}
+
+.container{
+    margin-top: 1%;
+}
+
+h2{
+    margin-top:1%;
+    margin-bottom:2%;
+    font-size:30px;
+    text-align: center;
+    font-weight: bold;
+}
+
+h3{
+    font-size: 24px;
+    font-weight: bold;
+}
+
+#btnToReinitialize{
+    min-height: 56px;
+    margin-bottom: 3%;
+    margin-left:1%;
+}
+
+.hidden{
+    display:none;
+}
+
+.displayed{
+    display:block;
+}
+
+a{
+    text-decoration: underline!important;
+    cursor:pointer;
+}
+
+.grid-3-6-3 {
+    display: grid;
+    grid-template-columns: 15% 70% 15%; /* ou 3fr 6fr 3fr */
+    gap: 1rem;
+}
+
+.grid-6-6{
+    display: grid;
+    grid-template-columns: 50% 50%; /* ou 3fr 6fr 3fr */
+    gap: 1rem;
+} 
+.col-left,
+.col-center,
+.col-right {
+    background: #fff;
+    padding: 1rem;
+}

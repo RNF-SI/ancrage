@@ -1,0 +1,79 @@
+import { Observable, map } from 'rxjs';
+import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { MotCle } from '@app/models/mot-cle.model';
+import { environment } from 'src/environments/environment';
+import { IMotCle } from '@app/interfaces/mot_cle.interface';
+
+@Injectable({
+	providedIn: 'root'
+})
+
+export class MotCleService {
+
+	private GET_ALL_URL = environment.flask_server+'mots_cles';
+	private BASE_URL = environment.flask_server+'mot_cle';
+	private http = inject(HttpClient);
+	private token = localStorage.getItem('tk_id_token');
+
+	//Récupère tous les motCles
+	getAllByDiag(id_diagnostic:number): Observable<MotCle[]> {
+		return this.http.get<IMotCle[]>(this.GET_ALL_URL +'/'+id_diagnostic,{
+			headers: { Authorization: `Bearer ${this.token}` }
+		  } ).pipe(
+			map(motCleJsonArray => {
+				return motCleJsonArray.map<MotCle>(
+					motCleJson => MotCle.fromJson(motCleJson)
+				)
+			})
+		);
+	}
+
+	getKeywordsByActor(id_acteur:number): Observable<MotCle[]>{
+		  return this.http.get<IMotCle[]>(this.GET_ALL_URL+'/theme/'+id_acteur,{
+			headers: { Authorization: `Bearer ${this.token}` }
+		  }).pipe(
+			map(nomenclatureJsonArray => {
+			  return nomenclatureJsonArray.map<MotCle>(
+				nomenclatureJson => MotCle.fromJson(nomenclatureJson)
+			  )
+			})
+		  );
+	}
+
+	update(mot_cle:MotCle): Observable<MotCle> {
+		const route = this.BASE_URL + '/' + mot_cle.id_mot_cle;
+	   
+		return this.http.put<IMotCle>(route, mot_cle.toJson(),{
+			headers: { Authorization: `Bearer ${this.token}` }
+		  }).pipe(
+		  map(mot_cleJson => MotCle.fromJson(mot_cleJson))
+		);
+	}
+
+	add(mot_cle:MotCle): Observable<MotCle> {
+		return this.http.post<IMotCle>(this.BASE_URL, mot_cle.toJson(),{
+			headers: { Authorization: `Bearer ${this.token}` }
+		  }).pipe(
+		  map(mcJson => MotCle.fromJson(mcJson))
+		);
+	}
+	
+
+	sortByName(objArray:MotCle[]){
+		objArray.sort(function(a, b) {
+		  var textA = a.nom.toUpperCase();
+		  var textB = b.nom.toUpperCase();
+		  return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+		})
+	}
+
+	//Récupère un mot-clé
+	get(id:number): Observable<MotCle> {
+		return this.http.get<IMotCle>(this.BASE_URL + '/' + id,{
+			headers: { Authorization: `Bearer ${this.token}` }
+		  }).pipe(
+			map(motCleJson => MotCle.fromJson(motCleJson))
+		);
+	}
+}
