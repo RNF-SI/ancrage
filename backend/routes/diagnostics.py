@@ -72,8 +72,10 @@ def disableDiagnostic(id_diagnostic, slug):
     if diagnostic.slug == slug:
         diagnostic.is_disabled = True
         db.session.commit()
-        # L'objet diagnostic est déjà en mémoire, pas besoin de recharger
-        return getDiagnostic(diagnostic)
+        # L'objet diagnostic est déjà en mémoire, pas besoin de recharge
+    
+        schema = DiagnosticLiteSchema(many=False)
+        return jsonify(schema.dump(diagnostic)), 200
     else:
         logger.warning(f"❌ Slug invalide pour mise à jour du diagnostic {id_diagnostic}")
         return jsonify({'error': 'Slug invalide'}), 400
