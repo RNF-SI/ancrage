@@ -9,17 +9,26 @@ from routes.functions import checkCCG
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload, joinedload
 from pypnusershub.decorators import check_auth
+from routes.auth_decorators import require_auth
+try:
+    from pypnusershub.login_manager import login_required
+except ImportError:
+    # Fallback vers flask_login si pypnusershub ne l'exporte pas directement
+    from flask_login import login_required
 
-@check_auth(1)
+
 @bp.route('/reponse', methods=['POST'])
+@require_auth
+@check_auth(1)
 def enregistrer_reponse_id():
     data = request.get_json()
     logger.info("Réception des données de réponses depuis objets")
 
     return enregistrer_reponse(data)
 
-@check_auth(1)    
 @bp.route('/reponse/objet', methods=['POST'])
+@require_auth
+@check_auth(1)    
 def enregistrer_reponse_depuis_objet():
     data = request.get_json()
     logger.info("Réception des données de réponses depuis objets")
@@ -30,6 +39,7 @@ def enregistrer_reponse_depuis_objet():
 
     return getKeywordsByActor(acteur_id)
 
+@require_auth
 @check_auth(1)
 def enregistrer_reponse(reponses_objets):
     if not reponses_objets:

@@ -5,9 +5,16 @@ from schemas.metier import *
 from routes import bp
 from configs.logger_config import logger
 from pypnusershub.decorators import check_auth
+from routes.auth_decorators import require_auth
+try:
+    from pypnusershub.login_manager import login_required
+except ImportError:
+    # Fallback vers flask_login si pypnusershub ne l'exporte pas directement
+    from flask_login import login_required
 
-@check_auth(1)
 @bp.route('/departement/<id_departement>', methods=['GET', 'PUT', 'DELETE'])
+@require_auth
+@check_auth(1)
 def departementMethods(id_departement):
     logger.info(f"📍 Requête {request.method} sur le département ID={id_departement}")
     departement = Departement.query.filter_by(id_departement=id_departement).first()
@@ -35,8 +42,9 @@ def departementMethods(id_departement):
         logger.info(f"✅ Département ID={id_departement} supprimé")
         return {"success": "Suppression terminée"}
 
-@check_auth(1)
 @bp.route('/departement', methods=['POST'])
+@require_auth
+@check_auth(1)
 def postDepartement():
     if request.method == 'POST':
         data = request.get_json()
@@ -48,8 +56,9 @@ def postDepartement():
         logger.info(f"✅ Nouveau département créé avec ID={departement.id_departement}")
         return getDepartement(departement)
 
-@check_auth(1)
 @bp.route('/departements', methods=['GET'])
+@require_auth
+@check_auth(1)
 def getAllDepartements():
     if request.method == 'GET':
         logger.info("📋 Récupération de tous les départements")
@@ -59,8 +68,9 @@ def getAllDepartements():
         logger.info(f"📦 {len(departements)} départements récupérés")
         return jsonify(departementsObj)
 
-@check_auth(1)
 @bp.route('/departements/<mnemonique>', methods=['GET'])
+@require_auth
+@check_auth(1)
 def getAllDepartementsByUSer(mnemonique):
     if request.method == 'GET':
         logger.info(f"📋 Récupération des départements par mnemonique = {mnemonique}")

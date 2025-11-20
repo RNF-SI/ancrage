@@ -6,9 +6,11 @@ from schemas.metier import *
 from routes import bp, datetime, slugify, uuid, timezone
 from configs.logger_config import logger
 from pypnusershub.decorators import check_auth
+from routes.auth_decorators import require_auth
 
-@check_auth(1)
 @bp.route('/site/<int:id_site>/<string:slug>', methods=['GET','PUT','DELETE'])
+@require_auth
+@check_auth(1)
 def siteMethods(id_site, slug):
     logger.info(f"🔍 Requête {request.method} pour le site {id_site} avec slug '{slug}'")
     site = Site.query.filter_by(id_site=id_site).first()
@@ -49,8 +51,9 @@ def siteMethods(id_site, slug):
             logger.warning("❌ Slug invalide pour suppression")
             return jsonify({'error': 'Slug invalide'}), 400
 
-@check_auth(1)
 @bp.route('/site/', methods=['POST'])
+@require_auth
+@check_auth(1)
 def postSite():
     
     if request.method == 'POST': 
@@ -73,8 +76,9 @@ def postSite():
         logger.info(f"✅ Site créé avec ID {site.id_site} et slug {site.slug}")
         return getSite(site)
 
-@check_auth(1)
 @bp.route('/sites', methods=['GET'])
+@require_auth
+@check_auth(1)
 def getAllSites():
     if request.method == 'GET': 
         logger.info("📋 Récupération de tous les sites")
@@ -92,8 +96,9 @@ def getAllSites():
         logger.info(f"🔢 Nombre de sites retournés : {len(usersObj)}")
         return jsonify(usersObj)
 
-@check_auth(1)
 @bp.route('/sites/<created_by>', methods=['GET'])
+@require_auth
+@check_auth(1)
 def getAllSitesByUSer(created_by):
     if request.method == 'GET': 
         logger.info(f"📋 Récupération des sites créés par : {created_by}")

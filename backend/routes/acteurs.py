@@ -7,10 +7,16 @@ from routes import bp, datetime, slugify, uuid, timezone
 from configs.logger_config import logger
 from routes.reponses import verifDatesEntretien
 from pypnusershub.decorators import check_auth
+from routes.auth_decorators import require_auth
+try:
+    from pypnusershub.login_manager import login_required
+except ImportError:
+    # Fallback vers flask_login si pypnusershub ne l'exporte pas directement
+    from flask_login import login_required
 
-
-@check_auth(1)
 @bp.route('/acteur/<id_acteur>/<slug>', methods=['GET', 'PUT','DELETE'])
+@require_auth  # Vérifie l'authentification (bloque si non authentifié)
+@check_auth(1)  # Vérifie le niveau de droit
 def acteurMethods(id_acteur, slug):
     logger.info(f"🔍 Requête {request.method} pour l'acteur {id_acteur} avec slug '{slug}'")
     acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
@@ -52,8 +58,9 @@ def acteurMethods(id_acteur, slug):
             logger.warning("❌ Slug invalide pour suppression")
             return jsonify({'error': 'Slug invalide'}), 400
 
-@check_auth(1)
 @bp.route('/acteur/', methods=['POST'])
+@require_auth
+@check_auth(1)
 def postActeur():
     if request.method == 'POST':
         logger.info(" Création d'un nouvel acteur")
@@ -88,8 +95,9 @@ def postActeur():
         logger.info(f"✅ Acteur créé avec ID {acteur.id_acteur} et slug {acteur.slug}")
         return getActeur(acteur)
 
-@check_auth(1)
 @bp.route('/acteur/state/<id_acteur>/<id_statut>', methods=['PUT'])
+@require_auth
+@check_auth(1)
 def changeStateInterview(id_acteur, id_statut):
     logger.info(f"🔁 Changement de statut de l'acteur {id_acteur} vers {id_statut}")
     data = request.get_json()
@@ -147,17 +155,18 @@ def getAllActeursBySites():
     else:
         logger.info("❌ Champ 'id_sites' manquant")
         return jsonify({'error': "Champ 'id_sites' requis"}), 400
-    
-@check_auth(1)
+
 @bp.route('/acteurs/diagnostic/<int:id_diagnostic>', methods=['GET'])
+@require_auth
+@check_auth(1)
 def getAllActeursByDiag(id_diagnostic):
     acteurs = Acteur.query.filter_by(diagnostic_id=id_diagnostic).all()
     schema = ActeurLiteSchema(many=True)
     return jsonify(schema.dump(acteurs)), 200
 
-
-@check_auth(1)
 @bp.route('/acteurs/<created_by>', methods=['GET'])
+@require_auth
+@check_auth(1)
 def getAllActeursByUSer(created_by):
     logger.info(f"📋 Récupération des acteurs créés par : {created_by}")
     acteurs = Acteur.query.filter_by(created_by=created_by).all()
@@ -166,9 +175,9 @@ def getAllActeursByUSer(created_by):
     usersObj = schema.dump(acteurs)
     return jsonify(usersObj)
 
-
-@check_auth(1)
 @bp.route('/acteur/disable/<int:id_acteur>/<slug>', methods=['PUT'])
+@require_auth
+@check_auth(1)
 def disableActeur(id_acteur, slug):
     acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
 

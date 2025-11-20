@@ -5,10 +5,16 @@ from schemas.metier import *
 from routes import bp
 from configs.logger_config import logger
 from pypnusershub.decorators import check_auth
+from routes.auth_decorators import require_auth
+try:
+    from pypnusershub.login_manager import login_required
+except ImportError:
+    # Fallback vers flask_login si pypnusershub ne l'exporte pas directement
+    from flask_login import login_required
 
-
-@check_auth(1)
 @bp.route('/commune/<id_commune>', methods=['GET', 'PUT', 'DELETE'])
+@require_auth
+@check_auth(1)
 def communeMethods(id_commune):
     logger.info(f"📍 Requête {request.method} sur la commune ID={id_commune}")
     commune = Commune.query.filter_by(id_commune=id_commune).first()
@@ -36,9 +42,9 @@ def communeMethods(id_commune):
         logger.info(f"✅ Commune ID={id_commune} supprimée")
         return {"success": "Suppression terminée"}
 
-
-@check_auth(1)
 @bp.route('/communes', methods=['GET'])
+@require_auth
+@check_auth(1)
 def getAllCommunes():
     if request.method == 'GET':
         logger.info("📋 Récupération de toutes les communes (sans champs volumineux)")
