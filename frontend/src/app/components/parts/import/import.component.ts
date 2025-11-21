@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, Input, OnDestroy } from '@angular/core';
+import { Component, computed, effect, inject, Input, OnDestroy, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -16,6 +16,7 @@ import { Subscription } from 'rxjs';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { Acteur } from '@app/models/acteur.model';
 import { ToastrService } from 'ngx-toastr';
+import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-import',
@@ -28,7 +29,8 @@ import { ToastrService } from 'ngx-toastr';
     MatInputModule, 
     MatAutocompleteModule, 
     MatButtonModule, 
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    LoadingSpinnerComponent
   ],
   templateUrl: './import.component.html',
   styleUrl: './import.component.css'
@@ -58,6 +60,7 @@ export class ImportComponent implements OnDestroy{
   dragOver = false;
   file: File | null = null;
   private toastService = inject(ToastrService);
+  isLoading = signal<boolean>(false);
 
   constructor() {
     
@@ -131,13 +134,21 @@ export class ImportComponent implements OnDestroy{
   import(event: Event){
     event.preventDefault();
     if(this.formGroup.valid){
+      this.isLoading.set(true);
       let acteur = new Acteur();
       acteur.commune = this.formGroup.get('commune')?.value!;
       acteur.diagnostic = this.diagnostic;
 
-      this.importSubscription = this.diagnosticService.importData(this.file!,acteur).subscribe(res=>{
-        if (res instanceof Acteur){
-          this.toastService.success('Les données ont bien été importées. Rechargez la page.')
+      this.importSubscription = this.diagnosticService.importData(this.file!,acteur).subscribe({
+        next: (res) => {
+          if (res instanceof Acteur){
+            this.toastService.success('Les données ont bien été importées. Rechargez la page.')
+          }
+          this.isLoading.set(false);
+        },
+        error: (error) => {
+          this.toastService.error('Erreur lors de l\'import des données.');
+          this.isLoading.set(false);
         }
       });
     }

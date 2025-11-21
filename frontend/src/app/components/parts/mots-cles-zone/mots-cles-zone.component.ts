@@ -353,35 +353,71 @@ export class MotsClesZoneComponent implements OnDestroy{
       return;
     }
     if (!this.modeAnalyse()){
+      // Sauvegarder les données locales pour les conserver pendant l'envoi
+      const motsClesLocaux = [...this.motsClesReponse()];
+      const categoriesLocales = this.categories().map(cat => {
+        const newCat = new Nomenclature();
+        Object.assign(newCat, cat);
+        newCat.mots_cles = [...(cat.mots_cles || [])];
+        return newCat;
+      });
+      
       let reponse = new Reponse();
       reponse.question = this.questionAfom();
       reponse.question!.indications="Sans indicateur";
       reponse.valeur_reponse = this.noResponse();
-      reponse.mots_cles = this.motsClesReponse();
+      // Créer une copie profonde pour éviter de modifier les objets originaux
+      reponse.mots_cles = this.motsClesReponse().map(mc => {
+        const mcCopy = new MotCle();
+        Object.assign(mcCopy, mc);
+        mcCopy.categorie = new Nomenclature();
+        Object.assign(mcCopy.categorie, mc.categorie);
+        mcCopy.categorie.mots_cles = [];
+        return mcCopy;
+      });
       reponse.acteur = new Acteur();
       reponse.acteur.id_acteur = this.id_acteur();
-      for (let i=0;i<reponse.mots_cles.length;i++){
-        
-          reponse.mots_cles[i].categorie.mots_cles=[];
-      }
       
-      this.reponseSub = this.reponseService.updateAfom(reponse).subscribe(keywords=>{
-        if (keywords.length >0 ){
-          this.toastr.success("Données enregistrées");
-          this.setKeywords(keywords);
-        }else{
-          this.toastr.success("Les données ont bien été effacées.");
+      this.reponseSub = this.reponseService.updateAfom(reponse).subscribe({
+        next: (keywords) => {
+          if (keywords.length > 0) {
+            this.toastr.success("Données enregistrées");
+            this.setKeywords(keywords);
+          } else {
+            this.toastr.success("Les données ont bien été effacées.");
+            this.setKeywords([]);
+          }
+        },
+        error: (error) => {
+          // En cas d'erreur, restaurer les données locales
+          this.toastr.error("Erreur lors de l'enregistrement. Les données n'ont pas été modifiées.");
+          this.categories.set(categoriesLocales);
+          this.motsClesReponse.set(motsClesLocaux);
         }
-        
       });
 
     }else{
+      // Sauvegarder les données locales pour les conserver pendant l'envoi
+      const motsClesAnalyseLocaux = [...this.motsCleAnalyse()];
+      const categoriesLocales = this.categories().map(cat => {
+        const newCat = new Nomenclature();
+        Object.assign(newCat, cat);
+        newCat.mots_cles = [...(cat.mots_cles || [])];
+        return newCat;
+      });
+      
       let afoms:GraphMotsCles[]=[];
       for (const mc of this.motsCleAnalyse()){
-        mc.categorie.mots_cles=[];
+        // Créer une copie pour éviter de modifier l'original
+        const mcCopy = new MotCle();
+        Object.assign(mcCopy, mc);
+        mcCopy.categorie = new Nomenclature();
+        Object.assign(mcCopy.categorie, mc.categorie);
+        mcCopy.categorie.mots_cles = [];
+        
         let afom = new GraphMotsCles();
         afom.id_afom = mc.afom_id!;
-        afom.mot_cle = mc;
+        afom.mot_cle = mcCopy;
         for( let kw of mc.mots_cles_issus){
           kw.categorie.mots_cles = [];
           kw.mots_cles_issus = [];
@@ -391,14 +427,22 @@ export class MotsClesZoneComponent implements OnDestroy{
         afom.nombre = mc.nombre!;
         afoms.push(afom);
       }
-      this.diagSub = this.diagnosticService.updateAfom(afoms).subscribe(afoms=>{
-        if (afoms.length >0 ){
-          this.toastr.success("Données enregistrées");
-          this.prepareResults(afoms);
-        }else{
-          this.toastr.success("Les données ont bien été effacées.");
+      this.diagSub = this.diagnosticService.updateAfom(afoms).subscribe({
+        next: (afoms) => {
+          if (afoms.length > 0) {
+            this.toastr.success("Données enregistrées");
+            this.prepareResults(afoms);
+          } else {
+            this.toastr.success("Les données ont bien été effacées.");
+            this.setKeywords([]);
+          }
+        },
+        error: (error) => {
+          // En cas d'erreur, restaurer les données locales
+          this.toastr.error("Erreur lors de l'enregistrement. Les données n'ont pas été modifiées.");
+          this.categories.set(categoriesLocales);
+          this.motsCleAnalyse.set(motsClesAnalyseLocaux);
         }
-        
       });
     }
     

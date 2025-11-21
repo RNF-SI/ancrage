@@ -83,7 +83,7 @@
                   </button>
                   @if(site.created_by === user_id()){
                     <button mat-raised-button class="directBtn" 
-                    (click)="navigate('/site/'+site.id_site+'/'+site.slug, diagnostic(), site)" [matTooltip]="modify">
+                    (click)="navigate('/site/'+site.id_site+'/'+site.slug+'/update', diagnostic(), site)" [matTooltip]="modify">
                       <fa-icon [icon]="['fas', 'pen']"></fa-icon>
                     </button>
                   }

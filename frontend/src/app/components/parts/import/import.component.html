@@ -2,9 +2,9 @@
     <div class="grid grid-cols-12 gap-4">
       <div class="col-span-2"></div>
   
-      <div class="col-span-8">
+      <div class="col-span-8" [class.loading-overlay-container]="isLoading()">
         
-          <form [formGroup]="formGroup" (submit)="import($event)">
+          <form [formGroup]="formGroup" (submit)="import($event)" [class.form-disabled]="isLoading()">
             
     
             <mat-form-field appearance="fill">
@@ -12,6 +12,7 @@
                      matInput
                      formControlName="commune"
                      [matAutocomplete]="auto"
+                     [disabled]="isLoading()"
                      placeholder="Nom de la commune principale*" required>
               <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
                 @for (town of filteredTowns; track town) {
@@ -27,6 +28,7 @@
                 <input type="text"
                        matInput
                        formControlName="file"
+                       [disabled]="isLoading()"
                        placeholder="Fichier diagnostic" required>
                 
                 @if (formGroup.get('file')?.hasError('required')) {
@@ -34,11 +36,11 @@
                 }
               </mat-form-field>
 
-            <div class="upload-zone" matRipple [class.dragover]="dragOver"
+            <div class="upload-zone" matRipple [class.dragover]="dragOver && !isLoading()"
                   (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
                   <p>{{ labels.dropFileSelect }}</p>
-                  <input type="file" (change)="onFileSelected($event)" hidden #fileInput />
-                  <button mat-raised-button (click)="fileInput.click()" type="button">
+                  <input type="file" (change)="onFileSelected($event)" [disabled]="isLoading()" hidden #fileInput />
+                  <button mat-raised-button (click)="fileInput.click()" type="button" [disabled]="isLoading()">
                     {{ labels.chooseFile }}
                   </button>
             </div>
@@ -48,12 +50,16 @@
               }
             </ul>
                 
-            <button mat-raised-button id="btnNewSite" type="submit" color="warn">
+            <button mat-raised-button id="btnNewSite" type="submit" color="warn" [disabled]="isLoading()">
               {{ labels.import }}
             </button>
           </form>
         
-  
+        @if (isLoading()) {
+          <div class="loading-overlay">
+            <app-loading-spinner></app-loading-spinner>
+          </div>
+        }
         
       </div>
   
