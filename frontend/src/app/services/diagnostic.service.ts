@@ -125,7 +125,9 @@ export class DiagnosticService {
     //Récupère les différentes structures des acteurs
     getStructures(id: number): Observable<any> {
 
-      return this.http.get<any>(this.BASE_URL + '/structures/' + id ).pipe(shareReplay(1));
+      return this.http.get<any>(this.BASE_URL + '/structures/' + id,{
+        headers: { Authorization: `Bearer ${this.token}` }
+      } ).pipe(shareReplay(1));
     }
 
     getOccurencesKeyWords(id_diagnostic:number): Observable<GraphMotsCles[]>{
