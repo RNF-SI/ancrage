@@ -6,15 +6,8 @@ from routes import bp
 from sqlalchemy.orm import raiseload
 from configs.logger_config import logger
 from pypnusershub.decorators import check_auth
-from routes.auth_decorators import require_auth
-try:
-    from pypnusershub.login_manager import login_required
-except ImportError:
-    # Fallback vers flask_login si pypnusershub ne l'exporte pas directement
-    from flask_login import login_required
 
 @bp.route('/question/<string:libelle>', methods=['GET'])
-@require_auth
 @check_auth(1)
 def get_question_without_relations(libelle):
     if not libelle:
@@ -38,7 +31,6 @@ def get_question_without_relations(libelle):
 
 @bp.route('/questions', defaults={'limit': None} ,methods=['GET'])
 @bp.route('/questions/<int:limit>', methods=['GET'])
-@require_auth
 @check_auth(1)
 def get_questions(limit):
     if limit:

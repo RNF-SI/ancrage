@@ -4,15 +4,8 @@ from schemas.metier import MotCleSchema
 from routes import bp, joinedload
 from configs.logger_config import logger
 from pypnusershub.decorators import check_auth
-from routes.auth_decorators import require_auth
-try:
-    from pypnusershub.login_manager import login_required
-except ImportError:
-    # Fallback vers flask_login si pypnusershub ne l'exporte pas directement
-    from flask_login import login_required
 
 @bp.route('/mots_cles/<int:id_diagnostic>', methods=['GET'])
-@require_auth
 @check_auth(1)
 def getAllMotCles(id_diagnostic):
     logger.info(f"📋 Requête GET - Mots-clés pour diagnostic ID={id_diagnostic}")
@@ -25,7 +18,6 @@ def getAllMotCles(id_diagnostic):
     return jsonify(usersObj)
 
 @bp.route('/mots_cles/theme/<int:id_acteur>', methods=['GET'])
-@require_auth
 @check_auth(1)
 def getKeywordsByActor(id_acteur):
     logger.info(f"📋 Requête GET - Mots-clés liés à l'acteur ID={id_acteur}")
@@ -44,7 +36,6 @@ def getKeywordsByActor(id_acteur):
     return jsonify(schema.dump(mots_cles))
 
 @bp.route('/mot_cle/<int:id_mot_cle>', methods=['GET'])
-@require_auth
 @check_auth(1)
 def get(id_mot_cle):
     
@@ -55,7 +46,6 @@ def get(id_mot_cle):
     return jsonify(mcObj)
 
 @bp.route('/mot_cle/<int:id_mot_cle>', methods=['PUT'])
-@require_auth
 @check_auth(1)
 def rename(id_mot_cle):
     
@@ -73,7 +63,6 @@ def rename(id_mot_cle):
         return jsonify(mcObj)
 
 @bp.route('/mot_cle', methods=['POST'])
-@require_auth
 @check_auth(1)    
 def create_mot_cle():
     data = request.get_json()

@@ -6,16 +6,9 @@ from routes import bp,joinedload,aliased,and_
 from routes.functions import checkCCG
 from configs.logger_config import logger
 from pypnusershub.decorators import check_auth
-from routes.auth_decorators import require_auth
-try:
-    from pypnusershub.login_manager import login_required
-except ImportError:
-    # Fallback vers flask_login si pypnusershub ne l'exporte pas directement
-    from flask_login import login_required
 from sqlalchemy.orm import selectinload
 
 @bp.route('/nomenclature/<int:id_nomenclature>', methods=['GET','PUT','DELETE'])
-@require_auth
 @check_auth(1)
 def nomenclatureMethods(id_nomenclature):
     nomenclature = Nomenclature.query.filter_by(id_nomenclature=id_nomenclature).first()
@@ -28,7 +21,6 @@ def nomenclatureMethods(id_nomenclature):
        return getNomenclature(nomenclature)
 
 @bp.route('/nomenclature/<string:valeur>', methods=['GET','PUT','DELETE'])
-@require_auth
 @check_auth(1)    
 def nomenclatureNoResponse(valeur):
     nomenclature = Nomenclature.query.filter_by(libelle=valeur).first()
@@ -38,7 +30,6 @@ def nomenclatureNoResponse(valeur):
        return getNomenclature(nomenclature)
 
 @bp.route('/nomenclatures',methods=['GET'])
-@require_auth
 @check_auth(1)
 def getAllNomenclatures():
     if request.method == 'GET': 
@@ -50,7 +41,6 @@ def getAllNomenclatures():
 
 @bp.route('/nomenclatures/<mnemonique>', defaults={'id_acteur': None}, methods=['GET'])
 @bp.route('/nomenclatures/<mnemonique>/<int:id_acteur>', methods=['GET'])
-@require_auth
 @check_auth(1)
 def getAllNomenclaturesByType(mnemonique, id_acteur):
     logger.info("➡️  Route /nomenclatures appelée", extra={

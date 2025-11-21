@@ -4,15 +4,8 @@ from routes.diagnostics import getDiagnostic
 from routes import bp,request,json,current_app,secure_filename,send_from_directory,NotFound
 from configs.logger_config import logger,os
 from pypnusershub.decorators import check_auth
-from routes.auth_decorators import require_auth
-try:
-    from pypnusershub.login_manager import login_required
-except ImportError:
-    # Fallback vers flask_login si pypnusershub ne l'exporte pas directement
-    from flask_login import login_required
 
 @bp.route('/diagnostic/upload', methods=['POST'])
-@require_auth
 @check_auth(1)
 def create_documents():
     documents = json.loads(request.form['documents'])
@@ -63,7 +56,6 @@ def uploaded_file(filename):
     return send_from_directory(upload_folder, filename)
 
 @bp.route('/diagnostic/document/delete/<int:id_document>', methods=['DELETE'])
-@require_auth
 @check_auth(1)
 def delete_document(id_document):
     # Récupération de l'entrée en base
