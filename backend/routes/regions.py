@@ -4,9 +4,16 @@ from schemas.metier import *
 from routes import bp
 from configs.logger_config import logger
 from pypnusershub.decorators import check_auth
+from routes.auth_decorators import require_auth
+try:
+    from pypnusershub.login_manager import login_required
+except ImportError:
+    # Fallback vers flask_login si pypnusershub ne l'exporte pas directement
+    from flask_login import login_required
 
-@check_auth(1)
 @bp.route('/region/<id_region>', methods=['GET','PUT','DELETE'])
+@require_auth
+@check_auth(1)
 def regionMethods(id_region):
     region = Region.query.filter_by(id_region=id_region).first()
     logger.info(f"Requête sur la région ID={id_region} : {region}")
@@ -34,8 +41,9 @@ def regionMethods(id_region):
         logger.info("Suppression effectuée")
         return {"success": "Suppression terminée"}
 
-@check_auth(1)
 @bp.route('/region',methods=['POST'])
+@require_auth
+@check_auth(1)
 def postRegion():
     if request.method == 'POST': 
         data = request.get_json()
@@ -47,8 +55,9 @@ def postRegion():
         logger.info(f"Nouvelle région créée : {region}")
         return getRegion(region)
 
-@check_auth(1)
 @bp.route('/regions',methods=['GET'])
+@require_auth
+@check_auth(1)
 def getAllRegions():
     if request.method == 'GET': 
         logger.info("Récupération de toutes les régions")
@@ -57,8 +66,9 @@ def getAllRegions():
         usersObj = schema.dump(regions)
         return jsonify(usersObj)
 
-@check_auth(1)
 @bp.route('/regions/<mnemonique>',methods=['GET'])
+@require_auth
+@check_auth(1)
 def getAllRegionsByUSer(mnemonique):
     if request.method == 'GET': 
         logger.info(f"Récupération des régions avec mnemonique = {mnemonique}")

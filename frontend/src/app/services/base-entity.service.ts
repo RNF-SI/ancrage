@@ -25,6 +25,7 @@ export interface BaseEntityConstructor<TModel, TInterface> {
 export abstract class BaseEntityService<TModel, TInterface> {
   
   protected http = inject(HttpClient);
+  private token = localStorage.getItem('tk_id_token');
 
   constructor(
     protected endpoint: string,
@@ -37,7 +38,9 @@ export abstract class BaseEntityService<TModel, TInterface> {
    */
   getAll(): Observable<TModel[]> {
     const url = environment.flask_server + this.endpoint;
-    return this.http.get<TInterface[]>(url).pipe(
+    return this.http.get<TInterface[]>(url,{
+      headers: { Authorization: `Bearer ${this.token}` }
+    }).pipe(
       shareReplay(1),
       map(jsonArray => {
         return jsonArray.map<TModel>(

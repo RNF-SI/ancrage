@@ -10,8 +10,8 @@ from werkzeug.exceptions import NotFound
 
 bp = Blueprint('main', __name__)
 
-# Importe toutes les routes ici (elles s’enregistreront sur ce blueprint)
-from . import diagnostics, sites, nomenclatures,regions, departements,acteurs,communes,questions,mot_cle,reponses,documents,mail,contact_home_rnf
+# Importe toutes les routes ici (elles s'enregistreront sur ce blueprint)
+from . import diagnostics, sites, nomenclatures,regions, departements,acteurs,communes,questions,mot_cle,reponses,documents,mail,contact_home_rnf,debug_cookies
 
 
 
