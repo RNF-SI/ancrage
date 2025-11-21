@@ -6,18 +6,11 @@ from routes import bp,datetime, slugify, uuid,func,request,jsonify, timezone
 from datetime import datetime
 from configs.logger_config import logger
 from pypnusershub.decorators import check_auth
-from routes.auth_decorators import require_auth
-try:
-    from pypnusershub.login_manager import login_required
-except ImportError:
-    # Fallback vers flask_login si pypnusershub ne l'exporte pas directement
-    from flask_login import login_required
 import pandas as pd
 import json, re
 from routes.reponses import verifCompleteStatus
 
 @bp.route('/diagnostic/<int:id_diagnostic>/<slug>', methods=['GET','PUT','DELETE'])
-@require_auth
 @check_auth(1)
 def diagnosticMethods(id_diagnostic, slug):
     diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
@@ -67,7 +60,6 @@ def diagnosticMethods(id_diagnostic, slug):
             return jsonify({'error': 'Slug invalide'}), 400
 
 @bp.route('/diagnostic/disable/<int:id_diagnostic>/<slug>', methods=['PUT'])
-@require_auth
 @check_auth(1)        
 def disableDiagnostic(id_diagnostic, slug):
     diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
@@ -88,7 +80,6 @@ def disableDiagnostic(id_diagnostic, slug):
         return jsonify({'error': 'Slug invalide'}), 400
 
 @bp.route('/diagnostic',methods=['POST'])
-@require_auth
 @check_auth(1)
 def postDiagnostic():
     data = request.get_json()
@@ -110,7 +101,6 @@ def postDiagnostic():
     return getDiagnostic(diagnostic)
 
 @bp.route('/diagnostics',methods=['GET'])
-@require_auth
 @check_auth(1)
 def getAllDiagnostics():
     if request.method == 'GET': 
@@ -131,7 +121,6 @@ def getAllDiagnostics():
         return jsonify(usersObj)
 
 @bp.route('/diagnostics-site', methods=['POST'])
-@require_auth
 @check_auth(1)    
 def getAllDiagnosticsBySites():
     data = request.get_json()
@@ -155,7 +144,6 @@ def getAllDiagnosticsBySites():
     return jsonify(schema.dump(filtered_diagnostics))
 
 @bp.route('/diagnostics/charts/average/<id_diagnostic>')
-@require_auth
 @check_auth(1)
 def getAveragebyQuestion(id_diagnostic):
     # Aliases pour les différentes utilisations de Nomenclature
@@ -205,7 +193,6 @@ def getAveragebyQuestion(id_diagnostic):
     return jsonify(data)
 
 @bp.route("/diagnostics/charts/repartition/<id_diagnostic>", methods=["GET"])
-@require_auth
 @check_auth(1)
 def get_reponses_par_theme(id_diagnostic):
 
@@ -251,7 +238,6 @@ def get_reponses_par_theme(id_diagnostic):
     return jsonify(output)
 
 @bp.route('/diagnostic/params/charts/average',methods=['PUT'])
-@require_auth
 @check_auth(1)
 def getAveragebyQuestionParams():
 
@@ -329,7 +315,6 @@ def getAveragebyQuestionParams():
     return jsonify(data)
 
 @bp.route("/diagnostic/params/charts/repartition", methods=["PUT"])
-@require_auth
 @check_auth(1)
 def get_reponses_par_themeParams():
 
@@ -400,7 +385,6 @@ def get_reponses_par_themeParams():
     return jsonify(output)
 
 @bp.route('/diagnostic/structures/<int:id_diagnostic>', methods=['GET'])
-@require_auth
 @check_auth(1)
 def get_structures_by_diagnostic(id_diagnostic):
 
@@ -417,7 +401,6 @@ def get_structures_by_diagnostic(id_diagnostic):
     return jsonify({'structures': structure_list})
 
 @bp.route("/diagnostics/charts/radars/<int:id_diagnostic>", methods=["GET"])
-@require_auth
 @check_auth(1)
 def get_scores(id_diagnostic):
 
@@ -466,7 +449,6 @@ def get_scores(id_diagnostic):
     return jsonify(data)
 
 @bp.route("/diagnostic/params/charts/radars", methods=["PUT"])
-@require_auth
 @check_auth(1)
 def get_scoresParams():
 

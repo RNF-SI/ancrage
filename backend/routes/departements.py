@@ -5,15 +5,8 @@ from schemas.metier import *
 from routes import bp
 from configs.logger_config import logger
 from pypnusershub.decorators import check_auth
-from routes.auth_decorators import require_auth
-try:
-    from pypnusershub.login_manager import login_required
-except ImportError:
-    # Fallback vers flask_login si pypnusershub ne l'exporte pas directement
-    from flask_login import login_required
 
 @bp.route('/departement/<id_departement>', methods=['GET', 'PUT', 'DELETE'])
-@require_auth
 @check_auth(1)
 def departementMethods(id_departement):
     logger.info(f"📍 Requête {request.method} sur le département ID={id_departement}")
@@ -43,7 +36,6 @@ def departementMethods(id_departement):
         return {"success": "Suppression terminée"}
 
 @bp.route('/departement', methods=['POST'])
-@require_auth
 @check_auth(1)
 def postDepartement():
     if request.method == 'POST':
@@ -57,7 +49,6 @@ def postDepartement():
         return getDepartement(departement)
 
 @bp.route('/departements', methods=['GET'])
-@require_auth
 @check_auth(1)
 def getAllDepartements():
     if request.method == 'GET':
@@ -69,7 +60,6 @@ def getAllDepartements():
         return jsonify(departementsObj)
 
 @bp.route('/departements/<mnemonique>', methods=['GET'])
-@require_auth
 @check_auth(1)
 def getAllDepartementsByUSer(mnemonique):
     if request.method == 'GET':

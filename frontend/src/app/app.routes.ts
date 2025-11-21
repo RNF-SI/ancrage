@@ -7,6 +7,7 @@ import { MentionsComponent } from './components/mentions/mentions.component';
 import { ContactComponent } from './components/contact/contact.component';
 import { NavHomeComponent } from './home-rnf/components/nav-home/nav-home.component';
 import { LoginComponent } from './home-rnf/components/login/login.component';
+import { ForgotPasswordComponent } from './home-rnf/components/forgot-password/forgot-password.component';
 import { authGuard } from './home-rnf/services/auth-guard.service';
 import { LogoutLinkService } from './home-rnf/services/logout-link.service';
 import { LazyDialogLoader } from './home-rnf/services/lazy-dialog-loader.service';
@@ -26,6 +27,7 @@ export const routes: Routes = [{
   children: [
     { path: 'logout', component: LogoutComponent, canActivate: [LogoutLinkService] },
     { path: 'login', component: LoginComponent, canActivate: [LazyDialogLoader] },
+    { path: 'mot-de-passe-oublie', component: ForgotPasswordComponent },
     { path: 'methodologie', component: AncrageComponent, canActivate: [authGuard] },
     { path: 'intro-connect', component: IntroConnectComponent, canActivate: [authGuard] },
     { path: 'contact', component: ContactComponent },

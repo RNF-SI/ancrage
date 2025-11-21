@@ -5,15 +5,8 @@ from schemas.metier import *
 from routes import bp
 from configs.logger_config import logger
 from pypnusershub.decorators import check_auth
-from routes.auth_decorators import require_auth
-try:
-    from pypnusershub.login_manager import login_required
-except ImportError:
-    # Fallback vers flask_login si pypnusershub ne l'exporte pas directement
-    from flask_login import login_required
 
 @bp.route('/commune/<id_commune>', methods=['GET', 'PUT', 'DELETE'])
-@require_auth
 @check_auth(1)
 def communeMethods(id_commune):
     logger.info(f"📍 Requête {request.method} sur la commune ID={id_commune}")
@@ -43,7 +36,6 @@ def communeMethods(id_commune):
         return {"success": "Suppression terminée"}
 
 @bp.route('/communes', methods=['GET'])
-@require_auth
 @check_auth(1)
 def getAllCommunes():
     if request.method == 'GET':

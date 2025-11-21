@@ -4,15 +4,9 @@ from schemas.metier import *
 from routes import bp
 from configs.logger_config import logger
 from pypnusershub.decorators import check_auth
-from routes.auth_decorators import require_auth
-try:
-    from pypnusershub.login_manager import login_required
-except ImportError:
-    # Fallback vers flask_login si pypnusershub ne l'exporte pas directement
-    from flask_login import login_required
+
 
 @bp.route('/region/<id_region>', methods=['GET','PUT','DELETE'])
-@require_auth
 @check_auth(1)
 def regionMethods(id_region):
     region = Region.query.filter_by(id_region=id_region).first()
@@ -42,7 +36,6 @@ def regionMethods(id_region):
         return {"success": "Suppression terminée"}
 
 @bp.route('/region',methods=['POST'])
-@require_auth
 @check_auth(1)
 def postRegion():
     if request.method == 'POST': 
@@ -56,7 +49,6 @@ def postRegion():
         return getRegion(region)
 
 @bp.route('/regions',methods=['GET'])
-@require_auth
 @check_auth(1)
 def getAllRegions():
     if request.method == 'GET': 
@@ -67,7 +59,6 @@ def getAllRegions():
         return jsonify(usersObj)
 
 @bp.route('/regions/<mnemonique>',methods=['GET'])
-@require_auth
 @check_auth(1)
 def getAllRegionsByUSer(mnemonique):
     if request.method == 'GET': 
