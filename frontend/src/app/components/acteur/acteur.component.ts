@@ -13,6 +13,7 @@ import { Acteur } from '@app/models/acteur.model';
 import { Commune } from '@app/models/commune.model';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { ActeurService } from '@app/services/acteur.service';
+import { DiagnosticService } from '@app/services/diagnostic.service';
 import { CommuneService } from '@app/services/commune.service';
 import { NomenclatureService } from '@app/services/nomenclature.service';
 import { Labels } from '@app/utils/labels';
@@ -75,6 +76,7 @@ export class ActeurComponent implements OnDestroy{
   private actorService = inject(ActeurService);
   private toastr = inject(ToastrService);
   private siteService = inject(SiteService);
+  private diagnosticService = inject(DiagnosticService);
   user_id=0;
   filteredTowns: Commune[] = [];
   labels = new Labels();
@@ -202,6 +204,7 @@ export class ActeurComponent implements OnDestroy{
         actorToSend.diagnostic.id_diagnostic = this.diagnostic().id_diagnostic;
         this.actorSubscription = this.actorService.add(actorToSend).subscribe(actor => {
           this.diagnostic().acteurs.push(actor);
+          this.diagnosticService.invalidateCache(this.diagnostic().id_diagnostic, this.diagnostic().slug);
           this.toastr.success('Acteur ajouté avec succès');
           this.navigate(this.pageDiagnostic, this.diagnostic());
         })
@@ -218,6 +221,7 @@ export class ActeurComponent implements OnDestroy{
           const idx = acteurs.findIndex(a => a.id_acteur === actor.id_acteur);
           if (idx !== -1) acteurs[idx] = actor;
           else acteurs.push(actor);
+          this.diagnosticService.invalidateCache(this.diagnostic().id_diagnostic, this.diagnostic().slug);
           this.toastr.success('Acteur modifié avec succès');
           this.navigate(this.pageDiagnostic, this.diagnostic());
         })

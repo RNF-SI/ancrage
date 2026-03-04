@@ -14,8 +14,11 @@ import { GraphMoy } from '@app/models/graph-moy.model';
 import { GraphRadar } from '@app/models/graph-radar.model';
 import { GraphRepartition } from '@app/models/graph-repartition.model';
 import { Parameters } from '@app/models/parameters.model';
-import { Observable, map, shareReplay } from 'rxjs';
+import { Observable, map, of, shareReplay, tap } from 'rxjs';
 import { environment } from 'src/environments/environment';
+
+/** TTL du cache diagnostic (2 min). */
+const CACHE_TTL_MS = 2 * 60 * 1000;
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +29,9 @@ export class DiagnosticService {
     private BASE_URL = environment.flask_server+ 'diagnostic';
     private http = inject(HttpClient);
     private token = localStorage.getItem('tk_id_token');
+
+    /** Cache en mémoire : clé = "id/slug", valeur = { diagnostic, time }. */
+    private cache = new Map<string, { diagnostic: Diagnostic; time: number }>();
   
     //Récupère les diags en fonction des sites
     getAllBySites(array:any): Observable<Diagnostic[]> {
@@ -143,13 +149,28 @@ export class DiagnosticService {
       );
     }
 
-    //Récupère un diag
-    get(id: number,slug:string): Observable<Diagnostic> {
-      return this.http.get<IDiagnostic>(this.BASE_URL + '/' + id + '/' + slug,{
+    /** Invalide le cache (après mise à jour acteur, document, etc.). */
+    invalidateCache(id?: number, slug?: string): void {
+      if (id != null && slug != null) {
+        this.cache.delete(`${id}/${slug}`);
+      } else {
+        this.cache.clear();
+      }
+    }
+
+    //Récupère un diag (avec cache 2 min)
+    get(id: number, slug: string): Observable<Diagnostic> {
+      const key = `${id}/${slug}`;
+      const entry = this.cache.get(key);
+      if (entry && Date.now() - entry.time < CACHE_TTL_MS) {
+        return of(entry.diagnostic).pipe(shareReplay(1));
+      }
+      return this.http.get<IDiagnostic>(this.BASE_URL + '/' + id + '/' + slug, {
         headers: { Authorization: `Bearer ${this.token}` }
       }).pipe(
-        shareReplay(1),
-        map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
+        map(diagnosticJson => Diagnostic.fromJson(diagnosticJson)),
+        tap(diagnostic => this.cache.set(key, { diagnostic, time: Date.now() })),
+        shareReplay(1)
       );
     }
   

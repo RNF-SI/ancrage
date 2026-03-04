@@ -140,26 +140,40 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
         this.initDone.set(true);
         this.id_diagnostic.set(id);
         this.slug.set(slugValue);
-  
+
+        const cached = this.stateService.getCurrentDiagnostic();
+        if (cached?.id_diagnostic === id && cached?.slug === slugValue) {
+          this.diagnostic.set(cached);
+          this.diag = cached;
+          this.actors.set(cached.acteurs ?? []);
+          this.displayedActorsForMap.set(cached.acteurs ?? []);
+          const user = this.authService.getCurrentUser();
+          this.id_role.set(user.id_role);
+          this.is_read_only.set(!(user.id_role === cached.created_by) || !!cached.is_read_only);
+          this.isLoading = false;
+          this.acteurService.sortByNameAndSelected(this.actors());
+        }
+
         forkJoin({
           diag: this.diagnosticService.get(id, slugValue),
           themes: this.nomenclatureService.getAllByType('thème'),
           cats$: this.nomenclatureService.getAllByType("categorie"),
           questions$: this.questionService.getAllWithLimit(25),
-        }).subscribe(({ diag, themes,cats$, questions$ }) => {
+        }).subscribe(({ diag, themes, cats$, questions$ }) => {
           this.diagnostic.set(diag);
           this.diag = this.diagnostic();
+          this.stateService.setDiagnostic(diag);
           this.themes.set(themes);
           this.actors.set(this.diagnostic().acteurs);
           this.displayedActorsForMap.set(this.diagnostic().acteurs);
           const user = this.authService.getCurrentUser();
           this.id_role.set(user.id_role);
-  
+
           const isOwner = user.id_role === diag.created_by;
           const isReadOnly = !isOwner || diag.is_read_only;
-  
+
           this.is_read_only.set(isReadOnly);
-          this.isLoading=false;
+          this.isLoading = false;
 
           this.nomenclatureService.sortByOrder(cats$);
           this.categories.set(cats$);
@@ -252,7 +266,8 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
     // Ajout du JSON des documents
     formData.append('documents', JSON.stringify(documents.map(d => d.toJson())));
 
-    this.docsSubscription = this.diagnosticService.sendFiles(formData).subscribe(diag =>{
+    this.docsSubscription = this.diagnosticService.sendFiles(formData).subscribe(diag => {
+      this.diagnosticService.invalidateCache(diag.id_diagnostic, diag.slug);
       this.diagnostic.set(diag);
       this.files = [];
     });
@@ -346,10 +361,11 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
             });
   }
 
-  deleteFile(document:Document){
-    this.docDeleteSub = this.diagnosticService.deleteDocument(document).subscribe(diag =>{
+  deleteFile(document: Document) {
+    this.docDeleteSub = this.diagnosticService.deleteDocument(document).subscribe(diag => {
+      this.diagnosticService.invalidateCache(diag.id_diagnostic, diag.slug);
       this.diagnostic.set(diag);
-    })
+    });
   }
 
   getReponse(act: Acteur, id_question: number): number | string{
