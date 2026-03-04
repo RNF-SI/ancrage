@@ -74,6 +74,7 @@ export class Labels {
     requiredLatitude = "Une latitude est requise.";
     requiredLongitude = "Une longitude est requise.";
     requiredTown = "La commune est requise.";
+    communeMustBeSelected = "Veuillez sélectionner une commune dans la liste proposée (saisie manuelle non acceptée).";
     ccgLabel = "Membres ou participants au CCG";
     delete="Supprimer";
     toActorsList = "Revenir à la liste des acteurs";

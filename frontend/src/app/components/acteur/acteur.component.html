@@ -1,113 +1,149 @@
-<div class="container">
-    <div class="grid grid-cols-12 gap-4">
-      <div class="col-span-2"></div>
-  
-      <div class="col-span-8">
-        <h2>{{ title }}</h2>
-  
-        @if (isLoading) {
-          <app-loading-spinner></app-loading-spinner>
-        }@else{
-          <form [formGroup]="formGroup" (submit)="recordActor($event)">
-            <mat-form-field appearance="fill">
-              <mat-label>{{ labels.nameLabel }}</mat-label>
-              <input matInput placeholder="Entrez un nom" formControlName="nom" required>
-              @if (formGroup.get('nom')?.hasError('required')) {
-                <mat-error>{{ labels.requiredName }}</mat-error>
-              }
-            </mat-form-field>
-    
-            <mat-form-field appearance="fill">
-              <mat-label>{{ labels.firstNameLabel }}</mat-label>
-              <input matInput placeholder="Entrez un prénom" formControlName="prenom" required>
-              @if (formGroup.get('prenom')?.hasError('required')) {
-                <mat-error>{{ labels.requiredFirstName }}</mat-error>
-              }
-            </mat-form-field>
-    
-            <mat-form-field appearance="fill">
-              <mat-label>{{ labels.chooseCategories }}</mat-label>
-              <mat-select formControlName="categories" multiple>
-                @for (cat of uniqueCategories; track cat) {
-                  <mat-option [value]="cat">{{ cat.libelle }}</mat-option>
-                }
-              </mat-select>
-              @if (formGroup.get('categories')?.hasError('required')) {
-                <mat-error>{{ labels.requiredCategory }}</mat-error>
-              }
-            </mat-form-field>
-    
-            <mat-form-field appearance="fill">
-              <mat-label>{{ labels.chooseProfile }}</mat-label>
-              <mat-select formControlName="profil">
-                @for (pfl of uniqueProfiles; track pfl.id_nomenclature) {
-                  <mat-option [value]="pfl">{{ pfl.libelle }}</mat-option>
-                }
-              </mat-select>
-              
-            </mat-form-field>
-    
-            <mat-form-field appearance="fill">
-              <mat-label>{{ labels.status }}</mat-label>
-              <input matInput placeholder="Entrez un statut ou fonction (profession, retraité ou occupation bénévole : président)" formControlName="fonction" required>
-              @if (formGroup.get('fonction')?.hasError('required')) {
-                <mat-error>{{ labels.requiredStatus }}</mat-error>
-              }
-            </mat-form-field>
-    
-            <mat-form-field appearance="fill">
-              <mat-label>{{ labels.telephone }}</mat-label>
-              <input matInput placeholder="Entrez un numéro de téléphone" formControlName="telephone">
-              @if (formGroup.get('telephone')?.hasError('pattern')) {
-                <mat-error>{{ labels.telephoneFormat }}</mat-error>
-              }
-            </mat-form-field>
-    
-            <mat-form-field appearance="fill">
-              <mat-label>{{ labels.mail }}</mat-label>
-              <input matInput placeholder="Entrez un mail" formControlName="mail">
-              @if (formGroup.get('mail')?.hasError('pattern')) {
-                <mat-error>{{ labels.invalidFormat }}</mat-error>
-              }
-            </mat-form-field>
-    
-            <mat-form-field appearance="fill">
-              <mat-label>{{ labels.structure }}</mat-label>
-              <input matInput placeholder="Entrez une structure. Si inconnue, tapez 'privée'" formControlName="structure" required>
-              @if (formGroup.get('structure')?.hasError('required')) {
-                <mat-error>{{ labels.requiredStructure }}</mat-error>
-              }
-            </mat-form-field>
-    
-            <mat-form-field appearance="fill">
-              <input type="text"
-                     matInput
-                     formControlName="commune"
-                     [matAutocomplete]="auto"
-                     placeholder="Nom de la commune*" required>
-              <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
-                @for (town of filteredTowns; track town) {
-                  <mat-option [value]="town">{{ displayFn(town) }}</mat-option>
-                }
-              </mat-autocomplete>
-              @if (formGroup.get('commune')?.hasError('required')) {
-                <mat-error>{{ labels.requiredTown }}</mat-error>
-              }
-            </mat-form-field>
-    
-            <button mat-raised-button color="accent" (click)="navigate(pageDiagnostic, diagnostic())">
+<div class="container py-3">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-10 col-xl-8">
+      <h2 class="mb-4">{{ title }}</h2>
+
+      @if (isLoading) {
+        <app-loading-spinner></app-loading-spinner>
+      } @else {
+        <form [formGroup]="formGroup" (submit)="recordActor($event)" class="acteur-form">
+          <!-- Identité -->
+          <section class="form-section">
+            <h3 class="form-section-title">{{ labels.identity }}</h3>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <mat-form-field appearance="fill" class="w-100">
+                  <mat-label>{{ labels.nameLabel }}</mat-label>
+                  <input matInput placeholder="Nom" formControlName="nom" required>
+                  @if (formGroup.get('nom')?.hasError('required')) {
+                    <mat-error>{{ labels.requiredName }}</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="col-md-6">
+                <mat-form-field appearance="fill" class="w-100">
+                  <mat-label>{{ labels.firstNameLabel }}</mat-label>
+                  <input matInput placeholder="Prénom" formControlName="prenom" required>
+                  @if (formGroup.get('prenom')?.hasError('required')) {
+                    <mat-error>{{ labels.requiredFirstName }}</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+            </div>
+          </section>
+
+          <!-- Fonction & structure -->
+          <section class="form-section">
+            <h3 class="form-section-title">Fonction & structure</h3>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <mat-form-field appearance="fill" class="w-100">
+                  <mat-label>{{ labels.chooseCategories }}</mat-label>
+                  <mat-select formControlName="categories" multiple>
+                    @for (cat of uniqueCategories; track cat) {
+                      <mat-option [value]="cat">{{ cat.libelle }}</mat-option>
+                    }
+                  </mat-select>
+                  @if (formGroup.get('categories')?.hasError('required')) {
+                    <mat-error>{{ labels.requiredCategory }}</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="col-md-6">
+                <mat-form-field appearance="fill" class="w-100">
+                  <mat-label>{{ labels.chooseProfile }}</mat-label>
+                  <mat-select formControlName="profil">
+                    @for (pfl of uniqueProfiles; track pfl.id_nomenclature) {
+                      <mat-option [value]="pfl">{{ pfl.libelle }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <div class="col-md-6">
+                <mat-form-field appearance="fill" class="w-100">
+                  <mat-label>{{ labels.status }}</mat-label>
+                  <input matInput placeholder="Ex. président, retraité" formControlName="fonction" required>
+                  @if (formGroup.get('fonction')?.hasError('required')) {
+                    <mat-error>{{ labels.requiredStatus }}</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="col-md-6">
+                <mat-form-field appearance="fill" class="w-100">
+                  <mat-label>{{ labels.structure }}</mat-label>
+                  <input matInput placeholder="Ex. Mairie, privée" formControlName="structure" required>
+                  @if (formGroup.get('structure')?.hasError('required')) {
+                    <mat-error>{{ labels.requiredStructure }}</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+            </div>
+          </section>
+
+          <!-- Coordonnées -->
+          <section class="form-section">
+            <h3 class="form-section-title">Coordonnées</h3>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <mat-form-field appearance="fill" class="w-100">
+                  <mat-label>{{ labels.telephone }}</mat-label>
+                  <input matInput placeholder="0X XX XX XX XX" formControlName="telephone">
+                  @if (formGroup.get('telephone')?.hasError('pattern')) {
+                    <mat-error>{{ labels.telephoneFormat }}</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="col-md-6">
+                <mat-form-field appearance="fill" class="w-100">
+                  <mat-label>{{ labels.mail }}</mat-label>
+                  <input matInput type="email" placeholder="email@exemple.fr" formControlName="mail">
+                  @if (formGroup.get('mail')?.hasError('pattern')) {
+                    <mat-error>{{ labels.invalidFormat }}</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+            </div>
+          </section>
+
+          <!-- Localisation -->
+          <section class="form-section">
+            <h3 class="form-section-title">{{ labels.town }}</h3>
+            <div class="row g-3">
+              <div class="col-12">
+                <mat-form-field appearance="fill" class="w-100">
+                  <mat-label>Rechercher une commune</mat-label>
+                  <input type="text"
+                         matInput
+                         formControlName="commune"
+                         [matAutocomplete]="auto"
+                         placeholder="Saisir le nom de la commune">
+                  <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+                    @for (town of filteredTowns; track town) {
+                      <mat-option [value]="town">{{ displayFn(town) }}</mat-option>
+                    }
+                  </mat-autocomplete>
+                  @if (formGroup.get('commune')?.hasError('required')) {
+                    <mat-error>{{ labels.requiredTown }}</mat-error>
+                  }
+                  @if (formGroup.get('commune')?.hasError('communeNotSelected')) {
+                    <mat-error>{{ labels.communeMustBeSelected }}</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+            </div>
+          </section>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <button mat-raised-button type="button" color="accent" (click)="navigate(pageDiagnostic, diagnostic())">
               {{ labels.btnPreviousStepLabel }}
             </button>
-            <button mat-raised-button id="btnNewSite" type="submit" color="warn">
+            <button mat-raised-button id="btnNewSite" type="submit" color="primary">
               {{ labels.btnRecordLabel }}
             </button>
-          </form>
-        }
-  
-        
-      </div>
-  
-      <div class="col-span-2"></div>
+          </div>
+        </form>
+      }
     </div>
   </div>
-  
+</div>

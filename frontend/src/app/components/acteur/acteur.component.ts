@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, OnDestroy, signal } from '@angular/core';
-import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -60,7 +60,7 @@ export class ActeurComponent implements OnDestroy{
         fonction: ['', [Validators.required]],
         telephone: ["",[Validators.pattern(/^0[1-9](?: \d{2}){4}$/)]],
         mail: ['',[Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]],
-        commune: this.fb.control<Commune | null>(null, [Validators.required]),
+        commune: this.fb.control<Commune | null>(null, [Validators.required, ActeurComponent.communeSelectedValidator]),
         profil: this.fb.control<Nomenclature | null>(null),
         categories: this.fb.control<Nomenclature[] | null>(null, [Validators.required]),
         structure: ['', [Validators.required]],
@@ -79,6 +79,14 @@ export class ActeurComponent implements OnDestroy{
   user_id=0;
   filteredTowns: Commune[] = [];
   labels = new Labels();
+
+  /** Vérifie que la valeur est une commune sélectionnée (objet avec id_commune), pas une saisie manuelle. */
+  private static communeSelectedValidator(control: AbstractControl): ValidationErrors | null {
+    const v = control.value;
+    if (v == null || v === '') return null;
+    if (typeof v === 'object' && v !== null && typeof (v as { id_commune?: unknown }).id_commune === 'number') return null;
+    return { communeNotSelected: true };
+  }
   title = "";
   private stateService = inject(StateService);
   diagnostic = signal<Diagnostic>(this.stateService.getCurrentDiagnostic()!);
