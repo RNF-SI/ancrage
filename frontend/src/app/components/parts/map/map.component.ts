@@ -16,6 +16,7 @@ import { LeafletModule } from '@bluehalo/ngx-leaflet';
 import { LeafletMarkerClusterModule } from '@bluehalo/ngx-leaflet-markercluster';
 import html2canvas from 'html2canvas';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import * as L from 'leaflet'; 
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -34,7 +35,7 @@ L.Marker.prototype.options.icon = L.icon({
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.css'],
   standalone: true,
-  imports: [MatButtonModule, LeafletModule, LeafletMarkerClusterModule]
+  imports: [MatButtonModule, MatIconModule, LeafletModule, LeafletMarkerClusterModule]
 })
 export class MapComponent implements AfterViewInit,OnDestroy {
   private map: L.Map | undefined;

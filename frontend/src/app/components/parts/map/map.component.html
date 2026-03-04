@@ -1,2 +1,5 @@
 <div #mapContainer [id]="mapId()" style="height: 400px;"></div>
-<button mat-raised-button (click)="exportMapAsPNG()">{{labels.exportPNG}}</button>
+<button mat-raised-button (click)="exportMapAsPNG()">
+  <mat-icon>image</mat-icon>
+  {{ labels.exportPNG }}
+</button>

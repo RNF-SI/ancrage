@@ -16,8 +16,30 @@
     gap: 1rem;
   }
 
-  .buttons{
+  .buttons {
     margin-top: 2%;
+  }
+
+  .buttons-actors {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .buttons-actors .buttons-right {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .buttons-actors mat-icon {
+    margin-right: 0.35rem;
+    vertical-align: middle;
+    font-size: 1.2rem;
+    width: 1.2rem;
+    height: 1.2rem;
   }
 
   #delete-button{

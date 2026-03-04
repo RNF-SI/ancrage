@@ -889,6 +889,7 @@ def getDiagnostic(diagnostic):
         .options(
             selectinload(Diagnostic.acteurs).joinedload(Acteur.commune),
             selectinload(Diagnostic.acteurs).selectinload(Acteur.categories),
+            selectinload(Diagnostic.acteurs).joinedload(Acteur.statut_entretien),
             selectinload(Diagnostic.sites).selectinload(Site.departements),
             selectinload(Diagnostic.documents)
         )

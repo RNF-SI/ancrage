@@ -13,6 +13,7 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SiteService } from '@app/services/sites.service';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { Labels } from '@app/utils/labels';
 import { ChoixActeursComponent } from '../parts/choix-acteurs/choix-acteurs.component';
 import { GraphiquesComponent } from "../parts/graphiques/graphiques.component";
@@ -47,6 +48,7 @@ import { ImportComponent } from "../parts/import/import.component";
     ChoixActeursComponent,
     CommonModule,
     MatButtonModule,
+    MatIconModule,
     GraphiquesComponent,
     MatTabsModule,
     MenuLateralComponent,
@@ -63,6 +65,8 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
 
   diagnostic = signal<Diagnostic>(new Diagnostic());
   actors = signal<Acteur[]>([]);
+  /** Acteurs à afficher sur la carte (filtrés par choix-acteurs ou liste complète). */
+  displayedActorsForMap = signal<Acteur[]>([]);
   uniqueDiagnostics: Diagnostic[] = [];
   selectedDiagnostic: Diagnostic = new Diagnostic();
   uniqueCategories: Nomenclature[] = [];
@@ -147,6 +151,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
           this.diag = this.diagnostic();
           this.themes.set(themes);
           this.actors.set(this.diagnostic().acteurs);
+          this.displayedActorsForMap.set(this.diagnostic().acteurs);
           const user = this.authService.getCurrentUser();
           this.id_role.set(user.id_role);
   

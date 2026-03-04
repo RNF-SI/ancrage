@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, input, Input, OnDestroy, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, Input, OnDestroy, output, signal } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, Params, Router, RouterModule } from '@angular/router';
@@ -16,6 +17,7 @@ import { MatListModule } from '@angular/material/list';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { AlerteShowActorDetailsComponent } from '../../alertes/alerte-show-actor-details/alerte-show-actor-details.component';
 import { MatCardModule } from '@angular/material/card';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { Labels } from '@app/utils/labels';
 import { AlerteStatutEntretienComponent } from '@app/components/alertes/alerte-statut-entretien/alerte-statut-entretien.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -42,14 +44,16 @@ import { AlerteSuppressionActeurComponent } from '@app/components/alertes/alerte
       MatCheckboxModule, 
       FormsModule, 
       MatSelectModule, 
-      MatFormFieldModule, 
+      MatFormFieldModule,
+      MatInputModule,
       MatButtonModule, 
       RouterModule, 
       ReactiveFormsModule, 
       FontAwesomeModule, 
       MatListModule, 
       MatCardModule, 
-      MatTooltipModule
+      MatTooltipModule,
+      MatExpansionModule
     ]
 })
 export class ChoixActeursComponent implements OnDestroy{
@@ -97,6 +101,110 @@ export class ChoixActeursComponent implements OnDestroy{
   @Input({ required: true }) formGroup!: FormGroup;
   router = inject(Router);
   delete = output<Acteur>();
+  /** Émis lorsque la liste filtrée change (pour la carte). */
+  filteredActorsChange = output<Acteur[]>();
+
+  // Filtres pour la liste acteurs (mode expansion panels)
+  filterSearch = signal('');
+  filterCategoryIds = signal<number[]>([]);
+  filterProfilIds = signal<number[]>([]);
+  filterStatutEntretienIds = signal<number[]>([]);
+
+  /** Catégories distinctes issues des acteurs (pour le filtre). */
+  filterCategoriesOptions = computed(() => {
+    const acteurs = this.acteurs();
+    const seen = new Set<number>();
+    const out: Nomenclature[] = [];
+    for (const a of acteurs) {
+      for (const c of a.categories || []) {
+        if (c.id_nomenclature && !seen.has(c.id_nomenclature)) {
+          seen.add(c.id_nomenclature);
+          out.push(c);
+        }
+      }
+    }
+    this.nomenclatureService.sortByName(out);
+    return out;
+  });
+
+  /** Profils distincts issus des acteurs (pour le filtre). */
+  filterProfilsOptions = computed(() => {
+    const acteurs = this.acteurs();
+    const seen = new Set<number>();
+    const out: Nomenclature[] = [];
+    for (const a of acteurs) {
+      const p = a.profil;
+      if (p?.id_nomenclature && !seen.has(p.id_nomenclature)) {
+        seen.add(p.id_nomenclature);
+        out.push(p);
+      }
+    }
+    this.nomenclatureService.sortByName(out);
+    return out;
+  });
+
+  /** Statuts d'entretien distincts + option "À faire" (pour le filtre). */
+  filterStatutsOptions = computed(() => {
+    const acteurs = this.acteurs();
+    const seen = new Set<number>();
+    const out: Nomenclature[] = [{ id_nomenclature: 0, libelle: 'À faire', value: 0, mnemonique: '', ordre: 0 } as Nomenclature];
+    for (const a of acteurs) {
+      const s = a.statut_entretien;
+      if (s?.id_nomenclature && s.libelle?.trim() && !seen.has(s.id_nomenclature)) {
+        seen.add(s.id_nomenclature);
+        out.push(s);
+      }
+    }
+    const withStatuts = out.filter(o => o.id_nomenclature !== 0);
+    this.nomenclatureService.sortByName(withStatuts);
+    return [{ id_nomenclature: 0, libelle: 'À faire', value: 0, mnemonique: '', ordre: 0 } as Nomenclature, ...withStatuts];
+  });
+
+  /** Liste des acteurs filtrée (mode expansion panels). */
+  filteredActeurs = computed(() => {
+    const list = this.acteurs();
+    const search = this._normalize(this.filterSearch());
+    const catIds = this.filterCategoryIds();
+    const profilIds = this.filterProfilIds();
+    const statutIds = this.filterStatutEntretienIds();
+
+    return list.filter(actor => {
+      if (search) {
+        const fullText = this._normalize([actor.nom, actor.prenom, actor.fonction, actor.structure].filter(Boolean).join(' '));
+        if (!fullText.includes(search)) return false;
+      }
+      if (catIds.length > 0) {
+        const actorCatIds = (actor.categories || []).map(c => c.id_nomenclature);
+        if (!catIds.some(id => actorCatIds.includes(id))) return false;
+      }
+      if (profilIds.length > 0) {
+        const pid = actor.profil?.id_nomenclature;
+        if (pid === undefined || !profilIds.includes(pid)) return false;
+      }
+      if (statutIds.length > 0) {
+        const sid = actor.statut_entretien?.id_nomenclature;
+        const isAFaire = !actor.statut_entretien?.libelle?.trim();
+        const matchAFaire = statutIds.includes(0) && isAFaire;
+        const matchStatut = sid !== undefined && statutIds.includes(sid);
+        if (!matchAFaire && !matchStatut) return false;
+      }
+      return true;
+    });
+  });
+
+  private _normalize(text: string): string {
+    return (text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  }
+
+  setFilterCategoryIds(ids: number[]) { this.filterCategoryIds.set(ids); }
+  setFilterProfilIds(ids: number[]) { this.filterProfilIds.set(ids); }
+  setFilterStatutEntretienIds(ids: number[]) { this.filterStatutEntretienIds.set(ids); }
+  resetListFilters() {
+    this.filterSearch.set('');
+    this.filterCategoryIds.set([]);
+    this.filterProfilIds.set([]);
+    this.filterStatutEntretienIds.set([]);
+  }
 
   constructor(){
     effect(() => {
@@ -155,9 +263,39 @@ export class ChoixActeursComponent implements OnDestroy{
       const selectedActors = this.acteurs().filter(a => a.selected);
       this.formGroup?.get('acteurs')?.setValue(selectedActors);
     });
+
+    effect(() => {
+      this.filteredActorsChange.emit(this.filteredActeurs());
+    });
   }
 
   compareActors = (a: Acteur, b: Acteur) => a?.id_acteur === b?.id_acteur;
+
+  /** Libellé affiché pour l'état de l'entretien (header du panel). */
+  getStatutEntretienLabel(actor: Acteur): string {
+    const lib = actor.statut_entretien?.libelle;
+    return (lib && lib.trim()) ? lib : 'À faire';
+  }
+
+  /** Libellés des catégories de l'acteur (pour l'affichage dans le panel). */
+  getCategoriesLabel(actor: Acteur): string {
+    const cats = actor.categories || [];
+    return cats.map(c => c.libelle).join(', ') || '—';
+  }
+
+  /** Classe CSS pour le badge d'état (couleur selon statut). */
+  getStatutEntretienClass(actor: Acteur): string {
+    const lib = actor.statut_entretien?.libelle;
+    switch (lib) {
+      case 'Réalisé': return 'statut-realized';
+      case 'Reporté':
+      case 'En cours':
+      case 'Programmé': return 'statut-pending';
+      case 'Annulé':
+      case 'Rétracté': return 'statut-canceled';
+      default: return 'statut-todo';
+    }
+  }
 
   //Récupértation des données
   processActors(): void {
