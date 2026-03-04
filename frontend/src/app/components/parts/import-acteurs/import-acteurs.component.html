@@ -1,0 +1,89 @@
+<div class="container py-3">
+  <div class="import-acteurs-wrap">
+    <header class="import-header">
+      <h2 class="import-title">{{ titleChooseActors }}</h2>
+      <p class="import-intro">{{ titleGetActors }}</p>
+    </header>
+
+    <section class="import-filters">
+      <h3 class="filters-title">Filtrer les acteurs</h3>
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>{{ labels.diagnosticsList }}</mat-label>
+          <mat-select [value]="selectedDiagnostic()"
+            (selectionChange)="selectedDiagnostic.set($event.value); applyFilters()">
+            @for (diag of uniqueDiagnostics(); track diag.id_diagnostic) {
+            <mat-option [value]="diag">{{ diag.nom }} — {{ diag.created_at_str }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>{{ labels.department }}</mat-label>
+          <mat-select [value]="selectedDepartment()"
+            (selectionChange)="selectedDepartment.set($event.value); applyFilters()">
+            @for (dpt of uniqueDepartments(); track dpt.id_departement) {
+            <mat-option [value]="dpt">{{ dpt.nom_dep }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>{{ labels.category }}</mat-label>
+          <mat-select [value]="selectedCategory()"
+            (selectionChange)="selectedCategory.set($event.value); applyFilters()">
+            @for (cat of uniqueCategories(); track cat.id_nomenclature) {
+            <mat-option [value]="cat">{{ cat.libelle }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <button type="button" mat-stroked-button (click)="resetFilters()">{{ reinitialisation }}</button>
+      </div>
+    </section>
+
+    @if (chosenActors.length > 0 && chosenActors[0] !== emptyChosenActorsTxt) {
+    <section class="import-chosen">
+      <h3 class="chosen-title">{{ titleChooseActors }} ({{ chosenActors.length }})</h3>
+      <div class="chosen-list">
+        @for (ca of chosenActors; track ca) {
+        <span class="chosen-chip">{{ ca }}</span>
+        }
+      </div>
+    </section>
+    }
+
+    <section class="import-list-section">
+      <h3 class="list-section-title">Sélectionner les acteurs à importer</h3>
+      <div [formGroup]="formGroup">
+        <mat-selection-list formControlName="acteurs" [compareWith]="compareActors" class="import-selection-list">
+          @for (actor of acteurs(); track actor.id_acteur) {
+          <mat-list-option [value]="actor" (click)="addOrRemoveActor(actor, true)" class="import-list-option">
+            <div class="list-item-content">
+              <span class="actor-main">{{ actor.prenom }} {{ actor.nom }}</span>
+              <span class="actor-structure">{{ actor.structure }}</span>
+              <div class="list-item-actions">
+                <button mat-icon-button type="button" (click)="showOtherInfos(actor); $event.stopPropagation()"
+                  [matTooltip]="labels.showMoreInfo">
+                  <fa-icon [icon]="['fas', 'info']"></fa-icon>
+                </button>
+                <button mat-icon-button type="button"
+                  (click)="navigate('/acteur/' + actor.id_acteur + '/' + actor.slug + '/update', diag()); $event.stopPropagation()"
+                  [matTooltip]="labels.modifyActor">
+                  <fa-icon [icon]="['fas', 'pen']"></fa-icon>
+                </button>
+              </div>
+            </div>
+          </mat-list-option>
+          }
+        </mat-selection-list>
+      </div>
+    </section>
+
+    <div class="import-actions">
+      <button mat-raised-button type="button" (click)="navigate(previousPage, diag())" color="accent">
+        {{ labels.btnPreviousStepLabel }}
+      </button>
+      <button mat-raised-button type="button" (click)="recordActors()" color="primary">
+        {{ labels.addActors }}
+      </button>
+    </div>
+  </div>
+</div>

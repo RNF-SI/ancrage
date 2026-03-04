@@ -93,10 +93,10 @@
 
             <app-map [actors]="displayedActorsForMap()"></app-map>
 
-            <app-choix-acteurs [actors]="actors()" [hideFilters]="hideFilters" [formGroup]="formGroup"
-              [diagnostic]="diag" [no_creation]="true" (delete)="removeActeur($event)"
+            <app-liste-acteurs [actors]="actors()" [diagnostic]="diagnostic()" [isReadOnly]="diagnostic().is_read_only"
+              (delete)="removeActeur($event)"
               (filteredActorsChange)="displayedActorsForMap.set($event)">
-            </app-choix-acteurs>
+            </app-liste-acteurs>
 
             @if (!diagnostic().is_read_only) {
             <div class="buttons buttons-actors">

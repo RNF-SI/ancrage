@@ -1,0 +1,98 @@
+<section class="actor-filters">
+  <h4 class="filters-title">Filtrer les acteurs</h4>
+  <div class="filters-row">
+    <mat-form-field appearance="outline" class="filter-search">
+      <mat-label>Recherche (nom, prénom, statut, structure)</mat-label>
+      <input matInput type="text" [value]="filterSearch()" (input)="filterSearch.set($any($event.target).value)"
+        placeholder="Saisir un mot-clé">
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="filter-multi">
+      <mat-label>{{ labels.category }}</mat-label>
+      <mat-select multiple [value]="filterCategoryIds()" (selectionChange)="setFilterCategoryIds($event.value)">
+        @for (cat of filterCategoriesOptions(); track cat.id_nomenclature) {
+        <mat-option [value]="cat.id_nomenclature">{{ cat.libelle }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="filter-multi">
+      <mat-label>{{ labels.profile }}</mat-label>
+      <mat-select multiple [value]="filterProfilIds()" (selectionChange)="setFilterProfilIds($event.value)">
+        @for (p of filterProfilsOptions(); track p.id_nomenclature) {
+        <mat-option [value]="p.id_nomenclature">{{ p.libelle }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="filter-multi">
+      <mat-label>{{ labels.stateInterviewLabel }}</mat-label>
+      <mat-select multiple [value]="filterStatutEntretienIds()"
+        (selectionChange)="setFilterStatutEntretienIds($event.value)">
+        @for (s of filterStatutsOptions(); track s.id_nomenclature) {
+        <mat-option [value]="s.id_nomenclature">{{ s.libelle }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <button mat-stroked-button type="button" (click)="resetListFilters()">{{ reinitialisation }}</button>
+  </div>
+</section>
+
+<mat-accordion class="actor-accordion" displayMode="flat">
+  @for (actor of filteredActeurs(); track actor.id_acteur) {
+  <mat-expansion-panel class="actor-panel">
+    <mat-expansion-panel-header>
+      <mat-panel-title class="actor-panel-title">
+        <span class="actor-header-name">{{ actor.prenom }} {{ actor.nom }}</span>
+        <span class="actor-header-structure">{{ actor.structure }}</span>
+      </mat-panel-title>
+      <mat-panel-description class="actor-panel-description">
+        <span class="statut-badge" [class]="getStatutEntretienClass(actor)">
+          {{ getStatutEntretienLabel(actor) }}
+        </span>
+      </mat-panel-description>
+    </mat-expansion-panel-header>
+
+    <div class="actor-panel-content">
+      <dl class="actor-details">
+        <dt>{{ labels.stateInterviewLabel }}</dt>
+        <dd>{{ getStatutEntretienLabel(actor) }}</dd>
+        <dt>{{ labels.category }}</dt>
+        <dd>{{ getCategoriesLabel(actor) }}</dd>
+        <dt>{{ labels.town }}</dt>
+        <dd>{{ actor.commune.nom_com || '—' }}</dd>
+        <dt>{{ labels.status }}</dt>
+        <dd>{{ actor.fonction || '—' }}</dd>
+        <dt>{{ labels.profile }}</dt>
+        <dd>{{ actor.profil?.libelle ?? '—' }}</dd>
+        <dt>{{ labels.telephone }}</dt>
+        <dd>{{ actor.telephone || '—' }}</dd>
+        <dt>{{ labels.mail }}</dt>
+        <dd>{{ actor.mail || '—' }}</dd>
+      </dl>
+
+      @if (!isReadOnly()) {
+      <div class="actor-panel-actions">
+        <button mat-raised-button type="button" color="primary"
+          (click)="navigate('/acteur/' + actor.id_acteur + '/' + actor.slug + '/update', diagnostic())">
+          <fa-icon [icon]="['fas', 'pen']"></fa-icon>
+          {{ labels.modifyActor }}
+        </button>
+        <button mat-raised-button type="button" color="accent"
+          (click)="navigate('/entretien/' + actor.id_acteur + '/' + actor.slug + '/update', diagnostic(), actor)">
+          <fa-icon [icon]="['fas', 'file-lines']"></fa-icon>
+          {{ labels.goToInterview }}
+        </button>
+        @if (actor.statut_entretien?.libelle !== 'Réalisé' && actor.statut_entretien?.libelle !== 'En cours') {
+        <button mat-raised-button type="button" (click)="openAlert(actor)">
+          <fa-icon [icon]="['fas', 'arrows-spin']"></fa-icon>
+          {{ labels.modifyStateInterview }}
+        </button>
+        }
+        <button mat-raised-button type="button" color="warn" (click)="openAlertDisable(actor)">
+          <fa-icon [icon]="['fas', 'trash']"></fa-icon>
+          {{ labels.delete }}
+        </button>
+      </div>
+      }
+    </div>
+  </mat-expansion-panel>
+  }
+</mat-accordion>

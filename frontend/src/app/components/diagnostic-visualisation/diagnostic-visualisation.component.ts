@@ -15,7 +15,7 @@ import { SiteService } from '@app/services/sites.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Labels } from '@app/utils/labels';
-import { ChoixActeursComponent } from '../parts/choix-acteurs/choix-acteurs.component';
+import { ListeActeursComponent } from '../parts/liste-acteurs/liste-acteurs.component';
 import { GraphiquesComponent } from "../parts/graphiques/graphiques.component";
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import { NomenclatureService } from '@app/services/nomenclature.service';
@@ -45,7 +45,7 @@ import { ImportComponent } from "../parts/import/import.component";
     styleUrls: ['./diagnostic-visualisation.component.css'],
     standalone:true,
     imports: [
-    ChoixActeursComponent,
+    ListeActeursComponent,
     CommonModule,
     MatButtonModule,
     MatIconModule,

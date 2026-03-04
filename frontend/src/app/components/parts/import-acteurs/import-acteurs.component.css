@@ -1,0 +1,136 @@
+.import-acteurs-wrap {
+  max-width: 100%;
+}
+
+.import-header {
+  margin-bottom: 1.5rem;
+}
+
+.import-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.import-intro {
+  margin: 0;
+  color: rgba(0, 0, 0, 0.7);
+  font-size: 0.95rem;
+}
+
+.import-filters {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+}
+
+.import-filters .filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.25rem;
+  width: 100%;
+}
+
+.import-filters .filter-field {
+  min-width: 180px;
+  flex: 1 1 200px;
+}
+
+.import-chosen {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(103, 58, 183, 0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(103, 58, 183, 0.2);
+}
+
+.chosen-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.chosen-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chosen-chip {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  background: rgba(103, 58, 183, 0.15);
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.import-list-section {
+  margin-bottom: 1.5rem;
+}
+
+.list-section-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.import-selection-list {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  padding: 0;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.import-list-option .list-item-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.25rem 0;
+}
+
+.import-list-option .actor-main {
+  font-weight: 500;
+  min-width: 140px;
+}
+
+.import-list-option .actor-structure {
+  flex: 1 1 auto;
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.import-list-option .list-item-actions {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.import-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.import-actions button:last-child {
+  margin-left: auto;
+}
+
+.list-item-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+}

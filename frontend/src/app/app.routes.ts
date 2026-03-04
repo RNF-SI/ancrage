@@ -14,7 +14,7 @@ import { LazyDialogLoader } from './home-rnf/services/lazy-dialog-loader.service
 import { DiagosticsListeComponent } from './components/diagnostics-liste/diagnostics-liste.component';
 import { MesDiagnosticsComponent } from './components/mes-diagnostics/mes-diagnostics.component';
 import { SiteComponent } from './components/site/site.component';
-import { ChoixActeursComponent } from './components/parts/choix-acteurs/choix-acteurs.component';
+import { ImportActeursComponent } from './components/parts/import-acteurs/import-acteurs.component';
 import { SiteLsComponent } from './components/site-ls/site-ls.component';
 import { DiagnosticComponent } from './components/diagnostic/diagnostic.component';
 import { ActeurComponent } from './components/acteur/acteur.component';
@@ -38,7 +38,7 @@ export const routes: Routes = [{
     { path: 'site/create', component: SiteComponent, canActivate: [authGuard] },
     { path: 'site/:id_site/:slug/update', component: SiteComponent, canActivate: [authGuard] },
     { path: 'site-ls/:id_site/:slug', component: SiteLsComponent, canActivate: [authGuard] },
-    { path: 'choix-acteurs/:id_diagnostic/:slug', component: ChoixActeursComponent, canActivate: [authGuard] },
+    { path: 'choix-acteurs/:id_diagnostic/:slug', component: ImportActeursComponent, canActivate: [authGuard] },
     { path: 'diagnostic/create', component: DiagnosticComponent, canActivate: [authGuard] },
     { path: 'diagnostic/:id_diagnostic/:slug/update', component: DiagnosticComponent, canActivate: [authGuard] },
     { path: 'diagnostic-visualisation/:id_diagnostic/:slug', component: DiagnosticVisualisationComponent, canActivate: [authGuard] },
