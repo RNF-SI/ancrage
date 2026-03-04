@@ -21,7 +21,10 @@ bootstrapApplication(AppComponent, {
     provideRouter(routes),
     provideAnimations(),
     provideHttpClient(), 
-    provideToastr(),
+    provideToastr({
+      positionClass: 'toast-below-nav',
+      progressBar: true,
+    }),
     {
       provide: DateAdapter,
       useClass: MomentDateAdapter,

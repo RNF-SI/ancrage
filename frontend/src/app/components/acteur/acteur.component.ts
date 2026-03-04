@@ -3,7 +3,7 @@ import { Component, computed, effect, inject, OnDestroy, signal } from '@angular
 import { AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
+import { ToastrService } from 'ngx-toastr';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -17,7 +17,6 @@ import { CommuneService } from '@app/services/commune.service';
 import { NomenclatureService } from '@app/services/nomenclature.service';
 import { Labels } from '@app/utils/labels';
 import { forkJoin,  Subscription } from 'rxjs';
-import { AlerteActeurComponent } from '../alertes/alerte-acteur/alerte-acteur.component';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { SiteService } from '@app/services/sites.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -74,7 +73,7 @@ export class ActeurComponent implements OnDestroy{
   private authService = inject(AuthService);
   private actorSubscription?:Subscription;
   private actorService = inject(ActeurService);
-  private dialog = inject(MatDialog);
+  private toastr = inject(ToastrService);
   private siteService = inject(SiteService);
   user_id=0;
   filteredTowns: Commune[] = [];
@@ -201,12 +200,11 @@ export class ActeurComponent implements OnDestroy{
         actorToSend.diagnostic = new Diagnostic();
         
         actorToSend.diagnostic.id_diagnostic = this.diagnostic().id_diagnostic;
-        this.actorSubscription = this.actorService.add(actorToSend).subscribe(
-          actor =>{
-            this.getConfirmation("L'acteur suivant a bien été créé et a été ajouté au diagnostic : ",actor);
-            
-          }
-        )
+        this.actorSubscription = this.actorService.add(actorToSend).subscribe(actor => {
+          this.diagnostic().acteurs.push(actor);
+          this.toastr.success('Acteur ajouté avec succès');
+          this.navigate(this.pageDiagnostic, this.diagnostic());
+        })
       }
       
     }else{
@@ -215,52 +213,19 @@ export class ActeurComponent implements OnDestroy{
       this.actor.set(Object.assign(new Acteur(),this.formGroup.value));
      
       if (!this.formGroup.invalid){
-        this.actorSubscription = this.actorService.update(this.actor()).subscribe(
-          actor =>{
-            this.getConfirmation("L'acteur suivant a bien été modifié et a été ajouté au diagnostic : ",actor);
-            for (let act of this.diagnostic().acteurs){
-              if (actor.id_acteur === act.id_acteur){
-                act = actor;
-              }
-            }
-          }
-        )
+        this.actorSubscription = this.actorService.update(this.actor()).subscribe(actor => {
+          const acteurs = this.diagnostic().acteurs;
+          const idx = acteurs.findIndex(a => a.id_acteur === actor.id_acteur);
+          if (idx !== -1) acteurs[idx] = actor;
+          else acteurs.push(actor);
+          this.toastr.success('Acteur modifié avec succès');
+          this.navigate(this.pageDiagnostic, this.diagnostic());
+        })
       }
     }
     
   }
-  //Alerte de confirmation
-  getConfirmation(message:string,actor:Acteur){
-    
-    this.previousPage = this.stateService.getCurrentPreviousPage()!;
-    this.diagnostic().acteurs.push(actor);
-    
-    if(actor.id_acteur > 0){
-      const dialogRef = this.dialog.open(AlerteActeurComponent, {
-        data: {
-          title: this.title,
-          message: message,
-          acteur: actor,
-          labels: this.labels,
-          diagnostic:this.diagnostic(),
-          previousPage:this.pageDiagnostic
-        },
-        disableClose: true 
-      });
 
-      dialogRef.afterClosed().subscribe(acteur => {
-        if (acteur.is_creation ) {
-    
-          this.actor.set(new Acteur());
-          this.patchValue();
-        }else{
-          this.actor.set(actor);
-          this.patchValue();
-        }
-      });
-    }
-    
-  }
   //Navigation et mise en cache du diagnostic
   navigate(path:string,diagnostic:Diagnostic){
 
