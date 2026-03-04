@@ -16,3 +16,5 @@ backend/tests/__pycache__/*
 backend/config.py
 backend/fichiers/*
 backend/script_foreign.py
+
+backend/configs/__pycache__/*
