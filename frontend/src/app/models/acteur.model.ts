@@ -1,4 +1,5 @@
 import { IActeur } from "@app/interfaces/acteur.interface";
+import { ICommune } from "@app/interfaces/commune.interface";
 import { Commune } from "./commune.model";
 import { Diagnostic } from "./diagnostic.model";
 import { Nomenclature } from "./nomenclature.model";
@@ -83,14 +84,19 @@ export class Acteur implements IActeur{
 
     /** Conversion en JSON, sans id_site si non voulu */
     toJson(): IActeur {
+        const communeJson = this.commune
+            ? (typeof (this.commune as Commune).toJson === 'function'
+                ? (this.commune as Commune).toJson()
+                : Commune.fromJson(this.commune as unknown as ICommune).toJson())
+            : undefined;
         return {
             ...this,
-            statut_entretien: this.statut_entretien ? this.statut_entretien.toJson() : undefined,
-            profil: this.profil ? this.profil.toJson() : undefined,
-            commune: this.commune ? this.commune.toJson() : undefined,
-            diagnostic: this.diagnostic ? this.diagnostic.toJson() : undefined,
-            categories: this.categories ? this.categories.map(c => c.toJson()) : [],
-            reponses: this.reponses ? this.reponses.map(r => r.toJson()) : [],
+            statut_entretien: this.statut_entretien && typeof this.statut_entretien.toJson === 'function' ? this.statut_entretien.toJson() : undefined,
+            profil: this.profil && typeof this.profil.toJson === 'function' ? this.profil.toJson() : undefined,
+            commune: communeJson,
+            diagnostic: this.diagnostic && typeof this.diagnostic.toJson === 'function' ? this.diagnostic.toJson() : undefined,
+            categories: this.categories ? this.categories.map(c => typeof c.toJson === 'function' ? c.toJson() : c) : [],
+            reponses: this.reponses ? this.reponses.map(r => typeof r.toJson === 'function' ? r.toJson() : r) : [],
             created_at: this.created_at ? new Date() : undefined,
             modified_at: this.modified_at ? new Date() : undefined
         };
