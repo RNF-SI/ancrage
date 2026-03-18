@@ -11,7 +11,7 @@ export const AppConfig = {
     "SEARCH_PREFIXE": "",
     "SEARCH_PLACEHOLDER": "",
     "contact": "ancrage@rnfrance.org",
-    "datesFormation":"8 au 10 décembre 2025 à DIJON (21)",
+    "datesFormation":"1er au 3 avril 2026 et 18 au 20 novembre 2026 à Dijon (21)",
     "displayPartners":false,
     "displayFooter":true,
     "menucompte": [
