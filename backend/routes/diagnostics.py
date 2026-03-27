@@ -71,7 +71,9 @@ def disableDiagnostic(id_diagnostic, slug):
     if diagnostic.slug == slug:
         diagnostic.is_disabled = True
         db.session.commit()
-        # L'objet diagnostic est déjà en mémoire, pas besoin de recharge
+        # Expirer et recharger l'objet pour éviter les problèmes de lazy loading
+        db.session.expire(diagnostic)
+        diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
     
         schema = DiagnosticLiteSchema(many=False)
         return jsonify(schema.dump(diagnostic)), 200
