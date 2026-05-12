@@ -159,7 +159,7 @@ def getAveragebyQuestion(id_diagnostic):
             Question.id_question.label("id_question"),
             Question.libelle_graphique.label("question"),
             Categorie.libelle_court.label("categorie_acteur"),
-            func.avg(ValeurReponse.value).label("moyenne_score")
+            func.percentile_disc(0.5).within_group(ValeurReponse.value).label("mediane_score")
         )
         .select_from(Diagnostic)  
         .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
@@ -184,7 +184,7 @@ def getAveragebyQuestion(id_diagnostic):
             "theme": r.theme,
             "question": r.question,
             "categorie": r.categorie_acteur,
-            "moyenne": float(r.moyenne_score) if r.moyenne_score is not None else 0,
+            "mediane": float(r.mediane_score) if r.mediane_score is not None else 0,
             "id_question":r.id_question,
             "theme_id":r.theme_id
         }
@@ -281,7 +281,7 @@ def getAveragebyQuestionParams():
             Question.id_question.label("id_question"),
             Question.libelle_graphique.label("question"),
             Categorie.libelle_court.label("categorie_acteur"),
-            func.avg(ValeurReponse.value).label("moyenne_score")
+            func.percentile_disc(0.5).within_group(ValeurReponse.value).label("mediane_score")
         )
         .select_from(Diagnostic)  
         .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
@@ -306,7 +306,7 @@ def getAveragebyQuestionParams():
             "theme": r.theme,
             "question": r.question,
             "categorie": r.categorie_acteur,
-            "moyenne": float(r.moyenne_score) if r.moyenne_score is not None else 0,
+            "mediane": float(r.mediane_score) if r.mediane_score is not None else 0,
             "id_question":r.id_question,
             "theme_id":r.theme_id
         }

@@ -2,7 +2,7 @@ export interface IGraphMoy {
     theme:string;
     question:string;
     categorie:string;
-    moyenne:number;
+    mediane:number;
     id_question:number;
     theme_id:number;
 }

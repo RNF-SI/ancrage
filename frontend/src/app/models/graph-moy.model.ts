@@ -5,7 +5,7 @@ export class GraphMoy {
     theme ="";
     question = "";
     categorie = "";
-    moyenne= 1.2;
+    mediane= 1.2;
     id_question=0;
     theme_id=0;
 
@@ -15,7 +15,7 @@ export class GraphMoy {
         graph.theme = data.theme;
         graph.question = data.question;
         graph.categorie = data.categorie;
-        graph.moyenne = data.moyenne;
+        graph.mediane = data.mediane;
         graph.id_question = data.id_question;
         graph.theme_id = data.theme_id;
 

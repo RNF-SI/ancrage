@@ -180,7 +180,7 @@ export class GraphiquesPersonnalisationComponent {
             theme_id,
             chart: {
               labels: sorted.map(d => d.categorie),
-              datasets: [{ label: 'Score moyen', data: sorted.map(d => d.moyenne), backgroundColor: '#4CAF50' }]
+              datasets: [{ label: 'Score médian', data: sorted.map(d => d.mediane), backgroundColor: '#4CAF50' }]
             },
             chartOptions: {
               responsive: true,
