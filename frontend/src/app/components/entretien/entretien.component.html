@@ -16,7 +16,7 @@
     </div>
 
     <div class="col-center">
-      <mat-tab-group (selectedTabChange)="onTabChange($event)">
+      <mat-tab-group disablePagination disableRipple (selectedTabChange)="onTabChange($event)">
         <mat-tab label="Questions">
           <div class="p-3">
             <form [formGroup]="formGroup">
