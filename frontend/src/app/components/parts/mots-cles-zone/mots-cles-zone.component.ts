@@ -4,8 +4,8 @@ import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/ma
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatChipsModule } from '@angular/material/chips';
-import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
-import { Observable, startWith, map, forkJoin, Subscription } from 'rxjs';
+import { CdkDragDrop, CdkDragEnd, CdkDragMove, DragDropModule } from '@angular/cdk/drag-drop';
+import { Observable, startWith, map, forkJoin, Subscription, finalize } from 'rxjs';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
@@ -15,6 +15,7 @@ import { NomenclatureService } from '@app/services/nomenclature.service';
 import { MotCleService } from '@app/services/mot-cle.service';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Reponse } from '@app/models/reponse.model';
 import { Acteur } from '@app/models/acteur.model';
 import { ToastrService } from 'ngx-toastr';
@@ -46,6 +47,7 @@ import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinne
         MatIconModule,
         CommonModule,
         MatButtonModule,
+        MatProgressSpinnerModule,
         FontAwesomeModule,
         LoadingSpinnerComponent
     ]
@@ -84,12 +86,35 @@ export class MotsClesZoneComponent implements OnDestroy{
   connectedDropListsIds = computed(() =>
     this.categories().map(c => `dropList-${c.id_nomenclature}`)
   );
+
+  getConnectedDropLists(cat: Nomenclature): string[] {
+    const listId = `dropList-${cat.id_nomenclature}`;
+    if (this.modeAnalyse()) {
+      return [listId];
+    }
+    return this.connectedDropListsIds();
+  }
+
+  private findCategoryByDropListId(dropListId: string): Nomenclature | undefined {
+    const id = Number(dropListId.replace('dropList-', ''));
+    if (!id) return undefined;
+    return this.categories().find(c => c.id_nomenclature === id);
+  }
+
+  private isCrossCategoryDrop(event: CdkDragDrop<MotCle[] | undefined>, targetCategory: Nomenclature): boolean {
+    const sourceCategory = this.findCategoryByDropListId(event.previousContainer.id);
+    return sourceCategory?.id_nomenclature !== targetCategory.id_nomenclature;
+  }
   allKeywords = signal<string[]>([]);
   motsClesReponse = signal<MotCle[]>([]);
   motsCleAnalyse = signal<MotCle[]>([]);
   results = signal<GraphMotsCles[]>([]);
   disable = signal<boolean>(true);
   readonly isLoading = signal(true);
+  readonly isSavingAfom = signal(false);
+  readonly draggingKeywordId = signal<number | null>(null);
+  readonly mergeTargetId = signal<number | null>(null);
+  private ctrlPressedDuringDrag = false;
   //modeAnalyse : utilisé dans la partie générale ; !modeAnalyse: utilisé au niveau de l'entretien
 
   constructor() {
@@ -271,19 +296,143 @@ export class MotsClesZoneComponent implements OnDestroy{
     );
   }
 
+  onKeywordDragStarted(keyword: MotCle): void {
+    this.draggingKeywordId.set(keyword.id_mot_cle);
+    this.mergeTargetId.set(null);
+    this.ctrlPressedDuringDrag = false;
+    document.addEventListener('keydown', this.onDocumentKeyDown);
+    document.addEventListener('keyup', this.onDocumentKeyUp);
+  }
+
+  onKeywordDragMoved(event: CdkDragMove<MotCle>): void {
+    const pointerEvent = event.event as MouseEvent;
+    if (pointerEvent.ctrlKey) {
+      this.ctrlPressedDuringDrag = true;
+    }
+
+    if (!this.isCtrlMergeActive(pointerEvent)) {
+      this.mergeTargetId.set(null);
+      return;
+    }
+
+    const draggedId = this.draggingKeywordId();
+    if (draggedId === null) {
+      return;
+    }
+
+    const dragged = this.findKeywordById(draggedId);
+    const { x, y } = event.pointerPosition;
+    const chipEl = document.elementFromPoint(x, y)?.closest('[data-mot-cle-id]') as HTMLElement | null;
+    if (!chipEl || !dragged) {
+      this.mergeTargetId.set(null);
+      return;
+    }
+
+    const targetId = Number(chipEl.getAttribute('data-mot-cle-id'));
+    const target = this.findKeywordById(targetId);
+    if (!target || !this.canMergeWith(dragged, target)) {
+      this.mergeTargetId.set(null);
+      return;
+    }
+
+    this.mergeTargetId.set(targetId);
+  }
+
+  onKeywordDragEnded(_event: CdkDragEnd): void {
+    this.tryMergeDraggedKeyword();
+    this.clearDragMergeState();
+  }
+
+  private tryMergeDraggedKeyword(): boolean {
+    const draggedId = this.draggingKeywordId();
+    const targetId = this.mergeTargetId();
+    if (!draggedId || !targetId) {
+      return false;
+    }
+
+    const dragged = this.findKeywordById(draggedId);
+    const target = this.findKeywordById(targetId);
+    if (!dragged || !target || !this.canMergeWith(dragged, target)) {
+      return false;
+    }
+
+    this.mergeKeywords(dragged, target);
+    return true;
+  }
+
+  isMergeTarget(keyword: MotCle): boolean {
+    return this.mergeTargetId() === keyword.id_mot_cle;
+  }
+
+  private onDocumentKeyDown = (event: KeyboardEvent): void => {
+    if (event.key === 'Control') {
+      this.ctrlPressedDuringDrag = true;
+    }
+  };
+
+  private onDocumentKeyUp = (event: KeyboardEvent): void => {
+    if (event.key === 'Control') {
+      this.ctrlPressedDuringDrag = false;
+    }
+  };
+
+  private clearDragMergeState(): void {
+    this.draggingKeywordId.set(null);
+    this.mergeTargetId.set(null);
+    this.ctrlPressedDuringDrag = false;
+    document.removeEventListener('keydown', this.onDocumentKeyDown);
+    document.removeEventListener('keyup', this.onDocumentKeyUp);
+  }
+
+  private isCtrlMergeActive(event?: MouseEvent): boolean {
+    return this.ctrlPressedDuringDrag || !!event?.ctrlKey;
+  }
+
+  private findKeywordById(id: number): MotCle | undefined {
+    for (const cat of this.categories()) {
+      const found = cat.mots_cles?.find(k => k.id_mot_cle === id);
+      if (found) {
+        return found;
+      }
+    }
+    return this.motsClesReponse().find(k => k.id_mot_cle === id)
+      ?? this.motsCleAnalyse().find(k => k.id_mot_cle === id);
+  }
+
+  private canMergeWith(dragged: MotCle, target: MotCle): boolean {
+    if (dragged.id_mot_cle === target.id_mot_cle) {
+      return false;
+    }
+    if (
+      this.modeAnalyse() &&
+      dragged.categorie?.id_nomenclature !== target.categorie?.id_nomenclature
+    ) {
+      return false;
+    }
+    return true;
+  }
+
   drop(event: CdkDragDrop<MotCle[] | undefined>, targetCategory: Nomenclature): void {
+    const pointerEvent = event.event as MouseEvent | PointerEvent;
+    const isCtrlPressed = pointerEvent?.ctrlKey || this.ctrlPressedDuringDrag;
+
+    // Fusion CTRL : gérée dans onKeywordDragEnded (drop ignoré si tri désactivé)
+    if (isCtrlPressed) {
+      return;
+    }
+
+    this.clearDragMergeState();
     const draggedKeyword: MotCle = event.previousContainer.data?.[event.previousIndex]!;
     if (!draggedKeyword) return;
+
+    if (this.modeAnalyse() && this.isCrossCategoryDrop(event, targetCategory)) {
+      return;
+    }
   
-    const isShiftPressed = (event.event as MouseEvent | PointerEvent)?.shiftKey;
-    const isCtrlPressed = (event.event as MouseEvent | PointerEvent)?.ctrlKey;
-  
-    if (isCtrlPressed) {
-      const targetKeyword = event.container.data?.[event.currentIndex];
-      if (targetKeyword && targetKeyword.id_mot_cle !== draggedKeyword.id_mot_cle && this.modeAnalyse()) {
-        this.mergeKeywords(draggedKeyword, targetKeyword);
-        return;
-      }
+    const isShiftPressed = pointerEvent?.shiftKey;
+
+    if (this.modeAnalyse() && isShiftPressed) {
+      return;
     }
   
     if (!isShiftPressed) {
@@ -352,17 +501,20 @@ export class MotsClesZoneComponent implements OnDestroy{
       }
  
       const dialogRef = this.dialog.open(AlerteMotsClesComponent, {
+        width: 'min(50vw, 520px)',
+        minWidth: '420px',
+        minHeight: '320px',
         data: {
-          keyword:keyword,
-          listeMotsCles:listToSend,
-          sections:this.categories
+          keyword: keyword,
+          listeMotsCles: listToSend,
+          sections: this.categories()
         }
       });
-      dialogRef.afterClosed().subscribe(listeMC=>{
-        if(this.modeAnalyse()){
+      dialogRef.afterClosed().subscribe(listeMC => {
+        if (listeMC && this.modeAnalyse()) {
           this.setKeywords(listeMC);
         }
-      })
+      });
     }
   }
 
@@ -371,6 +523,9 @@ export class MotsClesZoneComponent implements OnDestroy{
   }
 
   sendResponse(){
+    if (this.isSavingAfom()) {
+      return;
+    }
     if (this.hasUnclassifiedKeywords()) {
       this.toastr.warning("Merci de classer tous les mots-clés avant d'envoyer votre réponse.", "Mots-clés non classés");
       return;
@@ -401,7 +556,10 @@ export class MotsClesZoneComponent implements OnDestroy{
       reponse.acteur = new Acteur();
       reponse.acteur.id_acteur = this.id_acteur();
       
-      this.reponseSub = this.reponseService.updateAfom(reponse).subscribe({
+      this.isSavingAfom.set(true);
+      this.reponseSub = this.reponseService.updateAfom(reponse).pipe(
+        finalize(() => this.isSavingAfom.set(false))
+      ).subscribe({
         next: (keywords) => {
           if (keywords.length > 0) {
             this.toastr.success("Données enregistrées");
@@ -411,8 +569,7 @@ export class MotsClesZoneComponent implements OnDestroy{
             this.setKeywords([]);
           }
         },
-        error: (error) => {
-          // En cas d'erreur, restaurer les données locales
+        error: () => {
           this.toastr.error("Erreur lors de l'enregistrement. Les données n'ont pas été modifiées.");
           this.categories.set(categoriesLocales);
           this.motsClesReponse.set(motsClesLocaux);
@@ -549,6 +706,12 @@ export class MotsClesZoneComponent implements OnDestroy{
   }
 
   mergeKeywords(source: MotCle, target: MotCle): void {
+    if (
+      this.modeAnalyse() &&
+      source.categorie?.id_nomenclature !== target.categorie?.id_nomenclature
+    ) {
+      return;
+    }
 
     if (!this.isGroup(source) && !this.isGroup(target)) {
       let listToSend:MotCle[]=[];
@@ -561,6 +724,9 @@ export class MotsClesZoneComponent implements OnDestroy{
 
       const dialogRef = this.dialog.open(AlerteGroupeMotsClesComponent, {
         disableClose: true,
+        width: 'min(50vw, 520px)',
+        minWidth: '420px',
+        minHeight: '320px',
         data: {
           source: source,
           target: target,
@@ -612,6 +778,7 @@ export class MotsClesZoneComponent implements OnDestroy{
   }
 
   ngOnDestroy(): void {
+    this.clearDragMergeState();
     this.forkSub?.unsubscribe();
     this.diagSub?.unsubscribe();
     this.reponseSub?.unsubscribe();

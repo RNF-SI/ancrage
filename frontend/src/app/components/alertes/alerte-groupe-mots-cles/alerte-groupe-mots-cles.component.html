@@ -1,19 +1,31 @@
-<mat-dialog-content>
-    <div><span>Groupement de mots-clés</span></div>
-    <mat-form-field appearance="fill">
-        <mat-label>Mot-clé</mat-label>
-        <input matInput placeholder="Entrez le nom du groupe de mots-clés" [(ngModel)]="keyword.nom">
-    </mat-form-field>
-    <mat-form-field appearance="fill">
-        <mat-label>Catégories</mat-label>
-        <mat-select [(ngModel)]="keyword.categorie" [compareWith]="compareNomenclatures">
-          <mat-option *ngFor="let cat of data.categories" [value]="cat">{{ cat.libelle }}</mat-option>
-        </mat-select>
-    </mat-form-field>
+<h2 mat-dialog-title>Groupement de mots-clés</h2>
+
+<mat-dialog-content class="groupe-mots-cles-content">
+  <p class="groupe-mots-cles-intro">
+    Vous regroupez les mots-clés suivants dans la catégorie
+    <strong>{{ categoryLabel }}</strong>&nbsp;:
+  </p>
+
+  <ul class="groupe-mots-cles-list">
+    <li>{{ formatMotCleLabel(data.source) }}</li>
+    <li>{{ formatMotCleLabel(data.target) }}</li>
+  </ul>
+
+  <mat-form-field appearance="outline" class="groupe-mots-cles-field">
+    <mat-label>Nom du groupe</mat-label>
+    <input
+      matInput
+      placeholder="Entrez le nom du groupe de mots-clés"
+      [(ngModel)]="keyword.nom"
+      autofocus>
+  </mat-form-field>
 </mat-dialog-content>
 
-<mat-dialog-actions>
-    <button mat-raised-button color="accent" type="button" (click)="close()">{{labels.cancel}}</button>
-    <button mat-raised-button (click)="createGroup()" color="accent">{{labels.createGroup}}</button>
-    
+<mat-dialog-actions align="end">
+  <button mat-raised-button color="warn" type="button" (click)="close()">
+    {{ labels.cancel }}
+  </button>
+  <button mat-raised-button color="accent" type="button" (click)="createGroup()">
+    {{ labels.createGroup }}
+  </button>
 </mat-dialog-actions>

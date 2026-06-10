@@ -1,27 +1,56 @@
 .keyword-form-field {
     width: 100%;
     mat-chip {
-      margin: 2px;
+      margin: 1px;
     }
 }
 
 .grid {
   display: flex;
   gap: 16px;
-  flex-wrap: wrap; 
+  flex-wrap: wrap;
+  min-width: 0;
 }
 .column {
-  flex: 1 1 45%; 
-  min-width: 200px;
+  flex: 1 1 calc(50% - 8px);
+  min-width: 0;
   background: #f9f9f9;
   padding: 8px;
   border-radius: 6px;
 }
 .dropzone {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  align-items: flex-start;
   min-height: 100px;
   padding: 8px;
   border: 2px dashed #ccc;
   border-radius: 4px;
+
+  mat-chip {
+    margin: 1px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, outline-color 0.15s ease;
+
+    &.mot-cle-chip--merge-target {
+      background-color: #c8e6c9 !important;
+      outline: 2px solid #2e7d32;
+      box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.25);
+    }
+  }
+
+  mat-chip.mot-cle-chip--dragging {
+    opacity: 0;
+  }
+
+  .cdk-drag-placeholder {
+    opacity: 0;
+  }
+}
+
+:host ::ng-deep .cdk-drag-preview {
+  pointer-events: none;
+  box-sizing: border-box;
 }
 
 .mots-cles-loading {
@@ -30,20 +59,66 @@
   padding: 3rem 0;
 }
 
-.grid-6-6{
+:host {
+  display: block;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.grid-6-6 {
   display: grid;
-  grid-template-columns: 50% 50%; /* ou 3fr 6fr 3fr */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  max-width: 100%;
+}
+
+.mots-cles-afom-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .mots-cles-side-panel {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.mots-cles-save-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.75rem;
+}
+
+.afom-save-button ::ng-deep .mdc-button__label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.afom-save-button-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.afom-save-spinner {
+  width: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0;
+  --mdc-circular-progress-active-indicator-color: #fff;
 }
 
 .mots-cles-side-footer {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 1.25rem;
+  justify-content: center;
+  margin-top: 0.75rem;
   padding-top: 0.75rem;
   position: sticky;
   bottom: 1rem;

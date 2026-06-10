@@ -1,0 +1,42 @@
+:host {
+  display: block;
+  min-width: 420px;
+  min-height: 280px;
+}
+
+.groupe-detail-content {
+  min-width: 380px;
+  min-height: 200px;
+}
+
+.groupe-detail-intro {
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+
+.groupe-detail-list {
+  margin: 0 0 1.25rem;
+  padding-left: 1.25rem;
+  line-height: 1.6;
+}
+
+.groupe-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.groupe-detail-rename {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.groupe-detail-field {
+  flex: 1 1 220px;
+  min-width: 220px;
+}

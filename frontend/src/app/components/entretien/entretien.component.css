@@ -56,7 +56,7 @@ mat-radio-group{
 .entretien-afom-back-nav {
     width: 100%;
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
 }
 
 .entretien-page-full {

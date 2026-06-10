@@ -1,4 +1,26 @@
-mat-form-field{
-    display:block;
+:host {
+  display: block;
+  min-width: 420px;
+  min-height: 260px;
 }
 
+.groupe-mots-cles-content {
+  min-width: 380px;
+  min-height: 180px;
+}
+
+.groupe-mots-cles-intro {
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+
+.groupe-mots-cles-list {
+  margin: 0 0 1.25rem;
+  padding-left: 1.25rem;
+  line-height: 1.6;
+}
+
+.groupe-mots-cles-field {
+  display: block;
+  width: 100%;
+}

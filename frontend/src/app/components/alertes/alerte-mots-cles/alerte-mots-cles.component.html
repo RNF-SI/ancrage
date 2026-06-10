@@ -1,40 +1,42 @@
-<mat-dialog-content>
-    <p>{{ data.keyword.nom }} contient ces mots-clés :</p>
-  
-    <ul>
-      @for (kw of data.keyword.mots_cles_issus; track kw) {
-        <li>{{ kw.nom }}</li>
-      }
-    </ul>
-  
-    <!-- Bouton d’édition -->
-    <button mat-raised-button type="button" (click)="displayInput()">
-      <fa-icon [icon]="['fas', 'pen']"></fa-icon>
-    </button>
+<h2 mat-dialog-title>Groupe «&nbsp;{{ data.keyword.nom }}&nbsp;»</h2>
 
-    <button mat-raised-button type="button" (click)="explodeGroup()">
-      <fa-icon [icon]="['fas', 'burst']"></fa-icon>
+<mat-dialog-content class="groupe-detail-content">
+  <p class="groupe-detail-intro">Ce groupe contient les mots-clés suivants&nbsp;:</p>
+
+  <ul class="groupe-detail-list">
+    @for (kw of data.keyword.mots_cles_issus; track kw.id_mot_cle) {
+      <li>{{ formatMotCleLabel(kw) }}</li>
+    }
+  </ul>
+
+  <div class="groupe-detail-actions">
+    <button mat-raised-button color="accent" type="button" (click)="displayInput()">
+      Modifier le nom du groupe
     </button>
-  
-    <!-- Champ de renommage (affiché après displayInput()) -->
-    <div id="field" class="invisible">
-      <mat-form-field appearance="fill">
-        <mat-label>Mot-clé</mat-label>
+    <button mat-raised-button color="warn" type="button" (click)="explodeGroup()">
+      Restaurer les valeurs regroupées
+    </button>
+  </div>
+
+  @if (showRenameField()) {
+    <div class="groupe-detail-rename">
+      <mat-form-field appearance="outline" class="groupe-detail-field">
+        <mat-label>Nom du groupe</mat-label>
         <input
           matInput
           placeholder="Entrez le nom du groupe de mots-clés"
-          [(ngModel)]="data.keyword.nom"
-        />
+          [(ngModel)]="data.keyword.nom">
       </mat-form-field>
-  
+
       <button mat-raised-button color="accent" type="button" (click)="rename()">
         {{ labels.record }}
       </button>
     </div>
-  </mat-dialog-content>
-  
-  <mat-dialog-actions>
-    <button mat-raised-button color="accent" type="button" (click)="close()">
-      {{ labels.cancel }}
-    </button>
-  </mat-dialog-actions>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-raised-button color="warn" type="button" (click)="close()">
+    {{ labels.cancel }}
+  </button>
+</mat-dialog-actions>
