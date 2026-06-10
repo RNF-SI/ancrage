@@ -12,6 +12,7 @@ import { Commune } from '@app/models/commune.model';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { CommuneService } from '@app/services/commune.service';
 import { Labels } from '@app/utils/labels';
+import { filterCommunes } from '@app/utils/filter-communes';
 import { Subscription } from 'rxjs';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { Acteur } from '@app/models/acteur.model';
@@ -77,22 +78,8 @@ export class ImportComponent implements OnDestroy{
     });
   }
 
-  private _normalize(text: string): string {
-    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-  }
-  
-  //Filtrage amélioré pour rechercher par nom, code département ou code INSEE
   private _filter(filterValue: string): Commune[] {
-    const normalizedInput = this._normalize(filterValue);
-  
-    return this.uniqueTowns
-      .filter(t => {
-        const nomMatch = this._normalize(t.nom_com).includes(normalizedInput);
-        const codeDptMatch = t.code_dpt && this._normalize(t.code_dpt).includes(normalizedInput);
-        const inseeMatch = this._normalize(t.insee_com).includes(normalizedInput);
-        return nomMatch || codeDptMatch || inseeMatch;
-      })
-      .slice(0, 30);
+    return filterCommunes(this.uniqueTowns, filterValue);
   }
 
   //Autocomplétion - Affichage amélioré avec code département
