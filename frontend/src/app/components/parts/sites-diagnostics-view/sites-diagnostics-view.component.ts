@@ -1,23 +1,18 @@
 import { CommonModule } from "@angular/common";
-import { Component, computed, effect, inject, input, signal, OnDestroy, DestroyRef } from "@angular/core";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { Component, computed, effect, inject, input, signal, OnDestroy } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
-import { MatCardModule } from "@angular/material/card";
-import { MatTooltipModule } from "@angular/material/tooltip";
 import { Site } from "@app/models/site.model";
-import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
-import { RouterModule, Router } from "@angular/router";
+import { Router } from "@angular/router";
 import { SiteService } from "@app/services/sites.service";
 import { Diagnostic } from "@app/models/diagnostic.model";
 import { MapComponent } from "../map/map.component";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatSelectModule } from "@angular/material/select";
 import { MatInputModule } from "@angular/material/input";
+import { MatSlideToggleModule } from "@angular/material/slide-toggle";
+import { MatIconModule } from "@angular/material/icon";
 import { FormsModule } from "@angular/forms";
-import { AlerteVisualisationSiteComponent } from "../../alertes/alerte-visualisation-site/alerte-visualisation-site.component";
-import { MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { Labels } from "@app/utils/labels";
-import { MatExpansionModule } from "@angular/material/expansion";
 import { AuthService } from "@app/home-rnf/services/auth-service.service";
 import { StateService } from "@app/services/state.service";
 
@@ -26,58 +21,55 @@ import { StateService } from "@app/services/state.service";
   standalone: true,
   imports: [
     CommonModule,
-    MatCardModule,
     MatButtonModule,
-    MatTooltipModule,
-    FontAwesomeModule,
-    RouterModule,
     MapComponent,
     MatFormFieldModule,
     MatSelectModule,
     MatInputModule,
+    MatSlideToggleModule,
+    MatIconModule,
     FormsModule,
-    MatExpansionModule,
   ],
   templateUrl: "./sites-diagnostics-view.component.html",
   styleUrls: ["./sites-diagnostics-view.component.css"],
 })
 export class SitesDiagnosticsViewComponent implements OnDestroy {
   readonly sites = input<Site[]>([]);
-  readonly titleBtnCreaDiag = input("Nouveau diagnostic");
-  readonly infobulleCreaDiagFromSite = input(
-    "Le site indiqué sur cette ligne sera présélectionné lors de la création du diagnostic."
-  );
-  readonly infobulleCreaDiagFromScratch = input(
-    "Utilisez ce bouton si le diagnostic comprend plusieurs sites ou si le site ciblé n'est pas dans la liste ci-dessous."
-  );
+  readonly titleBtnCreaDiag = input("Ajouter un diagnostic");
   readonly title = input("");
   readonly diagnostic = input<Diagnostic>(new Diagnostic());
 
   private siteService = inject(SiteService);
   private authService = inject(AuthService);
-  private dialog = inject(MatDialog);
   private router = inject(Router);
   private stateService = inject(StateService);
-  private destroyRef = inject(DestroyRef);
 
-  // Références aux effets pour nettoyage explicite
   private sitesEffectCleanup?: () => void;
   private userEffectCleanup?: () => void;
-  
-  // Références aux dialogues ouverts pour nettoyage si nécessaire
-  private openDialogs: MatDialogRef<any>[] = [];
-
-  displayedColumns = ["nom", "regions", "departements", "type", "choix"];
 
   readonly sitesOriginal = signal<Site[]>([]);
   readonly selectedDepartement = signal("");
   readonly selectedRegion = signal("");
   readonly selectedType = signal("");
   readonly searchSiteName = signal("");
+  readonly onlyMyDiagnostics = signal(false);
+  readonly selectedAnnee = signal<number | null>(null);
 
-  /**
-   * Fully reactive selection based on filters (département / région / type)
-   */
+  private getDiagnosticAnnee(diag: Diagnostic): number | null {
+    if (diag.annee) return diag.annee;
+    const fromNom = Diagnostic.extractAnneeFromNom(diag.nom);
+    if (fromNom) return fromNom;
+    if (diag.created_at) return new Date(diag.created_at).getFullYear();
+    return null;
+  }
+
+  private diagnosticMatchesFilters(diag: Diagnostic, userId: number): boolean {
+    if (this.onlyMyDiagnostics() && diag.created_by !== userId) return false;
+    const year = this.selectedAnnee();
+    if (year !== null && this.getDiagnosticAnnee(diag) !== year) return false;
+    return true;
+  }
+
   readonly sitesSelected = computed(() => {
     const dep = this.selectedDepartement();
     const reg = this.selectedRegion();
@@ -92,28 +84,48 @@ export class SitesDiagnosticsViewComponent implements OnDestroy {
     });
   });
 
-  /**
-   * Name search layered on top of the main selection; accent-insensitive
-   */
   readonly filteredSiteList = computed(() => {
+    let list = this.sitesSelected();
     const q = this.searchSiteName();
-    if (!q) return this.sitesSelected();
 
-    const search = q
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/\p{Diacritic}/gu, "");
+    if (q) {
+      const search = q
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/\p{Diacritic}/gu, "");
 
-    return this.sitesSelected().filter((site) => {
-      const nom = (site.nom ?? "").toLowerCase();
-      const normalized = nom.normalize("NFD").replace(/\p{Diacritic}/gu, "");
-      return normalized.includes(search);
+      list = list.filter((site) => {
+        const nom = (site.nom ?? "").toLowerCase();
+        const normalized = nom.normalize("NFD").replace(/\p{Diacritic}/gu, "");
+        return normalized.includes(search);
+      });
+    }
+
+    const userId = this.user_id();
+    if (this.onlyMyDiagnostics() || this.selectedAnnee() !== null) {
+      list = list.filter((site) =>
+        (site.diagnostics ?? []).some((diag) => this.diagnosticMatchesFilters(diag, userId))
+      );
+    }
+
+    return list;
+  });
+
+  readonly mapSiteList = computed(() => {
+    const list = this.filteredSiteList();
+    const userId = this.user_id();
+
+    if (!this.onlyMyDiagnostics() && this.selectedAnnee() === null) return list;
+
+    return list.map((site) => {
+      const copy = site.copy();
+      copy.diagnostics = (site.diagnostics ?? []).filter((diag) =>
+        this.diagnosticMatchesFilters(diag, userId)
+      );
+      return copy;
     });
   });
 
-  /**
-   * Unique lists for filter dropdowns (no empty strings)
-   */
   readonly uniqueDepartements = computed(() => {
     const all = this
       .sitesOriginal()
@@ -136,62 +148,53 @@ export class SitesDiagnosticsViewComponent implements OnDestroy {
     return Array.from(new Set(vals)).sort();
   });
 
+  readonly uniqueAnnees = computed(() => {
+    const years = new Set<number>();
+    for (const site of this.sitesOriginal()) {
+      for (const diag of site.diagnostics ?? []) {
+        const year = this.getDiagnosticAnnee(diag);
+        if (year) years.add(year);
+      }
+    }
+    return Array.from(years).sort((a, b) => b - a);
+  });
+
   readonly reinitialisation = "Réinitialiser";
-  readonly btnToChooseLabel = "Choisir";
-  readonly btnNewSiteLabel = "Nouveau site";
-  readonly btnToChooseActors = "Choix des acteurs";
-  readonly titleChosenSites = "Sites choisis";
-  readonly emptyChosenSites = "Vous n'avez pas encore choisi de sites.";
-  readonly btnToShowDiagnosticsLbl = "Afficher diagnostics";
-  readonly btnToHideDiagnosticsLbl = "Masquer les diagnostics";
-
   readonly labels = new Labels();
-  readonly chosenSites = signal<string[]>([this.emptyChosenSites]);
-
   readonly user_id = signal(0);
   readonly id_organisme = signal(0);
-  readonly btnForDiagnosticsLbl = signal("");
-
   mapInstanceKey = Date.now();
-  readonly showMoreInfo = "Afficher les détails";
-  readonly modify = "Modifier";
 
   constructor() {
-    // Initialize & keep sitesOriginal sorted whenever input sites changes
     const sitesEffectRef = effect(() => {
       const inputSites = this.sites();
-      if (inputSites.length > 0) {
-        const arr = [...inputSites];
-        this.siteService.sortByName(arr); // assumes in-place sort of the copy
-        this.sitesOriginal.set(arr);
+      const arr = [...inputSites];
+      if (arr.length > 0) {
+        this.siteService.sortByName(arr);
       }
+      this.sitesOriginal.set(arr);
     });
-    // Stocker la fonction de nettoyage
     this.sitesEffectCleanup = () => sitesEffectRef.destroy();
 
-    // Init user context & navigation state (runs once)
     const userEffectRef = effect(() => {
       const user = this.authService.getCurrentUser();
       this.user_id.set(user.id_role);
       this.id_organisme.set(user.id_organisme);
-      this.btnForDiagnosticsLbl.set(this.btnToShowDiagnosticsLbl);
       this.stateService.clearAll();
       this.stateService.setPreviousPage(this.router.url);
     });
-    // Stocker la fonction de nettoyage
     this.userEffectCleanup = () => userEffectRef.destroy();
   }
 
-  // Kept for template compatibility: filtering is now fully reactive
-  applyFilters() {
-    // no-op: computed(sitesSelected) reacts to selected* signals
-  }
+  applyFilters() {}
 
   resetFilters() {
     this.selectedDepartement.set("");
     this.selectedRegion.set("");
     this.selectedType.set("");
     this.searchSiteName.set("");
+    this.onlyMyDiagnostics.set(false);
+    this.selectedAnnee.set(null);
   }
 
   onSearchChange(value: string) {
@@ -199,7 +202,6 @@ export class SitesDiagnosticsViewComponent implements OnDestroy {
   }
 
   navigate(path: string, diagnostic: Diagnostic, site?: Site) {
-    // Avoid mutating the @Input() instance; clone into a fresh Diagnostic
     const diagToStore = Object.assign(new Diagnostic(), diagnostic, {
       created_by: this.user_id(),
       id_organisme: this.id_organisme(),
@@ -208,45 +210,20 @@ export class SitesDiagnosticsViewComponent implements OnDestroy {
     this.siteService.navigateAndCache(path, diagToStore, site);
   }
 
-  showSiteDetails(site: Site) {
-    const dialogRef = this.dialog.open(AlerteVisualisationSiteComponent, {
-      data: {
-        site,
-        labels: this.labels,
-        can_edit: this.user_id() === site.created_by,
-      },
-    });
-    
-    // Stocker la référence pour nettoyage si nécessaire
-    this.openDialogs.push(dialogRef);
-    
-    // Nettoyer automatiquement la référence quand le dialogue se ferme
-    dialogRef.afterClosed()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        const index = this.openDialogs.indexOf(dialogRef);
-        if (index > -1) {
-          this.openDialogs.splice(index, 1);
-        }
-      });
+  openDiagnostic(event: { id: number; slug: string; site: Site }) {
+    this.navigate(`/diagnostic-visualisation/${event.id}/${event.slug}`, this.diagnostic(), event.site);
+  }
+
+  createDiagnostic() {
+    this.navigate('/diagnostic/create', this.diagnostic());
+  }
+
+  createDiagnosticForSite(site: Site) {
+    this.navigate('/diagnostic/create', this.diagnostic(), site);
   }
 
   ngOnDestroy(): void {
-    // Nettoyer explicitement les effets
     this.sitesEffectCleanup?.();
     this.userEffectCleanup?.();
-    
-    // Fermer tous les dialogues ouverts si le composant est détruit
-    this.openDialogs.forEach(dialogRef => {
-      try {
-        if (dialogRef && dialogRef.componentInstance) {
-          dialogRef.close();
-        }
-      } catch (error) {
-        // Le dialogue peut déjà être fermé, ignorer l'erreur
-        console.debug('Dialog already closed:', error);
-      }
-    });
-    this.openDialogs = [];
   }
 }

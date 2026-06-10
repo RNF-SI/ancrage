@@ -72,6 +72,8 @@ class Site(db.Model):
     nom = db.Column(db.String, nullable=False)
     position_x = db.Column(db.String, nullable=False)
     position_y = db.Column(db.String, nullable=False)
+    geom = db.Column(Geometry('MULTIPOLYGON', srid=4326))
+    geom_pt = db.Column(Geometry('POINT', srid=4326))
     diagnostics = db.relationship('Diagnostic', secondary='cor_sites_diagnostics', back_populates='sites',passive_deletes=True)
     id_inpn = db.Column(db.String)
     type_id = db.Column(db.Integer, db.ForeignKey('t_nomenclatures.id_nomenclature',ondelete="CASCADE"))
@@ -94,6 +96,7 @@ class Diagnostic(db.Model):
     __tablename__ = 't_diagnostics'
     id_diagnostic = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String, nullable=False)
+    annee = db.Column(db.Integer)
     date_debut = db.Column(db.DateTime)
     date_dernier_entretien = db.Column(db.DateTime)
     date_fin = db.Column(db.DateTime)

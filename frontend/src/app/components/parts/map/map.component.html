@@ -1,5 +1,7 @@
-<div #mapContainer [id]="mapId()" style="height: 400px;"></div>
-<button mat-raised-button (click)="exportMapAsPNG()">
-  <mat-icon>image</mat-icon>
-  {{ labels.exportPNG }}
-</button>
+<div #mapContainer [id]="mapId()" class="map-container" [class.map-container--full]="siteDiagnosticActions()"></div>
+@if (!siteDiagnosticActions()) {
+  <button mat-raised-button (click)="exportMapAsPNG()">
+    <mat-icon>image</mat-icon>
+    {{ labels.exportPNG }}
+  </button>
+}

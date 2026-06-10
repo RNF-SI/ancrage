@@ -8,6 +8,7 @@ export class Diagnostic implements IDiagnostic {
 
 	id_diagnostic: number = 0;
 	nom: string = "Diagnostic";
+	annee?: number | null;
 	date_debut?:Date;
 	date_debut_str: string ="";
 	date_fin: Date | undefined;
@@ -31,6 +32,7 @@ export class Diagnostic implements IDiagnostic {
 
 		copy.id_diagnostic = this.id_diagnostic;
 		copy.nom = this.nom;
+		copy.annee = this.annee;
 		copy.date_debut = this.date_debut ? new Date(this.date_debut.getTime()) : undefined;
 		copy.date_fin = this.date_fin ? new Date(this.date_fin.getTime()) : undefined;
 		copy.date_rapport = this.date_rapport ? new Date(this.date_rapport.getTime()) : undefined;
@@ -48,12 +50,28 @@ export class Diagnostic implements IDiagnostic {
 
 		return copy;
 	}
+	static extractAnneeFromNom(nom: string): number | null {
+		const suffix = (nom ?? '').trim().slice(-4);
+		if (!/^\d{4}$/.test(suffix)) return null;
+		const year = Number(suffix);
+		return year >= 1900 && year <= 2100 ? year : null;
+	}
+
+	static displayAnnee(diagnostic: Pick<IDiagnostic, 'annee' | 'nom' | 'created_at'>): string {
+		if (diagnostic.annee) return String(diagnostic.annee);
+		const fromNom = Diagnostic.extractAnneeFromNom(diagnostic.nom);
+		if (fromNom) return String(fromNom);
+		if (diagnostic.created_at) return String(new Date(diagnostic.created_at).getFullYear());
+		return '?';
+	}
+
 	/** Création depuis JSON brut */
 	static fromJson(data: IDiagnostic): Diagnostic {
 		const diag = new Diagnostic();
 		if (!data) return diag;
 		diag.id_diagnostic = data.id_diagnostic;
 		diag.nom = data.nom;
+		diag.annee = data.annee ?? Diagnostic.extractAnneeFromNom(data.nom);
 		diag.date_debut = data.date_debut ? new Date(data.date_debut) : undefined;
 		diag.date_debut_str = data.date_debut ? moment(new Date(data.date_debut!)).format("DD/MM/YYYY") : "";
 		diag.date_fin = data.date_fin ? new Date(data.date_fin) : undefined;

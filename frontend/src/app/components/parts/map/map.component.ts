@@ -5,29 +5,41 @@ import {
   ElementRef,
   ViewChild,
   input,
+  output,
   effect,
   signal
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Acteur } from '@app/models/acteur.model';
+import { Diagnostic } from '@app/models/diagnostic.model';
 import { Site } from '@app/models/site.model';
 import { Labels } from '@app/utils/labels';
+import { getSitePointCoordinates, getSitePolygonGeometry } from '@app/utils/site-geometry';
 import { LeafletModule } from '@bluehalo/ngx-leaflet';
 import { LeafletMarkerClusterModule } from '@bluehalo/ngx-leaflet-markercluster';
 import html2canvas from 'html2canvas';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import * as L from 'leaflet'; 
+import * as L from 'leaflet';
 import { toSignal } from '@angular/core/rxjs-interop';
+import '@app/utils/leaflet-markercluster-loader';
 
-L.Marker.prototype.options.icon = L.icon({
-  iconRetinaUrl: 'assets/data/marker-icon-2x.png',
-  iconUrl: 'assets/data/marker-icon.png',
-  shadowUrl: 'assets/data/marker-shadow.png',
+const defaultMarkerIcon = L.icon({
+  iconRetinaUrl: 'assets/leaflet/marker-icon-2x.png',
+  iconUrl: 'assets/leaflet/marker-icon.png',
+  shadowUrl: 'assets/leaflet/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
-  shadowSize: [41, 41]
+  shadowSize: [41, 41],
+});
+
+L.Marker.prototype.options.icon = defaultMarkerIcon;
+delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'assets/leaflet/marker-icon-2x.png',
+  iconUrl: 'assets/leaflet/marker-icon.png',
+  shadowUrl: 'assets/leaflet/marker-shadow.png',
 });
 
 @Component({
@@ -37,7 +49,7 @@ L.Marker.prototype.options.icon = L.icon({
   standalone: true,
   imports: [MatButtonModule, MatIconModule, LeafletModule, LeafletMarkerClusterModule]
 })
-export class MapComponent implements AfterViewInit,OnDestroy {
+export class MapComponent implements AfterViewInit, OnDestroy {
   private map: L.Map | undefined;
   readonly sites = input<Site[]>([]);
   readonly changePosition = input<boolean>(false);
@@ -48,64 +60,90 @@ export class MapComponent implements AfterViewInit,OnDestroy {
     { initialValue: this.formGroup()!.value }
   );
   readonly actors = input<Acteur[]>([]);
-  private readonly mapSig = signal<L.Map | null>(null);
+  readonly siteDiagnosticActions = input(false);
+  readonly openDiagnostic = output<{ id: number; slug: string; site: Site }>();
+  readonly createDiagnostic = output<Site>();
+  private readonly mapReady = signal(false);
   private markerClusterGroup: L.MarkerClusterGroup | undefined;
+  private siteLayersGroup: L.FeatureGroup | undefined;
+  private resizeObserver?: ResizeObserver;
+  private resizeDebounceId?: ReturnType<typeof setTimeout>;
+  private lastFittedSitesKey = '';
+  private lastFittedActorsKey = '';
   marker: L.Marker | undefined;
-  private mapClickListener: any;
+  private mapClickListener: ((e: L.LeafletMouseEvent) => void) | undefined;
   labels = new Labels();
-  @ViewChild('mapContainer') mapContainer!: ElementRef;
-  alreadyRendered = false;
+  @ViewChild('mapContainer') mapContainer!: ElementRef<HTMLElement>;
 
-  constructor(){
+  constructor() {
     effect(() => {
-     
-      if (this.mapSig() && !this.changePosition() && this.sites().length > 0 ) {
-        this.addMarkers();
-      }
+      if (!this.mapReady() || this.changePosition()) return;
+      this.syncMapContent();
     });
 
     effect(() => {
-    
+      if (!this.changePosition()) return;
+
       const values = this.formGroupValues();
       const lat = +values?.position_y;
       const lng = +values?.position_x;
-    
-      if (this.mapSig() && lat && lng) {
-        this.moveMarker();  // déclenché quand formGroup change de position
-      }
-    });
 
-    effect(() => {
- 
-      if (this.alreadyRendered || !this.mapSig()) return;
-      const map = this.mapSig();
-      const actors = this.actors();
-   
-      if (map && actors.length > 0 && !this.changePosition()) {
-        this.addMarkersActors();
-        this.alreadyRendered = true;
+      if (this.mapReady() && lat && lng) {
+        this.moveMarker();
       }
-    });
-
-    effect(() => {
-      this.refreshMarkers(this.actors());
     });
   }
 
-  private refreshMarkers(acteurs: Acteur[]) {
-      if (!this.map) return;
-
-      this.markerClusterGroup?.clearLayers();
-
-      this.actors().forEach(acteur => {
-        if (acteur.commune.latitude && acteur.commune.longitude) {
-          const marker = L.marker([parseFloat(acteur.commune.latitude), parseFloat(acteur.commune.longitude)])
-            .bindPopup(`${acteur.nom} ${acteur.prenom}`);
-          this.markerClusterGroup?.addLayer(marker);
-        }
-      });
+  private syncMapContent(): void {
+    if (this.actors().length > 0) {
+      this.renderActorMarkers();
+      return;
+    }
+    if (this.sites().length > 0) {
+      this.renderSiteMarkers();
+    }
   }
-  
+
+  private fitMapToBounds(bounds: L.LatLngBounds, featureCount: number, singleCoords?: { lat: number; lng: number }): void {
+    if (!this.map || featureCount === 0) return;
+
+    const viewOptions: L.ZoomPanOptions = { animate: false };
+
+    if (featureCount === 1 && singleCoords) {
+      this.map.setView([singleCoords.lat, singleCoords.lng], 10, viewOptions);
+      return;
+    }
+
+    if (!bounds.isValid()) return;
+
+    const northEast = bounds.getNorthEast();
+    const southWest = bounds.getSouthWest();
+    const latSpan = northEast.lat - southWest.lat;
+    const lngSpan = northEast.lng - southWest.lng;
+
+    // Évite un fitBounds mondial si une coordonnée est aberrante
+    if (latSpan > 25 || lngSpan > 40) {
+      this.map.setView([46.8, 2.5], 6, viewOptions);
+      return;
+    }
+
+    this.map.fitBounds(bounds, {
+      padding: [30, 30],
+      maxZoom: 11,
+      ...viewOptions,
+    });
+  }
+
+  private invalidateMapSize(): void {
+    const el = this.mapContainer?.nativeElement;
+    if (!this.map || !el || el.offsetWidth < 50 || el.offsetHeight < 50) return;
+    this.map.invalidateSize();
+    this.siteLayersGroup?.bringToFront();
+  }
+
+  private entitiesKey(ids: number[]): string {
+    return ids.slice().sort((a, b) => a - b).join(',');
+  }
 
   ngAfterViewInit(): void {
     const waitForContainer = () => {
@@ -117,7 +155,8 @@ export class MapComponent implements AfterViewInit,OnDestroy {
         if (this.changePosition()) {
           this.moveMarker();
         }
-        setTimeout(() => this.mapSig()?.invalidateSize(), 100);
+        this.observeContainerResize(el);
+        setTimeout(() => this.invalidateMapSize(), 0);
       } else {
         setTimeout(waitForContainer, 100);
       }
@@ -126,82 +165,211 @@ export class MapComponent implements AfterViewInit,OnDestroy {
     waitForContainer();
   }
 
+  private observeContainerResize(el: HTMLElement): void {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = new ResizeObserver(() => {
+      if (this.resizeDebounceId) {
+        clearTimeout(this.resizeDebounceId);
+      }
+      this.resizeDebounceId = setTimeout(() => this.invalidateMapSize(), 150);
+    });
+    this.resizeObserver.observe(el);
+  }
+
   private initMap(): void {
+    if (this.map) return;
+
     const mapContainer = this.mapContainer.nativeElement;
     this.map = L.map(mapContainer, {
-      center: [48.8566, 2.3522],
-      zoom: 13
+      center: [46.8, 2.5],
+      zoom: 6,
     });
-    this.mapSig.set(this.map);
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19,
     }).addTo(this.map);
 
-    // Vérification que markerClusterGroup est disponible
-    if (typeof (L as any).markerClusterGroup === 'function') {
-      this.markerClusterGroup = (L as any).markerClusterGroup();
-      this.markerClusterGroup?.addTo(this.map);
-    } else {
-  
-      this.markerClusterGroup = L.featureGroup() as any;
-      this.markerClusterGroup?.addTo(this.map);
-    }
+    const markerClusterGroup =
+      typeof (L as any).markerClusterGroup === 'function'
+        ? (L as any).markerClusterGroup()
+        : (L.featureGroup() as L.MarkerClusterGroup);
+    this.markerClusterGroup = markerClusterGroup;
+    markerClusterGroup.addTo(this.map);
 
-    if (this.formGroup) {
-      this.formGroup()!.valueChanges.subscribe(values => {
-        const latitude = +values.position_y;
-        const longitude = +values.position_x;
-        if (latitude && longitude && this.changePosition()) {
-          this.moveMarker();
-        }
-      });
-    }
+    const siteLayersGroup = L.featureGroup();
+    this.siteLayersGroup = siteLayersGroup;
+    siteLayersGroup.addTo(this.map);
+
+    this.formGroup()?.valueChanges.subscribe(values => {
+      const latitude = +values.position_y;
+      const longitude = +values.position_x;
+      if (latitude && longitude && this.changePosition()) {
+        this.moveMarker();
+      }
+    });
+
+    this.mapReady.set(true);
   }
 
-  //Affiche les marqueurs pour les sites
-  addMarkers(): void {
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  private buildSitePopup(site: Site): string {
+    const departements = (site.departements ?? []).map(dep => dep.nom_dep).join(' ');
+    const regions = (site.departements ?? [])
+      .map(dep => dep.region?.nom_reg)
+      .filter(Boolean)
+      .join(' ');
+
+    let actionsHtml = '';
+    if (this.siteDiagnosticActions()) {
+      const diagnostics = [...(site.diagnostics ?? [])].sort((a, b) => {
+        const yearA = Diagnostic.displayAnnee(a);
+        const yearB = Diagnostic.displayAnnee(b);
+        return Number(yearB) - Number(yearA);
+      });
+
+      const yearButtons = diagnostics
+        .map(diag => {
+          const year = this.escapeHtml(Diagnostic.displayAnnee(diag));
+          return `<button type="button" class="map-popup-btn map-popup-btn-year" data-diag-id="${diag.id_diagnostic}" data-diag-slug="${this.escapeHtml(diag.slug)}">${year}</button>`;
+        })
+        .join('');
+
+      actionsHtml = `
+        <div class="map-popup-actions">
+          ${yearButtons}
+          <button type="button" class="map-popup-btn map-popup-btn-create" data-site-id="${site.id_site}" title="Nouveau diagnostic">+</button>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="map-site-popup">
+        <strong>${this.escapeHtml(site.nom)}</strong><br>
+        Statut : ${this.escapeHtml(site.type?.libelle ?? '')}<br>
+        Régions : ${this.escapeHtml(regions)}<br>
+        Départements : ${this.escapeHtml(departements)}<br>
+        ${actionsHtml}
+      </div>
+    `;
+  }
+
+  private bindSitePopupActions(layer: L.Layer, site: Site): void {
+    if (!this.siteDiagnosticActions()) return;
+
+    const onPopupOpen = () => {
+      const popupEl = (layer as L.Marker).getPopup?.()?.getElement()
+        ?? (layer as L.GeoJSON).getPopup?.()?.getElement();
+      if (!popupEl) return;
+
+      popupEl.querySelectorAll<HTMLButtonElement>('.map-popup-btn-year').forEach(btn => {
+        btn.onclick = (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          const id = Number(btn.dataset['diagId']);
+          const slug = btn.dataset['diagSlug'];
+          if (!id || !slug) return;
+          this.openDiagnostic.emit({ id, slug, site });
+        };
+      });
+
+      const createBtn = popupEl.querySelector<HTMLButtonElement>('.map-popup-btn-create');
+      if (createBtn) {
+        createBtn.onclick = (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          this.createDiagnostic.emit(site);
+        };
+      }
+    };
+
+    if ((layer as L.Marker).bindPopup) {
+      (layer as L.Marker).on('popupopen', onPopupOpen);
+      return;
+    }
+
+    layer.on('popupopen', onPopupOpen);
+  }
+
+  private renderSiteMarkers(): void {
+    if (!this.map || !this.markerClusterGroup || !this.siteLayersGroup) return;
+
     const bounds = L.latLngBounds([]);
-    this.markerClusterGroup?.clearLayers();
+    let featureCount = 0;
+    let singleCoords: { lat: number; lng: number } | undefined;
+
+    this.markerClusterGroup.clearLayers();
+    this.siteLayersGroup.clearLayers();
 
     for (const site of this.sites()) {
-      const lat = parseFloat(site.position_y);
-      const lng = parseFloat(site.position_x);
-      const marker = L.marker([lat, lng]);
+      const popup = this.buildSitePopup(site);
+      const polygon = getSitePolygonGeometry(site);
 
-      const departements = site.departements.map(dep => dep.nom_dep).join(' ');
-      const regions = site.departements.map(dep => dep.region.nom_reg).join(' ');
+      if (polygon) {
+        const layer = L.geoJSON(polygon as GeoJSON.GeoJsonObject, {
+          style: {
+            color: '#2e7d32',
+            weight: 2,
+            fillColor: '#4caf50',
+            fillOpacity: 0.25,
+          },
+          onEachFeature: (_feature, geoLayer) => {
+            geoLayer.bindPopup(popup);
+            this.bindSitePopupActions(geoLayer, site);
+          },
+        });
+        this.siteLayersGroup.addLayer(layer);
+        bounds.extend(layer.getBounds());
+        featureCount++;
+        const center = layer.getBounds().getCenter();
+        singleCoords = { lat: center.lat, lng: center.lng };
+        continue;
+      }
 
-      marker.bindPopup(`
-        <strong>${site.nom}</strong><br>
-        Statut : ${site.type.libelle}<br>
-        Régions : ${regions}<br>
-        Départements : ${departements}<br>
-      `);
+      const coords = getSitePointCoordinates(site);
+      if (!coords) continue;
 
-      marker.addTo(this.markerClusterGroup!);
-      bounds.extend([lat, lng]);
+      const marker = L.marker([coords.lat, coords.lng]).bindPopup(popup);
+      this.bindSitePopupActions(marker, site);
+      this.markerClusterGroup.addLayer(marker);
+      bounds.extend([coords.lat, coords.lng]);
+      featureCount++;
+      singleCoords = coords;
     }
 
-    if (this.sites().length > 1) {
-      this.map!.fitBounds(bounds, { padding: [30, 30] });
-    } else if (this.sites().length === 1) {
-      const lat = parseFloat(this.sites()[0].position_y);
-      const lng = parseFloat(this.sites()[0].position_x);
-      this.map!.setView([lat, lng], 13);
+    this.siteLayersGroup.bringToFront();
+
+    const sitesKey = this.entitiesKey(this.sites().map(site => site.id_site));
+    if (sitesKey !== this.lastFittedSitesKey) {
+      this.fitMapToBounds(bounds, featureCount, singleCoords);
+      this.lastFittedSitesKey = sitesKey;
     }
   }
 
-  //Affiche les marqueurs pour les acteurs
-  addMarkersActors(): void {
+  private renderActorMarkers(): void {
+    if (!this.map || !this.markerClusterGroup) return;
 
     const bounds = L.latLngBounds([]);
-    this.markerClusterGroup?.clearLayers();
+    let markerCount = 0;
+    let singleCoords: { lat: number; lng: number } | undefined;
+
+    this.markerClusterGroup.clearLayers();
 
     for (const actor of this.actors()) {
-      const lat = parseFloat(actor.commune.latitude!);
-      const lng = parseFloat(actor.commune.longitude!);
-      const marker = L.marker([lat, lng]);
+      if (!actor.commune?.latitude || !actor.commune?.longitude) continue;
 
+      const lat = parseFloat(actor.commune.latitude);
+      const lng = parseFloat(actor.commune.longitude);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+
+      const marker = L.marker([lat, lng]);
       const categories = actor.categories?.map(c => c.libelle).join(', ') ?? '';
 
       marker.bindPopup(`
@@ -215,35 +383,38 @@ export class MapComponent implements AfterViewInit,OnDestroy {
         ${this.labels.structure} : ${actor.structure}<br>
       `);
 
-      marker.addTo(this.markerClusterGroup!);
+      this.markerClusterGroup.addLayer(marker);
       bounds.extend([lat, lng]);
+      markerCount++;
+      singleCoords = { lat, lng };
     }
 
-    if (this.actors().length > 1) {
-      this.map!.fitBounds(bounds, { padding: [30, 30] });
-    } else if (this.actors().length === 1) {
-      const lat = parseFloat(this.actors()[0].commune.latitude!);
-      const lng = parseFloat(this.actors()[0].commune.longitude!);
-      this.map!.setView([lat, lng], 13);
+    const actorsKey = this.entitiesKey(this.actors().map(actor => actor.id_acteur));
+    if (actorsKey !== this.lastFittedActorsKey) {
+      this.fitMapToBounds(bounds, markerCount, singleCoords);
+      this.lastFittedActorsKey = actorsKey;
     }
   }
 
-  //Permet de déplacer un marqueur : création/modif d'un site
   moveMarker(): void {
     if (!this.changePosition() || !this.formGroup() || !this.map) return;
 
-    let lat = +this.formGroup()!.get('position_y')?.value || 47.316667;
-    let lng = +this.formGroup()!.get('position_x')?.value || 5.016667;
+    const lat = +this.formGroup()!.get('position_y')?.value || 47.316667;
+    const lng = +this.formGroup()!.get('position_x')?.value || 5.016667;
 
     this.marker?.remove();
     this.marker = L.marker([lat, lng], { draggable: false }).addTo(this.map);
 
+    if (this.mapClickListener) {
+      this.map.off('click', this.mapClickListener);
+    }
+
     this.mapClickListener = (e: L.LeafletMouseEvent) => {
-      const { lat, lng } = e.latlng;
-      this.marker!.setLatLng([lat, lng]);
+      const { lat: clickLat, lng: clickLng } = e.latlng;
+      this.marker!.setLatLng([clickLat, clickLng]);
       this.formGroup()!.patchValue({
-        position_y: lat.toFixed(6),
-        position_x: lng.toFixed(6)
+        position_y: clickLat.toFixed(6),
+        position_x: clickLng.toFixed(6),
       });
     };
 
@@ -252,39 +423,43 @@ export class MapComponent implements AfterViewInit,OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.resizeObserver?.disconnect();
+    if (this.resizeDebounceId) {
+      clearTimeout(this.resizeDebounceId);
+    }
+    this.mapReady.set(false);
+
+    if (this.map && this.mapClickListener) {
+      this.map.off('click', this.mapClickListener);
+    }
+
+    this.marker?.remove();
+    this.markerClusterGroup?.clearLayers();
+    this.siteLayersGroup?.clearLayers();
     this.map?.off();
     this.map?.remove();
-    this.markerClusterGroup?.clearLayers();
-    const mapContainer = document.getElementById('map');
-    if (mapContainer) mapContainer.innerHTML = '';
+    this.map = undefined;
   }
 
-  //Exporte la carte en PNG
-  
   exportMapAsPNG(): void {
-    const mapElement = document.getElementById('map');
-    
-    if (mapElement) {
-      const zoomControls = mapElement.querySelector('.leaflet-control-zoom') as HTMLElement;
-  
-      if (zoomControls) {
-        zoomControls.style.display = 'none'; // Masquer les contrôles
-      }
-      mapElement.style.cursor = 'progress';
+    const mapElement = this.mapContainer?.nativeElement;
+    if (!mapElement) return;
 
-      html2canvas(mapElement, { useCORS: true }).then(canvas => {
-        const link = document.createElement('a');
-        document.querySelector('.leaflet-control-zoom')?.classList.remove('hidden');
-        link.download = 'map.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        if (zoomControls) {
-          zoomControls.style.display = 'block';
-          mapElement.style.cursor = 'default';
-        }
-      });
-      
+    const zoomControls = mapElement.querySelector('.leaflet-control-zoom') as HTMLElement | null;
+    if (zoomControls) {
+      zoomControls.style.display = 'none';
     }
+    mapElement.style.cursor = 'progress';
+
+    html2canvas(mapElement, { useCORS: true }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = 'map.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      if (zoomControls) {
+        zoomControls.style.display = 'block';
+        mapElement.style.cursor = 'default';
+      }
+    });
   }
-  
 }

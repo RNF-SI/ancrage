@@ -1,6 +1,48 @@
+import json
+
+from sqlalchemy import func
+
 from models.models import Acteur, Diagnostic, Document, MotCle, Nomenclature, Reponse, Site,Question, Region,Departement,Commune,db
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from marshmallow import fields
+
+
+def _geometry_as_geojson(geometry):
+    if geometry is None:
+        return None
+    geojson = db.session.scalar(func.ST_AsGeoJSON(geometry))
+    if not geojson:
+        return None
+    return json.loads(geojson) if isinstance(geojson, str) else geojson
+
+
+def _point_geojson_from_positions(position_x, position_y):
+    try:
+        lng = float(position_x)
+        lat = float(position_y)
+    except (TypeError, ValueError):
+        return None
+    if not (-180 <= lng <= 180 and -90 <= lat <= 90):
+        return None
+    return {"type": "Point", "coordinates": [lng, lat]}
+
+
+def _serialize_site_geom(site):
+    return _geometry_as_geojson(getattr(site, "geom", None))
+
+
+def _serialize_site_geom_pt(site):
+    geom_pt = _geometry_as_geojson(getattr(site, "geom_pt", None))
+    if geom_pt:
+        return geom_pt
+    return _point_geojson_from_positions(site.position_x, site.position_y)
+
+
+def enrich_site_dump(site_dump, site):
+    """Garantit geom / geom_pt dans le JSON même si Marshmallow les omet."""
+    site_dump["geom"] = _serialize_site_geom(site)
+    site_dump["geom_pt"] = _serialize_site_geom_pt(site)
+    return site_dump
 
 class RegionLiteSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -104,10 +146,14 @@ class CommuneSchema(SQLAlchemyAutoSchema):
 
 
 class SiteSchema(SQLAlchemyAutoSchema):
+    geom = fields.Function(serialize=_serialize_site_geom, allow_none=True)
+    geom_pt = fields.Function(serialize=_serialize_site_geom_pt, allow_none=True)
+
     class Meta:
         model = Site
         include_relationships = True
         load_instance = True
+        exclude = ('geom', 'geom_pt')
 
     type = fields.Nested(lambda: NomenclatureDiagSchema)
     diagnostics = fields.Method("get_active_diagnostics")
@@ -132,10 +178,14 @@ class SiteSchema(SQLAlchemyAutoSchema):
     ] """
 
 class SiteFromDiagSchema(SQLAlchemyAutoSchema):
+    geom = fields.Function(serialize=_serialize_site_geom, allow_none=True)
+    geom_pt = fields.Function(serialize=_serialize_site_geom_pt, allow_none=True)
+
     class Meta:
         model = Site
         include_relationships = True
         load_instance = True
+        exclude = ('geom', 'geom_pt')
 
     type = fields.Nested(lambda: NomenclatureDiagSchema)
     departements = fields.Method("get_departements_flat")

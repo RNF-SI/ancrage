@@ -1,11 +1,19 @@
+import json
+
 from models.models import db
 from flask import request, jsonify
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 from models.models import *
-from schemas.metier import *
+from schemas.metier import (
+    SiteSchema,
+    enrich_site_dump,
+)
 from routes import bp, datetime, slugify, uuid, timezone
 from configs.logger_config import logger
 from pypnusershub.decorators import check_auth
+from geoalchemy2.elements import WKTElement
+from geoalchemy2.shape import from_shape
+from shapely.geometry import shape
 
 @bp.route('/site/<int:id_site>/<string:slug>', methods=['GET','PUT','DELETE'])
 @check_auth(1)
@@ -87,8 +95,7 @@ def getAllSites():
             )
             .all()
         )
-        schema = SiteSchema(many=True)
-        usersObj = schema.dump(sites)
+        usersObj = [_dump_site_for_api(site) for site in sites]
         logger.info(f"🔢 Nombre de sites retournés : {len(usersObj)}")
         return jsonify(usersObj)
 
@@ -104,16 +111,53 @@ def getAllSitesByUSer(created_by):
             .options(contains_eager(Site.diagnostics))
             .all()
         )
-        schema = SiteSchema(many=True)
-        usersObj = schema.dump(sites)
+        usersObj = [_dump_site_for_api(site) for site in sites]
         logger.info(f"🔢 Nombre de sites trouvés : {len(usersObj)}")
         return jsonify(usersObj)
+
+def _update_site_geom_pt_from_positions(site, position_x, position_y):
+    try:
+        lng = float(position_x)
+        lat = float(position_y)
+    except (TypeError, ValueError):
+        return
+    if not (-180 <= lng <= 180 and -90 <= lat <= 90):
+        return
+    site.geom_pt = WKTElement(f'POINT({lng} {lat})', srid=4326)
+
+
+def _update_site_geom_from_geojson(site, geojson_data):
+    if not geojson_data:
+        return
+
+    if isinstance(geojson_data, str):
+        geojson_data = json.loads(geojson_data)
+
+    geom_type = geojson_data.get('type')
+    if geom_type not in ('Polygon', 'MultiPolygon'):
+        logger.warning(f"Type de géométrie non supporté pour un site : {geom_type}")
+        return
+
+    geom_shape = shape(geojson_data)
+    site.geom = from_shape(geom_shape, srid=4326)
+
+    centroid = geom_shape.centroid
+    site.geom_pt = WKTElement(f'POINT({centroid.x} {centroid.y})', srid=4326)
+    site.position_x = f'{centroid.x:.6f}'
+    site.position_y = f'{centroid.y:.6f}'
+
 
 def changeValuesSite(site, data):
     logger.debug(f"🔧 Mise à jour des champs du site avec les données : {data}")
     site.nom = data['nom']
     site.position_x = data['position_x']
     site.position_y = data['position_y']
+
+    if data.get('geom'):
+        _update_site_geom_from_geojson(site, data['geom'])
+    else:
+        _update_site_geom_pt_from_positions(site, data['position_x'], data['position_y'])
+
     site.type_id = data['type']['id_nomenclature']
     new_dept_ids = {d['id_departement'] for d in data['departements']}
     current_depts = {d.id_departement for d in site.departements}
@@ -146,6 +190,9 @@ def getSite(site):
         .filter_by(id_site=site.id_site)
         .first()
     )
-    schema = SiteSchema(many=False)
-    siteObj = schema.dump(site)
-    return jsonify(siteObj)
+    return jsonify(_dump_site_for_api(site))
+
+
+def _dump_site_for_api(site):
+    site_dict = SiteSchema().dump(site)
+    return enrich_site_dump(site_dict, site)

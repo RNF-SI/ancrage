@@ -2,12 +2,15 @@ import { ISite } from "@app/interfaces/site.interface";
 import { Diagnostic } from "./diagnostic.model";
 import { Nomenclature } from "./nomenclature.model";
 import { Departement } from "./departement.model";
+import { GeoJsonPoint, GeoJsonSiteGeom } from "@app/interfaces/site.interface";
 
 export class Site implements ISite {
 	id_site: number = -1;
 	nom: string = "";
 	position_x: string = "";
 	position_y: string = "";
+	geom?: GeoJsonSiteGeom | string | null;
+	geom_pt?: GeoJsonPoint | string | null;
 	diagnostics: Diagnostic[] = [];
 	habitats: Nomenclature[] = [];
 	departements:Departement[] = [];
@@ -28,6 +31,8 @@ export class Site implements ISite {
 		copy.nom = this.nom;
 		copy.position_x = this.position_x;
 		copy.position_y = this.position_y;
+		copy.geom = this.geom;
+		copy.geom_pt = this.geom_pt;
 		copy.diagnostics = this.diagnostics.map(d => d.copy());
 		copy.habitats = this.habitats.map(h => h.copy());
 		copy.type = this.type.copy();
@@ -39,6 +44,15 @@ export class Site implements ISite {
 
 		return copy;
 	}
+	private static pointFromPositions(positionX: string, positionY: string) {
+		const lng = parseFloat(positionX);
+		const lat = parseFloat(positionY);
+		if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+			return null;
+		}
+		return { type: 'Point' as const, coordinates: [lng, lat] as [number, number] };
+	}
+
 	/** Création depuis un JSON brut (avec reconversion des objets internes et dates) */
 	static fromJson(data: ISite): Site {
 		const site = new Site();
@@ -47,6 +61,8 @@ export class Site implements ISite {
 		site.nom = data.nom;
 		site.position_x = data.position_x;
 		site.position_y = data.position_y;
+		site.geom = data.geom ?? null;
+		site.geom_pt = data.geom_pt ?? Site.pointFromPositions(data.position_x, data.position_y);
 		site.id_inpn = data.id_inpn;
 		site.diagnostics = (data.diagnostics || []).map(d => Diagnostic.fromJson(d));
 		site.habitats = (data.habitats || []).map(h => Nomenclature.fromJson(h));

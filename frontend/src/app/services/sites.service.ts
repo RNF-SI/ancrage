@@ -21,31 +21,29 @@ export class SiteService {
 	private stateService = inject(StateService);
 	private token = localStorage.getItem('tk_id_token');
 	
+	private asSiteArray(data: ISite[] | Record<string, ISite> | null | undefined): ISite[] {
+		if (!data) return [];
+		if (Array.isArray(data)) return data;
+		return Object.values(data);
+	}
+
 	//Récupère tous les sites
 	getAll(): Observable<Site[]> {
-		return this.http.get<ISite[]>(this.GET_ALL_URL,{
+		return this.http.get<ISite[] | Record<string, ISite>>(this.GET_ALL_URL,{
 			headers: { Authorization: `Bearer ${this.token}` }
 			}).pipe(
 			shareReplay(1),
-			map(siteJsonArray => {
-				return siteJsonArray.map<Site>(
-					siteJson => Site.fromJson(siteJson)
-				)
-			})
+			map(data => this.asSiteArray(data).map(siteJson => Site.fromJson(siteJson)))
 		);
 	}
 
 	//Récupère tous les sites en fonction du créateur du diag
 	getAllByUser(user_id:number): Observable<Site[]> {
-		return this.http.get<ISite[]>(this.GET_ALL_URL+'/'+user_id,{
+		return this.http.get<ISite[] | Record<string, ISite>>(this.GET_ALL_URL+'/'+user_id,{
 			headers: { Authorization: `Bearer ${this.token}` }
 			}).pipe(
 			shareReplay(1),
-			map(siteJsonArray => {
-				return siteJsonArray.map<Site>(
-					siteJson => Site.fromJson(siteJson)
-				)
-			})
+			map(data => this.asSiteArray(data).map(siteJson => Site.fromJson(siteJson)))
 		);
 	}
 

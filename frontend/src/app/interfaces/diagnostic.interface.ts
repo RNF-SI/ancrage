@@ -5,6 +5,7 @@ import { ISite } from "./site.interface";
 export interface IDiagnostic {
     id_diagnostic: number;
     nom: string;
+    annee?: number | null;
     date_debut_str?: string;
     date_debut ?: Date;
     date_fin: Date | undefined;
