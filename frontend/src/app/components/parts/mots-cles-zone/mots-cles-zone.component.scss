@@ -24,7 +24,29 @@
   border-radius: 4px;
 }
 
+.mots-cles-loading {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 0;
+}
+
 .grid-6-6{
   display: grid;
   grid-template-columns: 50% 50%; /* ou 3fr 6fr 3fr */
+}
+
+.mots-cles-side-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.mots-cles-side-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+  padding-top: 0.75rem;
+  position: sticky;
+  bottom: 1rem;
+  z-index: 2;
+  background: #fff;
 }

@@ -22,6 +22,7 @@ import { Acteur } from '@app/models/acteur.model';
 import { Question } from '@app/models/question.model';
 import { ToastrService } from 'ngx-toastr';
 import { StateService } from '@app/services/state.service';
+import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinner/loading-spinner.component';
 
 
 //Page de la saisie de l'entretien
@@ -39,12 +40,18 @@ import { StateService } from '@app/services/state.service';
       MenuLateralComponent, 
       FontAwesomeModule, 
       MotsClesZoneComponent, 
-      MatTabsModule
+      MatTabsModule,
+      LoadingSpinnerComponent
     ]
 })
 export class EntretienComponent implements OnDestroy{
  
   labels = new Labels();
+  readonly backToActorsLabel = 'Revenir à la liste des acteurs';
+  readonly activeTabIndex = signal(0);
+  readonly isLoading = signal(true);
+  private initSub?: Subscription;
+  private lastLoadKey = '';
   title="";
   themes = signal<Nomenclature[]>([]);
   id_acteur = signal<number>(0);
@@ -86,22 +93,34 @@ export class EntretienComponent implements OnDestroy{
       this.id_acteur.set(id);
       const slugValue = slug as string;
       this.title = this.labels.addInterview + ' de ' + this.actor.nom + ' '+ this.actor.prenom;
-      //Modification
-      if (id && slugValue){
-        const themes$ = this.nomenclatureService.getAllByType("thème_question",id);
-        const etats$ = this.nomenclatureService.getAllByType("statut_entretien");
-        const noResponse$ = this.nomenclatureService.getNoResponse("");
-    
-        forkJoin([themes$,etats$,noResponse$]).subscribe(([themes,etats,noResponse]) => {
-          this.prepareResults(themes,etats,noResponse);
-          this.menu = document.getElementById("menu");
-          setTimeout(() => {
-            this.display();
-          }, 0);
-          
-        });
+      if (!id || !slugValue) {
+        this.isLoading.set(false);
+        return;
       }
-      
+
+      const loadKey = `${id}/${slugValue}`;
+      if (this.lastLoadKey === loadKey) return;
+
+      this.lastLoadKey = loadKey;
+      this.isLoading.set(true);
+      this.initSub?.unsubscribe();
+
+      const themes$ = this.nomenclatureService.getAllByType("thème_question", id);
+      const etats$ = this.nomenclatureService.getAllByType("statut_entretien");
+      const noResponse$ = this.nomenclatureService.getNoResponse("");
+
+      this.initSub = forkJoin([themes$, etats$, noResponse$]).subscribe({
+        next: ([themes, etats, noResponse]) => {
+          this.prepareResults(themes, etats, noResponse);
+          this.menu = document.getElementById("menu");
+          setTimeout(() => this.display(), 0);
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.toaster.error('Erreur lors du chargement de l\'entretien.');
+          this.isLoading.set(false);
+        }
+      });
     });
   }
 
@@ -192,33 +211,17 @@ export class EntretienComponent implements OnDestroy{
   }
   //Cache ou affiche le menu en fonction de l'onglet choisi
   onTabChange(event: MatTabChangeEvent) {
-    
-    let page = document.getElementById('page');
-    if (event.index === 0) { 
-      
-      this.display()
-      page?.classList.replace('one-column','grid-3-9');
-    }else{
-      this.hide();
-      page?.classList.replace('grid-3-9','one-column');
+    this.activeTabIndex.set(event.index);
+    if (event.index === 0) {
+      setTimeout(() => this.display(), 0);
     }
   }
 
-  //Affiche le menu
-  hide(){
-    if (this.menu?.className == "visible"){
-      this.menu?.classList.remove("visible");
-      this.menu?.classList.add("invisible");
-    }
-  }
-
-  //cache le menu
-  display(){
-
-    if (this.menu?.className == "invisible"){
-      this.menu?.classList.remove("invisible");
-      this.menu?.classList.add("visible");
-    }
+  private display(): void {
+    this.menu = document.getElementById('menu');
+    if (!this.menu) return;
+    this.menu.classList.remove('invisible');
+    this.menu.classList.add('visible');
   }
   
   //Met la liste de réponses à jour 
@@ -268,9 +271,10 @@ export class EntretienComponent implements OnDestroy{
   }
 
   ngOnDestroy(): void {
-  
+    this.initSub?.unsubscribe();
     this.nomenclatureSubscription?.unsubscribe();
     this.reponsesSubscription?.unsubscribe();
+    this.lastLoadKey = '';
   }
 
   navigate(path:string,diagnostic:Diagnostic){

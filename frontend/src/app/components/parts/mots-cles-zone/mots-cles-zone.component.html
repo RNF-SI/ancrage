@@ -1,3 +1,8 @@
+@if (isLoading()) {
+<div class="mots-cles-loading">
+  <app-loading-spinner></app-loading-spinner>
+</div>
+} @else {
 <div class="grid-6-6">
   <div class="col-span-6">
     <div class="grid" cdkDropListGroup>
@@ -38,7 +43,7 @@
     </div>
   </div>
 
-  <div class="col-span-6">
+  <div class="col-span-6 mots-cles-side-panel">
     @if (!modeAnalyse()) {
       <mat-form-field appearance="outline">
         <mat-chip-set>
@@ -83,9 +88,13 @@
       }
       <li>Dupliquer un mot-clé : si vous avez besoin qu'un mot-clé apparaisse dans deux catégories à la fois, déplacez-le d'une catégorie à une autre en maintenant la touche MAJ. Il apparaîtra alors à la fois dans la catégorie d'origine et la catégorie ciblée.</li>
     </ul>
+    <div class="mots-cles-side-footer">
+      <ng-content select="[afomSideFooter]"></ng-content>
+    </div>
   </div>
 
   @if (diagnostic().created_by == id_role() && !diagnostic().is_read_only) {
     <button mat-raised-button type="button" color="warn" (click)="sendResponse()" [disabled]="disable()">Enregistrer</button>
   }
 </div>
+}

@@ -28,6 +28,7 @@ import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { ReponseService } from '@app/services/reponse.service';
 import { Question } from '@app/models/question.model';
 import { QuestionService } from '@app/services/question.service';
+import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinner/loading-spinner.component';
 
 
 @Component({
@@ -45,7 +46,8 @@ import { QuestionService } from '@app/services/question.service';
         MatIconModule,
         CommonModule,
         MatButtonModule,
-        FontAwesomeModule
+        FontAwesomeModule,
+        LoadingSpinnerComponent
     ]
 })
 export class MotsClesZoneComponent implements OnDestroy{
@@ -87,24 +89,32 @@ export class MotsClesZoneComponent implements OnDestroy{
   motsCleAnalyse = signal<MotCle[]>([]);
   results = signal<GraphMotsCles[]>([]);
   disable = signal<boolean>(true);
+  readonly isLoading = signal(true);
   //modeAnalyse : utilisé dans la partie générale ; !modeAnalyse: utilisé au niveau de l'entretien
 
   constructor() {
     effect(() => {
       if (this.modeAnalyse() && this.diagnostic().id_diagnostic > 0) {
+        this.isLoading.set(true);
         this.getDataAnalysis();
       }
     });
     effect(() => {
       if (this.modeAnalyse()) return;
-  
+
       const user = this.authService.getCurrentUser();
       this.id_role.set(user.id_role);
-  
+
       const diagId = this.diagnostic().id_diagnostic;
       const idActeur = this.id_acteur();
-  
-      forkJoin([
+      if (!diagId || !idActeur) {
+        this.isLoading.set(false);
+        return;
+      }
+
+      this.isLoading.set(true);
+      this.forkSub?.unsubscribe();
+      this.forkSub = forkJoin([
         this.motCleService.getAllByDiag(diagId),
         this.nomenclatureService.getAllByType('AFOM'),
         this.motCleService.getKeywordsByActor(idActeur),
@@ -112,8 +122,12 @@ export class MotsClesZoneComponent implements OnDestroy{
       ]).subscribe({
         next: ([keywords, sections, keywordsActor, questionAfom]) => {
           this.prepareData(keywords, sections, keywordsActor, questionAfom);
+          this.isLoading.set(false);
         },
-        error: () => this.toastr.error('Erreur lors du chargement des mots-clés')
+        error: () => {
+          this.toastr.error('Erreur lors du chargement des mots-clés');
+          this.isLoading.set(false);
+        }
       });
     });
   }
@@ -141,14 +155,21 @@ export class MotsClesZoneComponent implements OnDestroy{
     this.id_role.set(user.id_role);
     const sections$ = this.nomenclatureService.getAllByType('AFOM'); 
     const results$ = this.diagnosticService.getOccurencesKeyWords(this.diagnostic().id_diagnostic);
-      this.forkSub = forkJoin([results$, sections$]).subscribe(([results, sections]) => {
-        this.categories.set(sections);
-        for (const cat of this.categories()) {
-          cat.mots_cles = [];
+      this.forkSub = forkJoin([results$, sections$]).subscribe({
+        next: ([results, sections]) => {
+          this.categories.set(sections);
+          for (const cat of this.categories()) {
+            cat.mots_cles = [];
+          }
+
+          this.motsCleAnalyse.set([]);
+          this.prepareResults(results);
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.toastr.error('Erreur lors du chargement des mots-clés');
+          this.isLoading.set(false);
         }
-    
-        this.motsCleAnalyse.set([]);
-        this.prepareResults(results);
       });
   }
 

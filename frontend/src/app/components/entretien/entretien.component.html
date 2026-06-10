@@ -1,7 +1,18 @@
 <div class="container">
-  <div id="page" class="grid-3-9">
-    <div class="col-left">
+  @if (isLoading()) {
+  <div class="entretien-loading">
+    <app-loading-spinner></app-loading-spinner>
+  </div>
+  } @else {
+  <div id="page" class="grid-3-9" [class.entretien-page-full]="activeTabIndex() === 1">
+    <div class="col-left entretien-col-left" [class.entretien-col-left--hidden]="activeTabIndex() === 1">
       <app-menu-lateral [themes]="themes()"></app-menu-lateral>
+      <div class="entretien-back-nav">
+        <button mat-raised-button color="accent" type="button" (click)="navigate(previousPage, diagnostic)">
+          {{ backToActorsLabel }}
+        </button>
+      </div>
+      <br>
     </div>
 
     <div class="col-center">
@@ -59,6 +70,11 @@
                 [id_acteur]="id_acteur()"
                 [noResponse]="noResponse()"
                 [reponses]="reponses">
+                <div afomSideFooter class="entretien-afom-back-nav">
+                  <button mat-raised-button color="accent" type="button" (click)="navigate(previousPage, diagnostic)">
+                    {{ backToActorsLabel }}
+                  </button>
+                </div>
               </app-mots-cles-zone>
             }
           </div>
@@ -66,8 +82,5 @@
       </mat-tab-group>
     </div>
   </div>
+  }
 </div>
-
-<button mat-raised-button color="accent" type="button" (click)="navigate(previousPage, diagnostic)">
-  {{ labels.btnPreviousStepLabel }}
-</button>

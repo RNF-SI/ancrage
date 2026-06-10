@@ -1,3 +1,9 @@
+.entretien-loading {
+    display: flex;
+    justify-content: center;
+    padding: 3rem 0;
+}
+
 .warn{
     color: red;
 }
@@ -12,12 +18,49 @@ mat-radio-group{
     display: grid;
     grid-template-columns: 20% 80%; /* ou 3fr 6fr 3fr */
     gap: 1rem;
+    align-items: start;
 }
 
-.one-column{
-    display: grid;
-    grid-template-columns: 0% 100%; /* ou 3fr 6fr 3fr */
-    gap: 1rem;
+.entretien-col-left {
+    position: sticky;
+    top: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: calc(100vh - 80px);
+}
+
+.entretien-col-left--hidden {
+    display: none;
+}
+
+.entretien-col-left ::ng-deep .sticky-menu {
+    position: static;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+}
+
+.entretien-back-nav {
+    flex-shrink: 0;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    background: #fff;
+}
+
+.entretien-back-nav button {
+    width: 100%;
+}
+
+.entretien-afom-back-nav {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.entretien-page-full {
+    grid-template-columns: 1fr;
 }
 
 .commentaire{
