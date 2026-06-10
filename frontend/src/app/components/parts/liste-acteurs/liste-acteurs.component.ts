@@ -184,11 +184,9 @@ export class ListeActeursComponent {
 
   openAlertDisable(acteur: Acteur) {
     const dialogRef = this.dialog.open(AlerteSuppressionActeurComponent, {
-      data: {
-        title: "Supprimer l'acteur",
-        acteur,
-        message: "Vous êtes sur le point de supprimer cet acteur. Etes-vous sûr-e de vouloir continuer ?"
-      }
+      data: { acteur },
+      maxWidth: '50vw',
+      width: '50vw',
     });
     dialogRef.afterClosed().subscribe(acteurResult => {
       if (acteurResult) this.delete.emit(acteurResult);

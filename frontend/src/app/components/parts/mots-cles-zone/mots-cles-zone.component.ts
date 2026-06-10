@@ -94,8 +94,10 @@ export class MotsClesZoneComponent implements OnDestroy{
 
   constructor() {
     effect(() => {
-      if (this.modeAnalyse() && this.diagnostic().id_diagnostic > 0) {
+      const diag = this.diagnostic();
+      if (this.modeAnalyse() && diag.id_diagnostic > 0) {
         this.isLoading.set(true);
+        this.forkSub?.unsubscribe();
         this.getDataAnalysis();
       }
     });

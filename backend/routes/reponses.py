@@ -187,6 +187,47 @@ def enregistrer_reponse_acteur(reponse_objet):
     record_afoms(diagnostic_id,mots_cles_repartis)
 
 
+def get_linked_mot_cle_ids_for_diagnostic(diagnostic_id):
+    """Mots-clés encore liés à une réponse d'acteur du diagnostic (parents + enfants de groupe)."""
+    directly_linked = (
+        db.session.query(reponse_mot_cle.c.mot_cle_id)
+        .join(Reponse, reponse_mot_cle.c.reponse_id == Reponse.id_reponse)
+        .join(Acteur, Reponse.acteur_id == Acteur.id_acteur)
+        .filter(Acteur.diagnostic_id == diagnostic_id)
+    )
+    linked_ids = {row[0] for row in directly_linked.all()}
+    if linked_ids:
+        children = (
+            db.session.query(MotCle.id_mot_cle)
+            .filter(MotCle.mots_cles_groupe_id.in_(linked_ids))
+            .all()
+        )
+        linked_ids.update(row[0] for row in children)
+    return linked_ids
+
+
+def cleanup_orphan_mots_cles_for_diagnostic(diagnostic_id):
+    """Supprime les mots-clés du diagnostic qui ne sont plus liés à aucune réponse."""
+    if not diagnostic_id:
+        return
+
+    linked_ids = get_linked_mot_cle_ids_for_diagnostic(diagnostic_id)
+    query = MotCle.query.filter(MotCle.diagnostic_id == diagnostic_id)
+    if linked_ids:
+        query = query.filter(~MotCle.id_mot_cle.in_(linked_ids))
+
+    for mot_cle in query.all():
+        db.session.delete(mot_cle)
+
+
+def recalculate_afom_for_diagnostic(diagnostic_id):
+    """Recalcule l'AFOM général à partir des mots-clés des acteurs restants."""
+    if not diagnostic_id:
+        return
+    mots_cles_repartis = getRepartitionMotsCles(diagnostic_id)
+    record_afoms(diagnostic_id, mots_cles_repartis)
+
+
 def record_afoms(diagnostic_id,mots_cles_repartis):
         # Suppression des AFOM précédents liés aux mots-clés de ce diagnostic
     afom_ids_to_delete = (

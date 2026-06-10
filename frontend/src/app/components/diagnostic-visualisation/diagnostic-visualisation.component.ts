@@ -185,8 +185,32 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   }
 
 
-  removeActeur(acteur: Acteur) {
-    this.actors.update(list => list.filter(a => a.id_acteur !== acteur.id_acteur));
+  removeActeur(_acteur: Acteur) {
+    this.reloadDiagnostic();
+  }
+
+  private reloadDiagnostic(): void {
+    const id = this.id_diagnostic();
+    const slug = this.slug();
+    if (!id || !slug) return;
+
+    this.diagnosticService.invalidateCache(id, slug);
+    this.isLoading = true;
+    this.diagSubscription?.unsubscribe();
+    this.diagSubscription = this.diagnosticService.get(id, slug).subscribe({
+      next: (diag) => {
+        this.diagnostic.set(diag);
+        this.diag = diag;
+        this.stateService.setDiagnostic(diag);
+        this.actors.set(diag.acteurs ?? []);
+        this.displayedActorsForMap.set(diag.acteurs ?? []);
+        this.acteurService.sortByNameAndSelected(this.actors());
+        this.isLoading = false;
+      },
+      error: () => {
+        this.isLoading = false;
+      }
+    });
   }
 
   //Cache ou affiche le menu en fonction de l'onglet choisi

@@ -5,7 +5,11 @@ from models.models import *
 from schemas.metier import *
 from routes import bp, datetime, slugify, uuid, timezone
 from configs.logger_config import logger
-from routes.reponses import verifDatesEntretien
+from routes.reponses import (
+    verifDatesEntretien,
+    recalculate_afom_for_diagnostic,
+    cleanup_orphan_mots_cles_for_diagnostic,
+)
 from pypnusershub.decorators import check_auth
 
 
@@ -44,8 +48,7 @@ def acteurMethods(id_acteur, slug):
             return jsonify({'error': 'Slug invalide'}), 400
     else:
         if acteur.slug == slug:
-            db.session.delete(acteur)
-            db.session.commit()
+            delete_acteur_and_related_data(acteur)
             logger.info(f"🗑 Acteur {id_acteur} supprimé")
             return '', 204
         else:
@@ -137,7 +140,6 @@ def getAllActeursBySites():
         acteurs = (
             Acteur.query
             .filter(Acteur.diagnostic_id.in_(ids_diagnostics))
-            .filter_by(is_deleted=False)
             .options(
                 joinedload(Acteur.commune).joinedload(Commune.departement),
                 selectinload(Acteur.categories),
@@ -169,23 +171,23 @@ def getAllActeursByUSer(created_by):
     usersObj = schema.dump(acteurs)
     return jsonify(usersObj)
 
-@bp.route('/acteur/disable/<int:id_acteur>/<slug>', methods=['PUT'])
-@check_auth(1)
-def disableActeur(id_acteur, slug):
-    acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
+def delete_acteur_and_related_data(acteur):
+    """Supprime définitivement l'acteur, ses réponses, ses mots-clés et recalcule l'AFOM."""
+    diagnostic_id = acteur.diagnostic_id
+    acteur_id = acteur.id_acteur
 
-    if not acteur:
-        logger.warning(f"❌ Aucun acteur trouvé pour l'ID {id_acteur}")
-        return jsonify({'error': 'Acteur non trouvé'}), 404
-    
-    if acteur.slug == slug:
-        acteur.is_deleted = True
+    db.session.delete(acteur)
+    db.session.flush()
+    logger.info(f"🗑 Acteur {acteur_id} et ses réponses supprimés")
+
+    if diagnostic_id:
+        cleanup_orphan_mots_cles_for_diagnostic(diagnostic_id)
         db.session.commit()
-        # L'objet acteur est déjà en mémoire, pas besoin de recharger
-        return getActeur(acteur)
+        recalculate_afom_for_diagnostic(diagnostic_id)
+        verifDatesEntretien(diagnostic_id)
     else:
-        logger.warning(f"❌ Slug invalide pour mise à jour de l'acteur {id_acteur}")
-        return jsonify({'error': 'Slug invalide'}), 400
+        db.session.commit()
+
 
 def changeValuesActeur(acteur, data):
     logger.info("🔄 Mise à jour des valeurs de l'acteur à partir des données fournies")
@@ -196,8 +198,7 @@ def changeValuesActeur(acteur, data):
     acteur.mail = data['mail']
     acteur.commune_id = data['commune']['id_commune']
     acteur.structure = data['structure']
-    acteur.is_deleted=False
-    
+
     if 'profil' in data and data['profil']:
         acteur.profil_cognitif_id = data['profil']['id_nomenclature']
 

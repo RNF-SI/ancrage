@@ -97,12 +97,11 @@ export class ActeurService {
     });
   }
 
-  disableActor(actor:Acteur): Observable<Acteur> {
-      return this.http.put<IActeur>(this.BASE_URL + 'disable/' + actor.id_acteur + '/' + actor.slug, actor.toJson(),{
-        headers: { Authorization: `Bearer ${this.token}` }
-      }).pipe(
-        map(acteurJson => Acteur.fromJson(acteurJson))
-      );
+  deleteActor(actor: Acteur): Observable<void> {
+    return this.http.delete<void>(
+      this.BASE_URL + actor.id_acteur + '/' + actor.slug,
+      { headers: { Authorization: `Bearer ${this.token}` } }
+    );
   }
 
 
