@@ -18,6 +18,26 @@
   font-size: 0.95rem;
 }
 
+.import-loading {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0 3rem;
+}
+
+.import-empty-state {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+}
+
+.import-empty-state p {
+  margin: 0;
+  color: rgba(0, 0, 0, 0.75);
+  font-size: 0.95rem;
+}
+
 .import-filters {
   margin-bottom: 1.5rem;
   padding: 1rem;
@@ -36,34 +56,6 @@
 .import-filters .filter-field {
   min-width: 180px;
   flex: 1 1 200px;
-}
-
-.import-chosen {
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: rgba(103, 58, 183, 0.08);
-  border-radius: 8px;
-  border: 1px solid rgba(103, 58, 183, 0.2);
-}
-
-.chosen-title {
-  margin: 0 0 0.75rem 0;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.chosen-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.chosen-chip {
-  display: inline-block;
-  padding: 0.35rem 0.75rem;
-  background: rgba(103, 58, 183, 0.15);
-  border-radius: 20px;
-  font-size: 0.9rem;
 }
 
 .import-list-section {
@@ -110,6 +102,19 @@
   display: flex;
   gap: 0.25rem;
   flex-shrink: 0;
+}
+
+.import-list-option--imported {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.import-list-option--imported .actor-main,
+.import-list-option--imported .actor-structure {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.import-selection-list .mat-mdc-list-option.import-list-option--imported.mat-mdc-list-option-disabled {
+  opacity: 1;
 }
 
 .import-actions {

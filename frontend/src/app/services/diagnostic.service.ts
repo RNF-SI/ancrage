@@ -33,6 +33,14 @@ export class DiagnosticService {
     /** Cache en mémoire : clé = "id/slug", valeur = { diagnostic, time }. */
     private cache = new Map<string, { diagnostic: Diagnostic; time: number }>();
   
+    hasOtherOnSites(payload: { id_sites: number[]; exclude_diagnostic_id?: number }): Observable<boolean> {
+      return this.http.post<{ has_other: boolean }>(this.GET_ALL_URL + '-site/has-other', payload, {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
+        map(response => response.has_other)
+      );
+    }
+
     //Récupère les diags en fonction des sites
     getAllBySites(array:any): Observable<Diagnostic[]> {
       return this.http.post<IDiagnostic[]>(this.GET_ALL_URL+"-site",array,{
@@ -188,7 +196,13 @@ export class DiagnosticService {
       return this.http.put<IDiagnostic>(this.BASE_URL + '/' + diagnostic.id_diagnostic + '/' + diagnostic.slug, diagnostic.toJson(),{
         headers: { Authorization: `Bearer ${this.token}` }
       }).pipe(
-        map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
+        map(diagnosticJson => Diagnostic.fromJson(diagnosticJson)),
+        tap(updated => {
+          this.cache.set(`${updated.id_diagnostic}/${updated.slug}`, {
+            diagnostic: updated,
+            time: Date.now()
+          });
+        })
       );
     }
     

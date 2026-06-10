@@ -120,6 +120,28 @@ def getAllDiagnostics():
         usersObj = schema.dump(diagnostics.items)
         return jsonify(usersObj)
 
+@bp.route('/diagnostics-site/has-other', methods=['POST'])
+@check_auth(1)
+def hasOtherDiagnosticsOnSites():
+    data = request.get_json()
+
+    if not data or 'id_sites' not in data:
+        return jsonify({'message': 'Aucun ID de site fourni.'}), 400
+
+    sites_ids = data['id_sites']
+    exclude_diagnostic_id = data.get('exclude_diagnostic_id')
+
+    query = (
+        db.session.query(Diagnostic.id_diagnostic)
+        .join(Diagnostic.sites)
+        .filter(Site.id_site.in_(sites_ids))
+    )
+    if exclude_diagnostic_id:
+        query = query.filter(Diagnostic.id_diagnostic != exclude_diagnostic_id)
+
+    has_other = query.limit(1).first() is not None
+    return jsonify({'has_other': has_other}), 200
+
 @bp.route('/diagnostics-site', methods=['POST'])
 @check_auth(1)    
 def getAllDiagnosticsBySites():
@@ -129,18 +151,21 @@ def getAllDiagnosticsBySites():
         return jsonify({'message': 'Aucun ID de site fourni.'}), 400
 
     sites_ids = data['id_sites']
+    exclude_diagnostic_id = data.get('exclude_diagnostic_id')
 
-    filtered_diagnostics = (
+    filtered_diagnostics_query = (
         Diagnostic.query
         .join(Diagnostic.sites)
-        .join(Diagnostic.acteurs)
         .filter(Site.id_site.in_(sites_ids))
-        .distinct()
-        .all()
     )
+    if exclude_diagnostic_id:
+        filtered_diagnostics_query = filtered_diagnostics_query.filter(
+            Diagnostic.id_diagnostic != exclude_diagnostic_id
+        )
+    filtered_diagnostics = filtered_diagnostics_query.distinct().all()
 
     logger.info("Diagnostics filtrés :", [f"id={d.id_diagnostic}, nom={d.nom}" for d in filtered_diagnostics])
-    schema = DiagnosticSchema(many=True)
+    schema = DiagnosticLiteSchema(many=True)
     return jsonify(schema.dump(filtered_diagnostics))
 
 @bp.route('/diagnostics/charts/average/<id_diagnostic>')

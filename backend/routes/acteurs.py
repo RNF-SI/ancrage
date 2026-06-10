@@ -114,12 +114,19 @@ def getAllActeursBySites():
     data = request.get_json()
     if data.get('id_sites'):
         liste = data['id_sites']
-        logger.info(f"🧭 Liste des sites : {liste}")
+        exclude_diagnostic_id = data.get('exclude_diagnostic_id')
+        logger.info(f"🧭 Liste des sites : {liste}, diagnostic exclu : {exclude_diagnostic_id}")
 
-        diagnostics = db.session.query(Diagnostic.id_diagnostic).\
-            join(Diagnostic.sites).\
-            filter(Site.id_site.in_(liste)).\
-            distinct().all()
+        diagnostics_query = (
+            db.session.query(Diagnostic.id_diagnostic)
+            .join(Diagnostic.sites)
+            .filter(Site.id_site.in_(liste))
+        )
+        if exclude_diagnostic_id:
+            diagnostics_query = diagnostics_query.filter(
+                Diagnostic.id_diagnostic != exclude_diagnostic_id
+            )
+        diagnostics = diagnostics_query.distinct().all()
         ids_diagnostics = [d.id_diagnostic for d in diagnostics]
         logger.info(f"🔍 Diagnostics trouvés : {ids_diagnostics}")
 
@@ -134,14 +141,12 @@ def getAllActeursBySites():
             .options(
                 joinedload(Acteur.commune).joinedload(Commune.departement),
                 selectinload(Acteur.categories),
-                selectinload(Acteur.reponses).joinedload(Reponse.valeur_reponse),
-                selectinload(Acteur.reponses).joinedload(Reponse.question),
                 joinedload(Acteur.diagnostic)
             )
             .all()
         )
         logger.info(f"👥 Nombre d'acteurs trouvés : {len(acteurs)}")
-        schema = ActeurSchema(many=True)
+        schema = ActeurImportSchema(many=True)
         return jsonify(schema.dump(acteurs)), 200
     else:
         logger.info("❌ Champ 'id_sites' manquant")

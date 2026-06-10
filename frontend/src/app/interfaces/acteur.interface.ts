@@ -23,4 +23,6 @@ export interface IActeur {
     modified_by:number;
     slug:string;
     is_deleted:boolean;
+    acteur_origine_id?:number;
+    is_copy?:boolean;
 }

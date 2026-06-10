@@ -2,8 +2,24 @@ from models.models import Acteur, Diagnostic, Document, MotCle, Nomenclature, Re
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from marshmallow import fields
 
+class RegionLiteSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Region
+        load_instance = True
+        exclude = ('geom', 'departements')
+
+
+class DepartementLiteSchema(SQLAlchemyAutoSchema):
+    region = fields.Nested(lambda: RegionLiteSchema)
+
+    class Meta:
+        model = Departement
+        load_instance = True
+        exclude = ('geom', 'communes', 'sites')
+
+
 class RegionSchema(SQLAlchemyAutoSchema):
-    departements = fields.Nested(lambda: DepartementSchema, many=True, exclude=("region",))
+    departements = fields.Nested(lambda: DepartementLiteSchema, many=True, exclude=("region",))
     geom = fields.Method("get_geom")
     class Meta:
         model = Region
@@ -17,7 +33,7 @@ class RegionSchema(SQLAlchemyAutoSchema):
 
 class DepartementSchema(SQLAlchemyAutoSchema):
     geom = fields.Method("get_geom")
-    region = fields.Nested(lambda: RegionSchema, exclude=("departements",))
+    region = fields.Nested(lambda: RegionLiteSchema)
     sites = fields.Nested(lambda: SiteSchema, many=True, exclude=("departements",))
 
     class Meta:
@@ -29,9 +45,49 @@ class DepartementSchema(SQLAlchemyAutoSchema):
     def get_geom(self, obj):
         return db.session.scalar(obj.geom.ST_AsGeoJSON()) if obj.geom else None
 
+
+def _commune_code_dpt(obj):
+    if obj.insee_com and len(obj.insee_com) >= 2:
+        return obj.insee_com[:2]
+    return None
+
+
+class CommuneLiteSchema(SQLAlchemyAutoSchema):
+    departement = fields.Nested(lambda: DepartementLiteSchema)
+    code_dpt = fields.Method("get_code_dpt")
+
+    class Meta:
+        model = Commune
+        load_instance = True
+        exclude = (
+            'geom', 'code_epci', 'insee_arr', 'insee_can', 'insee_reg',
+            'population', 'statut', 'latitude', 'longitude'
+        )
+
+    def get_code_dpt(self, obj):
+        return _commune_code_dpt(obj)
+
+
+class CommuneWithLocationSchema(SQLAlchemyAutoSchema):
+    """Commune légère avec lat/lng pour la carte des acteurs (sans géométrie PostGIS)."""
+    departement = fields.Nested(lambda: DepartementLiteSchema)
+    code_dpt = fields.Method("get_code_dpt")
+
+    class Meta:
+        model = Commune
+        load_instance = True
+        exclude = (
+            'geom', 'code_epci', 'insee_arr', 'insee_can', 'insee_reg',
+            'population', 'statut'
+        )
+
+    def get_code_dpt(self, obj):
+        return _commune_code_dpt(obj)
+
+
 class CommuneSchema(SQLAlchemyAutoSchema):
     geom = fields.Method("get_geom")
-    departement = fields.Nested(lambda: DepartementSchema, exclude=("communes",))
+    departement = fields.Nested(lambda: DepartementLiteSchema)
     code_dpt = fields.Method("get_code_dpt")
 
     class Meta:
@@ -44,15 +100,7 @@ class CommuneSchema(SQLAlchemyAutoSchema):
         return db.session.scalar(obj.geom.ST_AsGeoJSON()) if obj.geom else None
     
     def get_code_dpt(self, obj):
-        # Génère le code postal à partir du code INSEE
-        if obj.insee_com and len(obj.insee_com) >= 2:
-            # Les 2 premiers chiffres du code INSEE correspondent au département
-            dept_code = obj.insee_com[:2]
-            # Pour la plupart des départements, on ajoute "000" pour former le code postal
-            # Exceptions pour les départements d'outre-mer et autres cas spéciaux
-           
-            return dept_code
-        return None
+        return _commune_code_dpt(obj)
 
 
 class SiteSchema(SQLAlchemyAutoSchema):
@@ -72,7 +120,7 @@ class SiteSchema(SQLAlchemyAutoSchema):
 
     def get_departements_flat(self, obj):
         return [
-            DepartementSchema(exclude=("sites",)).dump(ds)
+            DepartementLiteSchema().dump(ds)
             for ds in obj.departements
             if ds
         ]
@@ -94,7 +142,7 @@ class SiteFromDiagSchema(SQLAlchemyAutoSchema):
 
     def get_departements_flat(self, obj):
         return [
-            DepartementSchema(exclude=("sites",)).dump(ds)
+            DepartementLiteSchema().dump(ds)
             for ds in obj.departements
             if ds
         ]
@@ -112,7 +160,7 @@ class DiagnosticSchema(SQLAlchemyAutoSchema):
 
     def get_active_actors(self, obj):
         active_actors = [d for d in obj.acteurs if not d.is_deleted]
-        return ActeurSchema(many=True, exclude=('diagnostic',)).dump(active_actors)
+        return ActeurOnDiagnosticSchema(many=True).dump(active_actors)
 
 
 class DiagnosticLiteSchema(SQLAlchemyAutoSchema):
@@ -158,11 +206,35 @@ class ActeurWithoutResponsesSchema(SQLAlchemyAutoSchema):
         load_instance = True
 
     diagnostic = fields.Nested(lambda: DiagnosticWithSitesSchema)
-    commune = fields.Nested(lambda: CommuneSchema)
+    commune = fields.Nested(lambda: CommuneLiteSchema)
     categories = fields.Nested(lambda: NomenclatureLightSchema, many=True)
     profil = fields.Nested(lambda: NomenclatureLightSchema)
     statut_entretien = fields.Nested(lambda: NomenclatureLightSchema)
-    
+
+
+class ActeurOnDiagnosticSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Acteur
+        load_instance = True
+        exclude = ('reponses',)
+
+    commune = fields.Nested(lambda: CommuneWithLocationSchema)
+    categories = fields.Nested(lambda: NomenclatureLightSchema, many=True)
+    profil = fields.Nested(lambda: NomenclatureLightSchema)
+    statut_entretien = fields.Nested(lambda: NomenclatureLightSchema)
+
+
+class ActeurImportSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Acteur
+        load_instance = True
+
+    diagnostic = fields.Nested(lambda: DiagnosticLiteSchema)
+    commune = fields.Nested(lambda: CommuneLiteSchema)
+    categories = fields.Nested(lambda: NomenclatureLightSchema, many=True)
+    profil = fields.Nested(lambda: NomenclatureLightSchema)
+    statut_entretien = fields.Nested(lambda: NomenclatureLightSchema)
+
 
 class QuestionSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -179,7 +251,7 @@ class ActeurLiteSchema(SQLAlchemyAutoSchema):
         model = Acteur
         load_instance = True
         exclude = ('diagnostic',)
-    commune = fields.Nested(lambda: CommuneSchema, exclude=())
+    commune = fields.Nested(lambda: CommuneLiteSchema)
     categories = fields.Nested(lambda: NomenclatureLightSchema, many=True, exclude=("mots_cles",))
 
 class ReponseSchema(SQLAlchemyAutoSchema):

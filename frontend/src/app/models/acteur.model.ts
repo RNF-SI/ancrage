@@ -27,6 +27,8 @@ export class Acteur implements IActeur{
     slug = "";
     is_deleted = false;
     is_creation = false;
+    acteur_origine_id?: number;
+    is_copy = false;
 
     /** Copie profonde de l'objet */
     copy(): Acteur {
@@ -51,6 +53,8 @@ export class Acteur implements IActeur{
         copy.modified_by = this.modified_by;
         copy.slug = this.slug;
         copy.is_deleted = this.is_deleted;
+        copy.acteur_origine_id = this.acteur_origine_id;
+        copy.is_copy = this.is_copy;
 
         return copy;
     }
@@ -78,6 +82,8 @@ export class Acteur implements IActeur{
         acteur.modified_by = data.modified_by;
         acteur.slug = data.slug;
         acteur.is_deleted = data.is_deleted;
+        acteur.acteur_origine_id = data.acteur_origine_id;
+        acteur.is_copy = data.is_copy ?? false;
 
         return acteur;
     }

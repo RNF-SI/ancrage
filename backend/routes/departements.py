@@ -54,7 +54,7 @@ def getAllDepartements():
     if request.method == 'GET':
         logger.info("📋 Récupération de tous les départements")
         departements = Departement.query.all()
-        schema = DepartementSchema(many=True)
+        schema = DepartementLiteSchema(many=True)
         departementsObj = schema.dump(departements)
         logger.info(f"📦 {len(departements)} départements récupérés")
         return jsonify(departementsObj)
@@ -65,7 +65,7 @@ def getAllDepartementsByUSer(mnemonique):
     if request.method == 'GET':
         logger.info(f"📋 Récupération des départements par mnemonique = {mnemonique}")
         departements = Departement.query.filter_by(mnemonique=mnemonique).all()
-        schema = DepartementSchema(many=True)
+        schema = DepartementLiteSchema(many=True)
         departementsObj = schema.dump(departements)
         logger.info(f"📦 {len(departements)} départements trouvés pour '{mnemonique}'")
         return jsonify(departementsObj)

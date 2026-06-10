@@ -5,6 +5,15 @@
       <p class="import-intro">{{ titleGetActors }}</p>
     </header>
 
+    @if (isLoading()) {
+    <div class="import-loading">
+      <app-loading-spinner></app-loading-spinner>
+    </div>
+    } @else if (emptyStateMessage()) {
+    <section class="import-empty-state" role="status">
+      <p>{{ emptyStateMessage() }}</p>
+    </section>
+    } @else {
     <section class="import-filters">
       <h3 class="filters-title">Filtrer les acteurs</h3>
       <div class="filters-row">
@@ -39,23 +48,15 @@
       </div>
     </section>
 
-    @if (chosenActors.length > 0 && chosenActors[0] !== emptyChosenActorsTxt) {
-    <section class="import-chosen">
-      <h3 class="chosen-title">{{ titleChooseActors }} ({{ chosenActors.length }})</h3>
-      <div class="chosen-list">
-        @for (ca of chosenActors; track ca) {
-        <span class="chosen-chip">{{ ca }}</span>
-        }
-      </div>
-    </section>
-    }
-
     <section class="import-list-section">
       <h3 class="list-section-title">Sélectionner les acteurs à importer</h3>
       <div [formGroup]="formGroup">
         <mat-selection-list formControlName="acteurs" [compareWith]="compareActors" class="import-selection-list">
           @for (actor of acteurs(); track actor.id_acteur) {
-          <mat-list-option [value]="actor" (click)="addOrRemoveActor(actor, true)" class="import-list-option">
+          <mat-list-option [value]="actor" [disabled]="isAlreadyImported(actor)"
+            (click)="onActorClick($event, actor)" class="import-list-option"
+            [class.import-list-option--imported]="isAlreadyImported(actor)"
+            [matTooltip]="isAlreadyImported(actor) ? alreadyImportedTooltip : ''">
             <div class="list-item-content">
               <span class="actor-main">{{ actor.prenom }} {{ actor.nom }}</span>
               <span class="actor-structure">{{ actor.structure }}</span>
@@ -76,14 +77,19 @@
         </mat-selection-list>
       </div>
     </section>
+    }
 
     <div class="import-actions">
-      <button mat-raised-button type="button" (click)="navigate(previousPage, diag())" color="accent">
-        {{ labels.btnPreviousStepLabel }}
+      <button mat-raised-button type="button" (click)="navigate(previousPage, diag())" color="accent"
+        [disabled]="isLoading()">
+        {{ cancelLabel }}
       </button>
-      <button mat-raised-button type="button" (click)="recordActors()" color="primary">
-        {{ labels.addActors }}
+      @if (!isLoading() && !emptyStateMessage()) {
+      <button mat-raised-button type="button" (click)="recordActors()" color="primary"
+        [disabled]="!hasNewActorsToImport()">
+        {{ submitLabel }}
       </button>
+      }
     </div>
   </div>
 </div>

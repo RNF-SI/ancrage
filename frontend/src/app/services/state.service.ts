@@ -297,23 +297,7 @@ export class StateService {
                 return null;
             }
 
-            // Créer un diagnostic avec les données validées
-            const diagnostic = Object.assign(new Diagnostic(), data);
-
-            // Validation minimale des propriétés critiques
-            if (diagnostic.id_diagnostic === undefined) {
-                diagnostic.id_diagnostic = data.id_diagnostic || 0;
-            }
-
-            if (!diagnostic.nom) {
-                diagnostic.nom = data.nom || '';
-            }
-
-            // Assurer que les tableaux existent
-            diagnostic.sites = Array.isArray(data.sites) ? data.sites : [];
-            diagnostic.acteurs = Array.isArray(data.acteurs) ? data.acteurs : [];
-
-            return diagnostic;
+            return Diagnostic.fromJson(data);
         } catch (error) {
             console.warn('StateService: Erreur validation diagnostic', error);
             return null;
