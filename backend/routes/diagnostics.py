@@ -8,7 +8,7 @@ from configs.logger_config import logger
 from pypnusershub.decorators import check_auth
 import pandas as pd
 import json, re
-from routes.reponses import verifCompleteStatus
+from routes.reponses import verifCompleteStatus, getRepartitionMotsCles
 
 @bp.route('/diagnostic/<int:id_diagnostic>/<slug>', methods=['GET','PUT','DELETE'])
 @check_auth(1)
@@ -627,7 +627,7 @@ def enregistrer_afoms():
             if isinstance(id_parent, int) and id_parent > 0:
                 ids_a_conserver.add(id_parent)
 
-            enfants = mot_cle_data.get('mots_cles_issus', [])
+            enfants = mot_cle_data.get('mots_cles_issus') or mot_cle_data.get('mots_cles', [])
             for enfant in enfants:
                 id_enfant = enfant.get('id_mot_cle')
                 if isinstance(id_enfant, int) and id_enfant > 0:
@@ -648,7 +648,7 @@ def enregistrer_afoms():
             nom = mot_cle_data.get('nom')
             diagnostic_id = mot_cle_data.get('diagnostic', {}).get('id_diagnostic')
             categorie_data = mot_cle_data.get('categorie')
-            enfants = mot_cle_data.get('mots_cles_issus', [])
+            enfants = mot_cle_data.get('mots_cles_issus') or mot_cle_data.get('mots_cles', [])
             id_parent = mot_cle_data.get('id_mot_cle')
 
             if not nom or not diagnostic_id:
@@ -663,9 +663,10 @@ def enregistrer_afoms():
                 if parent:
                     parent.is_actif = True
                     parent.nom = nom
-                    parent.categorie_id = categorie_id
+                    if categorie_id:
+                        parent.categorie_id = categorie_id
                     parent.mots_cles_groupe_id = None
-                    parent.nombre = nombre 
+                    parent.nombre = nombre
                 else:
                     logger.warning(f"[AVERTISSEMENT] Mot-clé parent ID {id_parent} introuvable.")
                     continue
@@ -675,10 +676,20 @@ def enregistrer_afoms():
                     diagnostic_id=diagnostic_id,
                     categorie_id=categorie_id,
                     is_actif=True,
-                    nombre=nombre 
+                    nombre=nombre
                 )
                 db.session.add(parent)
                 db.session.flush()
+
+            if not parent.categorie_id and enfants:
+                first_child_id = next(
+                    (e.get('id_mot_cle') for e in enfants if isinstance(e.get('id_mot_cle'), int) and e.get('id_mot_cle') > 0),
+                    None,
+                )
+                if first_child_id:
+                    first_child = db.session.get(MotCle, first_child_id)
+                    if first_child and first_child.categorie_id:
+                        parent.categorie_id = first_child.categorie_id
 
             parents_temp.append((parent, enfants, nombre))
             logger.info(f"[GROUPE] Groupe traité : '{parent.nom}' (ID {parent.id_mot_cle})")
@@ -732,68 +743,148 @@ def enregistrer_afoms():
         return {"error": "Erreur serveur lors de l’enregistrement"}, 500
 
 
+def _aggregate_afom_by_nom_categorie(entries):
+    """Fusionne les mots-clés isolés (hors groupe) portant le même nom dans la même catégorie."""
+    groups = []
+    standalone_by_key = {}
+
+    for entry in entries:
+        mot_cle = entry["mot_cle"]
+        enfants = mot_cle.get("mots_cles_issus") or []
+        if enfants:
+            groups.append(entry)
+            continue
+
+        cat_id = mot_cle["categorie"]["id_nomenclature"]
+        key = (mot_cle["nom"], cat_id)
+
+        if key not in standalone_by_key:
+            standalone_by_key[key] = entry
+            continue
+
+        existing = standalone_by_key[key]
+        existing["nombre"] += entry["nombre"]
+        if mot_cle["id_mot_cle"] < existing["mot_cle"]["id_mot_cle"]:
+            existing["mot_cle"]["id_mot_cle"] = mot_cle["id_mot_cle"]
+            if entry.get("id_afom"):
+                existing["id_afom"] = entry["id_afom"]
+
+    result = groups + list(standalone_by_key.values())
+    result.sort(
+        key=lambda e: (
+            e["mot_cle"]["categorie"]["libelle"] or "",
+            e["mot_cle"]["nom"],
+        )
+    )
+    return result
+
+
+def _resolve_afom_nombre(mc, enfants, afom, counts):
+    """Détermine le nombre d'occurrences affiché pour un mot-clé racine ou un groupe."""
+    if afom and afom.number and afom.number > 0:
+        return afom.number
+    if mc.nombre and mc.nombre > 0:
+        return mc.nombre
+
+    interview_total = counts.get(mc.id_mot_cle, 0)
+    for enfant in enfants:
+        interview_total += counts.get(enfant.id_mot_cle, 0)
+    if interview_total > 0:
+        return interview_total
+
+    if enfants:
+        stored = sum((e.nombre or 0) for e in enfants)
+        if stored > 0:
+            return stored
+
+    return 0
+
+
 @bp.route('/diagnostic/mots-cles/<int:id_diagnostic>', methods=['GET'])
 def get_afoms_par_mot_cle_et_diagnostic(id_diagnostic):
-    # Création d’un alias pour rendre les jointures explicites
-    mc_alias = aliased(MotCle)
-    cat_alias = aliased(Nomenclature)
-
-    results = (
-        db.session.query(
-            func.min(mc_alias.id_mot_cle).label("id_mot_cle"),
-            mc_alias.nom.label("nom"),
-            func.sum(Afom.number).label("nombre"),
-            cat_alias.id_nomenclature.label("cat_id"),
-            cat_alias.libelle.label("cat_libelle"),
-            cat_alias.value.label("cat_value"),
-            cat_alias.mnemonique.label("cat_mnemonique")
-        )
-        .join(mc_alias, Afom.mot_cle)
-        .join(cat_alias, mc_alias.categorie)
+    """Retourne les AFOM du diagnostic : mots-clés racine actifs, groupes inclus."""
+    roots = (
+        db.session.query(MotCle, Nomenclature)
+        .outerjoin(Nomenclature, MotCle.categorie_id == Nomenclature.id_nomenclature)
         .filter(
-            mc_alias.diagnostic_id == id_diagnostic,
-            mc_alias.is_actif == True,
-           
+            MotCle.diagnostic_id == id_diagnostic,
+            MotCle.is_actif.is_(True),
+            MotCle.mots_cles_groupe_id.is_(None),
         )
-        .group_by(
-            mc_alias.nom,
-            cat_alias.id_nomenclature,
-            cat_alias.libelle,
-            cat_alias.value,
-            cat_alias.mnemonique
-        )
-        .order_by(cat_alias.libelle, mc_alias.nom)
+        .order_by(Nomenclature.libelle.nulls_last(), MotCle.nom)
         .all()
     )
+
+    # Réintégrer les parents de groupes absents (ex. désactivés par une sauvegarde partielle)
+    root_ids = {mc.id_mot_cle for mc, _ in roots}
+    parent_ids_from_children = (
+        db.session.query(MotCle.mots_cles_groupe_id)
+        .filter(
+            MotCle.diagnostic_id == id_diagnostic,
+            MotCle.mots_cles_groupe_id.isnot(None),
+            MotCle.is_actif.is_(True),
+        )
+        .distinct()
+        .all()
+    )
+    for (parent_id,) in parent_ids_from_children:
+        if parent_id in root_ids:
+            continue
+        parent = db.session.get(MotCle, parent_id)
+        if parent and parent.diagnostic_id == id_diagnostic:
+            roots.append((parent, parent.categorie))
+
+    afom_by_mc = dict(
+        db.session.query(MotCle.id_mot_cle, Afom)
+        .join(Afom, Afom.mot_cle_id == MotCle.id_mot_cle)
+        .filter(MotCle.diagnostic_id == id_diagnostic)
+        .all()
+    )
+
+    counts = {
+        item["id"]: item["nombre"]
+        for item in getRepartitionMotsCles(id_diagnostic)
+    }
+
     data = []
-    for row in results:
-        if row.nombre > 0:
-            motcle_obj = db.session.get(MotCle, row.id_mot_cle)
+    for mc, cat in roots:
+        enfants = (
+            MotCle.query
+            .filter_by(mots_cles_groupe_id=mc.id_mot_cle, is_actif=True)
+            .order_by(MotCle.nom)
+            .all()
+        )
+        afom = afom_by_mc.get(mc.id_mot_cle)
+        nombre = _resolve_afom_nombre(mc, enfants, afom, counts)
 
-            data.append({
-                "id_afom": None,
-                "nombre": row.nombre,
-                "mot_cle": {
-                    "id_mot_cle": row.id_mot_cle,
-                    "nom": row.nom,
-                    "mots_cles_issus": [
-                        {
-                            "id_mot_cle": enfant.id_mot_cle,
-                            "nom": enfant.nom
-                        } for enfant in motcle_obj.mots_cles_issus
-                    ] if motcle_obj else [],
-                    "categorie": {
-                        "id_nomenclature": row.cat_id,
-                        "libelle": row.cat_libelle,
-                        "value": row.cat_value,
-                        "mnemonique": row.cat_mnemonique
+        if nombre <= 0 and not enfants:
+            continue
+
+        data.append({
+            "id_afom": afom.id_afom if afom else None,
+            "nombre": nombre,
+            "mot_cle": {
+                "id_mot_cle": mc.id_mot_cle,
+                "nom": mc.nom,
+                "mots_cles_issus": [
+                    {
+                        "id_mot_cle": enfant.id_mot_cle,
+                        "nom": enfant.nom,
+                        "mot_cle_id_groupe": enfant.mots_cles_groupe_id,
+                        "nombre": enfant.nombre,
                     }
-                }
-            })
-            motcle_obj.nombre = row.nombre
-            db.session.commit()
+                    for enfant in enfants
+                ],
+                "categorie": {
+                    "id_nomenclature": cat.id_nomenclature if cat else mc.categorie_id,
+                    "libelle": cat.libelle if cat else "Non classés",
+                    "value": cat.value if cat else None,
+                    "mnemonique": cat.mnemonique if cat else "AFOM",
+                },
+            },
+        })
 
-    return jsonify(data)   
+    return jsonify(_aggregate_afom_by_nom_categorie(data))
 
 @bp.route("/diagnostic/import-data", methods=["POST"])
 def import_data():

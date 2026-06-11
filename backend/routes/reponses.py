@@ -228,8 +228,8 @@ def recalculate_afom_for_diagnostic(diagnostic_id):
     record_afoms(diagnostic_id, mots_cles_repartis)
 
 
-def record_afoms(diagnostic_id,mots_cles_repartis):
-        # Suppression des AFOM précédents liés aux mots-clés de ce diagnostic
+def record_afoms(diagnostic_id, mots_cles_repartis):
+    """Recalcule les AFOM à partir des entretiens, en respectant les groupes de mots-clés."""
     afom_ids_to_delete = (
         db.session.query(Afom.id_afom)
         .join(Afom.mot_cle)
@@ -241,18 +241,24 @@ def record_afoms(diagnostic_id,mots_cles_repartis):
     if afom_ids_to_delete:
         db.session.query(Afom).filter(Afom.id_afom.in_(afom_ids_to_delete)).delete(synchronize_session=False)
 
-    # Ajout des nouveaux AFOM
+    counts = {item["id"]: item["nombre"] for item in mots_cles_repartis}
+
     for item in mots_cles_repartis:
         mot_cle = item["mot_cle_obj"]
-        count = item["nombre"]
-        afom = Afom(
-            mot_cle_id=mot_cle.id_mot_cle,
-            number=count
-        )
+        if mot_cle.mots_cles_groupe_id is not None:
+            continue
+
+        count = counts.get(mot_cle.id_mot_cle, 0)
+        enfants = mot_cle.mots_cles_issus or []
+        for enfant in enfants:
+            count += counts.get(enfant.id_mot_cle, 0)
+
+        if enfants and count <= 0:
+            count = mot_cle.nombre or sum((e.nombre or 0) for e in enfants)
+
         if count > 0:
-            db.session.add(afom)
-        
-        
+            db.session.add(Afom(mot_cle_id=mot_cle.id_mot_cle, number=count))
+
     db.session.commit()
     logger.info(f"Réponse et AFOM enregistrés pour le diagnostic ID {diagnostic_id}")
 
@@ -283,10 +289,11 @@ def verifDatesEntretien(diagnostic_id):
     db.session.commit()
 
 
-def getRepartitionMotsCles(id_diagnostic): 
+def getRepartitionMotsCles(id_diagnostic):
     mots_cles = (
         db.session.query(MotCle)
-        .filter(MotCle.diagnostic_id == id_diagnostic)
+        .options(selectinload(MotCle.mots_cles_issus))
+        .filter(MotCle.diagnostic_id == id_diagnostic, MotCle.is_actif.is_(True))
         .all()
     )
 

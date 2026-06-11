@@ -30,6 +30,7 @@ import { ReponseService } from '@app/services/reponse.service';
 import { Question } from '@app/models/question.model';
 import { QuestionService } from '@app/services/question.service';
 import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinner/loading-spinner.component';
+import { Labels } from '@app/utils/labels';
 
 
 @Component({
@@ -53,7 +54,8 @@ import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinne
     ]
 })
 export class MotsClesZoneComponent implements OnDestroy{
-  
+
+  labels = new Labels();
   keywords: string[] = [];
   inputCtrl = new FormControl('');
   separatorKeys = [ENTER, COMMA];
@@ -576,56 +578,67 @@ export class MotsClesZoneComponent implements OnDestroy{
         }
       });
 
-    }else{
-      // Sauvegarder les données locales pour les conserver pendant l'envoi
-      const motsClesAnalyseLocaux = [...this.motsCleAnalyse()];
-      const categoriesLocales = this.categories().map(cat => {
-        const newCat = new Nomenclature();
-        Object.assign(newCat, cat);
-        newCat.mots_cles = [...(cat.mots_cles || [])];
-        return newCat;
-      });
-      
-      let afoms:GraphMotsCles[]=[];
-      for (const mc of this.motsCleAnalyse()){
-        // Créer une copie pour éviter de modifier l'original
-        const mcCopy = new MotCle();
-        Object.assign(mcCopy, mc);
-        mcCopy.categorie = new Nomenclature();
-        Object.assign(mcCopy.categorie, mc.categorie);
-        mcCopy.categorie.mots_cles = [];
-        
-        let afom = new GraphMotsCles();
-        afom.id_afom = mc.afom_id!;
-        afom.mot_cle = mcCopy;
-        for( let kw of mc.mots_cles_issus){
-          kw.categorie.mots_cles = [];
-          kw.mots_cles_issus = [];
-        }
-        afom.mot_cle.categorie.mots_cles = []
-        afom.mot_cle.diagnostic.id_diagnostic = this.id_diagnostic();
-        afom.nombre = mc.nombre!;
-        afoms.push(afom);
-      }
-      this.diagSub = this.diagnosticService.updateAfom(afoms).subscribe({
-        next: (afoms) => {
-          if (afoms.length > 0) {
-            this.toastr.success("Données enregistrées");
-            this.prepareResults(afoms);
-          } else {
-            this.toastr.success("Les données ont bien été effacées.");
-            this.setKeywords([]);
-          }
-        },
-        error: (error) => {
-          // En cas d'erreur, restaurer les données locales
-          this.toastr.error("Erreur lors de l'enregistrement. Les données n'ont pas été modifiées.");
-          this.categories.set(categoriesLocales);
-          this.motsCleAnalyse.set(motsClesAnalyseLocaux);
-        }
-      });
+    } else {
+      this.saveAfomAnalyse('Données enregistrées');
     }
-    
+  }
+
+  private buildAfomPayload(): GraphMotsCles[] {
+    const afoms: GraphMotsCles[] = [];
+    for (const mc of this.motsCleAnalyse()) {
+      const mcCopy = new MotCle();
+      Object.assign(mcCopy, mc);
+      mcCopy.categorie = new Nomenclature();
+      Object.assign(mcCopy.categorie, mc.categorie);
+      mcCopy.categorie.mots_cles = [];
+
+      const afom = new GraphMotsCles();
+      afom.id_afom = mc.afom_id!;
+      afom.mot_cle = mcCopy;
+      for (const kw of mc.mots_cles_issus ?? []) {
+        kw.categorie.mots_cles = [];
+        kw.mots_cles_issus = [];
+      }
+      afom.mot_cle.categorie.mots_cles = [];
+      afom.mot_cle.diagnostic.id_diagnostic = this.id_diagnostic();
+      afom.nombre = mc.nombre!;
+      afoms.push(afom);
+    }
+    return afoms;
+  }
+
+  private saveAfomAnalyse(successMessage: string): void {
+    if (!this.modeAnalyse() || this.isSavingAfom()) return;
+
+    const motsClesAnalyseLocaux = [...this.motsCleAnalyse()];
+    const categoriesLocales = this.categories().map(cat => {
+      const newCat = new Nomenclature();
+      Object.assign(newCat, cat);
+      newCat.mots_cles = [...(cat.mots_cles || [])];
+      return newCat;
+    });
+
+    this.isSavingAfom.set(true);
+    this.diagSub?.unsubscribe();
+    this.diagSub = this.diagnosticService.updateAfom(this.buildAfomPayload()).pipe(
+      finalize(() => this.isSavingAfom.set(false))
+    ).subscribe({
+      next: (afoms) => {
+        if (afoms.length > 0) {
+          this.toastr.success(successMessage);
+          this.prepareResults(afoms);
+          this.diagnosticService.invalidateCache();
+        } else {
+          this.toastr.success('Les données ont bien été effacées.');
+          this.setKeywords([]);
+        }
+      },
+      error: () => {
+        this.toastr.error("Erreur lors de l'enregistrement. Les données n'ont pas été modifiées.");
+        this.categories.set(categoriesLocales);
+        this.motsCleAnalyse.set(motsClesAnalyseLocaux);
+      },
+    });
   }
 
   prepareResults(results: GraphMotsCles[]): void {
@@ -737,9 +750,11 @@ export class MotsClesZoneComponent implements OnDestroy{
       });
   
       dialogRef.afterClosed().subscribe(updatedMotsCles => {
-    
         if (updatedMotsCles) {
           this.setKeywords(updatedMotsCles);
+          if (this.modeAnalyse()) {
+            this.saveAfomAnalyse(this.labels.afomGroupSaved);
+          }
         }
       });
   
@@ -756,18 +771,19 @@ export class MotsClesZoneComponent implements OnDestroy{
           target.nombre += source.nombre;
         }
         
-        if (!this.modeAnalyse()){
+        if (!this.modeAnalyse()) {
           this.motsClesReponse.set(this.motsClesReponse().filter(mc =>
-            mc.id_mot_cle !== source.id_mot_cle 
+            mc.id_mot_cle !== source.id_mot_cle
           ));
           this.setKeywords(this.motsClesReponse());
-        }else{
+        } else {
           this.motsCleAnalyse.set(this.motsCleAnalyse().filter(mc =>
-            mc.id_mot_cle !== source.id_mot_cle 
+            mc.id_mot_cle !== source.id_mot_cle
           ));
           this.setKeywords(this.motsCleAnalyse());
+          this.saveAfomAnalyse(this.labels.afomWordAddedToGroup);
         }
- 
+
         source.mot_cle_id_groupe = target.id_mot_cle;
       }
     }

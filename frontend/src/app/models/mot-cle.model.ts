@@ -51,10 +51,10 @@ export class MotCle {
         return {
             ...this,
             reponses: this.reponses ? this.reponses.map(r => r.toJson()) : [],
-            mots_cles: this.mots_cles_issus ? this.mots_cles_issus.map(r => r.toJson()) : [],
+            mots_cles_issus: this.mots_cles_issus ? this.mots_cles_issus.map(r => r.toJson()) : [],
             categorie: this.categorie.toJson(),
             diagnostic: this.diagnostic!.toJson(),
-        };
+        } as IMotCle;
     }
     
 }

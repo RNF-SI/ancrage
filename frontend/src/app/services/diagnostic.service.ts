@@ -144,16 +144,13 @@ export class DiagnosticService {
       } ).pipe(shareReplay(1));
     }
 
-    getOccurencesKeyWords(id_diagnostic:number): Observable<GraphMotsCles[]>{
-      return this.http.get<IGraphMotsCles[]>(this.BASE_URL+"/mots-cles/"+id_diagnostic,{
+    getOccurencesKeyWords(id_diagnostic: number): Observable<GraphMotsCles[]> {
+      return this.http.get<IGraphMotsCles[]>(this.BASE_URL + '/mots-cles/' + id_diagnostic, {
         headers: { Authorization: `Bearer ${this.token}` }
       }).pipe(
-        shareReplay(1),
-        map(graphiquesJsonArray => {
-          return graphiquesJsonArray.map<GraphMotsCles>(
-            graphJson => GraphMotsCles.fromJson(graphJson)
-          )
-        })
+        map(graphiquesJsonArray =>
+          graphiquesJsonArray.map(graphJson => GraphMotsCles.fromJson(graphJson))
+        )
       );
     }
 

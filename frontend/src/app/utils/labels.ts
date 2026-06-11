@@ -99,5 +99,7 @@ export class Labels {
     writeTitle = "Donner un titre";
     validate = "Valider";
     import = "Importer";
-    uploadFile = "Vous devez téléverser un fichier."
+    uploadFile = "Vous devez téléverser un fichier.";
+    afomGroupSaved = "Nouveau groupe enregistré";
+    afomWordAddedToGroup = "Mot ajouté au groupe";
 }
