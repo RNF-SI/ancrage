@@ -47,12 +47,10 @@
                         }
                       </mat-radio-group>
 
-                      @for (rep of getReponsesParQuestion(q.id_question); track rep) {
-                        <textarea class="commentaire"
-                          [formControlName]="'reponse_' + q.id_question"
-                          (focusout)="createReponse(q.id_question)">
-                        </textarea>
-                      }
+                      <textarea class="commentaire"
+                        [formControlName]="'reponse_' + q.id_question"
+                        (focusout)="createReponse(q.id_question)">
+                      </textarea>
                     </div>
                   }
                 }

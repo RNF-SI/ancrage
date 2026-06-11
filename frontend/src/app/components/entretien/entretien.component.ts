@@ -145,19 +145,15 @@ export class EntretienComponent implements OnDestroy{
         controls[`question_${q.id_question}`] = this.fb.control(null);
         controls[`reponse_${q.id_question}`] = this.fb.control(null);
         if (this.id_acteur()){
-            let reponse:Reponse = new Reponse();
-              
+            let reponse = new Reponse();
+            q.reponses?.forEach(rep => {
+              if (rep.acteur?.id_acteur === this.id_acteur()) {
+                reponse = rep;
+              }
+            });
             reponse.question = q;
             reponse.acteur.id_acteur = this.id_acteur();
-            
-        
-          q.reponses?.forEach(rep => {
-            console.log(rep);
-            if (rep.acteur.id_acteur==this.id_acteur()){
-              reponse = rep;
-            }
-          });
-          this.reponses.push(reponse);
+            this.reponses.push(reponse);
           
         }
       });
@@ -177,8 +173,14 @@ export class EntretienComponent implements OnDestroy{
   patchForm(reponses:Reponse[]){
     for(let i = 0;i<reponses.length;i++){
       console.log(reponses[i].question?.id_question,reponses[i].valeur_reponse.id_nomenclature,reponses[i].commentaires);
-      this.formGroup.get(`question_${reponses[i].question?.id_question}`)?.setValue(reponses[i].valeur_reponse.id_nomenclature);
-      this.formGroup.get(`reponse_${reponses[i].question?.id_question}`)?.setValue(reponses[i].commentaires);
+      this.formGroup.get(`question_${reponses[i].question?.id_question}`)?.setValue(
+        reponses[i].valeur_reponse.id_nomenclature,
+        { emitEvent: false }
+      );
+      this.formGroup.get(`reponse_${reponses[i].question?.id_question}`)?.setValue(
+        reponses[i].commentaires,
+        { emitEvent: false }
+      );
       setTimeout(() => {
         this.hideWarnings(reponses,i);
       }, 0);
@@ -226,11 +228,17 @@ export class EntretienComponent implements OnDestroy{
   
   //Met la liste de réponses à jour 
   createReponse = (id_question: number, cr?: Nomenclature) => {
-    let reponse = new Reponse();
-    reponse = this.reponses.find(r => r.question?.id_question === id_question)!;
-    
+    const reponse = this.reponses.find(r => r.question?.id_question === id_question)!;
+    if (!reponse) return;
+
     if (cr !== undefined) {
-      reponse!.valeur_reponse = cr;
+      reponse.valeur_reponse = cr;
+    } else {
+      const idNomenclature = this.formGroup.get(`question_${id_question}`)?.value;
+      const choix = reponse.question?.choixReponses?.find(c => c.id_nomenclature === idNomenclature);
+      if (choix) {
+        reponse.valeur_reponse = choix;
+      }
     }
   
     const commentaire = this.formGroup.get(`reponse_${id_question}`)?.value ?? '';
@@ -253,15 +261,32 @@ export class EntretienComponent implements OnDestroy{
   }
 
   //Soumission du formulaire et attribution de l'état Réalisé ou En cours
-  submit(reponse:Reponse): void {
-  
-      this.reponsesSubscription = this.reponseService.update(reponse).subscribe(
-        reponse => {
-          this.toaster.success("Réponse enregistrée");
+  submit(reponse: Reponse): void {
+    const acteurId = this.id_acteur();
+    const questionId = reponse.question?.id_question;
+    const valeurId = reponse.valeur_reponse?.id_nomenclature;
 
+    if (!acteurId || !questionId || !valeurId || valeurId <= 0) {
+      return;
+    }
+
+    reponse.acteur.id_acteur = acteurId;
+
+    this.reponsesSubscription?.unsubscribe();
+    this.reponsesSubscription = this.reponseService.update(reponse, acteurId).subscribe({
+      next: (updated) => {
+        const idx = this.reponses.findIndex(r => r.question?.id_question === questionId);
+        if (idx >= 0) {
+          updated.question = this.reponses[idx].question;
+          updated.acteur.id_acteur = acteurId;
+          this.reponses[idx] = updated;
         }
-      );
-
+        this.toaster.success('Réponse enregistrée');
+      },
+      error: () => {
+        this.toaster.error("Erreur lors de l'enregistrement de la réponse.");
+      },
+    });
   }
 
   

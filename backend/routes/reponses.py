@@ -35,19 +35,23 @@ def enregistrer_reponse_depuis_objet():
 def enregistrer_reponse(reponses_objets):
     if not reponses_objets:
         logger.warning("Aucune réponse fournie")
-        return
+        return jsonify({"error": "Aucune réponse fournie"}), 400
 
     try:
         acteur_data = reponses_objets['acteur']
         acteur_id = acteur_data['id_acteur']
     except (KeyError, IndexError, TypeError):
         logger.error("Impossible d'extraire l'identifiant de l'acteur.")
-        return
+        return jsonify({"error": "Identifiant acteur manquant"}), 400
+
+    if not acteur_id or acteur_id <= 0:
+        logger.error("Identifiant acteur invalide.")
+        return jsonify({"error": "Identifiant acteur invalide"}), 400
 
     acteur = Acteur.query.get(acteur_id)
     if not acteur:
         logger.error(f"Acteur avec id {acteur_id} introuvable.")
-        return
+        return jsonify({"error": f"Acteur avec id {acteur_id} introuvable"}), 404
 
     logger.info(f"Traitement des réponses pour l'acteur ID {acteur_id}")
 
@@ -59,7 +63,12 @@ def enregistrer_reponse(reponses_objets):
         commentaires = reponses_objets.get('commentaires', "")
     except (KeyError, TypeError):
         logger.warning("Réponse mal formée ignorée")
-        
+        return jsonify({"error": "Réponse mal formée"}), 400
+
+    if not question_id or not valeur_reponse_id or valeur_reponse_id <= 0:
+        logger.warning("Réponse incomplète ignorée (question ou valeur manquante)")
+        return jsonify({"error": "Réponse incomplète"}), 400
+
     questions_ids_envoyees.add(question_id)
    
     stmt = insert(Reponse).values(

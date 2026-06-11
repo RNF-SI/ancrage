@@ -29,13 +29,17 @@ export class ReponseService {
     );
   }
 
-  update(reponse:Reponse): Observable<Reponse> {
-    return this.http.post<IReponse>(this.BASE_URL,reponse,{
+  update(reponse: Reponse, acteurId: number): Observable<Reponse> {
+    const payload = {
+      acteur: { id_acteur: acteurId },
+      question: { id_question: reponse.question?.id_question },
+      valeur_reponse: { id_nomenclature: reponse.valeur_reponse?.id_nomenclature },
+      commentaires: reponse.commentaires ?? '',
+    };
+    return this.http.post<IReponse>(this.BASE_URL, payload, {
       headers: { Authorization: `Bearer ${this.token}` }
-      }).pipe(
-      map(reponse => {
-           return Reponse.fromJson(reponse);
-      })
+    }).pipe(
+      map(saved => Reponse.fromJson(saved))
     );
   }
 

@@ -20,10 +20,10 @@ export class NomenclatureService {
     //Récupère les nomenclatures par mnemonique
     getAllByType(mnemonique:string,id_acteur?:number): Observable<Nomenclature[]> {
       if (id_acteur){
+        // Pas de cache : les réponses d'entretien changent souvent
         return this.http.get<INomenclature[]>(this.GET_ALL_URL+'/'+mnemonique + '/'+id_acteur,{
           headers: { Authorization: `Bearer ${this.token}` }
           }).pipe(
-          shareReplay(1),
           map(nomenclatureJsonArray => {
             return nomenclatureJsonArray.map<Nomenclature>(
               nomenclatureJson => Nomenclature.fromJson(nomenclatureJson)
