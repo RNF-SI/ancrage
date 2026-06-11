@@ -1,13 +1,107 @@
-.fieldName{
-    display:block;
-    width:50%;
-}
-.date{
-    width:50%;
+.grid-3-6-3 {
+  display: grid;
+  grid-template-columns: 10% 80% 10%;
+  gap: 1rem;
 }
 
-.grid-3-6-3 {
-    display: grid;
-    grid-template-columns: 10% 80% 10%; /* ou 3fr 6fr 3fr */
-    gap: 1rem;
+.diagnostic-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 3rem;
+}
+
+.diagnostic-fields-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.sites-select-field {
+  flex: 1;
+  min-width: 16rem;
+}
+
+::ng-deep .sites-select-field .sites-add-btn.mat-mdc-icon-button {
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  margin-right: 1rem;
+  margin-left: 1rem;
+  border-radius: 50%;
+  background-color: #2e7d32;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+}
+
+::ng-deep .sites-select-field .sites-add-btn.mat-mdc-icon-button:hover {
+  background-color: #f57c00;
+}
+
+::ng-deep .sites-select-field .sites-add-btn .mat-mdc-button-persistent-ripple,
+::ng-deep .sites-select-field .sites-add-btn .mat-mdc-button-ripple {
+  border-radius: 50%;
+}
+
+::ng-deep .sites-select-field .sites-add-btn mat-icon {
+  color: #fff;
+  font-size: 1.35rem;
+  width: 1.35rem;
+  height: 1.35rem;
+  line-height: 1.35rem;
+  font-weight: 700;
+}
+
+.field-year {
+  width: 7rem;
+  flex-shrink: 0;
+}
+
+.diagnostic-form-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn-save {
+  background-color: #2e7d32 !important;
+  color: #fff !important;
+}
+
+.btn-save:hover {
+  background-color: #1b5e20 !important;
+}
+
+::ng-deep .sites-select-panel .site-search-option.mat-mdc-option {
+  opacity: 1;
+  pointer-events: none;
+  min-height: 3rem;
+  height: auto;
+  padding: 0.5rem 1rem;
+  cursor: default;
+}
+
+::ng-deep .sites-select-panel .site-search-option .mdc-list-item__primary-text {
+  opacity: 1;
+  width: 100%;
+}
+
+::ng-deep .sites-select-panel .site-search-option .mat-pseudo-checkbox,
+::ng-deep .sites-select-panel .site-search-option .mat-mdc-option-pseudo-checkbox {
+  display: none;
+}
+
+.site-search-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  padding: 0.25rem 0;
+  pointer-events: auto;
+  color: inherit;
 }

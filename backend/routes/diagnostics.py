@@ -536,6 +536,8 @@ def get_scoresParams():
 def changeValuesDiagnostic(diagnostic,data):
     
     diagnostic.nom = data.get('nom', diagnostic.nom)
+    if data.get('annee') is not None:
+        diagnostic.annee = data['annee']
     if data.get('date_debut'):
         diagnostic.date_debut = data['date_debut']
 

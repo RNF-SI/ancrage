@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, computed, effect, ElementRef, inject, OnDestroy, signal, ViewChild } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -13,6 +13,9 @@ import { Nomenclature } from '@app/models/nomenclature.model';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { filterSites } from '@app/utils/filter-sites';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { Labels } from '@app/utils/labels';
 import { MatDialog } from '@angular/material/dialog';
@@ -33,14 +36,17 @@ registerLocaleData(localeFr);
     selector: 'app-diagnostic',
     templateUrl: './diagnostic.component.html',
     styleUrls: ['./diagnostic.component.css'],
-    imports: [CommonModule, MatSelectModule, MatFormFieldModule, FormsModule, MatInputModule, ReactiveFormsModule, MatButtonModule,LoadingSpinnerComponent],
+    imports: [CommonModule, MatSelectModule, MatFormFieldModule, FormsModule, MatInputModule, ReactiveFormsModule, MatButtonModule, MatIconModule, MatTooltipModule, LoadingSpinnerComponent],
     standalone:true
 })
 export class DiagnosticComponent implements OnDestroy{
 
-  titleDiagnostic= "";
-  titleCreateDiag="Créer un diagnostic";
   titleModifyDiag="Modifier un diagnostic";
+  readonly pageTitle = computed(() => {
+    if (this.id_diagnostic() > 0) return this.titleModifyDiag;
+    const nom = this.diagnostic().nom?.trim();
+    return nom ? `Nouveau DAT - ${nom}` : 'Nouveau DAT';
+  });
   btnCreateSiteLabel = "Créer un site";
   btnRecordDiag = "Enregistrer";
   labels = new Labels();
@@ -48,11 +54,13 @@ export class DiagnosticComponent implements OnDestroy{
   sites:Site[]=[]
   uniqueRegions: any;
   selectedSite:Site = new Site();
-  chosenSitesTitle = "Sites choisis";
   sitesSubscription?:Subscription;
-  chosenSites:Site[] = [];
+  readonly siteSearch = signal('');
+  readonly uniqueSites = signal<Site[]>([]);
+  readonly filteredSites = computed(() => filterSites(this.uniqueSites(), this.siteSearch()));
+  @ViewChild('siteSearchInput') siteSearchInput?: ElementRef<HTMLInputElement>;
+  private readonly cdr = inject(ChangeDetectorRef);
   actorsTitle ="Acteurs";
-  uniqueSites:Site[]=[];
   uniqueDepartments:Departement[] = [];
   uniqueCategories:Nomenclature[] = [];
   site: any;
@@ -64,8 +72,8 @@ export class DiagnosticComponent implements OnDestroy{
   uniqueStatuts: any;
   titleSite: any;
   titleModif: any;
-  nameLabel="Nom";
   id_diagnostic=signal<number>(0);
+  private readonly currentYear = new Date().getFullYear();
   private diagnosticSubscription ?:Subscription;
   private diagnosticsService = inject(DiagnosticService);
   private siteService = inject(SiteService);
@@ -78,8 +86,8 @@ export class DiagnosticComponent implements OnDestroy{
   private fb = inject(FormBuilder);
   formGroup = this.fb.group({
       id_diagnostic: [0, [Validators.required]],
-      nom: ['', [Validators.required]],
-      sites: this.fb.control<Site[]>([], [Validators.required]),  
+      sites: this.fb.control<Site[]>([], [Validators.required]),
+      annee: [this.currentYear, [Validators.required, Validators.min(2000), Validators.max(2050)]],
       date_rapport: this.fb.control<Moment | null>(null),
       created_by: [0, []],
       id_organisme: [0, []],
@@ -100,7 +108,6 @@ export class DiagnosticComponent implements OnDestroy{
   constructor() {
     effect(() => {
       let diagnostic:Diagnostic = this.stateService.getCurrentDiagnostic()!
-      this.titleDiagnostic = this.titleCreateDiag;
       this.previousPage = this.stateService.getCurrentPreviousPage()
       this.user = this.authService.getCurrentUser();
       this.stateService.setPageCreationDiag(this.router.url);
@@ -113,12 +120,11 @@ export class DiagnosticComponent implements OnDestroy{
         this.id_diagnostic.set(id);
         this.slug.set(slugValue);
   
-        this.titleDiagnostic = this.titleModifyDiag;
         const diag$ = this.diagnosticsService.get(this.id_diagnostic(),this.slug());
         this.formGroup.get('id_diagnostic')?.setValue(this.id_diagnostic());
   
         forkJoin([diag$,sites$]).subscribe(([diag,sites]) => {
-          this.uniqueSites = sites;
+          this.uniqueSites.set(sites);
           if(diagnostic.sites.length > diag.sites.length || diagnostic.acteurs.length > diag.acteurs.length){
             this.diagnostic.set(diagnostic);
           }else{
@@ -131,12 +137,12 @@ export class DiagnosticComponent implements OnDestroy{
 
           }
           const remappedSites = (this.diagnostic().sites || []).map(site =>
-            this.uniqueSites.find(s => s.id_site === site.id_site) || site
+            this.uniqueSites().find(s => s.id_site === site.id_site) || site
           );
-          this.chosenSites = remappedSites;
           this.initialize = false;
-          this.checkSite();
-          this.getDiagName(this.chosenSites);
+          this.checkSite(remappedSites);
+          this.patchAnneeFromDiagnostic(this.diagnostic());
+          this.syncDiagnosticNameFromForm();
         });
       }else{
         this.diagnostic.set(diagnostic);
@@ -144,30 +150,67 @@ export class DiagnosticComponent implements OnDestroy{
         this.id_organisme = this.user.id_organisme;
 
         forkJoin([sites$]).subscribe(([sites]) => {
-          this.uniqueSites = sites;
+          this.uniqueSites.set(sites);
 
           const remappedSites = (this.diagnostic().sites || []).map(site =>
-            this.uniqueSites.find(s => s.id_site === site.id_site) || site
+            this.uniqueSites().find(s => s.id_site === site.id_site) || site
           );
-          this.chosenSites = remappedSites;
           this.initialize = false;
-          this.checkSite();
-          this.getDiagName(this.chosenSites);
+          this.checkSite(remappedSites);
+          this.formGroup.get('annee')?.setValue(this.currentYear);
+          this.syncDiagnosticNameFromForm();
         });
       }
     });
   }
 
-  //Met à jour la liste this.chosenSites
-  checkSite(){
+  checkSite(sites: Site[] = this.formGroup.get('sites')?.value ?? []){
     this.isLoading = false;
-    if (this.chosenSites?.length) {
-      
-      const chosenIds = this.chosenSites.map(site => site.id_site);
-      this.chosenSites = this.uniqueSites.filter(site => chosenIds.includes(site.id_site));
-      this.formGroup?.get('sites')?.setValue(this.chosenSites);
-      
+    if (!sites.length) return;
+
+    const chosenIds = sites.map(site => site.id_site);
+    const remapped = this.uniqueSites().filter(site => chosenIds.includes(site.id_site));
+    this.formGroup.get('sites')?.setValue(remapped);
+  }
+
+  onSiteSearchChange(value: string): void {
+    this.siteSearch.set(value ?? '');
+    this.cdr.detectChanges();
+  }
+
+  onSitesSelectOpened(opened: boolean): void {
+    if (!opened) {
+      this.siteSearch.set('');
+      return;
     }
+    setTimeout(() => this.siteSearchInput?.nativeElement?.focus(), 0);
+  }
+
+  private patchAnneeFromDiagnostic(diag: Diagnostic): void {
+    const year = diag.annee ?? Diagnostic.extractAnneeFromNom(diag.nom) ?? this.currentYear;
+    this.formGroup.get('annee')?.setValue(year);
+  }
+
+  private buildDiagnosticNom(sites: Site[], annee: number): string {
+    const sitesPart = sites.map(site => site.nom).join(', ');
+    return `Diagnostic - ${sitesPart} - ${annee}`;
+  }
+
+  syncDiagnosticNameFromForm(): void {
+    const sites = this.formGroup.get('sites')?.value ?? [];
+    const annee = Number(this.formGroup.get('annee')?.value) || this.currentYear;
+    const nom = sites.length > 0 ? this.buildDiagnosticNom(sites, annee) : '';
+
+    const updated = Object.assign(new Diagnostic(), this.diagnostic(), {
+      nom,
+      annee,
+      sites,
+    });
+    this.diagnostic.set(updated);
+  }
+
+  cancelDiagnostic(): void {
+    this.router.navigate(['/diagnostics-liste']);
   }
 
   //Navigation et mise en cache
@@ -216,17 +259,19 @@ export class DiagnosticComponent implements OnDestroy{
 
   //Convertie la date pour le back et parse le diagnostic
   convertDateReport(){
-    const rawValue = this.formGroup.getRawValue(); // ou .value si pas désactivé
+    const rawValue = this.formGroup.getRawValue();
+    const sites = (rawValue.sites || []) as Site[];
+    const annee = Number(rawValue.annee);
     const payload = {
       ...rawValue,
-      nom: rawValue.nom,
+      nom: this.buildDiagnosticNom(sites, annee),
+      annee,
       date_rapport: moment.isMoment(rawValue.date_rapport)
       ? rawValue.date_rapport.toDate()
       : undefined,
-      sites: (rawValue.sites || []).map((s: any) => Site.fromJson(s))
+      sites,
     };
-    this.diagnostic.set(Object.assign(new Diagnostic(),payload));
-   
+    this.diagnostic.set(Object.assign(new Diagnostic(), this.diagnostic(), payload));
   }
 
   ngOnDestroy(): void {
@@ -236,27 +281,5 @@ export class DiagnosticComponent implements OnDestroy{
   }
 
   compareSites = (s1: Site, s2: Site) => s1 && s2 && s1.id_site === s2.id_site;
-
-   //Récupère les acteurs des sites sélectionnés et crée le nom en fonction des sites
-  getDiagName(sites:any){
-    
-    if(sites.length > 0){
-      this.chosenSites= sites;
-      let array:number[]=[];
-      for(let i=0;i<sites.length;i++){
-        array.push(sites[i].id_site);
-      }
-     
-      let nom ="";
-        
-      for (let i =0;i<sites.length;i++){
-        nom += sites[i].nom + " ";
-        
-      }
-      nom = "Diagnostic - "+ nom + "- " + new Date().getFullYear();
-      this.diagnostic().nom = nom;
-      this.formGroup.get('nom')?.setValue(nom);
-    }
-  }
 
 }

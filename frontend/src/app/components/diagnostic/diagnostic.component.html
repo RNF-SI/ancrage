@@ -1,72 +1,96 @@
 <div class="container">
-    <div class="grid-3-6-3">
-      <div class="col-span-2"></div>
-      
-      <div class="col-span-8">
-        <h2>{{ titleDiagnostic }}</h2>
-        @if (isLoading) {
-          <app-loading-spinner></app-loading-spinner>
-        }@else{
-          @let diag = diagnostic;
-          @if (!diag().is_read_only) {
-          
-              
-              <form [formGroup]="formGroup" (submit)="recordDiagnostic($event)">
-                <mat-form-field appearance="fill" class="fieldName">
-                  <mat-label>{{ nameLabel }}</mat-label>
-                  <input matInput placeholder="Entrez un nom" formControlName="nom" required>
-                  @if(formGroup.get('nom')?.hasError('required')){
-                    <mat-error>
-                      {{ labels.requiredName }}
-                    </mat-error>
+  <div class="grid-3-6-3">
+    <div class="col-span-2"></div>
+
+    <div class="col-span-8">
+      <h2 class="title">{{ pageTitle() }}</h2>
+      @if (isLoading) {
+        <app-loading-spinner></app-loading-spinner>
+      } @else {
+        @let diag = diagnostic;
+        @if (!diag().is_read_only) {
+          <form [formGroup]="formGroup" (submit)="recordDiagnostic($event)" class="diagnostic-form">
+            <div class="diagnostic-fields-row">
+              <mat-form-field appearance="fill" class="sites-select-field">
+                <mat-label>{{ labels.chosenSites }}</mat-label>
+                <mat-select
+                  formControlName="sites"
+                  multiple
+                  panelClass="sites-select-panel"
+                  [compareWith]="compareSites"
+                  (openedChange)="onSitesSelectOpened($event)"
+                  (selectionChange)="syncDiagnosticNameFromForm()"
+                >
+                  <mat-option
+                    class="site-search-option"
+                    (mousedown)="$event.preventDefault()"
+                    (click)="$event.stopPropagation()">
+                    <input
+                      #siteSearchInput
+                      class="site-search-input"
+                      type="text"
+                      placeholder="Rechercher un site..."
+                      [ngModel]="siteSearch()"
+                      (ngModelChange)="onSiteSearchChange($event)"
+                      [ngModelOptions]="{standalone: true}"
+                      (click)="$event.stopPropagation()"
+                      (mousedown)="$event.stopPropagation()"
+                      (keydown)="$event.stopPropagation()"
+                    />
+                  </mat-option>
+                  @for (site of filteredSites(); track site.id_site) {
+                    <mat-option [value]="site">{{ site.nom }}</mat-option>
                   }
-                </mat-form-field>
-      
-                <mat-form-field appearance="fill" class="fieldName">
-                  <mat-label>{{ labels.chosenSites }}</mat-label>
-                  <mat-select
-                    formControlName="sites"
-                    multiple
-                    (selectionChange)="getDiagName(formGroup.value.sites)"
-                    [compareWith]="compareSites"
-                  >
-                    @for (site of uniqueSites; track site) {
-                      <mat-option [value]="site">{{ site.nom }}</mat-option>
-                    }
-                  </mat-select>
-                  @if(formGroup.get('sites')?.hasError('required')){
-                    <mat-error>
-                      {{ labels.requiredSite }}
-                    </mat-error>
-                  }
-                  
-                </mat-form-field>
-      
-                <h4>{{ chosenSitesTitle }}</h4>
-                @for (site of chosenSites; track site) {
-                  <p>{{ site.nom }}, {{ site.type.libelle }}</p>
+                </mat-select>
+                <button
+                  mat-icon-button
+                  matSuffix
+                  type="button"
+                  class="sites-add-btn"
+                  [attr.aria-label]="btnCreateSiteLabel"
+                  [matTooltip]="btnCreateSiteLabel"
+                  (click)="navigate('/site/create', diagnostic()); $event.stopPropagation()">
+                  <mat-icon>add</mat-icon>
+                </button>
+                @if (formGroup.get('sites')?.hasError('required')) {
+                  <mat-error>{{ labels.requiredSite }}</mat-error>
                 }
-      
-                <button mat-raised-button color="accent" type="button" (click)="navigate('/site/create', diagnostic())">
-                  {{ btnCreateSiteLabel }}
-                </button>
-                <button mat-raised-button color="accent" (click)="navigate(previousPage, diagnostic())">
-                  {{ labels.btnPreviousStepLabel }}
-                </button>
-                <button mat-raised-button color="warn" type="submit">
-                  {{ btnRecordDiag }}
-                </button>
-              </form>
-          
-          }@else {
-            <p>Vous n'avez pas accès à cette page.</p>
-          }
+              </mat-form-field>
+
+              <mat-form-field appearance="fill" class="field-year">
+                <mat-label>Année</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  formControlName="annee"
+                  min="2000"
+                  max="2050"
+                  (input)="syncDiagnosticNameFromForm()"
+                />
+                @if (formGroup.get('annee')?.hasError('required')) {
+                  <mat-error>L'année est requise.</mat-error>
+                }
+                @if (formGroup.get('annee')?.hasError('min') || formGroup.get('annee')?.hasError('max')) {
+                  <mat-error>L'année doit être comprise entre 2000 et 2050.</mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <div class="diagnostic-form-actions">
+              <button mat-raised-button color="warn" type="button" (click)="cancelDiagnostic()">
+                {{ labels.cancel }}
+              </button>
+              <button mat-raised-button class="btn-save" type="submit">
+                {{ btnRecordDiag }}
+              </button>
+            </div>
+          </form>
+        } @else {
+          <p>Vous n'avez pas accès à cette page.</p>
         }
-        
-       
-      </div>
-  
-      <div class="col-span-2"></div>
+      }
     </div>
+
+    <div class="col-span-2"></div>
+  </div>
 </div>
-  

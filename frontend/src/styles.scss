@@ -14,6 +14,11 @@ body {
     height: 100%;
 }
 
+app-root {
+    display: block;
+    min-height: 100%;
+}
+
 body {
     margin: 0;
     font-family: Roboto, "Helvetica Neue", sans-serif;
@@ -44,4 +49,11 @@ h4 {
     top: 222px !important;
     right: 12px;
     left: auto;
+}
+
+.title {
+    text-align: center;
+    font-size: 24px !important;
+    font-weight: bold !important;
+    margin-top: 3rem !important;
 }
