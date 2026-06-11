@@ -184,13 +184,28 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     fillOpacity: 0.25,
   };
 
-  private readonly overlaySitePointStyle: L.CircleMarkerOptions = {
-    radius: 9,
-    color: '#e65100',
-    fillColor: '#ff9800',
-    fillOpacity: 0.9,
-    weight: 2,
-  };
+  private addSitePointLayer(
+    site: Site,
+    popup: string,
+    coords: { lat: number; lng: number },
+    bounds: L.LatLngBounds,
+    useSiteLayersGroup: boolean,
+    bindActions: boolean
+  ): void {
+    const marker = L.marker([coords.lat, coords.lng]).bindPopup(popup);
+
+    if (bindActions) {
+      this.bindSitePopupActions(marker, site);
+    }
+
+    if (useSiteLayersGroup) {
+      this.siteLayersGroup?.addLayer(marker);
+    } else {
+      this.markerClusterGroup?.addLayer(marker);
+    }
+
+    bounds.extend([coords.lat, coords.lng]);
+  }
 
   private renderSiteGeometriesOverlay(bounds: L.LatLngBounds): number {
     if (!this.siteLayersGroup) return 0;
@@ -201,6 +216,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     for (const site of this.sites()) {
       const popup = this.buildSitePopup(site);
       const polygon = getSitePolygonGeometry(site);
+      const coords = getSitePointCoordinates(site);
 
       if (polygon) {
         const layer = L.geoJSON(polygon as GeoJSON.GeoJsonObject, {
@@ -212,16 +228,14 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         this.siteLayersGroup.addLayer(layer);
         bounds.extend(layer.getBounds());
         featureCount++;
-        continue;
       }
 
-      const coords = getSitePointCoordinates(site);
-      if (!coords) continue;
-
-      const pointLayer = L.circleMarker([coords.lat, coords.lng], this.overlaySitePointStyle).bindPopup(popup);
-      this.siteLayersGroup.addLayer(pointLayer);
-      bounds.extend([coords.lat, coords.lng]);
-      featureCount++;
+      if (coords) {
+        this.addSitePointLayer(site, popup, coords, bounds, true, false);
+        if (!polygon) {
+          featureCount++;
+        }
+      }
     }
 
     return featureCount;
@@ -380,11 +394,15 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   private buildSitePopup(site: Site): string {
-    const departements = (site.departements ?? []).map(dep => dep.nom_dep).join(' ');
-    const regions = (site.departements ?? [])
-      .map(dep => dep.region?.nom_reg)
-      .filter(Boolean)
-      .join(' ');
+    const departements = (site.departements ?? []).map(dep => dep.nom_dep).join(', ');
+    const uniqueRegions = new Map<string, string>();
+    for (const dep of site.departements ?? []) {
+      const region = dep.region;
+      if (!region?.nom_reg?.trim()) continue;
+      const key = region.insee_reg || region.nom_reg;
+      uniqueRegions.set(key, region.nom_reg);
+    }
+    const regions = [...uniqueRegions.values()].join(', ');
 
     let actionsHtml = '';
     if (this.siteDiagnosticActions()) {
@@ -489,6 +507,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     for (const site of this.sites()) {
       const popup = this.buildSitePopup(site);
       const polygon = getSitePolygonGeometry(site);
+      const coords = getSitePointCoordinates(site);
 
       if (polygon) {
         const layer = L.geoJSON(polygon as GeoJSON.GeoJsonObject, {
@@ -507,19 +526,16 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         bounds.extend(layer.getBounds());
         featureCount++;
         const center = layer.getBounds().getCenter();
-        singleCoords = { lat: center.lat, lng: center.lng };
-        continue;
+        singleCoords = coords ?? { lat: center.lat, lng: center.lng };
       }
 
-      const coords = getSitePointCoordinates(site);
-      if (!coords) continue;
-
-      const marker = L.marker([coords.lat, coords.lng]).bindPopup(popup);
-      this.bindSitePopupActions(marker, site);
-      this.markerClusterGroup.addLayer(marker);
-      bounds.extend([coords.lat, coords.lng]);
-      featureCount++;
-      singleCoords = coords;
+      if (coords) {
+        this.addSitePointLayer(site, popup, coords, bounds, !!polygon, true);
+        if (!polygon) {
+          featureCount++;
+          singleCoords = coords;
+        }
+      }
     }
 
     this.siteLayersGroup.bringToFront();
