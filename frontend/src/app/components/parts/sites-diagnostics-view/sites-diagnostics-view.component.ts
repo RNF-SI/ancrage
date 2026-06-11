@@ -35,7 +35,7 @@ import { StateService } from "@app/services/state.service";
 })
 export class SitesDiagnosticsViewComponent implements OnDestroy {
   readonly sites = input<Site[]>([]);
-  readonly titleBtnCreaDiag = input("Ajouter un diagnostic");
+  readonly titleBtnCreaDiag = input("Nouveau DAT");
   readonly title = input("");
   readonly diagnostic = input<Diagnostic>(new Diagnostic());
 
@@ -220,6 +220,10 @@ export class SitesDiagnosticsViewComponent implements OnDestroy {
 
   createDiagnosticForSite(site: Site) {
     this.navigate('/diagnostic/create', this.diagnostic(), site);
+  }
+
+  editSite(site: Site) {
+    this.navigate(`/site/${site.id_site}/${site.slug}/update`, this.diagnostic(), site);
   }
 
   ngOnDestroy(): void {

@@ -35,7 +35,9 @@ export class Site implements ISite {
 		copy.geom_pt = this.geom_pt;
 		copy.diagnostics = this.diagnostics.map(d => d.copy());
 		copy.habitats = this.habitats.map(h => h.copy());
+		copy.departements = this.departements.map(d => d.copy());
 		copy.type = this.type.copy();
+		copy.id_inpn = this.id_inpn;
 		copy.created_at = this.created_at ? new Date(this.created_at.getTime()) : undefined;
 		copy.modified_at = this.modified_at ? new Date(this.modified_at.getTime()) : undefined;
 		copy.created_by = this.created_by;

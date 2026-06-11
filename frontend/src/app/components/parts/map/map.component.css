@@ -55,6 +55,21 @@
   background: #f57c00;
 }
 
+:host ::ng-deep .map-popup-btn-edit {
+  background: #546e7a;
+  color: #fff;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:host ::ng-deep .map-popup-btn-edit:hover {
+  background: #37474f;
+}
+
 button{
   margin-top: 1%;
   margin-bottom: 2%;

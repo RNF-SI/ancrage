@@ -61,8 +61,10 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   );
   readonly actors = input<Acteur[]>([]);
   readonly siteDiagnosticActions = input(false);
+  readonly currentUserId = input(0);
   readonly openDiagnostic = output<{ id: number; slug: string; site: Site }>();
   readonly createDiagnostic = output<Site>();
+  readonly editSite = output<Site>();
   private readonly mapReady = signal(false);
   private markerClusterGroup: L.MarkerClusterGroup | undefined;
   private siteLayersGroup: L.FeatureGroup | undefined;
@@ -78,6 +80,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   constructor() {
     effect(() => {
       if (!this.mapReady() || this.changePosition()) return;
+      this.currentUserId();
       this.syncMapContent();
     });
 
@@ -242,9 +245,19 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         })
         .join('');
 
+      const isOwner = this.currentUserId() > 0 && site.created_by === this.currentUserId();
+      const editButton = isOwner
+        ? `<button type="button" class="map-popup-btn map-popup-btn-edit" data-site-id="${site.id_site}" title="Modifier le site" aria-label="Modifier le site">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+            </svg>
+          </button>`
+        : '';
+
       actionsHtml = `
         <div class="map-popup-actions">
           ${yearButtons}
+          ${editButton}
           <button type="button" class="map-popup-btn map-popup-btn-create" data-site-id="${site.id_site}" title="Nouveau diagnostic">+</button>
         </div>
       `;
@@ -279,6 +292,15 @@ export class MapComponent implements AfterViewInit, OnDestroy {
           this.openDiagnostic.emit({ id, slug, site });
         };
       });
+
+      const editBtn = popupEl.querySelector<HTMLButtonElement>('.map-popup-btn-edit');
+      if (editBtn) {
+        editBtn.onclick = (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          this.editSite.emit(site);
+        };
+      }
 
       const createBtn = popupEl.querySelector<HTMLButtonElement>('.map-popup-btn-create');
       if (createBtn) {

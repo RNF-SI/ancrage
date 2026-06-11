@@ -9,18 +9,19 @@
 
 #creaBtn {
   min-width: 220px;
-}
-
-.diagnostics-create-btn-content {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  justify-content: center;
+  line-height: 1;
 }
 
-.diagnostics-create-btn-content mat-icon {
-  width: 20px;
-  height: 20px;
-  font-size: 20px;
+#creaBtn mat-icon {
+  margin-right: 0.35rem;
+  margin-left: -0.15rem;
+  font-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  line-height: 1.25rem;
 }
 
 .diagnostics-filters {

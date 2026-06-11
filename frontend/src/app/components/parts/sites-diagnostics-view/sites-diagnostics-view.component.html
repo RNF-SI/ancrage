@@ -6,10 +6,8 @@
       color="accent"
       type="button"
       (click)="createDiagnostic()">
-      <span class="diagnostics-create-btn-content">
-        <mat-icon>add</mat-icon>
-        <span>{{ titleBtnCreaDiag() }}</span>
-      </span>
+      <mat-icon>add</mat-icon>
+      {{ titleBtnCreaDiag() }}
     </button>
   </div>
 
@@ -78,9 +76,11 @@
     <app-map
       [sites]="mapSiteList()"
       [siteDiagnosticActions]="true"
+      [currentUserId]="user_id()"
       [mapId]="'diagnostics-sites-map-' + mapInstanceKey"
       (openDiagnostic)="openDiagnostic($event)"
-      (createDiagnostic)="createDiagnosticForSite($event)">
+      (createDiagnostic)="createDiagnosticForSite($event)"
+      (editSite)="editSite($event)">
     </app-map>
   </div>
 </div>
