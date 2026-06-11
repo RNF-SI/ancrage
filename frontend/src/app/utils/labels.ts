@@ -21,7 +21,12 @@ export class Labels {
     mail="Adresse email";
     town="Commune";
     state='Etat';
-    chosenSites="Sites choisis";
+    chosenSite="Site concerné";
+    chosenSites="Sites concernés";
+
+    chosenSitesLabel(count: number): string {
+        return count === 1 ? this.chosenSite : this.chosenSites;
+    }
     dateBegLabel="Date de début";
     dateEndLabel="Date de fin";
     datePublicationReport="Date de publication du rapport";
@@ -71,6 +76,7 @@ export class Labels {
     dropFileSelect = "Glissez votre fichier ici ou cliquez pour sélectionner";
     chooseFile = "Choisir un fichier";
     download = "Télécharger";
+    renameFile = "Renommer le fichier";
     requiredDepartment = "Au moins un département est requis.";
     requiredLatitude = "Une latitude est requise.";
     requiredLongitude = "Une longitude est requise.";

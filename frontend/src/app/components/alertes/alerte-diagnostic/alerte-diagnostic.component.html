@@ -9,7 +9,7 @@
   </div>
 
   <div>
-    <b>{{ data.labels.chosenSites }}</b> :
+    <b>{{ data.labels.chosenSitesLabel(data.diagnostic.sites.length) }}</b> :
     @for (site of data.diagnostic.sites; track site) {
       <span>{{ site.nom }} </span>
     }

@@ -251,6 +251,16 @@ export class DiagnosticService {
       )
     }
 
+    renameDocument(document: Document, baseName: string): Observable<Diagnostic> {
+      return this.http.put<IDiagnostic>(
+        `${this.BASE_URL}/document/${document.id_document}`,
+        { nom: baseName },
+        { headers: { Authorization: `Bearer ${this.token}` } }
+      ).pipe(
+        map(diagnosticJson => Diagnostic.fromJson(diagnosticJson))
+      );
+    }
+
     importData(file: File,acteur:Acteur): Observable<Acteur> {
       const token = localStorage.getItem('tk_id_token');
       const formData = new FormData();

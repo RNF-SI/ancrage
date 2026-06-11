@@ -12,7 +12,7 @@
           <form [formGroup]="formGroup" (submit)="recordDiagnostic($event)" class="diagnostic-form">
             <div class="diagnostic-fields-row">
               <mat-form-field appearance="fill" class="sites-select-field">
-                <mat-label>{{ labels.chosenSites }}</mat-label>
+                <mat-label>{{ labels.chosenSitesLabel((formGroup.get('sites')?.value ?? []).length) }}</mat-label>
                 <mat-select
                   formControlName="sites"
                   multiple

@@ -1,0 +1,10 @@
+.rename-fichier-field {
+  width: 100%;
+  min-width: 280px;
+}
+
+.rename-fichier-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(0, 0, 0, 0.55);
+}

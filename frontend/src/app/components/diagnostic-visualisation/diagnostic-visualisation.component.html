@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container diag-visualisation-page">
 
   <div id="page" class="one-column">
     <div class="col-span-3">
@@ -8,155 +8,271 @@
     <div class="col-span-9">
       @if (isLoading) {
       <app-loading-spinner></app-loading-spinner>
-      }@else{
-      <mat-tab-group (selectedTabChange)="onTabChange($event)" [selectedIndex]="index">
+      } @else {
+      <mat-tab-group (selectedTabChange)="onTabChange($event)" [selectedIndex]="index" class="diag-tabs">
         <mat-tab label="Infos générales">
-          <div class="p-3">
-            <h2>{{ diagnostic().nom }}</h2>
-
-            <div>
-              <b>{{ labels.dateBegLabel }}</b> :
-              <span>{{ diagnostic().date_debut_str }}</span>
-            </div>
-            <div>
-              <b>{{ labels.dateEndLabel }}</b> :
-              <span>{{ diagnostic().date_fin_str }}</span>
-            </div>
-            <div>
-              <b>{{ labels.datePublicationReport }}</b> :
-              <span>{{ diagnostic().date_rapport_str }}</span>
+          <div class="tab-content diag-overview">
+            <header class="diag-overview-header">
+              <div class="diag-overview-title-block">
+                <h2 class="diag-overview-title">{{ diagnostic().nom }}</h2>
+                <p class="diag-overview-subtitle">
+                  <mat-icon aria-hidden="true">person</mat-icon>
+                  {{ labels.investigatorLabel }} : {{ diagnostic().identite_createur }}
+                </p>
+              </div>
               @if (diagnostic().created_by === id_role()) {
-              <button mat-raised-button (click)="openAlertDate()">Saisir date</button>
+              <div class="diag-overview-actions">
+                <button
+                  mat-stroked-button
+                  type="button"
+                  (click)="exportXls()"
+                  [matTooltip]="labels.exportXLS">
+                  <mat-icon>table_view</mat-icon>
+                  {{ labels.exportXLS }}
+                </button>
+                <button
+                  mat-stroked-button
+                  color="warn"
+                  type="button"
+                  (click)="openAlertDisable()"
+                  [matTooltip]="labels.delete">
+                  <mat-icon>delete_outline</mat-icon>
+                  {{ labels.delete }}
+                </button>
+              </div>
               }
+            </header>
+
+            <div class="diag-info-grid">
+              <div class="diag-info-card">
+                <mat-icon class="diag-info-card-icon" aria-hidden="true">event</mat-icon>
+                <div class="diag-info-card-body">
+                  <span class="diag-info-label">{{ labels.dateBegLabel }}</span>
+                  <span class="diag-info-value">{{ diagnostic().date_debut_str || '—' }}</span>
+                </div>
+              </div>
+              <div class="diag-info-card">
+                <mat-icon class="diag-info-card-icon" aria-hidden="true">event_available</mat-icon>
+                <div class="diag-info-card-body">
+                  <span class="diag-info-label">{{ labels.dateEndLabel }}</span>
+                  <span class="diag-info-value">{{ diagnostic().date_fin_str || '—' }}</span>
+                </div>
+              </div>
+              <div class="diag-info-card diag-info-card--wide">
+                <mat-icon class="diag-info-card-icon" aria-hidden="true">publish</mat-icon>
+                <div class="diag-info-card-body">
+                  <span class="diag-info-label">{{ labels.datePublicationReport }}</span>
+                  <span class="diag-info-value">{{ diagnostic().date_rapport_str || '—' }}</span>
+                </div>
+                @if (diagnostic().created_by === id_role()) {
+                <button
+                  mat-icon-button
+                  type="button"
+                  class="diag-info-card-action"
+                  (click)="openAlertDate()"
+                  [matTooltip]="'Saisir la date de publication'">
+                  <mat-icon>edit_calendar</mat-icon>
+                </button>
+                }
+              </div>
             </div>
 
-            <div>
-              <b>{{ labels.investigatorLabel }}</b> :
-              <span>{{ diagnostic().identite_createur }}</span>
-            </div>
+            <section class="diag-section">
+              <h3 class="diag-section-title">
+                <mat-icon aria-hidden="true">place</mat-icon>
+                {{ labels.chosenSitesLabel(diagnostic().sites.length) }}
+              </h3>
+              <mat-chip-set class="diag-sites-chips" aria-label="Sites du diagnostic">
+                @for (site of diagnostic().sites; track site.id_site) {
+                <mat-chip class="diag-site-chip">
+                  <span class="diag-site-chip-label">{{ site.nom }}, {{ site.type.libelle }}</span>
+                  @if (site.created_by === id_role()) {
+                  <button
+                    mat-icon-button
+                    matChipTrailingIcon
+                    type="button"
+                    class="diag-site-chip-edit"
+                    (click)="editSite(site)"
+                    [attr.aria-label]="'Modifier le site ' + site.nom">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  }
+                </mat-chip>
+                }
+              </mat-chip-set>
+            </section>
 
-            <h3>{{ labels.chosenSites }}</h3>
-            @for (site of diagnostic().sites; track site) {
-            <p>{{ site.nom }}, {{ site.type.libelle }}</p>
-            }
+            <section class="diag-section">
+              <h3 class="diag-section-title">
+                <mat-icon aria-hidden="true">attach_file</mat-icon>
+                {{ labels.files }}
+              </h3>
 
-            <h3>{{ labels.files }}</h3>
-            @for (doc of diagnostic().documents; track doc.id_document) {
-            <div>
-              {{ doc.nom }}
-              <button mat-raised-button type="button" (click)="getFile(doc.nom)">
-                {{ labels.download }}
-              </button>
-              <button mat-raised-button type="button" color="warn" (click)="deleteFile(doc)">
-                {{ labels.delete }}
-              </button>
-            </div>
-            }
-
-
-            @if (diagnostic().created_by === id_role()) {
-            <div class="upload-zone" matRipple [class.dragover]="dragOver" (dragover)="onDragOver($event)"
-              (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
-              <p>{{ labels.dropFilesSelect }}</p>
-              <input type="file" multiple (change)="onFileSelected($event)" hidden #fileInput />
-              <button mat-raised-button (click)="fileInput.click()">
-                {{ labels.chooseFiles }}
-              </button>
-            </div>
-            <button mat-raised-button color="primary" (click)="uploadFiles()" [disabled]="!files.length">
-              {{labels.send}}
-            </button>
-            @if (files.length) {
-            <ul>
-              @for (file of files; track file) {
-              <li>{{ file.name }}</li>
+              @if ((diagnostic().documents ?? []).length) {
+              <ul class="diag-files-list">
+                @for (doc of diagnostic().documents ?? []; track doc.id_document) {
+                <li class="diag-file-row">
+                  <mat-icon class="diag-file-icon" aria-hidden="true">description</mat-icon>
+                  <span class="diag-file-name">{{ doc.nom }}</span>
+                  <div class="diag-file-actions">
+                    <button
+                      mat-icon-button
+                      type="button"
+                      (click)="getFile(doc.nom)"
+                      [matTooltip]="labels.download"
+                      [attr.aria-label]="labels.download">
+                      <mat-icon>download</mat-icon>
+                    </button>
+                    @if (diagnostic().created_by === id_role()) {
+                    <button
+                      mat-icon-button
+                      type="button"
+                      class="diag-file-edit"
+                      (click)="openRenameFile(doc)"
+                      [matTooltip]="labels.renameFile"
+                      [attr.aria-label]="labels.renameFile">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      type="button"
+                      color="warn"
+                      (click)="deleteFile(doc)"
+                      [matTooltip]="labels.delete"
+                      [attr.aria-label]="labels.delete">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                    }
+                  </div>
+                </li>
+                }
+              </ul>
+              } @else {
+              <p class="diag-empty-hint">Aucun fichier joint pour le moment.</p>
               }
-            </ul>
-            }
 
-            <button mat-raised-button type="button" (click)="exportXls()" class="block">
-              {{ labels.exportXLS }}
-            </button>
-            <div id="delete-button">
-              <button mat-raised-button color="warn" (click)="openAlertDisable()">{{labels.delete}}</button>
-
-            </div>
-
-            }
+              @if (diagnostic().created_by === id_role()) {
+              <div
+                class="upload-zone"
+                matRipple
+                [class.dragover]="dragOver"
+                [class.uploading]="isUploadingFiles()"
+                (dragover)="onDragOver($event)"
+                (dragleave)="onDragLeave($event)"
+                (drop)="onDrop($event)">
+                @if (isUploadingFiles()) {
+                <mat-spinner diameter="32" class="upload-zone-spinner"></mat-spinner>
+                <p>Envoi en cours…</p>
+                } @else {
+                <mat-icon class="upload-zone-icon" aria-hidden="true">cloud_upload</mat-icon>
+                <p>{{ labels.dropFilesSelect }}</p>
+                <input
+                  type="file"
+                  multiple
+                  (change)="onFileSelected($event)"
+                  hidden
+                  #fileInput />
+                <button mat-stroked-button type="button" (click)="fileInput.click()">
+                  <mat-icon>folder_open</mat-icon>
+                  {{ labels.chooseFiles }}
+                </button>
+                }
+              </div>
+              }
+            </section>
           </div>
         </mat-tab>
 
         @if (diagnostic().created_by === id_role()) {
         <mat-tab label="Acteurs">
-          <div class="p-3">
-            <h3>Acteurs</h3>
-
-            <app-map [actors]="displayedActorsForMap()"></app-map>
-
-            <app-liste-acteurs [actors]="actors()" [diagnostic]="diagnostic()" [isReadOnly]="diagnostic().is_read_only"
-              (delete)="removeActeur($event)"
-              (filteredActorsChange)="displayedActorsForMap.set($event)">
-            </app-liste-acteurs>
-
-            @if (!diagnostic().is_read_only) {
-            <div class="buttons buttons-actors">
-              <button mat-raised-button type="button" (click)="exportCSV()">
-                <mat-icon>file_download</mat-icon>
-                {{ labels.exportCSV }}
-              </button>
-              <div class="buttons-right">
-                <button mat-raised-button color="accent" type="button"
+          <div class="tab-content diag-actors-tab">
+            <header class="diag-section-header">
+              <h3 class="diag-section-title">
+                <mat-icon aria-hidden="true">groups</mat-icon>
+                Acteurs
+              </h3>
+              @if (!diagnostic().is_read_only) {
+              <div class="diag-section-actions">
+                <button mat-stroked-button type="button" (click)="exportCSV()">
+                  <mat-icon>file_download</mat-icon>
+                  {{ labels.exportCSV }}
+                </button>
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  type="button"
                   (click)="navigate('/choix-acteurs/' + diagnostic().id_diagnostic + '/' + diagnostic().slug, diagnostic())">
                   <mat-icon>group_add</mat-icon>
                   Importer des acteurs
                 </button>
-                <button mat-raised-button color="accent" type="button"
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  type="button"
                   (click)="navigate('/acteur/create', diagnostic())">
                   <mat-icon>person_add</mat-icon>
                   Ajouter un acteur
                 </button>
               </div>
+              }
+            </header>
+
+            <div class="diag-actors-map">
+              <app-map
+                [actors]="displayedActorsForMap()"
+                [sites]="diagnostic().sites">
+              </app-map>
             </div>
-            }
+
+            <app-liste-acteurs
+              [actors]="actors()"
+              [diagnostic]="diagnostic()"
+              [isReadOnly]="diagnostic().is_read_only"
+              (delete)="removeActeur($event)"
+              (filteredActorsChange)="displayedActorsForMap.set($event)">
+            </app-liste-acteurs>
           </div>
         </mat-tab>
         } @else {
         <mat-tab label="Structures">
-          <app-tableau-structures [diagnostic]="diagnostic()"></app-tableau-structures>
+          <div class="tab-content">
+            <app-tableau-structures [diagnostic]="diagnostic()"></app-tableau-structures>
+          </div>
         </mat-tab>
         }
 
         <mat-tab label="AFOM">
-          <div class="p-3">
-            <app-mots-cles-zone #afom [id_diagnostic]="id_diagnostic()" [diagnostic]="diagnostic()"
+          <div class="tab-content">
+            <app-mots-cles-zone
+              #afom
+              [id_diagnostic]="id_diagnostic()"
+              [diagnostic]="diagnostic()"
               [modeAnalyse]="true">
             </app-mots-cles-zone>
           </div>
         </mat-tab>
 
         <mat-tab label="Graphiques">
-          <div class="p-3">
+          <div class="tab-content">
             <app-graphiques [diagnostic]="diagnostic()"></app-graphiques>
           </div>
         </mat-tab>
+
         <mat-tab label="Graphiques personnalisés">
-          <div class="p-3">
+          <div class="tab-content">
             <app-graphiques-personnalisation [diagnostic]="diagnostic()"></app-graphiques-personnalisation>
           </div>
         </mat-tab>
-        @if((diagnostic().created_by == id_role()) && diagnostic().acteurs.length == 0){
+
+        @if ((diagnostic().created_by == id_role()) && diagnostic().acteurs.length == 0) {
         <mat-tab label="Import">
-          <div class="p-3">
+          <div class="tab-content">
             <app-import [diagnostic]="diagnostic()"></app-import>
           </div>
         </mat-tab>
         }
-
-
-
       </mat-tab-group>
       }
-
     </div>
   </div>
 </div>

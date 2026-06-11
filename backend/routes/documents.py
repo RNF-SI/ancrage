@@ -55,6 +55,61 @@ def uploaded_file(filename):
 
     return send_from_directory(upload_folder, filename)
 
+def _build_renamed_filename(old_nom, new_base_name):
+    raw = (new_base_name or '').strip()
+    if not raw:
+        return None
+
+    if '.' in os.path.basename(raw):
+        raw = os.path.splitext(raw)[0]
+
+    new_base = secure_filename(raw)
+    if not new_base:
+        return None
+
+    _, old_ext = os.path.splitext(old_nom)
+    if old_ext:
+        return secure_filename(f"{new_base}{old_ext}") or None
+    return new_base
+
+
+@bp.route('/diagnostic/document/<int:id_document>', methods=['PUT'])
+@check_auth(1)
+def update_document(id_document):
+    data = request.get_json() or {}
+    document = db.session.query(Document).get(id_document)
+    if not document:
+        raise NotFound(f"Document avec id {id_document} non trouvé.")
+
+    new_nom = _build_renamed_filename(document.nom, data.get('nom', ''))
+    if not new_nom:
+        return jsonify({'error': 'Nom de fichier invalide'}), 400
+
+    if new_nom == document.nom:
+        diagnostic = Diagnostic.query.filter_by(id_diagnostic=document.diagnostic_id).first()
+        return getDiagnostic(diagnostic)
+
+    upload_folder = current_app.config['UPLOAD_FOLDER']
+    old_path = os.path.join(upload_folder, document.nom)
+    new_path = os.path.join(upload_folder, new_nom)
+
+    if os.path.exists(new_path):
+        return jsonify({'error': 'Un fichier avec ce nom existe déjà'}), 409
+
+    if os.path.exists(old_path):
+        try:
+            os.rename(old_path, new_path)
+        except OSError as exc:
+            logger.error(f"Erreur lors du renommage du fichier : {exc}")
+            return jsonify({'error': 'Erreur lors du renommage du fichier'}), 500
+
+    document.nom = new_nom
+    db.session.commit()
+
+    diagnostic = Diagnostic.query.filter_by(id_diagnostic=document.diagnostic_id).first()
+    return getDiagnostic(diagnostic)
+
+
 @bp.route('/diagnostic/document/delete/<int:id_document>', methods=['DELETE'])
 @check_auth(1)
 def delete_document(id_document):

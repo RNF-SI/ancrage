@@ -13,7 +13,10 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SiteService } from '@app/services/sites.service';
 import { MatButtonModule } from '@angular/material/button';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Labels } from '@app/utils/labels';
 import { ListeActeursComponent } from '../parts/liste-acteurs/liste-acteurs.component';
 import { GraphiquesComponent } from "../parts/graphiques/graphiques.component";
@@ -30,6 +33,7 @@ import { AlerteDatePublicationComponent } from '../alertes/alerte-date-publicati
 import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinner/loading-spinner.component';
 import { AlerteDesactivationDiagComponent } from '../alertes/alerte-desactivation-diag/alerte-desactivation-diag.component';
+import { AlerteRenameFichierComponent } from '../alertes/alerte-rename-fichier/alerte-rename-fichier.component';
 import { StateService } from '@app/services/state.service';
 import { GraphiquesPersonnalisationComponent } from '../parts/graphiques/graphiques-personnalisation/graphiques-personnalisation.component';
 import { Question } from '@app/models/question.model';
@@ -48,7 +52,10 @@ import { ImportComponent } from "../parts/import/import.component";
     ListeActeursComponent,
     CommonModule,
     MatButtonModule,
+    MatChipsModule,
     MatIconModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule,
     GraphiquesComponent,
     MatTabsModule,
     MenuLateralComponent,
@@ -89,6 +96,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   private docsSubscription?:Subscription;
   private docReadSub?:Subscription;
   private docDeleteSub?:Subscription;
+  private docRenameSub?: Subscription;
   file?:Blob;
   authService = inject(AuthService);
   dialog = inject(MatDialog);
@@ -107,7 +115,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
       modified_by: [0, [Validators.required]],
   });
   slug = signal<string | null>(null);
-  files: File[] = [];
+  isUploadingFiles = signal(false);
   dragOver = false;
   id_role = signal<number>(0);
   is_read_only = signal<boolean>(false);
@@ -247,14 +255,16 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   onDrop(event: DragEvent) {
     event.preventDefault();
     this.dragOver = false;
-    if (event.dataTransfer?.files) {
-      this.files.push(...Array.from(event.dataTransfer.files));
+    if (event.dataTransfer?.files?.length) {
+      this.uploadFiles(Array.from(event.dataTransfer.files));
     }
   }
+
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    if (input.files) {
-      this.files.push(...Array.from(input.files));
+    if (input.files?.length) {
+      this.uploadFiles(Array.from(input.files));
+      input.value = '';
     }
   }
 
@@ -269,34 +279,32 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
     });
   }
 
-  //Envoie les fichiers au serveur
-  uploadFiles() {
-    console.log(this.diagnostic());
-    const documents: Document[] = this.files.map(file => {
-      console.log(file);
+  uploadFiles(filesToUpload: File[]) {
+    if (!filesToUpload.length || this.isUploadingFiles()) return;
+
+    const documents: Document[] = filesToUpload.map(file => {
       const doc = new Document();
       doc.nom = file.name;
       doc.diagnostic = this.diagnostic();
       return doc;
     });
-  
+
     const formData = new FormData();
-  
-    // Ajout des fichiers
-    this.files.forEach(file => {
-      formData.append('files', file);
-    });
-  
-    // Ajout du JSON des documents
+    filesToUpload.forEach(file => formData.append('files', file));
     formData.append('documents', JSON.stringify(documents.map(d => d.toJson())));
 
-    this.docsSubscription = this.diagnosticService.sendFiles(formData).subscribe(diag => {
-      this.diagnosticService.invalidateCache(diag.id_diagnostic, diag.slug);
-      this.diagnostic.set(diag);
-      this.files = [];
+    this.isUploadingFiles.set(true);
+    this.docsSubscription?.unsubscribe();
+    this.docsSubscription = this.diagnosticService.sendFiles(formData).subscribe({
+      next: (diag) => {
+        this.diagnosticService.invalidateCache(diag.id_diagnostic, diag.slug);
+        this.diagnostic.set(diag);
+        this.isUploadingFiles.set(false);
+      },
+      error: () => {
+        this.isUploadingFiles.set(false);
+      },
     });
-    
-    
   }
 
   openAlertDisable(){
@@ -315,6 +323,15 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   navigate= (path:string,diagnostic:Diagnostic):void =>{
     this.stateService.setPageDiagnostic(this.router.url);
     this.siteService.navigateAndCache(path,diagnostic);
+  }
+
+  editSite(site: Site): void {
+    this.stateService.setPageDiagnostic(this.router.url);
+    this.siteService.navigateAndCache(
+      `/site/${site.id_site}/${site.slug}/update`,
+      this.diagnostic(),
+      site
+    );
   }
 
   //Exporte le tableau d'acteurs en fichier csv
@@ -366,6 +383,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
     this.docsSubscription?.unsubscribe();
     this.docReadSub?.unsubscribe();
     this.docDeleteSub?.unsubscribe();
+    this.docRenameSub?.unsubscribe();
   }
 
   //Affiche la popup pour saisir la date de publication
@@ -390,6 +408,30 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
       this.diagnosticService.invalidateCache(diag.id_diagnostic, diag.slug);
       this.diagnostic.set(diag);
     });
+  }
+
+  openRenameFile(document: Document): void {
+    const dialogRef = this.dialog.open(AlerteRenameFichierComponent, {
+      data: { fileName: document.nom },
+      width: '420px',
+    });
+
+    dialogRef.afterClosed().subscribe(baseName => {
+      if (!baseName || baseName === this.fileBaseName(document.nom)) return;
+
+      this.docRenameSub?.unsubscribe();
+      this.docRenameSub = this.diagnosticService.renameDocument(document, baseName).subscribe({
+        next: (diag) => {
+          this.diagnosticService.invalidateCache(diag.id_diagnostic, diag.slug);
+          this.diagnostic.set(diag);
+        },
+      });
+    });
+  }
+
+  private fileBaseName(fileName: string): string {
+    const dotIndex = fileName.lastIndexOf('.');
+    return dotIndex > 0 ? fileName.slice(0, dotIndex) : fileName;
   }
 
   getReponse(act: Acteur, id_question: number): number | string{

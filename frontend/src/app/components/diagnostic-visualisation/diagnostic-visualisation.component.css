@@ -1,60 +1,365 @@
+:host {
+  display: block;
+}
+
+.diag-visualisation-page .tab-content {
+  padding: 1.25rem 1.5rem 2rem;
+}
+
+/* ——— Infos générales ——— */
+
+.diag-overview-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.diag-overview-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.65rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--custom-primary-800);
+}
+
+.diag-overview-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.diag-overview-subtitle mat-icon {
+  font-size: 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.diag-overview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.diag-overview-actions button mat-icon {
+  margin-right: 0.25rem;
+  font-size: 1.15rem;
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.diag-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+}
+
+.diag-info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  background: var(--custom-primary-50);
+  border: 1px solid var(--custom-primary-100);
+  border-radius: 10px;
+}
+
+.diag-info-card--wide {
+  grid-column: 1 / -1;
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .diag-info-card--wide {
+    grid-column: span 1;
+  }
+
+  .diag-info-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.diag-info-card-icon {
+  flex-shrink: 0;
+  color: var(--custom-primary-600);
+  font-size: 1.4rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  margin-top: 0.1rem;
+}
+
+.diag-info-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.diag-info-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.diag-info-value {
+  font-size: 0.98rem;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.diag-info-card-action {
+  flex-shrink: 0;
+  color: var(--custom-primary-700);
+}
+
+.diag-section {
+  margin-bottom: 1.75rem;
+}
+
+.diag-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.85rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.diag-section-title mat-icon {
+  font-size: 1.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  color: var(--custom-primary-600);
+}
+
+.diag-empty-hint {
+  margin: 0 0 1rem;
+  font-size: 0.92rem;
+  color: rgba(0, 0, 0, 0.45);
+  font-style: italic;
+}
+
+/* ——— Sites (chips) ——— */
+
+.diag-sites-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.diag-site-chip {
+  height: auto;
+  min-height: 2rem;
+  padding-inline: 0.75rem 0.35rem;
+  background: var(--custom-primary-100) !important;
+}
+
+.diag-site-chip-label {
+  white-space: normal;
+  line-height: 1.3;
+}
+
+.diag-site-chip-edit {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  margin-left: 0.25rem;
+  color: var(--custom-primary-700);
+}
+
+.diag-site-chip-edit:hover {
+  color: var(--custom-primary-900);
+}
+
+.diag-site-chip-edit mat-icon {
+  font-size: 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+/* ——— Fichiers ——— */
+
+.diag-files-list {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.diag-file-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+}
+
+.diag-file-row + .diag-file-row {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.diag-file-icon {
+  flex-shrink: 0;
+  color: rgba(0, 0, 0, 0.4);
+  font-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.diag-file-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.95rem;
+}
+
+.diag-file-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.diag-file-edit {
+  color: var(--custom-primary-700);
+}
+
 .upload-zone {
-    border: 2px dashed #ccc;
-    border-radius: 8px;
-    padding: 20px;
-    text-align: center;
-    margin-bottom: 16px;
-    transition: background-color 0.3s;
-  }
-  .upload-zone.dragover {
-    background-color: #e3f2fd;
+  border: 2px dashed var(--custom-primary-200);
+  border-radius: 10px;
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  transition: background-color 0.2s, border-color 0.2s;
+  background: var(--custom-primary-50);
+}
+
+.upload-zone.dragover {
+  background-color: var(--custom-primary-100);
+  border-color: var(--custom-primary-400);
+}
+
+.upload-zone.uploading {
+  pointer-events: none;
+}
+
+.upload-zone-spinner {
+  margin: 0 auto 0.5rem;
+}
+
+.upload-zone-icon {
+  display: block;
+  margin: 0 auto 0.5rem;
+  font-size: 2.25rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--custom-primary-300);
+}
+
+.upload-zone p {
+  margin: 0 0 0.75rem;
+  font-size: 0.92rem;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.upload-zone button mat-icon {
+  margin-right: 0.25rem;
+  font-size: 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  vertical-align: middle;
+}
+
+/* ——— Onglet Acteurs ——— */
+
+.diag-section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.diag-section-header .diag-section-title {
+  margin-bottom: 0;
+}
+
+.diag-section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.diag-section-actions button mat-icon {
+  margin-right: 0.25rem;
+  font-size: 1.15rem;
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.diag-actors-map {
+  margin-bottom: 1.25rem;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.diag-actors-map app-map {
+  display: block;
+}
+
+/* ——— Layout page / onglets ——— */
+
+.grid-3-6 {
+  display: grid;
+  grid-template-columns: 20% 80%;
+  gap: 1rem;
+}
+
+.one-column {
+  display: grid;
+  grid-template-columns: 0% 100%;
+  gap: 1rem;
+}
+
+:host ::ng-deep .diag-tabs .mat-mdc-tab-body-content {
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  .diag-visualisation-page .tab-content {
+    padding: 1rem;
   }
 
-  .grid-3-6 {
-    display: grid;
-    grid-template-columns: 20% 80% ; /* ou 3fr 6fr 3fr */
-    gap: 1rem;
+  .diag-overview-header {
+    flex-direction: column;
   }
 
-  .buttons {
-    margin-top: 2%;
+  .diag-overview-actions {
+    width: 100%;
   }
 
-  .buttons-actors {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.75rem;
+  .diag-overview-actions button {
+    flex: 1;
+    min-width: 0;
   }
 
-  .buttons-actors .buttons-right {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+  .diag-info-grid {
+    grid-template-columns: 1fr;
   }
-
-  .buttons-actors mat-icon {
-    margin-right: 0.35rem;
-    vertical-align: middle;
-    font-size: 1.2rem;
-    width: 1.2rem;
-    height: 1.2rem;
-  }
-
-  #delete-button{
-    margin-top:2%;
-  }
-
-  .one-column{
-    display: grid;
-    grid-template-columns: 0% 100% ; /* ou 3fr 6fr 3fr */
-    gap: 1rem;
-  }
-
-  .block{
-    display: block;
-    margin-top: 2%;
-  }
-
- 
+}

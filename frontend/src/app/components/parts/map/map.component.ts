@@ -160,12 +160,114 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   private syncMapContent(): void {
-    if (this.actors().length > 0) {
+    const actors = this.actors();
+    const sites = this.sites();
+
+    if (actors.length > 0 && sites.length > 0) {
+      this.renderActorMarkersWithSiteOverlay();
+      return;
+    }
+    if (actors.length > 0) {
+      this.siteLayersGroup?.clearLayers();
       this.renderActorMarkers();
       return;
     }
-    if (this.sites().length > 0) {
+    if (sites.length > 0) {
       this.renderSiteMarkers();
+    }
+  }
+
+  private readonly overlaySitePolygonStyle: L.PathOptions = {
+    color: '#e65100',
+    weight: 2,
+    fillColor: '#ff9800',
+    fillOpacity: 0.25,
+  };
+
+  private readonly overlaySitePointStyle: L.CircleMarkerOptions = {
+    radius: 9,
+    color: '#e65100',
+    fillColor: '#ff9800',
+    fillOpacity: 0.9,
+    weight: 2,
+  };
+
+  private renderSiteGeometriesOverlay(bounds: L.LatLngBounds): number {
+    if (!this.siteLayersGroup) return 0;
+
+    let featureCount = 0;
+    this.siteLayersGroup.clearLayers();
+
+    for (const site of this.sites()) {
+      const popup = this.buildSitePopup(site);
+      const polygon = getSitePolygonGeometry(site);
+
+      if (polygon) {
+        const layer = L.geoJSON(polygon as GeoJSON.GeoJsonObject, {
+          style: this.overlaySitePolygonStyle,
+          onEachFeature: (_feature, geoLayer) => {
+            geoLayer.bindPopup(popup);
+          },
+        });
+        this.siteLayersGroup.addLayer(layer);
+        bounds.extend(layer.getBounds());
+        featureCount++;
+        continue;
+      }
+
+      const coords = getSitePointCoordinates(site);
+      if (!coords) continue;
+
+      const pointLayer = L.circleMarker([coords.lat, coords.lng], this.overlaySitePointStyle).bindPopup(popup);
+      this.siteLayersGroup.addLayer(pointLayer);
+      bounds.extend([coords.lat, coords.lng]);
+      featureCount++;
+    }
+
+    return featureCount;
+  }
+
+  private renderActorMarkersWithSiteOverlay(): void {
+    if (!this.map || !this.markerClusterGroup) return;
+
+    const bounds = L.latLngBounds([]);
+    const siteFeatureCount = this.renderSiteGeometriesOverlay(bounds);
+    let actorCount = 0;
+
+    this.markerClusterGroup.clearLayers();
+
+    for (const actor of this.actors()) {
+      if (!actor.commune?.latitude || !actor.commune?.longitude) continue;
+
+      const lat = parseFloat(actor.commune.latitude);
+      const lng = parseFloat(actor.commune.longitude);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+
+      const marker = L.marker([lat, lng]);
+      const categories = actor.categories?.map(c => c.libelle).join(', ') ?? '';
+
+      marker.bindPopup(`
+        <strong>${actor.nom} ${actor.prenom}</strong><br>
+        ${this.labels.statusLabel} : ${actor.fonction}<br>
+        ${this.labels.category} : ${categories}<br>
+        ${this.labels.telephone} : ${actor.telephone}<br>
+        ${this.labels.mail} : ${actor.mail}<br>
+        ${this.labels.town} : ${actor.commune.nom_com}<br>
+        ${this.labels.profile} : ${actor.profil?.libelle}<br>
+        ${this.labels.structure} : ${actor.structure}<br>
+      `);
+
+      this.markerClusterGroup.addLayer(marker);
+      bounds.extend([lat, lng]);
+      actorCount++;
+    }
+
+    const overlayKey = `${this.entitiesKey(this.sites().map(site => site.id_site))}|${this.entitiesKey(this.actors().map(actor => actor.id_acteur))}`;
+    const totalFeatures = siteFeatureCount + actorCount;
+    if (overlayKey !== this.lastFittedActorsKey && totalFeatures > 0) {
+      this.fitMapToBounds(bounds, totalFeatures);
+      this.lastFittedActorsKey = overlayKey;
+      this.lastFittedSitesKey = overlayKey;
     }
   }
 

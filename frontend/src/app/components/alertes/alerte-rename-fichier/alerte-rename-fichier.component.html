@@ -1,0 +1,21 @@
+<h2 mat-dialog-title>{{ labels.renameFile }}</h2>
+
+<mat-dialog-content>
+  <mat-form-field appearance="fill" class="rename-fichier-field">
+    <mat-label>{{ labels.nameLabel }}</mat-label>
+    <input matInput [(ngModel)]="baseName" (keyup.enter)="confirm()" />
+    @if (extension) {
+    <span matTextSuffix>.{{ extension }}</span>
+    }
+  </mat-form-field>
+  @if (extension) {
+  <p class="rename-fichier-hint">L'extension .{{ extension }} sera conservée.</p>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancel()">{{ labels.cancel }}</button>
+  <button mat-raised-button color="primary" type="button" (click)="confirm()" [disabled]="!baseName.trim()">
+    {{ labels.validate }}
+  </button>
+</mat-dialog-actions>
