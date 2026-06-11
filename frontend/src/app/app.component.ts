@@ -1,8 +1,10 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { FaIconLibrary, FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { fab } from '@fortawesome/free-brands-svg-icons';
+import { far } from '@fortawesome/free-regular-svg-icons';
+import { fas } from '@fortawesome/free-solid-svg-icons';
 import { filter } from 'rxjs';
-import { HomeRnfModule } from './home-rnf/home-rnf.module';
 
 
 const dynamicScripts = [
@@ -23,8 +25,6 @@ const dynamicScripts = [
     imports:[
       RouterModule,
       FontAwesomeModule,
-      HomeRnfModule,
-  
     ],
     standalone:true
 })
@@ -35,6 +35,9 @@ export class AppComponent implements OnInit{
   routerSubscription: any;
   private router = inject(Router);
 
+  constructor(library: FaIconLibrary) {
+    library.addIconPacks(fab, fas, far);
+  }
 
   ngOnInit(): void {
     this.recallJsFuntions();
