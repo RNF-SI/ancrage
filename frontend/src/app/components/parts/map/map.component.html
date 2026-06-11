@@ -1,5 +1,43 @@
-<div #mapContainer [id]="mapId()" class="map-container" [class.map-container--full]="siteDiagnosticActions()"></div>
-@if (!siteDiagnosticActions()) {
+<div class="map-wrapper">
+  <div
+    #mapContainer
+    [id]="mapId()"
+    class="map-container"
+    [class.map-container--full]="siteDiagnosticActions()">
+  </div>
+
+  @if (changePosition()) {
+    <div class="map-draw-tools">
+      <button
+        type="button"
+        class="map-draw-tool"
+        [class.map-draw-tool--active]="siteDrawMode() === 'point'"
+        matTooltip="Placer un point sur la carte"
+        aria-label="Placer un point sur la carte"
+        (click)="activatePointMode()">
+        <mat-icon>place</mat-icon>
+      </button>
+      <button
+        type="button"
+        class="map-draw-tool"
+        [class.map-draw-tool--active]="siteDrawMode() === 'polygon'"
+        matTooltip="Importer un polygone GeoJSON"
+        aria-label="Importer un polygone GeoJSON"
+        (click)="triggerGeoJsonImport()">
+        <mat-icon>upload_file</mat-icon>
+      </button>
+      <input
+        #geoJsonInput
+        type="file"
+        class="map-geojson-input"
+        accept=".json,.geojson,application/geo+json,application/json"
+        (change)="onGeoJsonFileSelected($event)"
+      />
+    </div>
+  }
+</div>
+
+@if (!siteDiagnosticActions() && !changePosition()) {
   <button mat-raised-button (click)="exportMapAsPNG()">
     <mat-icon>image</mat-icon>
     {{ labels.exportPNG }}

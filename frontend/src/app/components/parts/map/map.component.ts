@@ -4,24 +4,35 @@ import {
   OnDestroy,
   ElementRef,
   ViewChild,
+  inject,
   input,
   output,
   effect,
-  signal
+  signal,
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Acteur } from '@app/models/acteur.model';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { Site } from '@app/models/site.model';
 import { Labels } from '@app/utils/labels';
-import { getSitePointCoordinates, getSitePolygonGeometry } from '@app/utils/site-geometry';
+import { GeoJsonPoint, GeoJsonSiteGeom } from '@app/interfaces/site.interface';
 import { LeafletModule } from '@bluehalo/ngx-leaflet';
 import { LeafletMarkerClusterModule } from '@bluehalo/ngx-leaflet-markercluster';
 import html2canvas from 'html2canvas';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ToastrService } from 'ngx-toastr';
+import { Subscription } from 'rxjs';
 import * as L from 'leaflet';
-import { toSignal } from '@angular/core/rxjs-interop';
+import {
+  computeGeometryCentroid,
+  getSitePointCoordinates,
+  getSitePolygonGeometry,
+  parseGeoJsonFileContent,
+  parseStoredSiteGeometry,
+  parseStoredSitePoint,
+} from '@app/utils/site-geometry';
 import '@app/utils/leaflet-markercluster-loader';
 
 const defaultMarkerIcon = L.icon({
@@ -47,18 +58,17 @@ L.Icon.Default.mergeOptions({
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.css'],
   standalone: true,
-  imports: [MatButtonModule, MatIconModule, LeafletModule, LeafletMarkerClusterModule]
+  imports: [MatButtonModule, MatIconModule, MatTooltipModule, LeafletModule, LeafletMarkerClusterModule]
 })
 export class MapComponent implements AfterViewInit, OnDestroy {
   private map: L.Map | undefined;
   readonly sites = input<Site[]>([]);
   readonly changePosition = input<boolean>(false);
   readonly formGroup = input<FormGroup>(new FormGroup({}));
+  readonly siteForEdit = input<Site | null>(null);
   readonly mapId = input<string>('map');
-  readonly formGroupValues = toSignal(
-    this.formGroup().valueChanges,
-    { initialValue: this.formGroup()!.value }
-  );
+  private readonly formRevision = signal(0);
+  private formGroupSubscription?: Subscription;
   readonly actors = input<Acteur[]>([]);
   readonly siteDiagnosticActions = input(false);
   readonly currentUserId = input(0);
@@ -74,8 +84,13 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   private lastFittedActorsKey = '';
   marker: L.Marker | undefined;
   private mapClickListener: ((e: L.LeafletMouseEvent) => void) | undefined;
+  private editGeometryLayer: L.GeoJSON | undefined;
+  private lastSyncedEditGeomKey = '';
+  readonly siteDrawMode = signal<'point' | 'polygon'>('point');
   labels = new Labels();
   @ViewChild('mapContainer') mapContainer!: ElementRef<HTMLElement>;
+  @ViewChild('geoJsonInput') geoJsonInput?: ElementRef<HTMLInputElement>;
+  private readonly toaster = inject(ToastrService);
 
   constructor() {
     effect(() => {
@@ -84,17 +99,64 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       this.syncMapContent();
     });
 
-    effect(() => {
-      if (!this.changePosition()) return;
-
-      const values = this.formGroupValues();
-      const lat = +values?.position_y;
-      const lng = +values?.position_x;
-
-      if (this.mapReady() && lat && lng) {
-        this.moveMarker();
-      }
+    effect(onCleanup => {
+      const fg = this.formGroup();
+      this.formGroupSubscription?.unsubscribe();
+      this.formGroupSubscription = fg.valueChanges.subscribe(() => {
+        this.formRevision.update(v => v + 1);
+      });
+      onCleanup(() => this.formGroupSubscription?.unsubscribe());
+      this.formRevision.update(v => v + 1);
     });
+
+    effect(() => {
+      if (!this.changePosition() || !this.mapReady()) return;
+      this.formRevision();
+      this.siteForEdit();
+      this.syncSiteEditGeometry();
+    });
+  }
+
+  private editGeometryKey(geom: GeoJsonSiteGeom | null, geomPt: GeoJsonPoint | null): string {
+    return `${geom ? JSON.stringify(geom) : ''}|${geomPt ? JSON.stringify(geomPt) : ''}`;
+  }
+
+  private syncSiteEditGeometry(): void {
+    if (!this.map || !this.formGroup()) return;
+
+    const fg = this.formGroup();
+    const site = this.siteForEdit();
+    let geom = parseStoredSiteGeometry(fg.get('geom')?.value);
+    let geomPt = parseStoredSitePoint(fg.get('geom_pt')?.value);
+
+    if (!geom && site) {
+      geom = getSitePolygonGeometry(site);
+    }
+    if (!geomPt && site) {
+      geomPt = parseStoredSitePoint(site.geom_pt);
+    }
+
+    const geomKey = this.editGeometryKey(geom, geomPt);
+    if (geomKey === this.lastSyncedEditGeomKey) return;
+
+    this.lastSyncedEditGeomKey = geomKey;
+
+    if (geom) {
+      this.showPolygonEditGeometry(geom, geomPt, true);
+      return;
+    }
+
+    this.siteDrawMode.set('point');
+    this.clearEditGeometryLayer();
+
+    const coords = geomPt
+      ? { lat: geomPt.coordinates[1], lng: geomPt.coordinates[0] }
+      : getSitePointCoordinates(site ?? new Site());
+    if (coords) {
+      this.marker?.remove();
+      this.marker = L.marker([coords.lat, coords.lng], { draggable: false }).addTo(this.map);
+      this.map.setView([coords.lat, coords.lng], 13, { animate: false });
+    }
   }
 
   private syncMapContent(): void {
@@ -156,7 +218,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       if (hasSize) {
         this.initMap();
         if (this.changePosition()) {
-          this.moveMarker();
+          this.syncSiteEditGeometry();
         }
         this.observeContainerResize(el);
         setTimeout(() => this.invalidateMapSize(), 0);
@@ -203,14 +265,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     const siteLayersGroup = L.featureGroup();
     this.siteLayersGroup = siteLayersGroup;
     siteLayersGroup.addTo(this.map);
-
-    this.formGroup()?.valueChanges.subscribe(values => {
-      const latitude = +values.position_y;
-      const longitude = +values.position_x;
-      if (latitude && longitude && this.changePosition()) {
-        this.moveMarker();
-      }
-    });
 
     this.mapReady.set(true);
   }
@@ -418,7 +472,114 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  moveMarker(): void {
+  activatePointMode(): void {
+    this.lastSyncedEditGeomKey = '';
+    this.siteDrawMode.set('point');
+    this.clearEditGeometryLayer();
+    this.formGroup()?.patchValue({ geom: null });
+    this.setupPointPlacement();
+  }
+
+  triggerGeoJsonImport(): void {
+    this.geoJsonInput?.nativeElement.click();
+  }
+
+  onGeoJsonFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(reader.result as string);
+        const geom = parseGeoJsonFileContent(parsed);
+        if (!geom) {
+          this.toaster.error('Le fichier doit contenir un polygone GeoJSON (Polygon ou MultiPolygon).');
+          return;
+        }
+        this.applyPolygonGeometry(geom);
+      } catch {
+        this.toaster.error('Fichier GeoJSON invalide.');
+      }
+    };
+    reader.readAsText(file);
+    input.value = '';
+  }
+
+  private applyPolygonGeometry(geom: GeoJsonSiteGeom): void {
+    if (!this.map || !this.formGroup()) return;
+
+    const centroid = computeGeometryCentroid(geom);
+    if (!centroid) {
+      this.toaster.error('Impossible de calculer le centroïde du polygone.');
+      return;
+    }
+
+    const geomPt: GeoJsonPoint = {
+      type: 'Point',
+      coordinates: [centroid.lng, centroid.lat],
+    };
+
+    this.lastSyncedEditGeomKey = this.editGeometryKey(geom, geomPt);
+    this.showPolygonEditGeometry(geom, geomPt, true);
+
+    this.formGroup()!.patchValue({
+      geom,
+      geom_pt: geomPt,
+      position_x: centroid.lng.toFixed(6),
+      position_y: centroid.lat.toFixed(6),
+    });
+  }
+
+  private showPolygonEditGeometry(
+    geom: GeoJsonSiteGeom,
+    geomPt: GeoJsonPoint | null,
+    fitBounds: boolean
+  ): void {
+    if (!this.map) return;
+
+    const centroid = geomPt
+      ? { lng: geomPt.coordinates[0], lat: geomPt.coordinates[1] }
+      : computeGeometryCentroid(geom);
+    this.siteDrawMode.set('polygon');
+    this.disablePointPlacement();
+    this.clearEditGeometryLayer();
+
+    this.editGeometryLayer = L.geoJSON(geom as GeoJSON.GeoJsonObject, {
+      style: {
+        color: '#2e7d32',
+        weight: 2,
+        fillColor: '#4caf50',
+        fillOpacity: 0.25,
+      },
+    });
+    this.editGeometryLayer.addTo(this.map);
+
+    if (centroid) {
+      this.marker?.remove();
+      this.marker = L.marker([centroid.lat, centroid.lng], { draggable: false }).addTo(this.map);
+    }
+
+    if (fitBounds && this.editGeometryLayer.getBounds().isValid()) {
+      this.map.fitBounds(this.editGeometryLayer.getBounds(), { padding: [30, 30], maxZoom: 14 });
+    } else if (centroid) {
+      this.map.setView([centroid.lat, centroid.lng], 10, { animate: false });
+    }
+  }
+
+  private clearEditGeometryLayer(): void {
+    this.editGeometryLayer?.remove();
+    this.editGeometryLayer = undefined;
+  }
+
+  private disablePointPlacement(): void {
+    if (this.map && this.mapClickListener) {
+      this.map.off('click', this.mapClickListener);
+    }
+  }
+
+  private setupPointPlacement(): void {
     if (!this.changePosition() || !this.formGroup() || !this.map) return;
 
     const lat = +this.formGroup()!.get('position_y')?.value || 47.316667;
@@ -426,10 +587,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
     this.marker?.remove();
     this.marker = L.marker([lat, lng], { draggable: false }).addTo(this.map);
-
-    if (this.mapClickListener) {
-      this.map.off('click', this.mapClickListener);
-    }
+    this.disablePointPlacement();
 
     this.mapClickListener = (e: L.LeafletMouseEvent) => {
       const { lat: clickLat, lng: clickLng } = e.latlng;
@@ -437,6 +595,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       this.formGroup()!.patchValue({
         position_y: clickLat.toFixed(6),
         position_x: clickLng.toFixed(6),
+        geom: null,
+        geom_pt: { type: 'Point', coordinates: [clickLng, clickLat] },
       });
     };
 
@@ -444,7 +604,14 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.map.setView([lat, lng], 13);
   }
 
+  moveMarker(): void {
+    if (!this.changePosition() || !this.formGroup() || !this.map) return;
+    if (this.siteDrawMode() !== 'point') return;
+    this.setupPointPlacement();
+  }
+
   ngOnDestroy(): void {
+    this.formGroupSubscription?.unsubscribe();
     this.resizeObserver?.disconnect();
     if (this.resizeDebounceId) {
       clearTimeout(this.resizeDebounceId);
@@ -456,6 +623,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
 
     this.marker?.remove();
+    this.clearEditGeometryLayer();
     this.markerClusterGroup?.clearLayers();
     this.siteLayersGroup?.clearLayers();
     this.map?.off();

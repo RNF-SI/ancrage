@@ -1,36 +1,77 @@
-mat-form-field{
-    display:block !important;
-    width:50%;
-    margin:2%;
+.site-form-page {
+  margin-top: 1rem;
+  margin-bottom: 2rem;
 }
 
-h2{
-    margin-top:1%;
-    margin-bottom:2%;
-    font-size:30px;
-    text-align: center;
-    font-weight: bold;
+.site-form-page h2 {
+  margin-top: 1%;
+  margin-bottom: 2%;
+  font-size: 30px;
+  text-align: center;
+  font-weight: bold;
 }
 
-#boutons{
-    margin-bottom: 5%;
-    
+.site-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 960px;
+  margin: 0 auto;
 }
 
-#boutons div{
-    display: inline;
-    margin-right: 2%;
+.site-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1.5rem;
 }
 
-.grid-3-6-3 {
-    display: grid;
-    grid-template-columns: 10% 80% 10%; /* ou 3fr 6fr 3fr */
-    gap: 1rem;
+.w-100 {
+  width: 100%;
 }
 
-.col-left,
-.col-center,
-.col-right {
-    background: #fff;
-    padding: 1rem;
+.site-form-map {
+  width: 100%;
+}
+
+.site-form-hint {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.6);
+  text-align: center;
+}
+
+.site-form-departements {
+  width: 100%;
+}
+
+.site-form-map app-map {
+  display: block;
+  width: 100%;
+}
+
+.site-form-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10rem;
+  margin-top: 0.5rem;
+}
+
+.btn-save {
+  background-color: #2e7d32 !important;
+  color: #fff !important;
+}
+
+.btn-save:hover {
+  background-color: #1b5e20 !important;
+}
+
+@media (max-width: 768px) {
+  .site-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .site-form-actions {
+    gap: 2.5rem;
+  }
 }
