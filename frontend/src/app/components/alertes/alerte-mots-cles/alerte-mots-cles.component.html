@@ -1,20 +1,56 @@
-<h2 mat-dialog-title>Groupe «&nbsp;{{ data.keyword.nom }}&nbsp;»</h2>
+<div class="groupe-detail-header">
+  <fa-icon class="groupe-detail-icon" [icon]="['far', 'folder-open']"></fa-icon>
+  <h2 mat-dialog-title class="groupe-detail-title">{{ data.keyword.nom }}</h2>
+</div>
 
 <mat-dialog-content class="groupe-detail-content">
-  <p class="groupe-detail-intro">Ce groupe contient les mots-clés suivants&nbsp;:</p>
+  <p class="groupe-detail-meta">
+  @if (categoryLabel) {
+    <span class="groupe-detail-category">{{ categoryLabel }}</span>
+  }
+  @if (totalOccurrences > 0) {
+    <span class="groupe-detail-total">{{ totalOccurrences }} occurrence{{ totalOccurrences > 1 ? 's' : '' }}</span>
+  }
+  </p>
 
-  <ul class="groupe-detail-list">
-    @for (kw of data.keyword.mots_cles_issus; track kw.id_mot_cle) {
-      <li>{{ formatMotCleLabel(kw) }}</li>
-    }
-  </ul>
+  <p class="groupe-detail-intro">
+    Mots-clés composant ce groupe. Vous pouvez en retirer un pour qu'il redevienne un mot isolé.
+  </p>
 
-  <div class="groupe-detail-actions">
-    <button mat-raised-button color="accent" type="button" (click)="displayInput()">
-      Modifier le nom du groupe
+  @if (data.keyword.mots_cles_issus.length === 0) {
+    <p class="groupe-detail-empty">Ce groupe ne contient plus de mots-clés.</p>
+  } @else {
+    <ul class="groupe-detail-members">
+      @for (kw of data.keyword.mots_cles_issus; track kw.id_mot_cle) {
+        <li class="groupe-detail-member">
+          <div class="groupe-detail-member-info">
+            <span class="groupe-detail-member-name">{{ kw.nom }}</span>
+            @if (kw.nombre != null && kw.nombre > 0) {
+              <span class="groupe-detail-member-count">{{ kw.nombre }}</span>
+            }
+          </div>
+          <button
+            mat-stroked-button
+            type="button"
+            class="groupe-detail-exclude-btn"
+            (click)="excludeFromGroup(kw)"
+            [attr.aria-label]="'Retirer ' + kw.nom + ' du groupe'">
+            <mat-icon>link_off</mat-icon>
+            Retirer
+          </button>
+        </li>
+      }
+    </ul>
+  }
+
+  <div class="groupe-detail-toolbar">
+    <button mat-stroked-button type="button" (click)="displayInput()">
+      <mat-icon>edit</mat-icon>
+      Renommer le groupe
     </button>
-    <button mat-raised-button color="warn" type="button" (click)="explodeGroup()">
-      Restaurer les valeurs regroupées
+    <button mat-stroked-button type="button" color="warn" (click)="explodeGroup()">
+      <mat-icon>folder_off</mat-icon>
+      Tout dissocier
     </button>
   </div>
 
@@ -24,10 +60,10 @@
         <mat-label>Nom du groupe</mat-label>
         <input
           matInput
-          placeholder="Entrez le nom du groupe de mots-clés"
-          [(ngModel)]="data.keyword.nom">
+          placeholder="Nom du groupe"
+          [(ngModel)]="data.keyword.nom"
+          (keyup.enter)="rename()">
       </mat-form-field>
-
       <button mat-raised-button color="accent" type="button" (click)="rename()">
         {{ labels.record }}
       </button>
@@ -35,8 +71,8 @@
   }
 </mat-dialog-content>
 
-<mat-dialog-actions align="end">
-  <button mat-raised-button color="warn" type="button" (click)="close()">
-    {{ labels.cancel }}
+<mat-dialog-actions align="end" class="groupe-detail-footer">
+  <button mat-raised-button color="accent" type="button" (click)="applyAndClose()">
+    {{ labels.close }}
   </button>
 </mat-dialog-actions>

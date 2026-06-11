@@ -24,7 +24,7 @@
                 [attr.data-mot-cle-id]="keyword.id_mot_cle"
                 [class.mot-cle-chip--merge-target]="isMergeTarget(keyword)"
                 [class.mot-cle-chip--dragging]="draggingKeywordId() === keyword.id_mot_cle"
-                [removable]="true"
+                [removable]="!modeAnalyse()"
                 (cdkDragStarted)="onKeywordDragStarted(keyword)"
                 (cdkDragMoved)="onKeywordDragMoved($event)"
                 (cdkDragEnded)="onKeywordDragEnded($event)"
@@ -39,9 +39,11 @@
                 @if (keyword.mots_cles_issus!.length > 0) {
                   <fa-icon [icon]="['far', 'folder-open']"></fa-icon>
                 }
-                <button matChipRemove>
-                  <mat-icon>cancel</mat-icon>
-                </button>
+                @if (!modeAnalyse()) {
+                  <button matChipRemove>
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                }
               </mat-chip>
             }
           </div>

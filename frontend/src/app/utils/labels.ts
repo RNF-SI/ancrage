@@ -102,4 +102,6 @@ export class Labels {
     uploadFile = "Vous devez téléverser un fichier.";
     afomGroupSaved = "Nouveau groupe enregistré";
     afomWordAddedToGroup = "Mot ajouté au groupe";
+    afomWordExcludedFromGroup = "Mot retiré du groupe";
+    afomGroupUpdated = "Groupe mis à jour";
 }

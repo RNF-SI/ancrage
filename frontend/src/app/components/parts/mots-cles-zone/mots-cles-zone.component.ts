@@ -503,18 +503,20 @@ export class MotsClesZoneComponent implements OnDestroy{
       }
  
       const dialogRef = this.dialog.open(AlerteMotsClesComponent, {
-        width: 'min(50vw, 520px)',
+        width: 'min(520px, 92vw)',
         minWidth: '420px',
-        minHeight: '320px',
         data: {
           keyword: keyword,
-          listeMotsCles: listToSend,
-          sections: this.categories()
+          listeMotsCles: [...listToSend],
+          sections: this.categories(),
+          modeAnalyse: this.modeAnalyse(),
         }
       });
       dialogRef.afterClosed().subscribe(listeMC => {
-        if (listeMC && this.modeAnalyse()) {
-          this.setKeywords(listeMC);
+        if (!listeMC) return;
+        this.setKeywords(listeMC);
+        if (this.modeAnalyse()) {
+          this.saveAfomAnalyse(this.labels.afomGroupUpdated);
         }
       });
     }
