@@ -37,6 +37,12 @@
   --custom-accent-A200: #f0ffa3;
   --custom-accent-A400: #e6ff75;
   --custom-accent-A700: #dbff4d;
+
+  // Hauteurs layout (navbar + footer) pour les panneaux latéraux scrollables
+  --app-header-height: 80px;
+  --app-footer-height: 200px;
+  --app-sidebar-top: var(--app-header-height);
+  --app-sidebar-max-height: calc(100dvh - var(--app-header-height) - var(--app-footer-height));
 }
 
 // === Définition du thème Material Design 3 ===

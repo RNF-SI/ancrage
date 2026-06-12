@@ -1,22 +1,28 @@
-.full-question {
-    white-space: normal;
-    word-break: break-word;
-    width: 100%;
+:host {
+  display: block;
+  min-height: 0;
 }
 
-.question{
-    cursor:pointer;
-    
+.full-question {
+  white-space: normal;
+  word-break: break-word;
+  width: 100%;
+}
+
+.question {
+  cursor: pointer;
 }
 
 .sticky-menu {
-    position: sticky;
-    top: 80px; /* adapte en fonction de ton header */
-    max-height: calc(100vh - 80px);
-    overflow-y: auto;
+  position: sticky;
+  top: var(--app-sidebar-top, 80px);
+  max-height: var(--app-sidebar-max-height, calc(100dvh - 80px - 200px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
-mat-expansion-panel-header{
-    margin-top: 6%;
-    margin-bottom: 6%;
+mat-expansion-panel-header {
+  margin-top: 6%;
+  margin-bottom: 6%;
 }
