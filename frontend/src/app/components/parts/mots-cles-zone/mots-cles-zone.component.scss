@@ -53,6 +53,10 @@
     opacity: 0;
   }
 
+  .mot-cle-chip.mot-cle-chip--readonly {
+    cursor: default;
+  }
+
   .cdk-drag-placeholder {
     opacity: 0;
   }
@@ -81,8 +85,17 @@
 
 .mots-cles-toolbar {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-end;
+  gap: 0.75rem;
   margin-bottom: 0.75rem;
+}
+
+:host ::ng-deep .mots-cles-toolbar .entretien-afom-back-nav {
+  width: auto;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .mots-cles-instructions-toggle mat-icon {
@@ -115,11 +128,6 @@
   line-height: 1.55;
 }
 
-.mots-cles-side-footer--expanded {
-  position: static;
-  background: transparent;
-  margin-top: 1rem;
-}
 
 .mots-cles-afom-panel {
   display: flex;

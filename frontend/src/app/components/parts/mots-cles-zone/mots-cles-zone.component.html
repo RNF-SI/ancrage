@@ -4,20 +4,25 @@
 </div>
 } @else {
 <div class="mots-cles-layout">
-  <div class="mots-cles-toolbar">
-    <button
-      mat-stroked-button
-      type="button"
-      class="mots-cles-instructions-toggle"
-      (click)="toggleInstructions()">
-      <mat-icon>{{ showInstructions() ? 'visibility_off' : 'help_outline' }}</mat-icon>
-      {{ showInstructions() ? labels.hideInstructions : labels.showInstructions }}
-    </button>
-  </div>
+  @if (!modeAnalyse() || instructionsEnabled()) {
+    <div class="mots-cles-toolbar">
+      @if (instructionsEnabled()) {
+        <button
+          mat-stroked-button
+          type="button"
+          class="mots-cles-instructions-toggle"
+          (click)="toggleInstructions()">
+          <mat-icon>{{ showInstructions() ? 'visibility_off' : 'help_outline' }}</mat-icon>
+          {{ showInstructions() ? labels.hideInstructions : labels.showInstructions }}
+        </button>
+      }
+      <ng-content select="[afomSideFooter]"></ng-content>
+    </div>
+  }
 
-  <div class="grid-6-6" [class.grid-6-6--full-width]="!showInstructions()">
+  <div class="grid-6-6" [class.grid-6-6--full-width]="!isInstructionsPanelVisible()">
     <div class="col-span-6 mots-cles-afom-panel">
-      @if (!modeAnalyse() && !showInstructions()) {
+      @if (!modeAnalyse() && !isInstructionsPanelVisible()) {
         <mat-form-field appearance="outline" class="mots-cles-keyword-field">
           <mat-chip-set>
             @for (keyword of keywords; track keyword) {
@@ -71,9 +76,11 @@
                 <mat-chip
                   class="mot-cle-chip"
                   cdkDrag
+                  [cdkDragDisabled]="modeAnalyse() && !canEditDiagnosticAfom()"
                   [attr.data-mot-cle-id]="keyword.id_mot_cle"
                   [class.mot-cle-chip--merge-target]="isMergeTarget(keyword)"
                   [class.mot-cle-chip--dragging]="draggingKeywordId() === keyword.id_mot_cle"
+                  [class.mot-cle-chip--readonly]="modeAnalyse() && !canEditDiagnosticAfom()"
                   [removable]="!modeAnalyse()"
                   (cdkDragStarted)="onKeywordDragStarted(keyword)"
                   (cdkDragMoved)="onKeywordDragMoved($event)"
@@ -126,14 +133,9 @@
         </div>
       }
 
-      @if (!showInstructions()) {
-        <div class="mots-cles-side-footer mots-cles-side-footer--expanded">
-          <ng-content select="[afomSideFooter]"></ng-content>
-        </div>
-      }
     </div>
 
-    @if (showInstructions()) {
+    @if (isInstructionsPanelVisible()) {
       <div class="col-span-6 mots-cles-side-panel">
         @if (!modeAnalyse()) {
           <mat-form-field appearance="outline">
@@ -187,9 +189,6 @@
             <li>Dupliquer un mot-clé : si vous avez besoin qu'un mot-clé apparaisse dans deux catégories à la fois, déplacez-le d'une catégorie à une autre en maintenant la touche MAJ. Il apparaîtra alors à la fois dans la catégorie d'origine et la catégorie ciblée.</li>
           }
         </ul>
-        <div class="mots-cles-side-footer">
-          <ng-content select="[afomSideFooter]"></ng-content>
-        </div>
       </div>
     }
   </div>

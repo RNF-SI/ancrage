@@ -18,6 +18,7 @@ export interface AlerteMotsClesData {
   listeMotsCles: MotCle[];
   sections: Nomenclature[];
   modeAnalyse: boolean;
+  canEdit?: boolean;
 }
 
 @Component({
@@ -61,7 +62,14 @@ export class AlerteMotsClesComponent implements OnInit, OnDestroy {
     return this.data.keyword.nombre ?? 0;
   }
 
+  get canEdit(): boolean {
+    return this.data.canEdit !== false;
+  }
+
   excludeFromGroup(child: MotCle): void {
+    if (!this.canEdit) {
+      return;
+    }
     const parent = this.data.keyword;
     parent.mots_cles_issus = (parent.mots_cles_issus ?? []).filter(
       mc => mc.id_mot_cle !== child.id_mot_cle

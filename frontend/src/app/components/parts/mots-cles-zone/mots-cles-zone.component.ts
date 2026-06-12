@@ -91,6 +91,21 @@ export class MotsClesZoneComponent implements OnDestroy{
     this.categories().map(c => `dropList-${c.id_nomenclature}`)
   );
 
+  /** Droits d'édition sur l'AFOM général du diagnostic (propriétaire, non lecture seule). */
+  readonly canEditDiagnosticAfom = computed(() => {
+    const diag = this.diagnostic();
+    return diag.created_by === this.id_role() && !diag.is_read_only;
+  });
+
+  /** Instructions masquées en AFOM général sans droits d'édition. */
+  readonly instructionsEnabled = computed(() =>
+    !this.modeAnalyse() || this.canEditDiagnosticAfom()
+  );
+
+  readonly isInstructionsPanelVisible = computed(() =>
+    this.instructionsEnabled() && this.showInstructions()
+  );
+
   getConnectedDropLists(cat: Nomenclature): string[] {
     const listId = `dropList-${cat.id_nomenclature}`;
     if (this.modeAnalyse()) {
@@ -301,7 +316,14 @@ export class MotsClesZoneComponent implements OnDestroy{
     );
   }
 
+  private canDragInAfom(): boolean {
+    return !this.modeAnalyse() || this.canEditDiagnosticAfom();
+  }
+
   onKeywordDragStarted(keyword: MotCle): void {
+    if (!this.canDragInAfom()) {
+      return;
+    }
     this.draggingKeywordId.set(keyword.id_mot_cle);
     this.mergeTargetId.set(null);
     this.ctrlPressedDuringDrag = false;
@@ -310,6 +332,9 @@ export class MotsClesZoneComponent implements OnDestroy{
   }
 
   onKeywordDragMoved(event: CdkDragMove<MotCle>): void {
+    if (!this.canDragInAfom()) {
+      return;
+    }
     const pointerEvent = event.event as MouseEvent;
     if (pointerEvent.ctrlKey) {
       this.ctrlPressedDuringDrag = true;
@@ -418,6 +443,9 @@ export class MotsClesZoneComponent implements OnDestroy{
   }
 
   drop(event: CdkDragDrop<MotCle[] | undefined>, targetCategory: Nomenclature): void {
+    if (!this.canDragInAfom()) {
+      return;
+    }
     const pointerEvent = event.event as MouseEvent | PointerEvent;
     const isCtrlPressed = pointerEvent?.ctrlKey || this.ctrlPressedDuringDrag;
 
@@ -513,12 +541,13 @@ export class MotsClesZoneComponent implements OnDestroy{
           listeMotsCles: [...listToSend],
           sections: this.categories(),
           modeAnalyse: this.modeAnalyse(),
+          canEdit: this.modeAnalyse() ? this.canEditDiagnosticAfom() : true,
         }
       });
       dialogRef.afterClosed().subscribe(listeMC => {
         if (!listeMC) return;
         this.setKeywords(listeMC);
-        if (this.modeAnalyse()) {
+        if (this.modeAnalyse() && this.canEditDiagnosticAfom()) {
           this.saveAfomAnalyse(this.labels.afomGroupUpdated);
         }
       });
@@ -724,6 +753,9 @@ export class MotsClesZoneComponent implements OnDestroy{
   }
 
   mergeKeywords(source: MotCle, target: MotCle): void {
+    if (this.modeAnalyse() && !this.canEditDiagnosticAfom()) {
+      return;
+    }
     if (
       this.modeAnalyse() &&
       source.categorie?.id_nomenclature !== target.categorie?.id_nomenclature

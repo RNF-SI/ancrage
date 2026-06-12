@@ -14,7 +14,11 @@
   </p>
 
   <p class="groupe-detail-intro">
-    Mots-clés composant ce groupe. Vous pouvez en retirer un pour qu'il redevienne un mot isolé.
+    @if (canEdit) {
+      Mots-clés composant ce groupe. Vous pouvez en retirer un pour qu'il redevienne un mot isolé.
+    } @else {
+      Mots-clés composant ce groupe (consultation seule).
+    }
   </p>
 
   @if (data.keyword.mots_cles_issus.length === 0) {
@@ -29,30 +33,34 @@
               <span class="groupe-detail-member-count">{{ kw.nombre }}</span>
             }
           </div>
-          <button
-            mat-stroked-button
-            type="button"
-            class="groupe-detail-exclude-btn"
-            (click)="excludeFromGroup(kw)"
-            [attr.aria-label]="'Retirer ' + kw.nom + ' du groupe'">
-            <mat-icon>link_off</mat-icon>
-            Retirer
-          </button>
+          @if (canEdit) {
+            <button
+              mat-stroked-button
+              type="button"
+              class="groupe-detail-exclude-btn"
+              (click)="excludeFromGroup(kw)"
+              [attr.aria-label]="'Retirer ' + kw.nom + ' du groupe'">
+              <mat-icon>link_off</mat-icon>
+              Retirer
+            </button>
+          }
         </li>
       }
     </ul>
   }
 
-  <div class="groupe-detail-toolbar">
-    <button mat-stroked-button type="button" (click)="displayInput()">
-      <mat-icon>edit</mat-icon>
-      Renommer le groupe
-    </button>
-    <button mat-stroked-button type="button" color="warn" (click)="explodeGroup()">
-      <mat-icon>folder_off</mat-icon>
-      Tout dissocier
-    </button>
-  </div>
+  @if (canEdit) {
+    <div class="groupe-detail-toolbar">
+      <button mat-stroked-button type="button" (click)="displayInput()">
+        <mat-icon>edit</mat-icon>
+        Renommer le groupe
+      </button>
+      <button mat-stroked-button type="button" color="warn" (click)="explodeGroup()">
+        <mat-icon>folder_off</mat-icon>
+        Tout dissocier
+      </button>
+    </div>
+  }
 
   @if (showRenameField()) {
     <div class="groupe-detail-rename">
