@@ -31,6 +31,7 @@ import { Question } from '@app/models/question.model';
 import { QuestionService } from '@app/services/question.service';
 import { LoadingSpinnerComponent } from '@app/home-rnf/components/loading-spinner/loading-spinner.component';
 import { Labels } from '@app/utils/labels';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 
 @Component({
@@ -49,6 +50,7 @@ import { Labels } from '@app/utils/labels';
         CommonModule,
         MatButtonModule,
         MatProgressSpinnerModule,
+        MatTooltipModule,
         FontAwesomeModule,
         LoadingSpinnerComponent
     ]
@@ -114,6 +116,7 @@ export class MotsClesZoneComponent implements OnDestroy{
   disable = signal<boolean>(true);
   readonly isLoading = signal(true);
   readonly isSavingAfom = signal(false);
+  readonly showInstructions = signal(true);
   readonly draggingKeywordId = signal<number | null>(null);
   readonly mergeTargetId = signal<number | null>(null);
   private ctrlPressedDuringDrag = false;
@@ -793,6 +796,17 @@ export class MotsClesZoneComponent implements OnDestroy{
   
   isGroup(motCle: MotCle): boolean {
     return motCle.mots_cles_issus?.length! > 0;
+  }
+
+  toggleInstructions(): void {
+    this.showInstructions.update(v => !v);
+  }
+
+  getKeywordTooltip(keyword: MotCle): string {
+    if (keyword.nombre != null && keyword.nombre > 0 && this.modeAnalyse()) {
+      return `${keyword.nom} (${keyword.nombre})`;
+    }
+    return keyword.nom;
   }
 
   ngOnDestroy(): void {

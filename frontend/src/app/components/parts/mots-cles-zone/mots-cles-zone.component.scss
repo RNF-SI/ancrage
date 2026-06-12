@@ -14,6 +14,8 @@
 .column {
   flex: 1 1 calc(50% - 8px);
   min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   background: #f9f9f9;
   padding: 8px;
   border-radius: 6px;
@@ -23,13 +25,21 @@
   flex-wrap: wrap;
   align-content: flex-start;
   align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
   min-height: 100px;
   padding: 8px;
   border: 2px dashed #ccc;
   border-radius: 4px;
+  overflow: hidden;
 
-  mat-chip {
+  .mot-cle-chip {
     margin: 1px;
+    flex: 0 1 auto;
+    width: fit-content;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     transition: background-color 0.15s ease, box-shadow 0.15s ease, outline-color 0.15s ease;
 
     &.mot-cle-chip--merge-target {
@@ -39,7 +49,7 @@
     }
   }
 
-  mat-chip.mot-cle-chip--dragging {
+  .mot-cle-chip.mot-cle-chip--dragging {
     opacity: 0;
   }
 
@@ -65,12 +75,50 @@
   overflow-x: hidden;
 }
 
+.mots-cles-layout {
+  max-width: 100%;
+}
+
+.mots-cles-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.mots-cles-instructions-toggle mat-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+  margin-right: 0.35rem;
+}
+
 .grid-6-6 {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1rem 1.25rem;
   margin-bottom: 1rem;
   max-width: 100%;
+
+  &--full-width {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.mots-cles-keyword-field {
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+.mots-cles-instructions-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  line-height: 1.55;
+}
+
+.mots-cles-side-footer--expanded {
+  position: static;
+  background: transparent;
+  margin-top: 1rem;
 }
 
 .mots-cles-afom-panel {
@@ -124,4 +172,73 @@
   bottom: 1rem;
   z-index: 2;
   background: #fff;
+}
+
+.mot-cle-chip-content {
+  display: flex;
+  align-items: center;
+  width: auto;
+  max-width: 100%;
+  min-width: 0;
+  gap: 0.25rem;
+}
+
+.mot-cle-chip-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mot-cle-chip-count {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.mot-cle-chip-folder {
+  flex: 0 0 auto;
+  font-size: 0.9em;
+}
+
+.mots-cles-side-panel mat-chip-set .mot-cle-chip-name {
+  display: inline-block;
+  max-width: 16rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+:host ::ng-deep .dropzone .mot-cle-chip.mat-mdc-chip {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+:host ::ng-deep .dropzone .mot-cle-chip .mdc-evolution-chip__cell,
+:host ::ng-deep .dropzone .mot-cle-chip .mdc-evolution-chip__cell--primary,
+:host ::ng-deep .dropzone .mot-cle-chip .mat-mdc-chip-action,
+:host ::ng-deep .dropzone .mot-cle-chip .mdc-evolution-chip__action--primary {
+  max-width: 100%;
+  min-width: 0 !important;
+  overflow: hidden;
+}
+
+:host ::ng-deep .dropzone .mot-cle-chip .mat-mdc-chip-action-label {
+  display: flex !important;
+  align-items: center;
+  width: auto;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+:host ::ng-deep .dropzone .mot-cle-chip.mdc-evolution-chip,
+:host ::ng-deep .dropzone .mot-cle-chip .mdc-evolution-chip__cell--primary {
+  width: fit-content;
+  max-width: 100%;
 }

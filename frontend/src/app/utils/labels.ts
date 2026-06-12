@@ -104,4 +104,6 @@ export class Labels {
     afomWordAddedToGroup = "Mot ajouté au groupe";
     afomWordExcludedFromGroup = "Mot retiré du groupe";
     afomGroupUpdated = "Groupe mis à jour";
+    showInstructions = "Afficher les instructions";
+    hideInstructions = "Masquer les instructions";
 }
