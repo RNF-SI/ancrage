@@ -59,6 +59,9 @@
 
 .entretien-back-nav {
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   padding-top: 0.75rem;
   border-top: 1px solid rgba(0, 0, 0, 0.12);
   background: #fff;
@@ -66,6 +69,39 @@
 
 .entretien-back-nav button {
   width: 100%;
+}
+
+.entretien-missing-btn {
+  color: #c62828;
+  border-color: rgba(198, 40, 40, 0.5);
+  line-height: 1.35;
+  white-space: normal;
+  height: auto;
+  min-height: 36px;
+  padding: 0.5rem 0.75rem;
+}
+
+.entretien-missing-btn fa-icon {
+  margin-right: 0.35rem;
+}
+
+.entretien-missing-btn:not(:disabled):hover {
+  background: rgba(198, 40, 40, 0.06);
+}
+
+.entretien-question-card--highlight {
+  animation: entretien-question-highlight 2s ease-out;
+}
+
+@keyframes entretien-question-highlight {
+  0% {
+    background: rgba(198, 40, 40, 0.12);
+    border-left-color: #c62828;
+  }
+  100% {
+    background: transparent;
+    border-left-color: transparent;
+  }
 }
 
 .entretien-afom-back-nav {

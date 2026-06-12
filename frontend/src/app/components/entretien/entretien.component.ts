@@ -142,6 +142,67 @@ export class EntretienComponent implements OnDestroy{
     );
   }
 
+  hasIncompleteRequiredAnswers(): boolean {
+    return this.getFirstIncompleteQuestionId() !== null;
+  }
+
+  scrollToFirstIncompleteQuestion(): void {
+    const id = this.getFirstIncompleteQuestionId();
+    if (id === null) {
+      this.toaster.info(this.labels.noMissingAnswers);
+      return;
+    }
+    const el = document.getElementById('question-' + id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.classList.add('entretien-question-card--highlight');
+      setTimeout(() => el.classList.remove('entretien-question-card--highlight'), 2000);
+    }
+  }
+
+  private getFirstIncompleteQuestionId(): number | null {
+    for (const theme of this.themes()) {
+      if (theme.libelle === 'AFOM' || this.isOptionalTheme(theme)) continue;
+      for (const q of theme.questions ?? []) {
+        const reponse = this.reponses.find(r => r.question?.id_question === q.id_question);
+        if (reponse && this.isQuestionMissingRequiredAnswer(reponse)) {
+          return q.id_question;
+        }
+      }
+    }
+    return null;
+  }
+
+  private isQuestionMissingRequiredAnswer(reponse: Reponse): boolean {
+    const q = reponse.question;
+    if (!q || this.isOptionalQuestion(q)) {
+      return false;
+    }
+
+    const questionId = q.id_question;
+    const valeurId = Number(
+      this.formGroup.get(`question_${questionId}`)?.value ??
+      reponse.valeur_reponse?.id_nomenclature ??
+      0
+    );
+    const commentaire = (
+      this.formGroup.get(`reponse_${questionId}`)?.value ??
+      reponse.commentaires ??
+      ''
+    ).trim();
+
+    // Questions « Sans indicateur » : obligatoires tant qu'aucune réponse n'est choisie
+    // (le choix « Sans réponse » compte comme une réponse valide)
+    if (q.indications === 'Sans indicateur') {
+      return valeurId <= 0 && commentaire === '';
+    }
+
+    if (valeurId > 0 && valeurId !== this.noResponse().id_nomenclature) return false;
+    if (valeurId === this.noResponse().id_nomenclature || commentaire !== '') return false;
+
+    return true;
+  }
+
   prepareResults(themes:Nomenclature[],etats:Nomenclature[],noResponse:Nomenclature){
     this.reponses = [];
     this.themes.set(themes);

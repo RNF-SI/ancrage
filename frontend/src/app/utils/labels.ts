@@ -108,4 +108,6 @@ export class Labels {
     hideInstructions = "Masquer les instructions";
     optionalInterviewTheme = "Changement climatique et biodiversité";
     optionalQuestionLabel = "Facultatif";
+    goToFirstMissingAnswer = "Naviguer vers la première question incomplète";
+    noMissingAnswers = "Toutes les questions obligatoires sont renseignées.";
 }

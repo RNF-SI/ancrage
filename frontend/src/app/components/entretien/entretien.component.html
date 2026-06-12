@@ -8,6 +8,17 @@
     <div class="col-left entretien-col-left" [class.entretien-col-left--hidden]="activeTabIndex() === 1">
       <app-menu-lateral [themes]="themes()"></app-menu-lateral>
       <div class="entretien-back-nav">
+        @if (activeTabIndex() === 0) {
+          <button
+            mat-stroked-button
+            type="button"
+            class="entretien-missing-btn"
+            [disabled]="!hasIncompleteRequiredAnswers()"
+            (click)="scrollToFirstIncompleteQuestion()">
+            <fa-icon [icon]="['fas', 'triangle-exclamation']" aria-hidden="true"></fa-icon>
+            {{ labels.goToFirstMissingAnswer }}
+          </button>
+        }
         <button mat-raised-button color="accent" type="button" (click)="navigate(previousPage, diagnostic)">
           {{ backToActorsLabel }}
         </button>
