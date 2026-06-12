@@ -5,7 +5,7 @@ from schemas.metier import *
 from routes import bp,datetime, func,jsonify, timezone
 from routes.mot_cle import getKeywordsByActor
 from configs.logger_config import logger
-from routes.functions import checkCCG
+from routes.functions import checkCCG, required_questions_query
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload, joinedload
 from pypnusershub.decorators import check_auth
@@ -332,23 +332,19 @@ def getRepartitionMotsCles(id_diagnostic):
     return data
 
 def verifCompleteStatus(id_acteur):
-    nb_reponses = db.session.query(func.count(Reponse.id_reponse)).filter_by(acteur_id=id_acteur).scalar()
     isCCG = checkCCG(id_acteur)
+    count = required_questions_query(isCCG).count()
 
-    if isCCG:
-        count = db.session.query(func.count(Question.id_question)).scalar()
-    else:
-        count = (
-            db.session.query(func.count(Question.id_question))
-            .join(Nomenclature, Question.theme_id == Nomenclature.id_nomenclature)
-            .filter(Nomenclature.libelle != "CCG")
-            .scalar()
-        )
- 
+    nb_reponses = (
+        required_questions_query(isCCG)
+        .join(Reponse, (Reponse.question_id == Question.id_question) & (Reponse.acteur_id == id_acteur))
+        .count()
+    )
+
     nomenclatures = Nomenclature.query.filter_by(mnemonique="statut_entretien").all()
-    
-    statut_entretien_id=0
-    if nb_reponses == count:
+
+    statut_entretien_id = 0
+    if nb_reponses >= count and count > 0:
         for statut in nomenclatures:
             if statut.libelle == 'Réalisé':
                 statut_entretien_id = statut.id_nomenclature
@@ -359,7 +355,7 @@ def verifCompleteStatus(id_acteur):
                 statut_entretien_id = statut.id_nomenclature
                 break
     else:
-        logger.error(f"Nombre réponses supérieur aux questions !!!")
+        logger.error("Nombre de réponses incohérent pour l'acteur %s", id_acteur)
     
     acteur = Acteur.query.filter_by(id_acteur=id_acteur).first()
 

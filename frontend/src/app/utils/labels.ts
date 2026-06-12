@@ -106,4 +106,6 @@ export class Labels {
     afomGroupUpdated = "Groupe mis à jour";
     showInstructions = "Afficher les instructions";
     hideInstructions = "Masquer les instructions";
+    optionalInterviewTheme = "Changement climatique et biodiversité";
+    optionalQuestionLabel = "Facultatif";
 }

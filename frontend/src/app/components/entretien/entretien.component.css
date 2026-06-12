@@ -133,6 +133,13 @@
   line-height: 1.35;
 }
 
+.entretien-theme-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 .entretien-theme-badge {
   display: inline-block;
   padding: 0.2rem 0.65rem;
@@ -142,6 +149,23 @@
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.entretien-theme-header--optional {
+  background: linear-gradient(135deg, var(--custom-accent-50) 0%, #fff 100%);
+}
+
+.entretien-optional-badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  background: var(--custom-accent-300);
+  color: rgba(0, 0, 0, 0.8);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 

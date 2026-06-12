@@ -27,9 +27,14 @@
               @for (theme of themes(); track theme.id_nomenclature) {
                 @if (theme.libelle !== 'AFOM') {
                   <section class="entretien-theme-block" [attr.id]="'theme-' + theme.id_nomenclature">
-                    <header class="entretien-theme-header">
+                    <header class="entretien-theme-header" [class.entretien-theme-header--optional]="isOptionalTheme(theme)">
                       <h3 class="entretien-theme-title">{{ theme.libelle }}</h3>
-                      <span class="entretien-theme-badge">{{ theme.questions?.length ?? 0 }} question{{ (theme.questions?.length ?? 0) > 1 ? 's' : '' }}</span>
+                      <div class="entretien-theme-meta">
+                        @if (isOptionalTheme(theme)) {
+                          <span class="entretien-optional-badge">{{ labels.optionalQuestionLabel }}</span>
+                        }
+                        <span class="entretien-theme-badge">{{ theme.questions?.length ?? 0 }} question{{ (theme.questions?.length ?? 0) > 1 ? 's' : '' }}</span>
+                      </div>
                     </header>
 
                     <div class="entretien-theme-questions">
@@ -37,7 +42,9 @@
                         <article class="entretien-question-card" [attr.id]="'question-' + q.id_question">
                           <h4 class="entretien-question-title question_d_{{ q.id_question }}">
                             <span class="entretien-question-text">{{ q.libelle }}</span>
-                            <fa-icon class="warn warn_{{ q.id_question }}" [icon]="['fas', 'triangle-exclamation']"></fa-icon>
+                            @if (!isOptionalTheme(theme)) {
+                              <fa-icon class="warn warn_{{ q.id_question }}" [icon]="['fas', 'triangle-exclamation']"></fa-icon>
+                            }
                           </h4>
 
                           @if (q.indications) {

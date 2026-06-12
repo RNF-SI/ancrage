@@ -130,6 +130,18 @@ export class EntretienComponent implements OnDestroy{
     return !isSansReponse || (isSansReponse && sansReponseAutorise);
   }
 
+  isOptionalTheme(theme: Nomenclature): boolean {
+    return theme.libelle === this.labels.optionalInterviewTheme;
+  }
+
+  private isOptionalQuestion(question?: Question): boolean {
+    if (!question) return false;
+    return this.themes().some(
+      theme => this.isOptionalTheme(theme) &&
+        theme.questions?.some(q => q.id_question === question.id_question)
+    );
+  }
+
   prepareResults(themes:Nomenclature[],etats:Nomenclature[],noResponse:Nomenclature){
     this.reponses = [];
     this.themes.set(themes);
@@ -194,12 +206,16 @@ export class EntretienComponent implements OnDestroy{
   }
 
   hideWarnings(reponses:Reponse[],iteration:number){
+    const classe = ".warn_"+reponses[iteration].question?.id_question;
+    const element = document.querySelector(classe);
+
+    if (this.isOptionalQuestion(reponses[iteration].question)) {
+      element?.classList.add("invisible");
+      return;
+    }
+
     if (reponses[iteration].valeur_reponse.id_nomenclature > 0){
-     
-      const classe = ".warn_"+reponses[iteration].question?.id_question;
       
-      const element = document.querySelector(classe);
- 
       if (reponses[iteration].valeur_reponse.id_nomenclature == this.noResponse().id_nomenclature){
         element?.classList.replace("warn","warn-partial");
         if(reponses[iteration].question?.indications == "Sans indicateur"){
