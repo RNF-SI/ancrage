@@ -205,7 +205,7 @@ export class DiagnosticService {
 
     /** Mise à jour de la date de publication uniquement (sans renvoyer les acteurs). */
     updateDateRapport(diagnostic: Diagnostic, dateRapport: string): Observable<Diagnostic> {
-      const payload: Partial<IDiagnostic> = {
+      const payload = {
         id_diagnostic: diagnostic.id_diagnostic,
         nom: diagnostic.nom,
         slug: diagnostic.slug,
