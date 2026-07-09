@@ -2,13 +2,19 @@
 """
 Restaure les acteurs d'origine d'un diagnostic après recopie accidentelle.
 
-Usage :
+Usage (depuis le répertoire backend/) :
   python3 scripts/recover_diagnostic_acteurs.py 89 --dry-run
   python3 scripts/recover_diagnostic_acteurs.py 89 --execute
 """
 
 import argparse
+import os
 import sys
+
+# Permet d'exécuter le script depuis backend/ : python3 scripts/...
+_BACKEND_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _BACKEND_ROOT not in sys.path:
+    sys.path.insert(0, _BACKEND_ROOT)
 
 from app import create_app
 from models.models import Acteur, Reponse, db
