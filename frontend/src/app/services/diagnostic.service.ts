@@ -202,6 +202,32 @@ export class DiagnosticService {
         })
       );
     }
+
+    /** Mise à jour de la date de publication uniquement (sans renvoyer les acteurs). */
+    updateDateRapport(diagnostic: Diagnostic, dateRapport: string): Observable<Diagnostic> {
+      const payload: Partial<IDiagnostic> = {
+        id_diagnostic: diagnostic.id_diagnostic,
+        nom: diagnostic.nom,
+        slug: diagnostic.slug,
+        created_by: diagnostic.created_by,
+        identite_createur: diagnostic.identite_createur,
+        sites: diagnostic.sites.map(s => s.toJson()),
+        date_rapport: dateRapport,
+      };
+      return this.http.put<IDiagnostic>(
+        `${this.BASE_URL}/${diagnostic.id_diagnostic}/${diagnostic.slug}`,
+        payload,
+        { headers: { Authorization: `Bearer ${this.token}` } }
+      ).pipe(
+        map(diagnosticJson => Diagnostic.fromJson(diagnosticJson)),
+        tap(updated => {
+          this.cache.set(`${updated.id_diagnostic}/${updated.slug}`, {
+            diagnostic: updated,
+            time: Date.now()
+          });
+        })
+      );
+    }
     
     //Envoie les fichiers au serveur
     sendFiles(formData:FormData){

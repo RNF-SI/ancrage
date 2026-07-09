@@ -398,7 +398,8 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
             });
             dialogRef.afterClosed().subscribe(diagnostic => {
               if (diagnostic) {
-                this.diagnostic = diagnostic;
+                this.diagnosticService.invalidateCache(diagnostic.id_diagnostic, diagnostic.slug);
+                this.diagnostic.set(diagnostic);
               }
             });
   }

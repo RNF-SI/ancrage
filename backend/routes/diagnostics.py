@@ -564,34 +564,45 @@ def changeValuesDiagnostic(diagnostic,data):
             logger.info(f"Sites IDs non trouvés dans la base de données : {not_found}")
 
     if 'acteurs' in data:
-        
         new_actors_ids = {a['id_acteur'] for a in data['acteurs']}
         acteurs_orig = Acteur.query.filter(Acteur.id_acteur.in_(new_actors_ids)).all()
-        
-        """ deleteActors(diagnostic.id_diagnostic) """
 
-        copied_acteurs = []
-        with db.session.no_autoflush:
-            for a in acteurs_orig:
-                new_acteur = Acteur(
-                    nom=a.nom,
-                    prenom=a.prenom,
-                    fonction=a.fonction,
-                    telephone=a.telephone,
-                    mail=a.mail,
-                    commune_id=a.commune_id,
-                    structure=a.structure,
-                    created_at = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
-                    created_by=data['created_by'],
-                    diagnostic_id=diagnostic.id_diagnostic,
-                    categories=a.categories,
-                    slug=a.slug,
-                    profil_cognitif_id=a.profil_cognitif_id,
-                    acteur_origine_id = a.acteur_origine_id if a.acteur_origine_id else a.id_acteur,
-                    is_copy=True
-                )
-                db.session.add(new_acteur)
-                copied_acteurs.append(new_acteur)
+        # Ne recopier que les acteurs importés depuis un autre diagnostic.
+        # Sinon (ex. mise à jour date de publication), recopier détache les acteurs
+        # d'origine et laisse les réponses orphelines.
+        acteurs_a_importer = [
+            a for a in acteurs_orig
+            if a.diagnostic_id != diagnostic.id_diagnostic
+        ]
+
+        if acteurs_a_importer:
+            logger.info(
+                "Import de %d acteur(s) vers le diagnostic %d",
+                len(acteurs_a_importer),
+                diagnostic.id_diagnostic,
+            )
+            copied_acteurs = [a for a in diagnostic.acteurs if not a.is_deleted]
+            with db.session.no_autoflush:
+                for a in acteurs_a_importer:
+                    new_acteur = Acteur(
+                        nom=a.nom,
+                        prenom=a.prenom,
+                        fonction=a.fonction,
+                        telephone=a.telephone,
+                        mail=a.mail,
+                        commune_id=a.commune_id,
+                        structure=a.structure,
+                        created_at=datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
+                        created_by=data['created_by'],
+                        diagnostic_id=diagnostic.id_diagnostic,
+                        categories=a.categories,
+                        slug=a.slug,
+                        profil_cognitif_id=a.profil_cognitif_id,
+                        acteur_origine_id=a.acteur_origine_id if a.acteur_origine_id else a.id_acteur,
+                        is_copy=True
+                    )
+                    db.session.add(new_acteur)
+                    copied_acteurs.append(new_acteur)
 
             diagnostic.acteurs = copied_acteurs
 

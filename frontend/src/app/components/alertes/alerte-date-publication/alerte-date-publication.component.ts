@@ -65,19 +65,20 @@ export class AlerteDatePublicationComponent implements OnInit,OnDestroy{
         this.siteService.navigateAndCache(path,diagnostic);
       }
 
-      //enregistrement des données
+      // Enregistrement : payload minimal sans acteurs (évite la recopie côté backend)
       recordDiagnostic(){
-        
-        if (this.data.diagnostic.date_rapport_str){
-          
-          const momentDate = moment(this.data.diagnostic.date_rapport_str, "DD/MM/YYYY", true); 
-          this.data.diagnostic.date_rapport = momentDate.isValid() ? momentDate.toDate() : undefined;
-          let diagno:Diagnostic = Diagnostic.fromJson(this.data.diagnostic);
-          this.diagSub =  this.diagnosticService.update(diagno).subscribe(diag=>{
-            this.dialogRef.close(diag);
-          })
-        }
-        
+        if (!this.data.diagnostic.date_rapport_str) return;
+
+        const momentDate = moment(this.data.diagnostic.date_rapport_str, "DD/MM/YYYY", true);
+        if (!momentDate.isValid()) return;
+
+        this.diagSub = this.diagnosticService.updateDateRapport(
+          this.data.diagnostic,
+          momentDate.format("DD/MM/YYYY")
+        ).subscribe({
+          next: diag => this.dialogRef.close(diag),
+          error: () => this.dialogRef.close(),
+        });
       }
 
       ngOnDestroy(): void {
