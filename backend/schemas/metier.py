@@ -296,6 +296,49 @@ class ActeurExportSchema(SQLAlchemyAutoSchema):
     reponses = fields.Nested(lambda: ReponseExportSchema, many=True, exclude=("acteur", "mots_cles"))
 
 
+class MotCleEnfantExportSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = MotCle
+        load_instance = True
+        fields = ("id_mot_cle", "nom")
+
+
+class MotCleExportLightSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = MotCle
+        load_instance = True
+        fields = ("id_mot_cle", "nom", "categorie_id", "mots_cles_groupe_id", "categorie", "mots_cles_issus")
+
+    categorie = fields.Nested(lambda: NomenclatureLightSchema)
+    mots_cles_issus = fields.Nested(lambda: MotCleEnfantExportSchema, many=True)
+
+
+class ReponseFullExportSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Reponse
+        include_relationships = True
+        load_instance = True
+
+    question = fields.Nested(
+        lambda: QuestionSchema,
+        exclude=("reponses", "choixReponses", "theme", "theme_question"),
+    )
+    valeur_reponse = fields.Nested(lambda: NomenclatureLightSchema)
+    mots_cles = fields.Nested(lambda: MotCleExportLightSchema, many=True)
+
+
+class ActeurFullExportSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Acteur
+        load_instance = True
+
+    commune = fields.Nested(lambda: CommuneLiteSchema)
+    categories = fields.Nested(lambda: NomenclatureLightSchema, many=True)
+    profil = fields.Nested(lambda: NomenclatureLightSchema)
+    statut_entretien = fields.Nested(lambda: NomenclatureLightSchema)
+    reponses = fields.Nested(lambda: ReponseFullExportSchema, many=True, exclude=("acteur",))
+
+
 class ActeurImportSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Acteur

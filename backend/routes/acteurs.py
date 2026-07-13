@@ -11,6 +11,7 @@ from routes.reponses import (
     cleanup_orphan_mots_cles_for_diagnostic,
 )
 from pypnusershub.decorators import check_auth
+from flask_login import current_user
 
 
 @bp.route('/acteur/<id_acteur>/<slug>', methods=['GET', 'PUT','DELETE']) # Vérifie l'authentification (bloque si non authentifié)
@@ -178,6 +179,54 @@ def getActeursForExport(id_diagnostic):
     )
     schema = ActeurExportSchema(many=True)
     return jsonify(schema.dump(acteurs)), 200
+
+def _get_mots_cles_for_acteur(acteur_id):
+    """Mots-clés AFOM liés à un acteur (même logique que getKeywordsByActor)."""
+    return (
+        db.session.query(MotCle)
+        .join(MotCle.reponses)
+        .join(Reponse.acteur)
+        .filter(Acteur.id_acteur == acteur_id)
+        .options(
+            joinedload(MotCle.categorie),
+            selectinload(MotCle.mots_cles_issus),
+        )
+        .all()
+    )
+
+
+@bp.route('/acteurs/diagnostic/<int:id_diagnostic>/export-complet', methods=['GET'])
+@check_auth(1)
+def getActeursForFullExport(id_diagnostic):
+    diagnostic = Diagnostic.query.filter_by(id_diagnostic=id_diagnostic).first()
+    if not diagnostic:
+        return jsonify({'error': 'Diagnostic non trouvé'}), 404
+
+    if int(diagnostic.created_by) != int(current_user.id_role):
+        return jsonify({'error': 'Accès réservé au rédacteur du diagnostic'}), 403
+
+    acteurs = (
+        Acteur.query
+        .filter_by(diagnostic_id=id_diagnostic, is_deleted=False)
+        .options(
+            selectinload(Acteur.commune),
+            selectinload(Acteur.categories),
+            selectinload(Acteur.profil),
+            selectinload(Acteur.statut_entretien),
+            selectinload(Acteur.reponses)
+                .joinedload(Reponse.question),
+            selectinload(Acteur.reponses)
+                .joinedload(Reponse.valeur_reponse),
+        )
+        .all()
+    )
+    schema = ActeurFullExportSchema(many=True)
+    mot_cle_schema = MotCleExportLightSchema(many=True)
+    acteurs_data = schema.dump(acteurs)
+    for i, acteur in enumerate(acteurs):
+        mots_cles = _get_mots_cles_for_acteur(acteur.id_acteur)
+        acteurs_data[i]['mots_cles_afom'] = mot_cle_schema.dump(mots_cles)
+    return jsonify(acteurs_data), 200
 
 @bp.route('/acteurs/<created_by>', methods=['GET'])
 @check_auth(1)

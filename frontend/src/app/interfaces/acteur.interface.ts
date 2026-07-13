@@ -1,5 +1,6 @@
 import { Commune } from "@app/models/commune.model";
 import { Diagnostic } from "@app/models/diagnostic.model";
+import { MotCle } from "@app/models/mot-cle.model";
 import { Nomenclature } from "@app/models/nomenclature.model";
 import { Reponse } from "@app/models/reponse.model";
 
@@ -16,6 +17,7 @@ export interface IActeur {
     diagnostic?:Diagnostic;
     categories?: Nomenclature[];
     reponses?:Reponse[];
+    mots_cles_afom?: MotCle[];
     statut_entretien?:Nomenclature;
     created_at:Date | undefined;
     modified_at:Date | undefined;

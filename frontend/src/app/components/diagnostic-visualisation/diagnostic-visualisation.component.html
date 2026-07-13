@@ -24,11 +24,24 @@
                 <button
                   mat-stroked-button
                   type="button"
-                  (click)="exportXls()"
-                  [matTooltip]="labels.exportXLS">
-                  <mat-icon>table_view</mat-icon>
-                  {{ labels.exportXLS }}
+                  [matMenuTriggerFor]="exportMenu"
+                  [matTooltip]="labels.export">
+                  <mat-icon>download</mat-icon>
+                  {{ labels.export }}
+                  <mat-icon iconPositionEnd>arrow_drop_down</mat-icon>
                 </button>
+                <mat-menu #exportMenu="matMenu">
+                  <button mat-menu-item type="button" (click)="exportXls()">
+                    <mat-icon>table_view</mat-icon>
+                    <span>{{ labels.exportXLS }}</span>
+                  </button>
+                  @if (diagnostic().created_by === id_role()) {
+                  <button mat-menu-item type="button" (click)="exportXlsComplet()">
+                    <mat-icon>description</mat-icon>
+                    <span>{{ labels.exportXLSComplet }}</span>
+                  </button>
+                  }
+                </mat-menu>
                 @if (diagnostic().created_by === id_role()) {
                 <button
                   mat-stroked-button

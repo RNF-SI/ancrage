@@ -4,6 +4,7 @@ import { Commune } from "./commune.model";
 import { Diagnostic } from "./diagnostic.model";
 import { Nomenclature } from "./nomenclature.model";
 import { Reponse } from "./reponse.model";
+import { MotCle } from "./mot-cle.model";
 
 export class Acteur implements IActeur{
     id_acteur:number = 0;
@@ -24,6 +25,7 @@ export class Acteur implements IActeur{
     modified_by:number=0;
     selected = false;
     reponses?:Reponse[];
+    mots_cles_afom?: MotCle[];
     slug = "";
     is_deleted = false;
     is_creation = false;
@@ -47,6 +49,7 @@ export class Acteur implements IActeur{
         copy.diagnostic = this.diagnostic?.copy();
         copy.categories = this.categories?.map(c => c.copy()) || [];
         copy.reponses = this.reponses?.map(r => r.copy()) || [];
+        copy.mots_cles_afom = this.mots_cles_afom?.map(mc => mc.copy()) || [];
         copy.created_at = this.created_at ? new Date(this.created_at.getTime()) : undefined;
         copy.modified_at = this.modified_at ? new Date(this.modified_at.getTime()) : undefined;
         copy.created_by = this.created_by;
@@ -76,6 +79,7 @@ export class Acteur implements IActeur{
         acteur.diagnostic = data.diagnostic ? Diagnostic.fromJson(data.diagnostic!) : undefined;
         acteur.categories = (data.categories || []).map(c => Nomenclature.fromJson(c));
         acteur.reponses = (data.reponses || []).map(r => Reponse.fromJson(r));
+        acteur.mots_cles_afom = (data.mots_cles_afom || []).map(mc => MotCle.fromJson(mc));
         acteur.created_at = data.created_at ? new Date() : undefined;
         acteur.modified_at = data.modified_at ? new Date() : undefined;
         acteur.created_by = data.created_by;

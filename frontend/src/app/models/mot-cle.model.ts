@@ -41,7 +41,7 @@ export class MotCle {
         mot_cle.mots_cles_issus = (data.mots_cles_issus || []).map(mc => MotCle.fromJson(mc));
         mot_cle.categorie = Nomenclature.fromJson(data.categorie);
         mot_cle.diagnostic = Diagnostic.fromJson(data.diagnostic);
-        mot_cle.mot_cle_id_groupe = data.mot_cle_id_groupe;
+        mot_cle.mot_cle_id_groupe = data.mot_cle_id_groupe ?? (data as { mots_cles_groupe_id?: number }).mots_cles_groupe_id;
         mot_cle.is_actif = data.is_actif;
         mot_cle.nombre = data.nombre;
         return mot_cle;

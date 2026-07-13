@@ -17,6 +17,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
 import { Labels } from '@app/utils/labels';
 import { ListeActeursComponent } from '../parts/liste-acteurs/liste-acteurs.component';
 import { GraphiquesComponent } from "../parts/graphiques/graphiques.component";
@@ -56,6 +57,7 @@ import { ImportComponent } from "../parts/import/import.component";
     MatIconModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
+    MatMenuModule,
     GraphiquesComponent,
     MatTabsModule,
     MenuLateralComponent,
@@ -129,6 +131,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   private questionService = inject(QuestionService)
   private acteurService = inject(ActeurService);
   private exportSub?: Subscription;
+  private readonly afomCategories = ['Atouts', 'Faiblesses', 'Opportunités', 'Menaces'];
 
   constructor() {
     effect(() => {
@@ -455,6 +458,105 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
     this.exportSub = this.acteurService.getAllByDiagForExport(id).subscribe(acteurs => {
       this.buildAndDownloadXls(acteurs);
     });
+  }
+
+  exportXlsComplet() {
+    const id = this.id_diagnostic();
+    if (!id) return;
+
+    this.exportSub?.unsubscribe();
+    this.exportSub = this.acteurService.getAllByDiagForFullExport(id).subscribe(acteurs => {
+      this.buildAndDownloadFullXls(acteurs);
+    });
+  }
+
+  private getReponseLibelle(act: Acteur, id_question: number): string {
+    const rep = act.reponses?.find(r => r.question?.id_question === id_question);
+    if (!rep?.valeur_reponse?.id_nomenclature) return '';
+    return rep.valeur_reponse.libelle || '';
+  }
+
+  private getReponseCommentaire(act: Acteur, id_question: number): string {
+    const rep = act.reponses?.find(r => r.question?.id_question === id_question);
+    return rep?.commentaires?.trim() || '';
+  }
+
+  private getAfomValues(act: Acteur, categoryLibelle: string): string {
+    const values = new Set<string>();
+
+    for (const mc of act.mots_cles_afom ?? []) {
+      if (mc.mot_cle_id_groupe) continue;
+      if (mc.categorie?.libelle !== categoryLibelle) continue;
+
+      if (mc.mots_cles_issus?.length) {
+        for (const enfant of mc.mots_cles_issus) {
+          if (enfant.nom?.trim()) values.add(enfant.nom.trim());
+        }
+      } else if (mc.nom?.trim()) {
+        values.add(mc.nom.trim());
+      }
+    }
+
+    return Array.from(values).join('; ');
+  }
+
+  private buildAndDownloadFullXls(acteurs: Acteur[]) {
+    const rows: any[][] = [];
+
+    const header = [
+      'id_acteur',
+      'nom',
+      'prenom',
+      'fonction',
+      'structure',
+      'mail',
+      'telephone',
+      'profil',
+      'commune',
+      'categories',
+      'statut_entretien',
+      ...this.questions().flatMap(q => [
+        q.libelle_graphique,
+        `${q.libelle_graphique} - Commentaire`
+      ]),
+      ...this.afomCategories
+    ];
+    rows.push(header);
+
+    acteurs.forEach(act => {
+      const row: any[] = [
+        act.id_acteur,
+        act.nom,
+        act.prenom,
+        act.fonction,
+        act.structure,
+        act.mail,
+        act.telephone,
+        act.profil?.libelle || '',
+        act.commune?.nom_com || '',
+        (act.categories || []).map(c => c.libelle).join(', '),
+        act.statut_entretien?.libelle || '',
+      ];
+
+      for (const q of this.questions()) {
+        row.push(this.getReponseLibelle(act, q.id_question));
+        row.push(this.getReponseCommentaire(act, q.id_question));
+      }
+
+      for (const cat of this.afomCategories) {
+        row.push(this.getAfomValues(act, cat));
+      }
+
+      rows.push(row);
+    });
+
+    const worksheet = XLSX.utils.aoa_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Export complet');
+
+    const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    saveAs(new Blob([wbout], { type: 'application/octet-stream' }),
+      'export-complet-' + this.diagnostic().nom + '.xlsx');
   }
 
   private buildAndDownloadXls(acteurs: Acteur[]) {

@@ -51,6 +51,14 @@ export class ActeurService {
     );
   }
 
+  getAllByDiagForFullExport(id_diagnostic: number): Observable<Acteur[]> {
+    return this.http.get<IActeur[]>(this.GET_ALL_URL + '/diagnostic/' + id_diagnostic + '/export-complet', {
+      headers: { Authorization: `Bearer ${this.token}` }
+    }).pipe(
+      map(acteurJsonArray => acteurJsonArray.map(acteurJson => Acteur.fromJson(acteurJson)))
+    );
+  }
+
   //Modifie l'état de l'entretien
   modifiyInterviewState(json:any,id_acteur: number,id_state:number): Observable<Acteur> {
     const route = this.BASE_URL + 'state/'+ id_acteur + '/' + id_state;
