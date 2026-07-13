@@ -274,6 +274,28 @@ class ActeurOnDiagnosticSchema(SQLAlchemyAutoSchema):
     statut_entretien = fields.Nested(lambda: NomenclatureLightSchema)
 
 
+class ReponseExportSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Reponse
+        include_relationships = True
+        load_instance = True
+
+    question = fields.Nested(
+        lambda: QuestionSchema,
+        exclude=("reponses", "choixReponses", "theme", "theme_question"),
+    )
+    valeur_reponse = fields.Nested(lambda: NomenclatureLightSchema)
+
+
+class ActeurExportSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Acteur
+        load_instance = True
+
+    categories = fields.Nested(lambda: NomenclatureLightSchema, many=True)
+    reponses = fields.Nested(lambda: ReponseExportSchema, many=True, exclude=("acteur", "mots_cles"))
+
+
 class ActeurImportSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Acteur

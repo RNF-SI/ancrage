@@ -128,6 +128,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   questions = signal<Question[]>([]);
   private questionService = inject(QuestionService)
   private acteurService = inject(ActeurService);
+  private exportSub?: Subscription;
 
   constructor() {
     effect(() => {
@@ -384,6 +385,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
     this.docReadSub?.unsubscribe();
     this.docDeleteSub?.unsubscribe();
     this.docRenameSub?.unsubscribe();
+    this.exportSub?.unsubscribe();
   }
 
   //Affiche la popup pour saisir la date de publication
@@ -446,43 +448,47 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   }
 
   exportXls() {
+    const id = this.id_diagnostic();
+    if (!id) return;
+
+    this.exportSub?.unsubscribe();
+    this.exportSub = this.acteurService.getAllByDiagForExport(id).subscribe(acteurs => {
+      this.buildAndDownloadXls(acteurs);
+    });
+  }
+
+  private buildAndDownloadXls(acteurs: Acteur[]) {
     const rows: any[][] = [];
 
-    // ---- Ligne d’en-tête ----
     const header = [
       'Individu',
       ...this.categories().map(c => `${c.libelle}`),
       ...this.questions().map(q => `${q.libelle_graphique}`)
     ];
     rows.push(header);
-  
-    // ---- Lignes pour chaque acteur ----
-    this.actors().forEach((act, index) => {
+
+    acteurs.forEach((act, index) => {
       const row: any[] = [];
-  
+
       row.push(`acteur${index + 1}`);
-  
-      // Catégories
+
       for (const cat of this.categories()) {
         row.push(this.getCategory(act, cat.id_nomenclature));
       }
-  
-      // Réponses
+
       for (const q of this.questions()) {
         row.push(this.getReponse(act, q.id_question));
       }
-  
+
       rows.push(row);
     });
-  
-    // ---- Création d’un workbook Excel ----
+
     const worksheet = XLSX.utils.aoa_to_sheet(rows);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Export');
-  
-    // ---- Génération du fichier ----
+
     const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    saveAs(new Blob([wbout], { type: 'application/octet-stream' }), 
+    saveAs(new Blob([wbout], { type: 'application/octet-stream' }),
       'export-' + this.diagnostic().nom + '.xlsx');
   }
 

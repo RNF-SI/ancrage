@@ -20,7 +20,6 @@
                   {{ labels.investigatorLabel }} : {{ diagnostic().identite_createur }}
                 </p>
               </div>
-              @if (diagnostic().created_by === id_role()) {
               <div class="diag-overview-actions">
                 <button
                   mat-stroked-button
@@ -30,6 +29,7 @@
                   <mat-icon>table_view</mat-icon>
                   {{ labels.exportXLS }}
                 </button>
+                @if (diagnostic().created_by === id_role()) {
                 <button
                   mat-stroked-button
                   color="warn"
@@ -39,8 +39,8 @@
                   <mat-icon>delete_outline</mat-icon>
                   {{ labels.delete }}
                 </button>
+                }
               </div>
-              }
             </header>
 
             <div class="diag-info-grid">

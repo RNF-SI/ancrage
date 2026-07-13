@@ -161,6 +161,24 @@ def getAllActeursByDiag(id_diagnostic):
     schema = ActeurLiteSchema(many=True)
     return jsonify(schema.dump(acteurs)), 200
 
+@bp.route('/acteurs/diagnostic/<int:id_diagnostic>/export', methods=['GET'])
+@check_auth(1)
+def getActeursForExport(id_diagnostic):
+    acteurs = (
+        Acteur.query
+        .filter_by(diagnostic_id=id_diagnostic, is_deleted=False)
+        .options(
+            selectinload(Acteur.categories),
+            selectinload(Acteur.reponses)
+                .joinedload(Reponse.question),
+            selectinload(Acteur.reponses)
+                .joinedload(Reponse.valeur_reponse),
+        )
+        .all()
+    )
+    schema = ActeurExportSchema(many=True)
+    return jsonify(schema.dump(acteurs)), 200
+
 @bp.route('/acteurs/<created_by>', methods=['GET'])
 @check_auth(1)
 def getAllActeursByUSer(created_by):
