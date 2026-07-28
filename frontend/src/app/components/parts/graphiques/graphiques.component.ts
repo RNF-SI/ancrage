@@ -45,7 +45,9 @@ export class GraphiquesComponent {
     responsive: true,
     plugins: {
       legend: { position: 'top' },
-      title: { display: false }
+      // Titré explicitement : le radar affiche la même statistique que les
+      // barres par question, il faut que ce soit lisible sans deviner.
+      title: { display: true, text: this.labels.medianScore }
     },
     scales: {
       r: {
@@ -128,7 +130,7 @@ export class GraphiquesComponent {
           theme_id,
           chart: {
             labels: sorted.map(d => d.categorie),
-            datasets: [{ label: 'Score médian', data: sorted.map(d => d.mediane), backgroundColor: '#4CAF50' }]
+            datasets: [{ label: this.labels.medianScore, data: sorted.map(d => d.mediane), backgroundColor: '#4CAF50' }]
           },
           chartOptions: {
             responsive: true,
@@ -191,9 +193,14 @@ export class GraphiquesComponent {
       const radarData = Array.from(radarMap.entries()).map(([theme, entries]) => {
         const filtered = entries.filter(e => !LABELS_TO_EXCLUDE.includes(normalize(e.libelle_graphique || '')));
         const labels = [...new Set(filtered.map(e => e.libelle_graphique))];
-        const categories = [...new Set(entries.map(e => e.categorie || 'Sans catégorie'))];
+        const categories = [...new Set(filtered.map(e => e.categorie || 'Sans catégorie'))];
         const datasets = categories.map((cat, i) => {
-          const data = labels.map(label => entries.find(e => e.categorie === cat && e.libelle_graphique === label)?.score || 0);
+          // null et non 0 : une question sans réponse notée pour ce groupe est une
+          // absence de donnée, la tracer à 0 écraserait visuellement le radar.
+          const data = labels.map(label => {
+            const entree = filtered.find(e => e.categorie === cat && e.libelle_graphique === label);
+            return entree?.score ?? null;
+          });
           const color = this.colorPalette[i % this.colorPalette.length];
           return {
             label: cat,

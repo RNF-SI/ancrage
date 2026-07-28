@@ -437,9 +437,12 @@ def get_scores(id_diagnostic):
     Theme = aliased(Nomenclature)
 
     # Jointure ORM
+    # Médiane et non moyenne : les radars doivent afficher la même statistique
+    # que les barres « Score médian » par question, sinon les deux graphiques
+    # sont incomparables pour la même donnée.
     results = (
         db.session.query(
-            func.avg(ValeurReponse.value).label("score"),
+            func.percentile_disc(0.5).within_group(ValeurReponse.value).label("score"),
             Question.libelle_graphique.label("libelle_graphique"),
             Categorie.libelle.label("categorie"),
             Theme.libelle.label("theme"),
@@ -447,7 +450,7 @@ def get_scores(id_diagnostic):
             Question.id_question.label("id_question"),
 
         )
-        .select_from(Diagnostic)  
+        .select_from(Diagnostic)
         .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
         .join(Reponse, Acteur.id_acteur == Reponse.acteur_id)
         .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
@@ -465,7 +468,7 @@ def get_scores(id_diagnostic):
     # Formatage JSON
     data = [
         {
-            "score": round(r.score, 2) if r.score is not None else None,
+            "score": float(r.score) if r.score is not None else None,
             "libelle_graphique": r.libelle_graphique,
             "categorie": r.categorie,
             "theme": r.theme,
@@ -493,6 +496,8 @@ def get_scoresParams():
     for quest in questions:
         quest_ids.append(quest['id_question'])
 
+    is_displayed = data.get('is_displayed', False)
+
     ValeurReponse = aliased(Nomenclature)
     Categorie = aliased(Nomenclature)
     Theme = aliased(Nomenclature)
@@ -500,7 +505,7 @@ def get_scoresParams():
     # Jointure ORM
     results = (
         db.session.query(
-            func.avg(ValeurReponse.value).label("score"),
+            func.percentile_disc(0.5).within_group(ValeurReponse.value).label("score"),
             Question.libelle_graphique.label("libelle_graphique"),
             Categorie.libelle.label("categorie"),
             Theme.libelle.label("theme"),
@@ -517,7 +522,7 @@ def get_scoresParams():
         .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
         .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
         .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "",Question.id_question.in_(quest_ids),Acteur.id_acteur.in_(act_ids))
-        .filter(*filtres_reponses_scorantes(ValeurReponse))
+        .filter(*filtres_reponses_scorantes(ValeurReponse, is_displayed))
         .group_by(Theme.id_nomenclature,Question.id_question,Question.libelle_graphique,Categorie.libelle,Theme.libelle)
         .order_by(Theme.id_nomenclature,Question.id_question)
         .all()
@@ -526,7 +531,7 @@ def get_scoresParams():
     # Formatage JSON
     data = [
         {
-            "score": round(r.score, 2) if r.score is not None else None,
+            "score": float(r.score) if r.score is not None else None,
             "libelle_graphique": r.libelle_graphique,
             "categorie": r.categorie,
             "theme": r.theme,

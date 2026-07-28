@@ -12,3 +12,9 @@ et `backend/config.py`, gitignorés ; `ng test` exige `frontend/node_modules`).
       « Afficher N'a pas exprimé de réponse claire » activé les fait bien réapparaître, et
       que les chiffres par défaut correspondent désormais à ceux de la personnalisation
       curseur éteint.
+- [ ] #102 — Graphiques de synthèse — sur le cas signalé (« Connaissance du gestionnaire »
+      notée « Complet » par tous les acteurs) : vérifier que le radar global
+      « Connaissances » affiche bien 5 pour tous les groupes, comme les barres. Vérifier
+      que le radar est titré « Score médian ». Vérifier enfin qu'une question sans aucune
+      réponse notée pour un groupe ne trace plus un point à 0 sur le radar mais interrompt
+      la ligne de ce groupe.

@@ -45,6 +45,7 @@ export class Labels {
     modifyStateInterview = "Modifier l'état de l'entretien";
     goToInterview = "Accéder à l'entretien";
     showMoreInfo = "Informations complémentaires";
+    medianScore = "Score médian";
     exportPNG = "Exporter en PNG";
     exportCSV = "Exporter en CSV";
     exportXLS = "Exporter la matrice (XLS anonymisé)";
