@@ -13,7 +13,7 @@ from routes.reponses import (
     get_acteurs_by_mot_cle,
     acteurs_du_groupe,
 )
-from routes.functions import normaliser_nom_mot_cle
+from routes.functions import normaliser_nom_mot_cle, filtres_reponses_scorantes
 
 @bp.route('/diagnostic/<int:id_diagnostic>/<slug>', methods=['GET','PUT','DELETE'])
 @check_auth(1)
@@ -181,7 +181,7 @@ def getAveragebyQuestion(id_diagnostic):
     Categorie = aliased(Nomenclature)         # tn3
     Theme = aliased(Nomenclature)             # tn4
 
-    
+
     query = (
         db.session.query(
             Theme.libelle.label("theme"),
@@ -191,7 +191,7 @@ def getAveragebyQuestion(id_diagnostic):
             Categorie.libelle_court.label("categorie_acteur"),
             func.percentile_disc(0.5).within_group(ValeurReponse.value).label("mediane_score")
         )
-        .select_from(Diagnostic)  
+        .select_from(Diagnostic)
         .join(Acteur, Diagnostic.id_diagnostic == Acteur.diagnostic_id)
         .join(Reponse, Acteur.id_acteur == Reponse.acteur_id)
         .join(ValeurReponse, Reponse.valeur_reponse_id == ValeurReponse.id_nomenclature)
@@ -200,6 +200,7 @@ def getAveragebyQuestion(id_diagnostic):
         .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
         .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
         .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "")
+        .filter(*filtres_reponses_scorantes(ValeurReponse))
         .group_by(
             Theme.id_nomenclature,
             Question.id_question,
@@ -246,6 +247,7 @@ def get_reponses_par_theme(id_diagnostic):
         .join(Question, Reponse.question_id == Question.id_question)
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
         .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "")
+        .filter(*filtres_reponses_scorantes(ValeurReponse))
         .group_by(Theme.id_nomenclature, Question.id_question, ValeurReponse.value, ValeurReponse.libelle)
         .order_by(Theme.id_nomenclature,Question.id_question, ValeurReponse.value)
         .all()
@@ -299,11 +301,8 @@ def getAveragebyQuestionParams():
         Acteur.id_acteur.in_(act_ids)
     ]
 
+    filters.extend(filtres_reponses_scorantes(ValeurReponse, is_displayed))
 
-    if not is_displayed:
-        filters.append(ValeurReponse.libelle != "N'a pas exprimé de réponse claire")
-
-    
     query = (
         db.session.query(
             Theme.libelle.label("theme"),
@@ -373,8 +372,7 @@ def get_reponses_par_themeParams():
         Acteur.id_acteur.in_(act_ids)
     ]
 
-    if not is_displayed:
-        filters.append(ValeurReponse.libelle != "N'a pas exprimé de réponse claire")
+    filters.extend(filtres_reponses_scorantes(ValeurReponse, is_displayed))
 
     results = (
         db.session.query(
@@ -458,6 +456,7 @@ def get_scores(id_diagnostic):
         .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
         .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
         .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "")
+        .filter(*filtres_reponses_scorantes(ValeurReponse))
         .group_by(Theme.id_nomenclature,Question.id_question,Question.libelle_graphique,Categorie.libelle,Theme.libelle)
         .order_by(Theme.id_nomenclature,Question.id_question)
         .all()
@@ -518,6 +517,7 @@ def get_scoresParams():
         .join(acteur_categorie, acteur_categorie.c.acteur_id == Acteur.id_acteur)
         .join(Categorie, Categorie.id_nomenclature == acteur_categorie.c.categorie_id)
         .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "",Question.id_question.in_(quest_ids),Acteur.id_acteur.in_(act_ids))
+        .filter(*filtres_reponses_scorantes(ValeurReponse))
         .group_by(Theme.id_nomenclature,Question.id_question,Question.libelle_graphique,Categorie.libelle,Theme.libelle)
         .order_by(Theme.id_nomenclature,Question.id_question)
         .all()

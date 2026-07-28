@@ -4,6 +4,30 @@ from sqlalchemy import or_
 
 OPTIONAL_THEME_QUESTION_LIBELLE = "Changement climatique et biodiversité"
 
+# Libellé de la réponse « pas de position tranchée ». Sa nomenclature porte la
+# valeur 3, qui est aussi un score réel : la compter dans les agrégations
+# revient à attribuer un score moyen à quelqu'un qui n'en a pas reçu.
+REPONSE_NON_CLAIRE_LIBELLE = "N'a pas exprimé de réponse claire"
+
+
+def filtres_reponses_scorantes(valeur_reponse, afficher_reponse_non_claire=False):
+    """Filtres SQL limitant une agrégation aux réponses réellement notées.
+
+    Les scores exploitables vont de 1 à 5. Une valeur nulle ou 0 signale une
+    absence de score attribué : c'est le cas de « Réponse avec commentaire »
+    (ex-« Sans réponse »), posée automatiquement lorsque l'enquêteur saisit un
+    commentaire sans choisir de note. La filtrer sur la valeur plutôt que sur le
+    libellé évite de dépendre des renommages de la nomenclature.
+
+    `valeur_reponse` est l'alias de Nomenclature joint sur Reponse.valeur_reponse_id.
+    """
+    filtres = [valeur_reponse.value.isnot(None), valeur_reponse.value > 0]
+
+    if not afficher_reponse_non_claire:
+        filtres.append(valeur_reponse.libelle != REPONSE_NON_CLAIRE_LIBELLE)
+
+    return filtres
+
 
 def normaliser_nom_mot_cle(nom):
     """Forme canonique d'un mot-clé (espaces compactés, casse ignorée).
