@@ -18,3 +18,10 @@ et `backend/config.py`, gitignorés ; `ng test` exige `frontend/node_modules`).
       que le radar est titré « Score médian ». Vérifier enfin qu'une question sans aucune
       réponse notée pour un groupe ne trace plus un point à 0 sur le radar mais interrompt
       la ligne de ce groupe.
+- [ ] #99 — Couleur « N'a pas exprimé de réponse claire » — dans l'onglet de
+      personnalisation, activer le curseur « Afficher la réponse "N'a pas exprimé de
+      réponse claire" » sur une question où cette réponse a été saisie en même temps
+      qu'une vraie note de 3 (par exemple « Connaissance de la règlementation », dont les
+      notes possibles sont 1, 3 et 5). Vérifier que la part « N'a pas exprimé de réponse
+      claire » est grise et la part de score 3 jaune, donc distinguables dans le camembert
+      et dans l'export PNG.

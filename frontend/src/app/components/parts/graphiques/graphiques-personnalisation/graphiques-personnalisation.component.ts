@@ -24,6 +24,7 @@ import { AlerteTitreComponent } from '@app/components/alertes/alerte-titre/alert
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { couleurReponse } from '@app/utils/couleurs-graphiques';
 
 @Component({
   selector: 'app-graphiques-personnalisation',
@@ -70,7 +71,6 @@ export class GraphiquesPersonnalisationComponent {
   });
   chartDataByThemeSorted = signal<{ theme_id: number; theme: string; charts: AvgPerQuestion[] }[]>([]);
   chartDataRepartition = signal<{ [question: string]: ChartData<'pie'> }>({});
-  colorPalette = ['#0072B2', '#E69F00', '#009E73', '#F0E442', '#CC79A7', '#D55E00', '#999999'];
   groupedData = signal<{ [question: string]: GraphRepartition[] }>({});
   radarCharts = signal<{ theme: string; data: ChartData<'radar'> }[]>([]);
   dialog = inject(MatDialog);
@@ -215,12 +215,11 @@ export class GraphiquesPersonnalisationComponent {
           const labels = responses.map(r => r.reponse);
           const data = responses.map(r => r.nombre);
 
-          // couleur basée sur le score
-          const backgroundColors = responses.map(r => this.colorPalette[r.score]);
+          const backgroundColors = responses.map(r => couleurReponse(r));
 
-          chartRepartition[question] = { 
-            labels, 
-            datasets: [{ data, backgroundColor: backgroundColors }] 
+          chartRepartition[question] = {
+            labels,
+            datasets: [{ data, backgroundColor: backgroundColors, hoverBackgroundColor: backgroundColors }]
           };
         }
 

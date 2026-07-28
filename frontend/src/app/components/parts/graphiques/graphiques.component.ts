@@ -13,6 +13,7 @@ import { Labels } from '@app/utils/labels';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTabsModule } from '@angular/material/tabs';
+import { PALETTE_GRAPHIQUES, couleurReponse } from '@app/utils/couleurs-graphiques';
 
 
 //Composant qui affcihe les graphiques
@@ -67,7 +68,7 @@ export class GraphiquesComponent {
     }
   };
   data = signal<GraphMotsCles[]>([]);
-  colorPalette = ['#0072B2', '#E69F00', '#009E73', '#F0E442', '#CC79A7', '#D55E00', '#999999'];
+  colorPalette = PALETTE_GRAPHIQUES;
   themeIdToName: { [theme_id: number]: string } = {};
   private diagnosticService = inject(DiagnosticService);
   radarChartsByTheme = computed(() =>
@@ -165,8 +166,7 @@ export class GraphiquesComponent {
         const labels = responses.map(r => r.reponse);
         const data = responses.map(r => r.nombre);
       
-        // couleur basée sur le score
-        const backgroundColors = responses.map(r => this.colorPalette[r.score]);
+        const backgroundColors = responses.map(r => couleurReponse(r));
 
         chartRepartition[question] = { 
           labels, 
