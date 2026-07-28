@@ -5,6 +5,15 @@ from sqlalchemy import or_
 OPTIONAL_THEME_QUESTION_LIBELLE = "Changement climatique et biodiversité"
 
 
+def normaliser_nom_mot_cle(nom):
+    """Forme canonique d'un mot-clé (espaces compactés, casse ignorée).
+
+    Sert à reconnaître qu'« Accès à une barque » et « accès à  une barque »
+    désignent le même mot-clé, et donc à ne pas créer de doublon.
+    """
+    return " ".join((nom or "").split()).casefold()
+
+
 def checkCCG(id_acteur):
     # Charger avec eager loading pour éviter les requêtes N+1
     acteur = (

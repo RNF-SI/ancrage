@@ -8,7 +8,12 @@ from configs.logger_config import logger
 from pypnusershub.decorators import check_auth
 import pandas as pd
 import json, re
-from routes.reponses import verifCompleteStatus, getRepartitionMotsCles
+from routes.reponses import (
+    verifCompleteStatus,
+    get_acteurs_by_mot_cle,
+    acteurs_du_groupe,
+)
+from routes.functions import normaliser_nom_mot_cle
 
 @bp.route('/diagnostic/<int:id_diagnostic>/<slug>', methods=['GET','PUT','DELETE'])
 @check_auth(1)
@@ -767,14 +772,18 @@ def _aggregate_afom_by_nom_categorie(entries):
             continue
 
         cat_id = mot_cle["categorie"]["id_nomenclature"]
-        key = (mot_cle["nom"], cat_id)
+        key = (normaliser_nom_mot_cle(mot_cle["nom"]), cat_id)
 
         if key not in standalone_by_key:
             standalone_by_key[key] = entry
             continue
 
         existing = standalone_by_key[key]
-        existing["nombre"] += entry["nombre"]
+        # Fusion sur les acteurs distincts et non sur la somme des lignes : deux lignes
+        # portant le même mot-clé pour un même acteur ne font qu'une occurrence.
+        acteurs = existing["_acteurs"] | entry["_acteurs"]
+        existing["_acteurs"] = acteurs
+        existing["nombre"] = len(acteurs) if acteurs else existing["nombre"] + entry["nombre"]
         if mot_cle["id_mot_cle"] < existing["mot_cle"]["id_mot_cle"]:
             existing["mot_cle"]["id_mot_cle"] = mot_cle["id_mot_cle"]
             if entry.get("id_afom"):
@@ -787,21 +796,24 @@ def _aggregate_afom_by_nom_categorie(entries):
             e["mot_cle"]["nom"],
         )
     )
+    for entry in result:
+        entry.pop("_acteurs", None)
     return result
 
 
-def _resolve_afom_nombre(mc, enfants, afom, counts):
-    """Détermine le nombre d'occurrences affiché pour un mot-clé racine ou un groupe."""
+def _resolve_afom_nombre(mc, enfants, afom, acteurs):
+    """Détermine le nombre d'occurrences affiché pour un mot-clé racine ou un groupe.
+
+    Le comptage issu des entretiens fait foi ; les valeurs stockées ne servent
+    que de repli pour les mots-clés ajoutés à la main dans l'écran d'analyse.
+    """
+    if acteurs:
+        return len(acteurs)
+
     if afom and afom.number and afom.number > 0:
         return afom.number
     if mc.nombre and mc.nombre > 0:
         return mc.nombre
-
-    interview_total = counts.get(mc.id_mot_cle, 0)
-    for enfant in enfants:
-        interview_total += counts.get(enfant.id_mot_cle, 0)
-    if interview_total > 0:
-        return interview_total
 
     if enfants:
         stored = sum((e.nombre or 0) for e in enfants)
@@ -852,10 +864,7 @@ def get_afoms_par_mot_cle_et_diagnostic(id_diagnostic):
         .all()
     )
 
-    counts = {
-        item["id"]: item["nombre"]
-        for item in getRepartitionMotsCles(id_diagnostic)
-    }
+    acteurs_by_mc = get_acteurs_by_mot_cle(id_diagnostic)
 
     data = []
     for mc, cat in roots:
@@ -866,7 +875,8 @@ def get_afoms_par_mot_cle_et_diagnostic(id_diagnostic):
             .all()
         )
         afom = afom_by_mc.get(mc.id_mot_cle)
-        nombre = _resolve_afom_nombre(mc, enfants, afom, counts)
+        acteurs = acteurs_du_groupe(mc, enfants, acteurs_by_mc)
+        nombre = _resolve_afom_nombre(mc, enfants, afom, acteurs)
 
         if nombre <= 0 and not enfants:
             continue
@@ -874,6 +884,7 @@ def get_afoms_par_mot_cle_et_diagnostic(id_diagnostic):
         data.append({
             "id_afom": afom.id_afom if afom else None,
             "nombre": nombre,
+            "_acteurs": acteurs,
             "mot_cle": {
                 "id_mot_cle": mc.id_mot_cle,
                 "nom": mc.nom,
