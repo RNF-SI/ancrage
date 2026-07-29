@@ -25,3 +25,18 @@ et `backend/config.py`, gitignorés ; `ng test` exige `frontend/node_modules`).
       notes possibles sont 1, 3 et 5). Vérifier que la part « N'a pas exprimé de réponse
       claire » est grise et la part de score 3 jaune, donc distinguables dans le camembert
       et dans l'export PNG.
+- [ ] #106 — Longueur des titres — sur une question au libellé long (celle de la capture de
+      l'issue), vérifier que le titre s'affiche en entier au-dessus du graphique, réparti
+      sur plusieurs lignes si nécessaire, et qu'il n'est plus rogné. Vérifier qu'il est
+      désormais dessiné dans le graphique lui-même et non au-dessus en HTML.
+- [ ] #101 — Légendes trop longues — sur la question « nature des liens », dont les réponses
+      dépassent 40 caractères, vérifier que la légende du camembert ne sort plus du cadre :
+      les libellés sont raccourcis par des points de suspension et la légende est passée
+      sous le graphique. Vérifier qu'au survol d'une part, l'infobulle affiche bien le
+      libellé complet, non tronqué.
+- [ ] #87 — Export des graphiques — exporter en PNG un graphique de score, un camembert et
+      un radar. Vérifier que chaque image contient son titre (question, « Répartition des
+      réponses — … », thème) et qu'elle a un fond blanc et non transparent une fois
+      insérée dans un document. Vérifier que l'export des graphiques personnalisés, qui
+      demande un titre par une boîte de dialogue, fonctionne toujours et produit lui aussi
+      un fond blanc.

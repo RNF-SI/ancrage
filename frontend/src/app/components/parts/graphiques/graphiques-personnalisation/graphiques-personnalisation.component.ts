@@ -25,6 +25,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '@app/home-rnf/services/auth-service.service';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { couleurReponse } from '@app/utils/couleurs-graphiques';
+import { exporterCanvasPng } from '@app/utils/options-graphiques';
 
 @Component({
   selector: 'app-graphiques-personnalisation',
@@ -228,20 +229,11 @@ export class GraphiquesPersonnalisationComponent {
         
     }
 
-    exportChart(classe:string,titre:string) {
-      const canvas = document.querySelector("."+ classe) as HTMLCanvasElement;
-      const image = canvas.toDataURL('image/png');
+    exportChart(classe: string, titre: string) {
       const dialogRef = this.dialog.open(AlerteTitreComponent);
-      dialogRef.afterClosed().subscribe(titreGraph=>{
-        
-        const link = document.createElement('a');
-        link.href = image;
-        link.download = titre+'-'+titreGraph+'.png';
-        link.click();
+      dialogRef.afterClosed().subscribe(titreGraph => {
+        exporterCanvasPng(classe, `${titre}-${titreGraph}`);
       });
-    
-      // Création du lien pour téléchargement
-      
     }
 
     getChartData(question: string): ChartData<'pie'> {

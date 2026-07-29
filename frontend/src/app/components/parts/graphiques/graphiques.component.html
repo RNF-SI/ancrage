@@ -14,7 +14,7 @@
               <canvas class="graph-radar-{{ chart.theme }}" baseChart
                       [data]="chart.data"
                       [type]="'radar'"
-                      [options]="radarChartOptions">
+                      [options]="chart.options">
               </canvas>
               <button mat-raised-button (click)="exportChart('graph-radar-' + chart.theme, chart.theme)">
                 {{ labels.exportPNG }}
@@ -26,7 +26,9 @@
 
       @for (chart of themeEntry.charts; track chart) {
         <div class="mb-4" [attr.id]="'question-' + chart.id_question">
-          <h3 class="text-center">{{ chart.question }}</h3>
+          <!-- Les titres sont désormais dessinés dans le canvas (voir
+               utils/options-graphiques) : ils y tiennent en entier et suivent
+               le graphique dans le PNG exporté. -->
           <div class="grid-6-6">
             <div class="col-span-6 d-flex flex-column align-items-center justify-content-center">
               <canvas class="graph{{ chart.id_question }}" baseChart
@@ -40,9 +42,9 @@
             </div>
 
             <div class="col-span-6 d-flex flex-column align-items-center justify-content-center">
-              <h4 class="text-center">Répartition des réponses</h4>
               <canvas class="graph-rep{{ chart.id_question }}" baseChart
                       [data]="getChartData(chart.question)"
+                      [options]="getChartOptions(chart.question)"
                       [type]="'pie'">
               </canvas>
               <button mat-raised-button (click)="exportChart('graph-rep' + chart.id_question, chart.question + '-repartition')">

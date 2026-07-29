@@ -46,6 +46,7 @@ export class Labels {
     goToInterview = "Accéder à l'entretien";
     showMoreInfo = "Informations complémentaires";
     medianScore = "Score médian";
+    repartitionReponses = "Répartition des réponses";
     exportPNG = "Exporter en PNG";
     exportCSV = "Exporter en CSV";
     exportXLS = "Exporter la matrice (XLS anonymisé)";

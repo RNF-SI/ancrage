@@ -1,5 +1,5 @@
 import { Component, Input, computed, effect, inject, signal } from '@angular/core';
-import { ChartConfiguration, ChartData, ChartOptions, RadialLinearScaleOptions } from 'chart.js';
+import { ChartConfiguration, ChartData, ChartOptions, RadialLinearScaleOptions, TooltipItem } from 'chart.js';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { forkJoin } from 'rxjs';
@@ -14,6 +14,7 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTabsModule } from '@angular/material/tabs';
 import { PALETTE_GRAPHIQUES, couleurReponse } from '@app/utils/couleurs-graphiques';
+import { exporterCanvasPng, optionsLegende, optionsTitre, tronquerLegende } from '@app/utils/options-graphiques';
 
 
 //Composant qui affcihe les graphiques
@@ -21,6 +22,7 @@ import { PALETTE_GRAPHIQUES, couleurReponse } from '@app/utils/couleurs-graphiqu
 export interface RadarChart {
   theme: string;
   data: ChartData<'radar'>;
+  options: ChartOptions<'radar'>;
 }
 
 @Component({
@@ -39,7 +41,8 @@ export class GraphiquesComponent {
   chartDataByQuestion = signal<AvgPerQuestion[]>([]);
   groupedData = signal<{ [question: string]: GraphRepartition[] }>({});
   chartDataRepartition = signal<{ [question: string]: ChartData<'pie'> }>({});
-  radarCharts = signal<{ theme: string; data: ChartData<'radar'> }[]>([]);
+  chartOptionsRepartition = signal<{ [question: string]: ChartOptions<'pie'> }>({});
+  radarCharts = signal<RadarChart[]>([]);
   chartDataByThemeSorted = signal<{ theme_id: number; theme: string; charts: AvgPerQuestion[] }[]>([]);
   groupedCharts = signal<{ categorie: string; chartData: ChartConfiguration<'bar'> }[]>([]);
   radarChartOptions: ChartOptions<'radar'> = {
@@ -137,6 +140,9 @@ export class GraphiquesComponent {
             responsive: true,
             scales: {
               y: { beginAtZero: true, min: 1, max: 5, ticks: { stepSize: 1 } }
+            },
+            plugins: {
+              title: optionsTitre(question)
             }
           }
         } satisfies AvgPerQuestion;
@@ -158,27 +164,45 @@ export class GraphiquesComponent {
       this.groupedData.set(repartitionGrouped);
 
       const chartRepartition: { [question: string]: ChartData<'pie'> } = {};
+      const optionsRepartition: { [question: string]: ChartOptions<'pie'> } = {};
 
       for (const question in repartitionGrouped) {
         const responses = repartitionGrouped[question]
           .filter(r => !LABELS_TO_EXCLUDE.includes(normalize(r.reponse || '')));
         
-        const labels = responses.map(r => r.reponse);
+        const libellesComplets = responses.map(r => r.reponse ?? '');
         const data = responses.map(r => r.nombre);
-      
+
         const backgroundColors = responses.map(r => couleurReponse(r));
 
-        chartRepartition[question] = { 
-          labels, 
-          datasets: [{ 
-            data, 
+        chartRepartition[question] = {
+          labels: libellesComplets.map(libelle => tronquerLegende(libelle)),
+          datasets: [{
+            data,
             backgroundColor: backgroundColors,
             hoverBackgroundColor: backgroundColors
-           }] 
+           }]
+        };
+
+        optionsRepartition[question] = {
+          responsive: true,
+          plugins: {
+            title: optionsTitre(`${this.labels.repartitionReponses} — ${question}`),
+            legend: optionsLegende(),
+            tooltip: {
+              callbacks: {
+                // La légende est tronquée pour tenir dans le cadre : l'infobulle
+                // reste le seul endroit où lire le libellé en entier.
+                title: (items: TooltipItem<'pie'>[]) =>
+                  libellesComplets[items[0]?.dataIndex ?? 0] ?? ''
+              }
+            }
+          }
         };
       }
 
       this.chartDataRepartition.set(chartRepartition);
+      this.chartOptionsRepartition.set(optionsRepartition);
 
       this.data.set(motsCles);
       this.groupByCategorie();
@@ -210,7 +234,7 @@ export class GraphiquesComponent {
             fill: false  
           };
         });
-        return { theme, data: { labels, datasets } };
+        return { theme, data: { labels, datasets }, options: this.optionsRadar(theme) };
       });
 
       this.radarCharts.set(radarData);
@@ -278,17 +302,25 @@ export class GraphiquesComponent {
     return this.chartDataRepartition()[question];
   }
 
+  getChartOptions(question: string): ChartOptions<'pie'> {
+    return this.chartOptionsRepartition()[question];
+  }
+
+  /** Options d'un radar, titré de son thème pour que le PNG exporté se suffise. */
+  private optionsRadar(theme: string): ChartOptions<'radar'> {
+    return {
+      ...this.radarChartOptions,
+      plugins: {
+        ...this.radarChartOptions.plugins,
+        title: optionsTitre(`${theme} — ${this.labels.medianScore}`)
+      }
+    };
+  }
+
  
   //Exporte le graphique en png
-  exportChart(classe:string,titre:string) {
-    const canvas = document.querySelector("."+classe) as HTMLCanvasElement;
-    const image = canvas.toDataURL('image/png');
-    
-    // Création du lien pour téléchargement
-    const link = document.createElement('a');
-    link.href = image;
-    link.download = titre+'.png';
-    link.click();
+  exportChart(classe: string, titre: string) {
+    exporterCanvasPng(classe, titre);
   }
 
 }
