@@ -247,7 +247,13 @@ def get_reponses_par_theme(id_diagnostic):
         .join(Question, Reponse.question_id == Question.id_question)
         .join(Theme, Question.theme_id == Theme.id_nomenclature)
         .filter(Diagnostic.id_diagnostic==id_diagnostic,Acteur.is_deleted == False,Question.indications != "")
-        .filter(*filtres_reponses_scorantes(ValeurReponse))
+        # Une répartition décrit comment les acteurs ont répondu : « N'a pas
+        # exprimé de réponse claire » y est une réponse à part entière et doit
+        # rester visible, avec la couleur distincte prévue côté frontend.
+        # L'exclure fausserait les proportions, recalculées en silence sur les
+        # seuls répondants notés. Elle reste en revanche écartée des médianes
+        # et des moyennes, qui n'ont de sens que sur des réponses notées.
+        .filter(*filtres_reponses_scorantes(ValeurReponse, afficher_reponse_non_claire=True))
         .group_by(Theme.id_nomenclature, Question.id_question, ValeurReponse.value, ValeurReponse.libelle)
         .order_by(Theme.id_nomenclature,Question.id_question, ValeurReponse.value)
         .all()
