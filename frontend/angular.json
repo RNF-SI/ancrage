@@ -127,7 +127,8 @@
               "src/styles.scss",
               "@angular/material/prebuilt-themes/deeppurple-amber.css"
             ],
-            "scripts": ["node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"]
+            "scripts": ["node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"],
+            "exclude": ["src/app/home-rnf/**/*.spec.ts"]
           }
         }
       }
