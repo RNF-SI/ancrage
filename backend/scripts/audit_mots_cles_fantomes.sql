@@ -227,6 +227,39 @@ WHERE m.diagnostic_id IN (SELECT id_diagnostic FROM cible)
       SELECT 1 FROM cor_reponses_mots_cles c WHERE c.mot_cle_id = m.id_mot_cle
   );
 
+-- Rattachement des mots-clés isolés au groupe de leur homonyme (issues #107, #103).
+-- L'ancien code ne rattachait jamais un mot-clé nouvellement saisi au groupe
+-- existant portant le même nom : la citation d'un acteur créait une ligne
+-- indépendante, qui s'affichait comme une barre distincte à côté du thème sous
+-- lequel l'enquêteur avait rangé le même mot. D'où « les regroupements ne sont
+-- pas pris en compte, tous les termes apparaissent sans distinction ».
+-- On ne rattache que les lignes RÉELLEMENT CITÉES en entretien : les fantômes
+-- ont été supprimés plus haut, et on ne touche pas aux parents de groupe.
+-- Le code corrigé (_reutiliser_ou_creer_mot_cle) empêche que cela se reproduise.
+UPDATE t_mots_cles r
+SET mots_cles_groupe_id = g.parent_id
+FROM (
+    SELECT DISTINCT ON (enf.diagnostic_id, lower(btrim(enf.nom)))
+           enf.diagnostic_id,
+           lower(btrim(enf.nom))   AS cle,
+           enf.mots_cles_groupe_id AS parent_id
+    FROM t_mots_cles enf
+    WHERE enf.mots_cles_groupe_id IS NOT NULL
+    ORDER BY enf.diagnostic_id, lower(btrim(enf.nom)), enf.mots_cles_groupe_id
+) g
+WHERE r.diagnostic_id = g.diagnostic_id
+  AND lower(btrim(r.nom)) = g.cle
+  AND r.diagnostic_id IN (SELECT id_diagnostic FROM cible)
+  AND r.mots_cles_groupe_id IS NULL
+  AND r.id_mot_cle <> g.parent_id
+  -- jamais un parent de groupe : le rattacher créerait une hiérarchie à deux niveaux
+  AND NOT EXISTS (
+      SELECT 1 FROM t_mots_cles e WHERE e.mots_cles_groupe_id = r.id_mot_cle
+  )
+  AND EXISTS (
+      SELECT 1 FROM cor_reponses_mots_cles c WHERE c.mot_cle_id = r.id_mot_cle
+  );
+
 -- Recalcul de l'AFOM sur les acteurs distincts (parent + mots-clés regroupés)
 DELETE FROM t_afom
 WHERE mot_cle_id IN (

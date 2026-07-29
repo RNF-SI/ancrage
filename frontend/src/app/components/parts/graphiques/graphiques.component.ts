@@ -219,18 +219,17 @@ export class GraphiquesComponent {
 
   //Affiche les mots-clés par catégorie
   private groupByCategorie(): void {
-    const motsCles = this.data();
-    const rootMap = new Map<number, GraphMotsCles>();
-    motsCles.forEach(m => rootMap.set(m.mot_cle.id_mot_cle, m));
-
+    // L'API ne renvoie que des racines : les mots-clés regroupés par l'enquêteur
+    // sont déjà repliés dans mots_cles_issus, et `nombre` porte le total du
+    // groupe (acteurs distincts du parent et de ses enfants). Une barre par
+    // racine suffit donc à refléter les regroupements.
     const aggregated: Record<string, Record<string, number>> = {};
-    const rootKeywords = motsCles.filter(m => !m.mot_cle.mot_cle_id_groupe);
 
-    for (const item of rootKeywords) {
-      const root = rootMap.get(item.mot_cle.mot_cle_id_groupe ?? item.mot_cle.id_mot_cle)?.mot_cle || item.mot_cle;
-      const cat = root.categorie?.libelle || 'Sans catégorie';
+    for (const item of this.data()) {
+      const mot_cle = item.mot_cle;
+      const cat = mot_cle.categorie?.libelle || 'Sans catégorie';
       if (!aggregated[cat]) aggregated[cat] = {};
-      aggregated[cat][root.nom] = (aggregated[cat][root.nom] || 0) + item.nombre;
+      aggregated[cat][mot_cle.nom] = (aggregated[cat][mot_cle.nom] || 0) + item.nombre;
     }
 
     const results = Object.entries(aggregated).map(([categorie, mots]) => ({
