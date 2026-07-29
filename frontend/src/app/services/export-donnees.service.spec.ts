@@ -119,17 +119,35 @@ describe('ExportDonneesService', () => {
   });
 
   describe('construireExportComplet', () => {
-    it('ajoute une colonne de commentaire par question et les quatre colonnes AFOM', () => {
+    it('nomme les colonnes d’identité en français', () => {
+      const entete = service.construireExportComplet([], questions)[0];
+
+      expect(entete.slice(0, 11)).toEqual([
+        'Identifiant',
+        'Nom',
+        'Prénom',
+        'Fonction',
+        'Structure',
+        'Adresse mail',
+        'Téléphone',
+        'Profil cognitif',
+        'Commune',
+        'Groupes socio-professionnels',
+        "Statut de l'entretien",
+      ]);
+    });
+
+    it('ajoute une colonne de score et de commentaire par question, puis les quatre colonnes AFOM', () => {
       const entete = service.construireExportComplet([], questions)[0];
 
       expect(entete).toContain('Connaissance des missions');
+      expect(entete).toContain('Connaissance des missions - Score');
       expect(entete).toContain('Connaissance des missions - Commentaire');
-      expect(entete).toContain('Attentes');
-      expect(entete).toContain('Attentes - Commentaire');
+      expect(entete).toContain('Attentes - Score');
       expect(entete.slice(-4)).toEqual(['Atouts', 'Faiblesses', 'Opportunités', 'Menaces']);
     });
 
-    it('exporte le libellé de la réponse et son commentaire', () => {
+    it('exporte le libellé de la réponse, son score et son commentaire', () => {
       const acteur = new Acteur();
       acteur.categories = [categoriePartenaires];
       acteur.reponses = [
@@ -139,8 +157,38 @@ describe('ExportDonneesService', () => {
       const [entete, ligne] = service.construireExportComplet([acteur], questions);
 
       expect(ligne[entete.indexOf('Connaissance des missions')]).toBe('Méconnaissance');
+      expect(ligne[entete.indexOf('Connaissance des missions - Score')]).toBe(1);
       expect(ligne[entete.indexOf('Connaissance des missions - Commentaire')]).toBe('entretien écourté');
-      expect(ligne[entete.indexOf('categories')]).toBe('Partenaires, gestionnaires et techniciens');
+      expect(ligne[entete.indexOf('Groupes socio-professionnels')]).toBe('Partenaires, gestionnaires et techniciens');
+    });
+
+    it('laisse libellé et score vides quand la question est sans réponse', () => {
+      const acteur = new Acteur();
+      acteur.categories = [];
+      acteur.reponses = [reponse(q1, nomenclature(60, 'Méconnaissance', 1))];
+
+      const [entete, ligne] = service.construireExportComplet([acteur], questions);
+
+      expect(ligne[entete.indexOf('Attentes')]).toBe('');
+      expect(ligne[entete.indexOf('Attentes - Score')]).toBe('');
+    });
+
+    it('exporte les questions de synthèse quand elles lui sont fournies', () => {
+      const synthese = question(35, 'Synthèse', 35);
+      const enracinement = question(36, 'Enracinement', 36);
+
+      const acteur = new Acteur();
+      acteur.categories = [];
+      acteur.reponses = [reponse(enracinement, nomenclature(90, 'Plutôt oui', 4))];
+
+      const [entete, ligne] = service.construireExportComplet(
+        [acteur],
+        [...questions, synthese, enracinement],
+      );
+
+      expect(entete).toContain('Synthèse');
+      expect(ligne[entete.indexOf('Enracinement')]).toBe('Plutôt oui');
+      expect(ligne[entete.indexOf('Enracinement - Score')]).toBe(4);
     });
 
     it('remplace un mot-clé de groupe par les mots-clés qui lui sont rattachés', () => {

@@ -5,6 +5,7 @@ import { saveAs } from 'file-saver';
 import { Acteur } from '@app/models/acteur.model';
 import { Nomenclature } from '@app/models/nomenclature.model';
 import { Question } from '@app/models/question.model';
+import { Labels } from '@app/utils/labels';
 
 /**
  * Construction des classeurs Excel exportés depuis la visualisation d'un diagnostic.
@@ -15,6 +16,8 @@ import { Question } from '@app/models/question.model';
  */
 @Injectable({ providedIn: 'root' })
 export class ExportDonneesService {
+
+  private readonly labels = new Labels();
 
   /** Catégories AFOM, dans l'ordre attendu dans les colonnes de l'export complet. */
   readonly categoriesAfom = ['Atouts', 'Faiblesses', 'Opportunités', 'Menaces'];
@@ -49,25 +52,29 @@ export class ExportDonneesService {
   }
 
   /**
-   * Export complet et nominatif : identité de l'acteur, libellé et commentaire
-   * de chaque réponse, puis les mots-clés AFOM regroupés par catégorie.
+   * Export complet et nominatif : identité de l'acteur, libellé, score et
+   * commentaire de chaque réponse, puis les mots-clés AFOM par catégorie.
    */
   construireExportComplet(acteurs: Acteur[], questions: Question[]): any[][] {
     const lignes: any[][] = [];
 
     lignes.push([
-      'id_acteur',
-      'nom',
-      'prenom',
-      'fonction',
-      'structure',
-      'mail',
-      'telephone',
-      'profil',
-      'commune',
-      'categories',
-      'statut_entretien',
-      ...questions.flatMap(q => [q.libelle_graphique, `${q.libelle_graphique} - Commentaire`]),
+      this.labels.exportColIdentifiant,
+      this.labels.exportColNom,
+      this.labels.exportColPrenom,
+      this.labels.exportColFonction,
+      this.labels.exportColStructure,
+      this.labels.exportColMail,
+      this.labels.exportColTelephone,
+      this.labels.exportColProfil,
+      this.labels.exportColCommune,
+      this.labels.exportColGroupes,
+      this.labels.exportColStatutEntretien,
+      ...questions.flatMap(q => [
+        q.libelle_graphique,
+        `${q.libelle_graphique} - ${this.labels.exportSuffixeScore}`,
+        `${q.libelle_graphique} - ${this.labels.exportSuffixeCommentaire}`,
+      ]),
       ...this.categoriesAfom,
     ]);
 
@@ -86,6 +93,7 @@ export class ExportDonneesService {
         acteur.statut_entretien?.libelle || '',
         ...questions.flatMap(q => [
           this.libelleReponse(acteur, q.id_question),
+          this.scoreReponse(acteur, q.id_question),
           this.commentaireReponse(acteur, q.id_question),
         ]),
         ...this.categoriesAfom.map(cat => this.motsClesAfom(acteur, cat)),

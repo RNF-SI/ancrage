@@ -49,3 +49,10 @@ et `backend/config.py`, gitignorés ; `ng test` exige `frontend/node_modules`).
       sont lisibles sans élargir les colonnes à la main. Relancer l'export deux fois de
       suite et vérifier que « acteur1 » désigne le même individu. Refaire la même
       vérification sur « Exporter toutes les réponses (XLS) ».
+- [ ] #93 — Export des données rentrées dans la plateforme — en tant que rédacteur d'un
+      diagnostic, utiliser « Exporter toutes les réponses (XLS) ». Vérifier que les
+      en-têtes d'identité sont en français (« Identifiant », « Groupes socio-professionnels »,
+      « Statut de l'entretien »…), que chaque question occupe trois colonnes (libellé de la
+      réponse, score, commentaire) et que les questions « Synthèse » et « Enracinement »
+      figurent bien en fin de questionnaire, avant les quatre colonnes AFOM. Vérifier que
+      l'export reste refusé (403) pour un utilisateur qui n'est pas le rédacteur.

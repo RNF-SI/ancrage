@@ -37,6 +37,18 @@ export class QuestionService {
       );
   }
 
+  /** Toutes les questions notées, y compris « Synthèse » et « Enracinement ». */
+  getAllCompletes(): Observable<Question[]> {
+    return this.http.get<IQuestion[]>(this.GET_ALL_URL + '/completes', {
+      headers: { Authorization: `Bearer ${this.token}` }
+      }).pipe(
+      shareReplay(1),
+      map(questionsJsonArray => questionsJsonArray.map<Question>(
+        questionJson => Question.fromJson(questionJson)
+      ))
+    );
+  }
+
   getAllWithLimit(limit:number): Observable<Question[]> {
     return this.http.get<IQuestion[]>(this.GET_ALL_URL+"/"+limit,{
       headers: { Authorization: `Bearer ${this.token}` }

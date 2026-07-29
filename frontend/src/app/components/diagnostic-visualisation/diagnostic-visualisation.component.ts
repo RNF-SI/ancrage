@@ -127,6 +127,8 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   private stateService = inject(StateService);
   categories = signal<Nomenclature[]>([]);
   questions = signal<Question[]>([]);
+  /** Questions de l'export complet : les précédentes, plus « Synthèse » et « Enracinement ». */
+  questionsCompletes = signal<Question[]>([]);
   private questionService = inject(QuestionService)
   private acteurService = inject(ActeurService);
   private exportDonneesService = inject(ExportDonneesService);
@@ -170,7 +172,8 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
           themes: this.nomenclatureService.getAllByType('thème'),
           cats$: this.nomenclatureService.getAllByType("categorie"),
           questions$: this.questionService.getAll(),
-        }).subscribe(({ diag, themes, cats$, questions$ }) => {
+          questionsCompletes$: this.questionService.getAllCompletes(),
+        }).subscribe(({ diag, themes, cats$, questions$, questionsCompletes$ }) => {
           this.diagnostic.set(diag);
           this.diag = this.diagnostic();
           this.stateService.setDiagnostic(diag);
@@ -190,6 +193,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
           this.categories.set(cats$);
           this.acteurService.sortByNameAndSelected(this.actors());
           this.questions.set(questions$);
+          this.questionsCompletes.set(questionsCompletes$);
         });
       }
     });
@@ -456,7 +460,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
 
     this.exportSub?.unsubscribe();
     this.exportSub = this.acteurService.getAllByDiagForFullExport(id).subscribe(acteurs => {
-      const lignes = this.exportDonneesService.construireExportComplet(acteurs, this.questions());
+      const lignes = this.exportDonneesService.construireExportComplet(acteurs, this.questionsCompletes());
       this.exportDonneesService.telecharger(lignes, 'Export complet', 'export-complet-' + this.diagnostic().nom + '.xlsx');
     });
   }

@@ -52,6 +52,20 @@ export class Labels {
     exportXLS = "Exporter la matrice (XLS anonymisé)";
     exportXLSComplet = "Exporter toutes les réponses (XLS)";
     export = "Exporter";
+    // En-têtes des colonnes de l'export complet
+    exportColIdentifiant = "Identifiant";
+    exportColNom = "Nom";
+    exportColPrenom = "Prénom";
+    exportColFonction = "Fonction";
+    exportColStructure = "Structure";
+    exportColMail = "Adresse mail";
+    exportColTelephone = "Téléphone";
+    exportColProfil = "Profil cognitif";
+    exportColCommune = "Commune";
+    exportColGroupes = "Groupes socio-professionnels";
+    exportColStatutEntretien = "Statut de l'entretien";
+    exportSuffixeScore = "Score";
+    exportSuffixeCommentaire = "Commentaire";
     slug="Slug";
     files="Fichiers joints";
     interviewPrompt = "Saisir les entretiens";

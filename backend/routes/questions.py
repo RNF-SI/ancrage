@@ -42,3 +42,15 @@ def get_questions(limit):
 
     questionObj = schema.dump(questions)
     return jsonify(questionObj)
+
+@bp.route('/questions/completes', methods=['GET'])
+@check_auth(1)
+def get_questions_completes():
+    """Toutes les questions notées du questionnaire, y compris « Synthèse » et
+    « Enracinement » qui n'ont pas d'indications et sont donc absentes de /questions.
+    Sert à l'export complet des données d'un diagnostic."""
+    questions = Question.query.filter(Question.metrique.isnot(None)).order_by(Question.metrique).all()
+
+    schema = QuestionSchema(many=True,exclude = ("reponses", "theme", "choixReponses", "theme_question"))
+
+    return jsonify(schema.dump(questions))
