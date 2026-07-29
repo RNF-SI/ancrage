@@ -40,8 +40,7 @@ import { GraphiquesPersonnalisationComponent } from '../parts/graphiques/graphiq
 import { Question } from '@app/models/question.model';
 import { QuestionService } from '@app/services/question.service';
 import { ActeurService } from '@app/services/acteur.service';
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
+import { ExportDonneesService } from '@app/services/export-donnees.service';
 import { ImportComponent } from "../parts/import/import.component";
 
 @Component({
@@ -130,8 +129,8 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
   questions = signal<Question[]>([]);
   private questionService = inject(QuestionService)
   private acteurService = inject(ActeurService);
+  private exportDonneesService = inject(ExportDonneesService);
   private exportSub?: Subscription;
-  private readonly afomCategories = ['Atouts', 'Faiblesses', 'Opportunités', 'Menaces'];
 
   constructor() {
     effect(() => {
@@ -170,7 +169,7 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
           diag: this.diagnosticService.get(id, slugValue),
           themes: this.nomenclatureService.getAllByType('thème'),
           cats$: this.nomenclatureService.getAllByType("categorie"),
-          questions$: this.questionService.getAllWithLimit(25),
+          questions$: this.questionService.getAll(),
         }).subscribe(({ diag, themes, cats$, questions$ }) => {
           this.diagnostic.set(diag);
           this.diag = this.diagnostic();
@@ -440,23 +439,14 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
     return dotIndex > 0 ? fileName.slice(0, dotIndex) : fileName;
   }
 
-  getReponse(act: Acteur, id_question: number): number | string{
-    const rep = act.reponses?.find(r => r.question?.id_question === id_question);
-    return rep ? rep.valeur_reponse.value : 'NULL';
-  }
-
-  getCategory(act: Acteur, id_nomenclature: number){
-    const acteur = act.categories?.some(cate => cate.id_nomenclature === id_nomenclature) ? 1: 0
-    return acteur;
-  }
-
   exportXls() {
     const id = this.id_diagnostic();
     if (!id) return;
 
     this.exportSub?.unsubscribe();
     this.exportSub = this.acteurService.getAllByDiagForExport(id).subscribe(acteurs => {
-      this.buildAndDownloadXls(acteurs);
+      const lignes = this.exportDonneesService.construireMatrice(acteurs, this.categories(), this.questions());
+      this.exportDonneesService.telecharger(lignes, 'Export', 'export-' + this.diagnostic().nom + '.xlsx');
     });
   }
 
@@ -466,132 +456,10 @@ export class DiagnosticVisualisationComponent implements OnDestroy{
 
     this.exportSub?.unsubscribe();
     this.exportSub = this.acteurService.getAllByDiagForFullExport(id).subscribe(acteurs => {
-      this.buildAndDownloadFullXls(acteurs);
+      const lignes = this.exportDonneesService.construireExportComplet(acteurs, this.questions());
+      this.exportDonneesService.telecharger(lignes, 'Export complet', 'export-complet-' + this.diagnostic().nom + '.xlsx');
     });
   }
 
-  private getReponseLibelle(act: Acteur, id_question: number): string {
-    const rep = act.reponses?.find(r => r.question?.id_question === id_question);
-    if (!rep?.valeur_reponse?.id_nomenclature) return '';
-    return rep.valeur_reponse.libelle || '';
-  }
-
-  private getReponseCommentaire(act: Acteur, id_question: number): string {
-    const rep = act.reponses?.find(r => r.question?.id_question === id_question);
-    return rep?.commentaires?.trim() || '';
-  }
-
-  private getAfomValues(act: Acteur, categoryLibelle: string): string {
-    const values = new Set<string>();
-
-    for (const mc of act.mots_cles_afom ?? []) {
-      if (mc.mot_cle_id_groupe) continue;
-      if (mc.categorie?.libelle !== categoryLibelle) continue;
-
-      if (mc.mots_cles_issus?.length) {
-        for (const enfant of mc.mots_cles_issus) {
-          if (enfant.nom?.trim()) values.add(enfant.nom.trim());
-        }
-      } else if (mc.nom?.trim()) {
-        values.add(mc.nom.trim());
-      }
-    }
-
-    return Array.from(values).join('; ');
-  }
-
-  private buildAndDownloadFullXls(acteurs: Acteur[]) {
-    const rows: any[][] = [];
-
-    const header = [
-      'id_acteur',
-      'nom',
-      'prenom',
-      'fonction',
-      'structure',
-      'mail',
-      'telephone',
-      'profil',
-      'commune',
-      'categories',
-      'statut_entretien',
-      ...this.questions().flatMap(q => [
-        q.libelle_graphique,
-        `${q.libelle_graphique} - Commentaire`
-      ]),
-      ...this.afomCategories
-    ];
-    rows.push(header);
-
-    acteurs.forEach(act => {
-      const row: any[] = [
-        act.id_acteur,
-        act.nom,
-        act.prenom,
-        act.fonction,
-        act.structure,
-        act.mail,
-        act.telephone,
-        act.profil?.libelle || '',
-        act.commune?.nom_com || '',
-        (act.categories || []).map(c => c.libelle).join(', '),
-        act.statut_entretien?.libelle || '',
-      ];
-
-      for (const q of this.questions()) {
-        row.push(this.getReponseLibelle(act, q.id_question));
-        row.push(this.getReponseCommentaire(act, q.id_question));
-      }
-
-      for (const cat of this.afomCategories) {
-        row.push(this.getAfomValues(act, cat));
-      }
-
-      rows.push(row);
-    });
-
-    const worksheet = XLSX.utils.aoa_to_sheet(rows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Export complet');
-
-    const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    saveAs(new Blob([wbout], { type: 'application/octet-stream' }),
-      'export-complet-' + this.diagnostic().nom + '.xlsx');
-  }
-
-  private buildAndDownloadXls(acteurs: Acteur[]) {
-    const rows: any[][] = [];
-
-    const header = [
-      'Individu',
-      ...this.categories().map(c => `${c.libelle}`),
-      ...this.questions().map(q => `${q.libelle_graphique}`)
-    ];
-    rows.push(header);
-
-    acteurs.forEach((act, index) => {
-      const row: any[] = [];
-
-      row.push(`acteur${index + 1}`);
-
-      for (const cat of this.categories()) {
-        row.push(this.getCategory(act, cat.id_nomenclature));
-      }
-
-      for (const q of this.questions()) {
-        row.push(this.getReponse(act, q.id_question));
-      }
-
-      rows.push(row);
-    });
-
-    const worksheet = XLSX.utils.aoa_to_sheet(rows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Export');
-
-    const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    saveAs(new Blob([wbout], { type: 'application/octet-stream' }),
-      'export-' + this.diagnostic().nom + '.xlsx');
-  }
 
 }

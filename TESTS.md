@@ -40,3 +40,12 @@ et `backend/config.py`, gitignorés ; `ng test` exige `frontend/node_modules`).
       insérée dans un document. Vérifier que l'export des graphiques personnalisés, qui
       demande un titre par une boîte de dialogue, fonctionne toujours et produit lui aussi
       un fond blanc.
+- [ ] #104 — Extraction des données — sur un diagnostic contenant des entretiens terminés,
+      utiliser « Exporter la matrice (XLS anonymisé) ». Vérifier que le tableur contient
+      bien les scores et non des « NULL » partout, que les colonnes vont jusqu'aux
+      dernières questions du questionnaire (« Sentiment d'implication », « Impacts »,
+      « Adaptation », « Avis », « Attentes »), soit 34 colonnes de questions et non 25,
+      et qu'une question non répondue laisse une cellule vide. Vérifier que les en-têtes
+      sont lisibles sans élargir les colonnes à la main. Relancer l'export deux fois de
+      suite et vérifier que « acteur1 » désigne le même individu. Refaire la même
+      vérification sur « Exporter toutes les réponses (XLS) ».

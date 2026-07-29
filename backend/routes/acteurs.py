@@ -175,6 +175,8 @@ def getActeursForExport(id_diagnostic):
             selectinload(Acteur.reponses)
                 .joinedload(Reponse.valeur_reponse),
         )
+        # ordre stable : « acteur1 » doit désigner le même individu d'un export à l'autre
+        .order_by(Acteur.id_acteur)
         .all()
     )
     schema = ActeurExportSchema(many=True)
@@ -218,6 +220,7 @@ def getActeursForFullExport(id_diagnostic):
             selectinload(Acteur.reponses)
                 .joinedload(Reponse.valeur_reponse),
         )
+        .order_by(Acteur.id_acteur)
         .all()
     )
     schema = ActeurFullExportSchema(many=True)
