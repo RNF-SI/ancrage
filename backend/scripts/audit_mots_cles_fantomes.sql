@@ -181,6 +181,36 @@ SELECT count(*) AS a_supprimer FROM mots_cles_fantomes;
 SELECT diagnostic_id, count(*) AS a_supprimer
 FROM mots_cles_fantomes GROUP BY diagnostic_id ORDER BY diagnostic_id;
 
+-- Réactivation des vraies lignes désactivées collatéralement.
+-- enregistrer_afoms (/diagnostic/afom/update) désactive tout mot-clé absent du
+-- payload de l'écran d'analyse. Cet écran affichait l'entrée fusionnée portant
+-- l'identifiant du fantôme : les sauvegardes ont donc désactivé les vraies
+-- lignes au profit des doublons. On ne réactive QUE celles dont un jumeau
+-- fantôme est resté actif — signe que l'enquêteur voulait bien garder ce
+-- mot-clé. Une ligne désactivée sans jumeau actif a été retirée volontairement
+-- de l'AFOM et n'est pas touchée.
+-- À exécuter AVANT la suppression : la règle s'appuie sur le fantôme encore actif.
+UPDATE t_mots_cles m
+SET is_actif = true
+WHERE m.diagnostic_id IN (SELECT id_diagnostic FROM cible)
+  AND m.mots_cles_groupe_id IS NULL
+  AND NOT m.is_actif
+  AND EXISTS (
+      SELECT 1 FROM cor_reponses_mots_cles c WHERE c.mot_cle_id = m.id_mot_cle
+  )
+  AND EXISTS (
+      SELECT 1
+      FROM t_mots_cles j
+      WHERE j.diagnostic_id = m.diagnostic_id
+        AND j.mots_cles_groupe_id IS NULL
+        AND j.is_actif
+        AND lower(btrim(j.nom)) = lower(btrim(m.nom))
+        AND j.categorie_id IS NOT DISTINCT FROM m.categorie_id
+        AND NOT EXISTS (
+            SELECT 1 FROM cor_reponses_mots_cles c2 WHERE c2.mot_cle_id = j.id_mot_cle
+        )
+  );
+
 DELETE FROM t_afom      WHERE mot_cle_id IN (SELECT id_mot_cle FROM mots_cles_fantomes);
 DELETE FROM t_mots_cles WHERE id_mot_cle IN (SELECT id_mot_cle FROM mots_cles_fantomes);
 
