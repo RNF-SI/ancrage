@@ -139,7 +139,11 @@ export class GraphiquesComponent {
           chartOptions: {
             responsive: true,
             scales: {
-              y: { beginAtZero: true, min: 1, max: 5, ticks: { stepSize: 1 } }
+              // L'axe part de 0 et non de 1 : une barre est dessinée depuis la
+              // base de l'axe, donc une médiane de 1 (le score le plus bas,
+              // fréquent sur les questions à trois niveaux) donnerait une barre
+              // de hauteur nulle, invisible alors que la donnée existe.
+              y: { beginAtZero: true, min: 0, max: 5, ticks: { stepSize: 1 } }
             },
             plugins: {
               title: optionsTitre(question)

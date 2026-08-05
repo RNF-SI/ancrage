@@ -186,7 +186,10 @@ export class GraphiquesPersonnalisationComponent {
             chartOptions: {
               responsive: true,
               scales: {
-                y: { beginAtZero: true, min: 1, max: 5, ticks: { stepSize: 1 } }
+                // Même raison que dans graphiques.component.ts : avec un axe
+                // démarrant à 1, les médianes égales à 1 produisaient une barre
+                // de hauteur nulle, donc invisible.
+                y: { beginAtZero: true, min: 0, max: 5, ticks: { stepSize: 1 } }
               }
             }
           } satisfies AvgPerQuestion;
