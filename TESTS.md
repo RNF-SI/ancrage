@@ -65,3 +65,16 @@ et `backend/config.py`, gitignorés ; `ng test` exige `frontend/node_modules`).
       dessus. Vérifier que la légende reprend bien le pointillé de chaque catégorie, donc
       qu'on peut relier une ligne à sa catégorie. Refaire la vérification sur le PNG
       obtenu par « Exporter », qui est ce qui est collé dans les rapports.
+- [ ] #108 — Titres tronqués dans les diagrammes — sur un thème dont les indicateurs ont des
+      noms longs (« Connaissances » : « Connaissance des actions mises en place »,
+      « Connaissance des espèces emblématiques »…), vérifier que les étiquettes autour du
+      radar s'affichent en entier, repliées sur plusieurs lignes, et ne sont plus coupées
+      par le bord du cadre. Réduire la fenêtre du navigateur et vérifier que les titres des
+      graphiques restent entiers, en se redécoupant sur la largeur disponible au lieu d'être
+      rognés. Vérifier le titre « Catégorie : … » des graphiques AFOM sur la catégorie
+      « Animation, pédagogie, tourisme et sensibilisation », la plus longue. Vérifier enfin,
+      sur les camemberts des captures de l'issue (« Connaissance des outils de
+      communication », « Connaissance du périmètre », « Connaissance d'un interlocuteur »),
+      que les entrées de légende ne se terminent plus par « … » : elles doivent s'afficher
+      en entier, repliées sur deux lignes quand le cadre est étroit. Refaire toutes ces
+      vérifications sur les PNG obtenus par « Exporter ».

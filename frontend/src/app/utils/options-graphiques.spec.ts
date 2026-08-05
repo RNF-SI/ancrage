@@ -1,4 +1,55 @@
-import { styleSerieRadar } from './options-graphiques';
+import { decouperTitre, optionsEtiquettesRadar, optionsTitre, styleSerieRadar } from './options-graphiques';
+
+/**
+ * Le découpage sur la largeur réelle du canvas se juge à l'œil, mais le
+ * découpage de repli, lui, s'assied sur des règles vérifiables : ne jamais
+ * rendre la main sur un texte plus large qu'une ligne (issue #108).
+ */
+describe('decouperTitre', () => {
+  it('replie un titre long sans en perdre un mot', () => {
+    const titre = 'Pouvez-vous citer tous les liens qui existent entre vous et le site ? '
+      + 'Et pouvez-vous nous en dire plus leur nature ?';
+
+    const lignes = decouperTitre(titre);
+
+    expect(lignes.length).toBeGreaterThan(1);
+    expect(lignes.join(' ')).toBe(titre.trim());
+  });
+
+  it('coupe un mot plus long qu’une ligne, qui déborderait sinon', () => {
+    const lignes = decouperTitre('abcdefghijklmnop', 5);
+
+    expect(lignes.every(ligne => ligne.length <= 5)).toBeTrue();
+    expect(lignes.join('')).toBe('abcdefghijklmnop');
+  });
+
+  it('accepte un texte vide sans planter', () => {
+    expect(decouperTitre('')).toEqual(['']);
+  });
+});
+
+describe('optionsTitre', () => {
+  it('conserve le texte d’origine, que le plugin redécoupe sur la largeur réelle', () => {
+    const titre = 'Répartition des réponses — Nature des liens';
+
+    expect(optionsTitre(titre).texteComplet).toBe(titre);
+  });
+});
+
+describe('optionsEtiquettesRadar', () => {
+  it('replie une étiquette d’axe trop longue sur plusieurs lignes', () => {
+    const etiquette = 'Connaissance des actions mises en place';
+
+    const lignes = optionsEtiquettesRadar().callback(etiquette);
+
+    expect(lignes.length).toBeGreaterThan(1);
+    expect(lignes.join(' ')).toBe(etiquette);
+  });
+
+  it('laisse une étiquette courte sur une seule ligne', () => {
+    expect(optionsEtiquettesRadar().callback('Efficacité')).toEqual(['Efficacité']);
+  });
+});
 
 /**
  * Le rendu d'un radar se juge à l'œil, mais la propriété qui le rend lisible

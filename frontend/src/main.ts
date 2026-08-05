@@ -13,8 +13,16 @@ import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FOR
 import { DateAdapter, MAT_DATE_LOCALE, MAT_DATE_FORMATS } from '@angular/material/core';
 import { RECAPTCHA_V3_SITE_KEY } from "ng-recaptcha-2";
 import { provideMatomo, withRouter } from 'ngx-matomo-client';
+import { Chart } from 'chart.js';
+import { pluginLegendeRepliee, pluginTitreAdaptatif } from '@app/utils/options-graphiques';
 
 library.add(faFacebook)
+
+// Enregistrés une fois pour toutes : le premier redécoupe le titre de chaque
+// graphique sur la largeur réelle de son canvas, le second dessine les légendes
+// dont les entrées sont trop longues pour tenir sur une ligne. Tous deux restent
+// sans effet sur les graphiques qui ne les déclarent pas.
+Chart.register(pluginTitreAdaptatif, pluginLegendeRepliee)
 
 bootstrapApplication(AppComponent, {
   providers: [

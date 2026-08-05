@@ -1,5 +1,5 @@
 import { Component, Input, computed, effect, inject, signal } from '@angular/core';
-import { ChartConfiguration, ChartData, ChartOptions, RadialLinearScaleOptions, TooltipItem } from 'chart.js';
+import { ChartConfiguration, ChartData, ChartOptions, RadialLinearScaleOptions } from 'chart.js';
 import { Diagnostic } from '@app/models/diagnostic.model';
 import { DiagnosticService } from '@app/services/diagnostic.service';
 import { forkJoin } from 'rxjs';
@@ -14,7 +14,7 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTabsModule } from '@angular/material/tabs';
 import { PALETTE_GRAPHIQUES, couleurReponse } from '@app/utils/couleurs-graphiques';
-import { exporterCanvasPng, optionsLegende, optionsTitre, styleSerieRadar, tronquerLegende } from '@app/utils/options-graphiques';
+import { exporterCanvasPng, optionsEtiquettesRadar, optionsLegende, optionsTitre, styleSerieRadar } from '@app/utils/options-graphiques';
 
 
 //Composant qui affcihe les graphiques
@@ -62,11 +62,7 @@ export class GraphiquesComponent {
           stepSize: 1,
           callback: (val: string | number) => val.toString()
         },
-        pointLabels: {
-          font: {
-            size: 14
-          }
-        }
+        pointLabels: optionsEtiquettesRadar()
       } as unknown as RadialLinearScaleOptions
     }
   };
@@ -180,7 +176,9 @@ export class GraphiquesComponent {
         const backgroundColors = responses.map(r => couleurReponse(r));
 
         chartRepartition[question] = {
-          labels: libellesComplets.map(libelle => tronquerLegende(libelle)),
+          // Libellés entiers : la légende repliée les affiche en totalité, ils
+          // n'ont plus à être raccourcis pour tenir dans le cadre.
+          labels: libellesComplets,
           datasets: [{
             data,
             backgroundColor: backgroundColors,
@@ -192,15 +190,7 @@ export class GraphiquesComponent {
           responsive: true,
           plugins: {
             title: optionsTitre(`${this.labels.repartitionReponses} — ${question}`),
-            legend: optionsLegende(),
-            tooltip: {
-              callbacks: {
-                // La légende est tronquée pour tenir dans le cadre : l'infobulle
-                // reste le seul endroit où lire le libellé en entier.
-                title: (items: TooltipItem<'pie'>[]) =>
-                  libellesComplets[items[0]?.dataIndex ?? 0] ?? ''
-              }
-            }
+            ...optionsLegende()
           }
         };
       }
@@ -289,10 +279,7 @@ export class GraphiquesComponent {
           },
           plugins: {
             legend: { display: false },
-            title: {
-              display: true,
-              text: `Catégorie : ${categorie}`
-            }
+            title: optionsTitre(`Catégorie : ${categorie}`)
           }
         }
       }

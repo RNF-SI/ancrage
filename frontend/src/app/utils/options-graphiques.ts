@@ -7,8 +7,28 @@
  * sont dessinés dans le canvas — donc visibles en entier et exportés avec lui.
  */
 
-/** Longueur au-delà de laquelle une entrée de légende déborde du cadre. */
-const LONGUEUR_MAX_LEGENDE = 38;
+import { Chart, Plugin } from 'chart.js';
+
+/** Taille de police des entrées de légende, en pixels (défaut Chart.js : 12). */
+const TAILLE_POLICE_LEGENDE = 11;
+
+/** Côté de la pastille de couleur d'une entrée de légende, en pixels. */
+const COTE_PASTILLE = 10;
+
+/** Écart entre la pastille et son libellé, en pixels. */
+const ESPACE_PASTILLE = 6;
+
+/** Hauteur d'une ligne de légende, en pixels. */
+const INTERLIGNE_LEGENDE = 15;
+
+/** Écart entre deux entrées de légende, en pixels. */
+const ESPACE_ENTRE_ENTREES = 4;
+
+/** Marge autour du bloc de légende, en pixels. */
+const MARGE_LEGENDE = 8;
+
+/** Couleur du texte des légendes, alignée sur le défaut Chart.js. */
+const COULEUR_TEXTE_LEGENDE = '#666';
 
 /**
  * Motifs de trait des séries d'un radar, un par catégorie d'acteurs.
@@ -52,14 +72,23 @@ const RAYONS_POINT_RADAR = [3, 3.5, 4, 4.5, 5, 5.5, 6];
 /** Largeur approximative d'une ligne de titre, en caractères. */
 const LARGEUR_LIGNE_TITRE = 55;
 
+/** Largeur approximative d'une ligne d'étiquette de radar, en caractères. */
+const LARGEUR_LIGNE_ETIQUETTE = 22;
+
+/** Taille de police des titres, en pixels. */
+const TAILLE_POLICE_TITRE = 14;
+
+/** Marge réservée de chaque côté d'un titre, en pixels. */
+const MARGE_TITRE = 12;
+
 /**
- * Découpe un titre long en plusieurs lignes.
+ * Découpe un texte en lignes, `tropLarge` décidant si une ligne déborde.
  *
- * Chart.js accepte un tableau de chaînes pour `plugins.title.text` et en fait
- * autant de lignes. Sans ce découpage, un titre plus large que le canvas est
- * rogné aux deux extrémités.
+ * Le critère est laissé à l'appelant : un nombre de caractères quand aucun
+ * canvas n'est disponible, une largeur mesurée en pixels quand il l'est. Un mot
+ * seul plus large qu'une ligne est coupé, sinon il dépasserait quand même.
  */
-export function decouperTitre(texte: string, largeur = LARGEUR_LIGNE_TITRE): string[] {
+function decouperTexte(texte: string, tropLarge: (ligne: string) => boolean): string[] {
     const mots = (texte ?? '').trim().split(/\s+/).filter(Boolean);
     if (!mots.length) {
         return [''];
@@ -68,18 +97,44 @@ export function decouperTitre(texte: string, largeur = LARGEUR_LIGNE_TITRE): str
     const lignes: string[] = [];
     let courante = '';
 
+    const poser = (ligne: string) => {
+        let reste = ligne;
+        while (tropLarge(reste) && reste.length > 1) {
+            let coupe = reste.length - 1;
+            while (coupe > 1 && tropLarge(reste.slice(0, coupe))) {
+                coupe--;
+            }
+            lignes.push(reste.slice(0, coupe));
+            reste = reste.slice(coupe);
+        }
+        lignes.push(reste);
+    };
+
     for (const mot of mots) {
         const candidate = courante ? `${courante} ${mot}` : mot;
-        if (courante && candidate.length > largeur) {
-            lignes.push(courante);
+        if (courante && tropLarge(candidate)) {
+            poser(courante);
             courante = mot;
         } else {
             courante = candidate;
         }
     }
-    lignes.push(courante);
+    poser(courante);
 
     return lignes;
+}
+
+/**
+ * Découpe un titre long en plusieurs lignes.
+ *
+ * Chart.js accepte un tableau de chaînes pour `plugins.title.text` et en fait
+ * autant de lignes. Sans ce découpage, un titre plus large que le canvas est
+ * rogné aux deux extrémités. Le découpage au nombre de caractères ne vaut que
+ * pour le premier rendu : `pluginTitreAdaptatif` le reprend ensuite sur la
+ * largeur réellement disponible.
+ */
+export function decouperTitre(texte: string, largeur = LARGEUR_LIGNE_TITRE): string[] {
+    return decouperTexte(texte, ligne => ligne.length > largeur);
 }
 
 /** Configuration du titre d'un graphique, découpé pour tenir dans le canvas. */
@@ -87,33 +142,152 @@ export function optionsTitre(texte: string) {
     return {
         display: true,
         text: decouperTitre(texte),
-        font: { size: 14 },
+        // Conservé tel quel : le découpage au nombre de caractères est une
+        // approximation, `pluginTitreAdaptatif` a besoin du texte d'origine
+        // pour le refaire à chaque mise en page sur la largeur réelle.
+        texteComplet: texte,
+        font: { size: TAILLE_POLICE_TITRE },
         padding: { top: 4, bottom: 12 },
     };
 }
 
 /**
- * Raccourcit une entrée de légende trop longue.
+ * Redécoupe les titres sur la largeur réellement disponible.
  *
- * Une entrée plus large que le canvas en sort et rend le PNG exporté
- * inexploitable (question « nature des liens », dont les réponses font jusqu'à
- * une cinquantaine de caractères). Le libellé complet reste lisible dans
- * l'infobulle au survol.
+ * Le découpage de `decouperTitre` compte les caractères, sans savoir ni la
+ * largeur du canvas ni celle des lettres : sur un cadre étroit, un titre censé
+ * tenir dépassait quand même et Chart.js le rognait. Ce plugin le refait avant
+ * chaque mise en page, en mesurant le texte avec la police du titre, ce qui
+ * garantit un titre entier quelle que soit sa longueur ou la taille du cadre.
  */
-export function tronquerLegende(texte: string, longueur = LONGUEUR_MAX_LEGENDE): string {
-    const propre = (texte ?? '').trim();
-    return propre.length > longueur ? `${propre.slice(0, longueur - 1).trimEnd()}…` : propre;
+export const pluginTitreAdaptatif: Plugin = {
+    id: 'titreAdaptatif',
+
+    beforeLayout(chart) {
+        const titre = chart.options.plugins?.title as { text?: string | string[]; texteComplet?: string } | undefined;
+        const largeur = chart.width - 2 * MARGE_TITRE;
+        if (!titre?.texteComplet || largeur <= 0) {
+            return;
+        }
+
+        const contexte = chart.ctx;
+        contexte.save();
+        contexte.font = `bold ${TAILLE_POLICE_TITRE}px ${Chart.defaults.font.family}`;
+        titre.text = decouperTexte(titre.texteComplet, ligne => contexte.measureText(ligne).width > largeur);
+        contexte.restore();
+    },
+};
+
+/**
+ * Étiquettes des axes d'un radar, repliées sur plusieurs lignes.
+ *
+ * Ces noms d'indicateurs sont écrits autour du radar, dans la marge qui reste
+ * entre lui et le bord du canvas : les plus longs en sortaient et étaient
+ * coupés net. Chart.js accepte un tableau de lignes en retour de `callback` et
+ * rétrécit alors le radar pour leur faire place, au lieu de les rogner.
+ */
+export function optionsEtiquettesRadar() {
+    return {
+        font: { size: 14 },
+        callback: (etiquette: string) => decouperTitre(etiquette, LARGEUR_LIGNE_ETIQUETTE),
+    };
 }
 
 /**
- * Légende placée sous le graphique, où elle dispose de toute la largeur et se
- * répartit sur plusieurs lignes au lieu de déborder.
+ * Découpe les entrées de légende d'un graphique sur la largeur disponible.
+ *
+ * Les couleurs sont lues au même endroit que la légende native : les libellés
+ * dans `data.labels`, les couleurs dans le premier jeu de données.
+ */
+function entreesLegende(chart: Chart): { lignes: string[]; couleur: string }[] {
+    const libelles = (chart.data.labels ?? []) as string[];
+    const couleurs = chart.data.datasets?.[0]?.backgroundColor as string[] | undefined;
+    const largeur = chart.width - 2 * MARGE_LEGENDE - COTE_PASTILLE - ESPACE_PASTILLE;
+
+    const contexte = chart.ctx;
+    contexte.save();
+    contexte.font = `${TAILLE_POLICE_LEGENDE}px ${Chart.defaults.font.family}`;
+    const entrees = libelles.map((libelle, index) => ({
+        lignes: decouperTexte(String(libelle ?? ''), ligne => contexte.measureText(ligne).width > largeur),
+        couleur: couleurs?.[index] ?? COULEUR_TEXTE_LEGENDE,
+    }));
+    contexte.restore();
+
+    return entrees;
+}
+
+/**
+ * Légende dessinée sous le graphique, entrées repliées sur plusieurs lignes.
+ *
+ * La légende native de Chart.js écrit chaque entrée sur une seule ligne : les
+ * libellés de réponses, qui montent à une cinquantaine de caractères, en
+ * sortaient. Ils étaient donc tronqués — c'est la troncature signalée en #108.
+ * Ce plugin la remplace : il réserve sous le graphique la hauteur nécessaire
+ * puis y écrit chaque entrée repliée sur autant de lignes qu'il faut. Tout
+ * reste dessiné dans le canvas, donc le PNG exporté montre exactement l'écran.
+ *
+ * Contrepartie assumée : cette légende n'est pas cliquable, alors que celle de
+ * Chart.js permettait de masquer une part. Les camemberts de répartition ne
+ * s'y prêtaient de toute façon pas, une part masquée faussant les proportions.
+ */
+export const pluginLegendeRepliee: Plugin = {
+    id: 'legendeRepliee',
+
+    beforeLayout(chart) {
+        if (!(chart.options.plugins as { legendeRepliee?: { display?: boolean } })?.legendeRepliee?.display) {
+            return;
+        }
+
+        const entrees = entreesLegende(chart);
+        const nombreLignes = entrees.reduce((total, entree) => total + entree.lignes.length, 0);
+        const hauteur = nombreLignes * INTERLIGNE_LEGENDE
+            + entrees.length * ESPACE_ENTRE_ENTREES
+            + 2 * MARGE_LEGENDE;
+
+        const miseEnPage = chart.options.layout ?? (chart.options.layout = {});
+        const marges = miseEnPage.padding;
+        miseEnPage.padding = typeof marges === 'object' && marges !== null
+            ? { ...marges, bottom: hauteur }
+            : { top: 0, left: 0, right: 0, bottom: hauteur };
+    },
+
+    afterDraw(chart) {
+        if (!(chart.options.plugins as { legendeRepliee?: { display?: boolean } })?.legendeRepliee?.display) {
+            return;
+        }
+
+        const entrees = entreesLegende(chart);
+        const contexte = chart.ctx;
+        contexte.save();
+        contexte.font = `${TAILLE_POLICE_LEGENDE}px ${Chart.defaults.font.family}`;
+        contexte.textAlign = 'left';
+        contexte.textBaseline = 'middle';
+
+        let y = chart.chartArea.bottom + MARGE_LEGENDE + INTERLIGNE_LEGENDE / 2;
+        for (const entree of entrees) {
+            contexte.fillStyle = entree.couleur;
+            contexte.fillRect(MARGE_LEGENDE, y - COTE_PASTILLE / 2, COTE_PASTILLE, COTE_PASTILLE);
+
+            contexte.fillStyle = COULEUR_TEXTE_LEGENDE;
+            for (const ligne of entree.lignes) {
+                contexte.fillText(ligne, MARGE_LEGENDE + COTE_PASTILLE + ESPACE_PASTILLE, y);
+                y += INTERLIGNE_LEGENDE;
+            }
+            y += ESPACE_ENTRE_ENTREES;
+        }
+
+        contexte.restore();
+    },
+};
+
+/**
+ * Options de légende d'un camembert : la légende native est éteinte au profit
+ * de `pluginLegendeRepliee`, qui sait replier les libellés longs.
  */
 export function optionsLegende() {
     return {
-        display: true,
-        position: 'bottom' as const,
-        labels: { boxWidth: 12, padding: 8 },
+        legend: { display: false },
+        legendeRepliee: { display: true },
     };
 }
 
