@@ -56,3 +56,12 @@ et `backend/config.py`, gitignorés ; `ng test` exige `frontend/node_modules`).
       réponse, score, commentaire) et que les questions « Synthèse » et « Enracinement »
       figurent bien en fin de questionnaire, avant les quatre colonnes AFOM. Vérifier que
       l'export reste refusé (403) pour un utilisateur qui n'est pas le rédacteur.
+- [ ] #110 — Lisibilité des radars — sur un diagnostic où deux catégories d'acteurs
+      obtiennent les mêmes médianes sur un thème (cas signalé : « Partenaires,
+      gestionnaires et techniciens » et « Membres ou participants au CCG » sur
+      « Intérêt ») : vérifier que les deux lignes restent identifiables une fois
+      superposées — chacune a désormais son pointillé, son épaisseur et son symbole de
+      sommet propres, et la ligne du dessous doit apparaître dans les blancs de celle du
+      dessus. Vérifier que la légende reprend bien le pointillé de chaque catégorie, donc
+      qu'on peut relier une ligne à sa catégorie. Refaire la vérification sur le PNG
+      obtenu par « Exporter », qui est ce qui est collé dans les rapports.

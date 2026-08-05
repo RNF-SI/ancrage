@@ -14,7 +14,7 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTabsModule } from '@angular/material/tabs';
 import { PALETTE_GRAPHIQUES, couleurReponse } from '@app/utils/couleurs-graphiques';
-import { exporterCanvasPng, optionsLegende, optionsTitre, tronquerLegende } from '@app/utils/options-graphiques';
+import { exporterCanvasPng, optionsLegende, optionsTitre, styleSerieRadar, tronquerLegende } from '@app/utils/options-graphiques';
 
 
 //Composant qui affcihe les graphiques
@@ -233,9 +233,7 @@ export class GraphiquesComponent {
           return {
             label: cat,
             data,
-            borderColor: color,
-            backgroundColor: 'transparent',
-            fill: false  
+            ...styleSerieRadar(i, color)
           };
         });
         return { theme, data: { labels, datasets }, options: this.optionsRadar(theme) };

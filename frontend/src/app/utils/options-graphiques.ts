@@ -10,6 +10,45 @@
 /** Longueur au-delà de laquelle une entrée de légende déborde du cadre. */
 const LONGUEUR_MAX_LEGENDE = 38;
 
+/**
+ * Motifs de trait des séries d'un radar, un par catégorie d'acteurs.
+ *
+ * Deux catégories aux médianes identiques tracent exactement la même ligne :
+ * l'une recouvrait l'autre, qui disparaissait du graphique comme du PNG inséré
+ * dans les rapports. Des pointillés aux intervalles distincts laissent voir la
+ * ligne du dessous dans les blancs de celle du dessus.
+ *
+ * Chart.js dessine les séries de la dernière à la première : la série 0 finit
+ * au-dessus de toutes les autres. C'est donc elle qui doit être la plus
+ * ajourée, et la dernière qui peut se permettre d'être continue.
+ */
+const MOTIFS_TRAIT_RADAR: number[][] = [
+    [3, 5],
+    [8, 6],
+    [14, 5, 2, 5],
+    [10, 4],
+    [4, 4],
+    [16, 5],
+    [],
+];
+
+/**
+ * Symboles des sommets, un par série. Ils prennent le relais des pointillés là
+ * où deux lignes se confondent sur un seul axe, cas que le motif de trait ne
+ * suffit pas toujours à départager.
+ */
+const SYMBOLES_POINT_RADAR = ['circle', 'rectRot', 'triangle', 'rect', 'star', 'crossRot', 'dash'] as const;
+
+/**
+ * Épaisseurs de trait, croissantes avec le rang. Les séries du dessous étant
+ * les plus larges, elles dépassent de part et d'autre de celles tracées
+ * par-dessus au lieu d'être entièrement masquées.
+ */
+const EPAISSEURS_TRAIT_RADAR = [2.5, 3, 3.4, 3.8, 4.2, 4.6, 5];
+
+/** Rayons des sommets, croissants pour la même raison que les épaisseurs. */
+const RAYONS_POINT_RADAR = [3, 3.5, 4, 4.5, 5, 5.5, 6];
+
 /** Largeur approximative d'une ligne de titre, en caractères. */
 const LARGEUR_LIGNE_TITRE = 55;
 
@@ -75,6 +114,32 @@ export function optionsLegende() {
         display: true,
         position: 'bottom' as const,
         labels: { boxWidth: 12, padding: 8 },
+    };
+}
+
+/**
+ * Style d'une série de radar : couleur, motif de trait et symbole de sommet.
+ *
+ * La couleur seule ne suffit pas quand deux catégories obtiennent les mêmes
+ * médianes — la ligne du dessus masque intégralement celle du dessous. Chaque
+ * série reçoit donc aussi un motif et un symbole propres, qui la rendent
+ * repérable même superposée, y compris sur une capture imprimée en noir et
+ * blanc.
+ */
+export function styleSerieRadar(index: number, couleur: string) {
+    const rang = index % MOTIFS_TRAIT_RADAR.length;
+
+    return {
+        borderColor: couleur,
+        backgroundColor: 'transparent',
+        borderWidth: EPAISSEURS_TRAIT_RADAR[rang],
+        borderDash: MOTIFS_TRAIT_RADAR[rang],
+        pointStyle: SYMBOLES_POINT_RADAR[rang],
+        pointRadius: RAYONS_POINT_RADAR[rang],
+        pointHoverRadius: RAYONS_POINT_RADAR[rang] + 2,
+        pointBorderColor: couleur,
+        pointBackgroundColor: couleur,
+        fill: false,
     };
 }
 
