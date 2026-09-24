@@ -118,36 +118,41 @@ En production, privilégier `gunicorn` derrière un reverse proxy (nginx/apache)
 Le projet a deux chaînes de dépendances distinctes (Python et npm) : on génère donc
 deux SBOM CycloneDX, rattachés dans Dependency-Track à un projet parent `ancrage`.
 
+`scripts/generate-sbom.sh` est la version commune à tous les dépôts RNF, maintenue
+dans le skill `sbom-dependency-track`. Le corriger ici seulement ferait diverger les
+copies : reporter toute modification dans le skill.
+
 ```bash
 ./scripts/generate-sbom.sh
 ```
 
 Les fichiers sont écrits dans `sbom/` (non versionné) :
 
-- `backend.cdx.json` — construit à partir de `backend/requirements.txt`, dont toutes
+- `ancrage-backend.cdx.json` — construit à partir de `backend/requirements.txt`, dont toutes
   les versions sont épinglées ;
-- `frontend.cdx.json` — construit à partir de `frontend/package-lock.json`,
+- `ancrage-frontend.cdx.json` — construit à partir de `frontend/package-lock.json`,
   dépendances de production uniquement (`--avec-dev` pour inclure la chaîne de build).
 
 Envoi vers l'instance Dependency-Track :
 
 ```bash
-export DT_URL=http://127.0.0.1:8090
-export DT_API_KEY='<clé API Dependency-Track>'
 ./scripts/generate-sbom.sh --envoi
 ```
 
-`DT_URL` doit pointer vers l'**API server**, pas vers l'interface web : ce sont deux
-services distincts, sur deux ports distincts. Viser le frontend donne des erreurs
-HTTP 405 (nginx refuse POST/PUT sur des fichiers statiques). Pour identifier le bon
-port :
+Les identifiants sont partagés par tous les dépôts RNF et vivent hors du projet :
 
-```bash
-curl -sS http://127.0.0.1:<port>/api/version
+```
+~/.config/dependency-track/
+├── api.key   clé d'API, mode 600
+└── url       URL de l'API server — facultatif, le serveur RNF est la valeur par défaut
 ```
 
-L'API server répond du JSON (`{"application":"Dependency-Track",...}`), le frontend
-renvoie du HTML.
+Les variables d'environnement `DT_API_KEY` et `DT_URL` restent prioritaires : c'est
+par elles que la CI fournit ses secrets.
+
+`DT_URL` doit pointer vers l'**API server**, jamais vers l'interface web : ce sont
+deux services distincts, et le frontend répond HTTP 405 à tout envoi. Le script le
+vérifie avant d'envoyer quoi que ce soit.
 
 La clé d'API doit porter les permissions `BOM_UPLOAD`, `PROJECT_CREATION_UPLOAD`
 et `VIEW_PORTFOLIO`.

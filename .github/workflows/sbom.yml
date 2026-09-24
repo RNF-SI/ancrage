@@ -23,12 +23,6 @@ jobs:
         with:
           python-version: '3.13'
 
-      # cyclonedx-npm s'appuie sur `npm ls` : l'arbre doit être réellement
-      # installé, le package-lock.json seul ne suffit pas.
-      - name: Installer les dépendances frontend
-        working-directory: frontend
-        run: npm ci
-
       - name: Générer et envoyer les SBOM
         run: ./scripts/generate-sbom.sh --envoi
         env:
