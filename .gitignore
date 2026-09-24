@@ -18,3 +18,7 @@ backend/fichiers/*
 backend/script_foreign.py
 
 backend/configs/__pycache__/*
+
+# SBOM (régénérables via scripts/generate-sbom.sh)
+sbom/
+.sbom-tools/

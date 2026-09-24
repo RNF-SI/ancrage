@@ -112,3 +112,66 @@ python run.py
 ```
 
 En production, privilégier `gunicorn` derrière un reverse proxy (nginx/apache).
+
+## 9) SBOM et Dependency-Track
+
+Le projet a deux chaînes de dépendances distinctes (Python et npm) : on génère donc
+deux SBOM CycloneDX, rattachés dans Dependency-Track à un projet parent `ancrage`.
+
+```bash
+./scripts/generate-sbom.sh
+```
+
+Les fichiers sont écrits dans `sbom/` (non versionné) :
+
+- `backend.cdx.json` — construit à partir de `backend/requirements.txt`, dont toutes
+  les versions sont épinglées ;
+- `frontend.cdx.json` — construit à partir de `frontend/package-lock.json`,
+  dépendances de production uniquement (`--avec-dev` pour inclure la chaîne de build).
+
+Envoi vers l'instance Dependency-Track :
+
+```bash
+export DT_URL=http://127.0.0.1:8090
+export DT_API_KEY='<clé API Dependency-Track>'
+./scripts/generate-sbom.sh --envoi
+```
+
+`DT_URL` doit pointer vers l'**API server**, pas vers l'interface web : ce sont deux
+services distincts, sur deux ports distincts. Viser le frontend donne des erreurs
+HTTP 405 (nginx refuse POST/PUT sur des fichiers statiques). Pour identifier le bon
+port :
+
+```bash
+curl -sS http://127.0.0.1:<port>/api/version
+```
+
+L'API server répond du JSON (`{"application":"Dependency-Track",...}`), le frontend
+renvoie du HTML.
+
+La clé d'API doit porter les permissions `BOM_UPLOAD`, `PROJECT_CREATION_UPLOAD`
+et `VIEW_PORTFOLIO`.
+
+Deux notions de version cohabitent, volontairement :
+
+| Variable | Défaut | Rôle |
+|---|---|---|
+| `DT_VERSION` | `prod` | version des projets Dependency-Track — **fixe**, c'est l'environnement |
+| `APP_VERSION` | version de `frontend/package.json` | version applicative inscrite dans les SBOM |
+
+Garder `DT_VERSION` fixe évite de créer deux projets Dependency-Track à chaque
+release, qu'il faudrait re-tagger et re-rattacher à la main. Le numéro de release
+reste tracé par le composant racine des SBOM.
+
+`DT_PROJET` (défaut `ancrage`) préfixe les noms des projets, pour réutiliser le
+script sur un autre dépôt.
+
+### Automatisation
+
+[`.github/workflows/sbom.yml`](.github/workflows/sbom.yml) régénère et envoie les SBOM
+à chaque publication de release, et peut être déclenché à la main. Il attend deux
+secrets de dépôt : `DT_URL` et `DT_API_KEY`.
+
+Les projets `ancrage-backend` et `ancrage-frontend` sont à créer **une fois** dans
+Dependency-Track, avec leurs tags et leur rattachement au projet parent. Le workflow
+ne fait que déposer des BOM.
